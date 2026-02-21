@@ -1,0 +1,17 @@
+[Unit]
+Description=CacheFlow rclone copy to MilesWeb
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sanjay
+ExecStart=/usr/local/bin/rclone copy /mnt/local/ \
+  goels:/srv/storage/remotes/parul-main/CacheFlow/ \
+  --log-file=/opt/cacheflow/logs/rclone-sync.log \
+  --log-level=INFO
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
