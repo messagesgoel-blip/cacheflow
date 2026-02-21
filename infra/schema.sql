@@ -1,0 +1,59 @@
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE files (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    path TEXT NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    hash VARCHAR(64),
+    status VARCHAR(20) DEFAULT 'pending',
+    last_modified TIMESTAMP,
+    synced_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, path)
+);
+
+CREATE TABLE cloud_configs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    provider VARCHAR(50) NOT NULL,
+    config_json TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE shared_links (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    file_id UUID REFERENCES files(id) ON DELETE CASCADE,
+    token VARCHAR(64) UNIQUE NOT NULL,
+    password_hash VARCHAR(255),
+    expires_at TIMESTAMP,
+    max_downloads INTEGER,
+    download_count INTEGER DEFAULT 0,
+    created_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE conflicts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    local_version_url TEXT,
+    cloud_version_url TEXT,
+    resolved BOOLEAN DEFAULT FALSE,
+    resolution_type VARCHAR(50),
+    detected_at TIMESTAMP DEFAULT NOW(),
+    resolved_at TIMESTAMP
+);
+
+CREATE INDEX idx_files_user_path ON files(user_id, path);
+CREATE INDEX idx_files_user_status ON files(user_id, status);
+CREATE INDEX idx_files_modified ON files(last_modified DESC);
+CREATE INDEX idx_conflicts_unresolved ON conflicts(user_id, resolved);
+CREATE INDEX idx_shared_links_token ON shared_links(token);
