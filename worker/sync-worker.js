@@ -123,7 +123,7 @@ async function stage4Upload(fileId, filePath, rel) {
       'copy', filePath, dest,
       '--checksum',
       '--transfers', '1',
-      '--log-level', 'ERROR'
+      '--log-level', 'ERROR', '--contimeout', '10s', '--timeout', '60s'
     ], async (err, _stdout, stderr) => {
       const duration = Date.now() - t0;
       if (err) {
@@ -152,15 +152,16 @@ async function stage5Verify(fileId, filePath, rel, uploadDuration) {
     return false;
   }
 
-  // Get remote hash via rclone hashsum
+  // SFTP remotes do not support remote hashing - pipe remote file through sha256 locally
   const remotePath = `${RCLONE_DEST}/${rel}`;
   const remoteHash = await new Promise((resolve) => {
-    execFile('rclone', ['hashsum', 'SHA-256', remotePath, '--log-level', 'ERROR'],
-      (_err, stdout) => {
-        const match = stdout.trim().match(/^([a-f0-9]{64})/);
-        resolve(match ? match[1] : null);
-      }
-    );
+    const { spawn } = require("child_process");
+    const rclone = spawn("rclone", ["cat", remotePath, "--log-level", "ERROR", "--contimeout", "10s", "--timeout", "30s"]);
+    const hash = require("crypto").createHash("sha256");
+    rclone.stdout.on("data", d => hash.update(d));
+    rclone.stdout.on("end", () => resolve(hash.digest("hex")));
+    rclone.on("error", () => resolve(null));
+    rclone.stderr.on("data", () => {});
   });
 
   const duration = Date.now() - t0;
