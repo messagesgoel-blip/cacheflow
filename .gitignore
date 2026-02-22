@@ -7,3 +7,5 @@ node_modules/
 .next/
 *.log
 .DS_Store
+backups/*.sql.gz
+backups/*.sql
