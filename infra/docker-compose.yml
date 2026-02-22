@@ -29,6 +29,7 @@ services:
       context: /opt/docker/apps/cacheflow/api
       dockerfile: Dockerfile
     container_name: cacheflow-api
+    user: "1002:1002"
     env_file: /opt/docker/apps/cacheflow/.env
     ports:
       - "127.0.0.1:8100:8100"
