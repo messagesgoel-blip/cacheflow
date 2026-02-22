@@ -38,7 +38,7 @@ function fileHash(filePath) {
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, path, size_bytes, hash, status, last_modified, synced_at, created_at
+      `SELECT id, path, size_bytes, hash, status, error_reason, retry_count, last_modified, synced_at, created_at
        FROM files WHERE user_id=$1 AND status != 'deleted' ORDER BY created_at DESC`,
       [req.user.id]
     );
@@ -181,3 +181,22 @@ router.post('/:id/share', async (req, res) => {
 });
 
 module.exports = router;
+
+// POST /files/:id/retry — reset error → pending so worker picks it up again
+router.post('/:id/retry', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `UPDATE files
+       SET status='pending', error_reason=NULL, updated_at=NOW()
+       WHERE id=$1 AND user_id=$2 AND status='error'
+       RETURNING id, path, status`,
+      [req.params.id, req.user.id]
+    );
+    if (!result.rows.length) {
+      return res.status(404).json({ error: 'File not found or not in error state' });
+    }
+    res.json({ message: 'Queued for retry', file: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});

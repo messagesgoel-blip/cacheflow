@@ -71,10 +71,20 @@ async function stage1Detect(filePath) {
 
   if (existing.rows.length > 0) {
     const row = existing.rows[0];
-    // Skip if already syncing (in progress) or locked
+    // Skip if already syncing, locked, or synced (unless modified after sync)
     if (['syncing', 'locked'].includes(row.status)) {
       log('info', 'stage1: skipping — already in progress or locked', { file: rel, status: row.status });
       return null;
+    }
+    // Skip synced files that haven't been modified since last sync
+    if (row.status === 'synced' && row.synced_at) {
+      let mtime = Date.now();
+      try { mtime = require('fs').statSync(filePath).mtimeMs; } catch {}
+      const syncedAt = new Date(row.synced_at).getTime();
+      if (mtime <= syncedAt + 5000) {
+        log('info', 'stage1: skipping — already synced and unmodified', { file: rel });
+        return null;
+      }
     }
     return { fileId: row.id, userId, rel, isNew: false, prevStatus: row.status };
   }
@@ -146,7 +156,7 @@ async function stage5Verify(fileId, filePath, rel, uploadDuration) {
   try { localHash = await sha256(filePath); }
   catch (e) {
     await pool.query(
-      `UPDATE files SET status='error', updated_at=NOW() WHERE id=$1`, [fileId]
+      `UPDATE files SET status='error', error_reason=$2, retry_count=retry_count+1, updated_at=NOW() WHERE id=$1`, [fileId, `local hash failed: ${e.message}`]
     );
     logTransition(fileId, rel, 'syncing', 'error', `local hash failed: ${e.message}`, Date.now() - t0);
     return false;
@@ -168,14 +178,14 @@ async function stage5Verify(fileId, filePath, rel, uploadDuration) {
 
   if (localHash === remoteHash) {
     await pool.query(
-      `UPDATE files SET status='synced', hash=$1, updated_at=NOW() WHERE id=$2`,
+      `UPDATE files SET status='synced', hash=$1, synced_at=NOW(), updated_at=NOW() WHERE id=$2`,
       [localHash, fileId]
     );
     logTransition(fileId, rel, 'syncing', 'synced', 'hash match', uploadDuration + duration);
     return true;
   } else {
     await pool.query(
-      `UPDATE files SET status='error', updated_at=NOW() WHERE id=$1`, [fileId]
+      `UPDATE files SET status='error', error_reason=$2, retry_count=retry_count+1, updated_at=NOW() WHERE id=$1`, [fileId, `hash mismatch ${localHash?.slice(0,8)} vs ${remoteHash?.slice(0,8)}`]
     );
     logTransition(fileId, rel, 'syncing', 'error', `hash mismatch local=${localHash?.slice(0,8)} remote=${remoteHash?.slice(0,8)}`, duration);
     return false;
@@ -184,33 +194,34 @@ async function stage5Verify(fileId, filePath, rel, uploadDuration) {
 
 // ── Stage 6: Resolve — detect conflict (both modified within 300s) ────────────
 async function stage6Resolve(fileId, rel) {
-  // Check if a conflict record already exists for this file
-  const existing = await pool.query(
-    `SELECT id FROM conflicts WHERE file_id=$1 AND resolved_at IS NULL LIMIT 1`,
-    [fileId]
-  );
-  if (existing.rows.length > 0) {
-    log('info', 'stage6: conflict already open', { file: rel, file_id: fileId });
-    return;
-  }
-
-  // Check if file was modified both locally and in cloud within CONFLICT_WINDOW_MS
+  // Only flag conflict if file was previously synced and re-modified within CONFLICT_WINDOW_MS
   const row = await pool.query(
-    `SELECT updated_at FROM files WHERE id=$1`, [fileId]
+    `SELECT updated_at, user_id, synced_at FROM files WHERE id=$1`, [fileId]
   );
   if (!row.rows.length) return;
 
-  const updatedAt = new Date(row.rows[0].updated_at).getTime();
-  const ageMs = Date.now() - updatedAt;
+  const { user_id, synced_at } = row.rows[0];
 
+  // No previous sync = no conflict possible
+  if (!synced_at) return;
+
+  const syncedMs = new Date(synced_at).getTime();
+  const ageMs = Date.now() - syncedMs;
+
+  // Only conflict if re-modified within 300s of last sync
   if (ageMs < CONFLICT_WINDOW_MS) {
-    // Mark file as conflict
+    const existing = await pool.query(
+      `SELECT id FROM conflicts WHERE file_path=$1 AND resolved=false LIMIT 1`,
+      [rel]
+    );
+    if (existing.rows.length > 0) return;
+
     await pool.query(`UPDATE files SET status='conflict', updated_at=NOW() WHERE id=$1`, [fileId]);
     await pool.query(
-      `INSERT INTO conflicts (file_id, detected_at) VALUES ($1, NOW())`,
-      [fileId]
+      `INSERT INTO conflicts (user_id, file_path, detected_at) VALUES ($1, $2, NOW())`,
+      [user_id, rel]
     );
-    logTransition(fileId, rel, 'synced', 'conflict', `modified within conflict window (${Math.round(ageMs/1000)}s)`, 0);
+    log('info', 'status transition', { file_id: fileId, file: rel, status_before: 'synced', status_after: 'conflict', reason: `re-modified ${Math.round(ageMs/1000)}s after sync`, duration_ms: 0 });
   }
 }
 
@@ -230,7 +241,7 @@ async function runWithRetry(fileId, filePath, rel) {
     if (!upload.ok) {
       // Store error reason
       await pool.query(
-        `UPDATE files SET status='error', updated_at=NOW() WHERE id=$1`, [fileId]
+        `UPDATE files SET status='error', error_reason=$2, retry_count=retry_count+1, updated_at=NOW() WHERE id=$1`, [fileId, upload.err]
       );
       logTransition(fileId, rel, 'syncing', 'error', upload.err, upload.duration);
       if (attempt < RETRY_DELAYS.length) continue;
