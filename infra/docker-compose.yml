@@ -10,7 +10,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /srv/docker/apps/cacheflow/pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U cacheflow"]
       interval: 10s
@@ -22,16 +22,16 @@ services:
 
   api:
     build:
-      context: /opt/cacheflow/api
+      context: /opt/docker/apps/cacheflow/api
       dockerfile: Dockerfile
     container_name: cacheflow-api
-    env_file: /opt/cacheflow/.env
+    env_file: /opt/docker/apps/cacheflow/.env
     ports:
       - "8100:8100"
     volumes:
       - /mnt/local:/mnt/local
       - /mnt/pool:/mnt/pool:ro
-      - /opt/cacheflow/logs:/app/logs
+      - /srv/docker/apps/cacheflow/logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,5 +43,4 @@ networks:
   cacheflow:
     driver: bridge
 
-volumes:
-  postgres_data:
+volumes: {}
