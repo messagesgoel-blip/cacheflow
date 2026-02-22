@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: cacheflow
       POSTGRES_PASSWORD: changeme123
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - /srv/docker/apps/cacheflow/pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,6 +19,11 @@ services:
     restart: unless-stopped
     networks:
       - cacheflow
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '1.0'
 
   api:
     build:
@@ -27,7 +32,7 @@ services:
     container_name: cacheflow-api
     env_file: /opt/docker/apps/cacheflow/.env
     ports:
-      - "8100:8100"
+      - "127.0.0.1:8100:8100"
     volumes:
       - /mnt/local:/mnt/local
       - /mnt/pool:/mnt/pool:ro
@@ -38,6 +43,11 @@ services:
     restart: unless-stopped
     networks:
       - cacheflow
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '1.0'
 
 networks:
   cacheflow:
