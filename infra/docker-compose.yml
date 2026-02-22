@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:17-alpine
     container_name: cacheflow-postgres
@@ -48,6 +47,28 @@ services:
         limits:
           memory: 512m
           cpus: '1.0'
+
+  worker:
+    build:
+      context: /opt/docker/apps/cacheflow/worker
+      dockerfile: Dockerfile
+    container_name: cacheflow-worker
+    env_file: /opt/docker/apps/cacheflow/.env
+    volumes:
+      - /mnt/local:/mnt/local
+      - /home/sanjay/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
+      - /home/sanjay/.ssh/id_ed25519:/home/sanjay/.ssh/id_ed25519:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - cacheflow
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.5'
 
 networks:
   cacheflow:
