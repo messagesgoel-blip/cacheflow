@@ -1,4 +1,5 @@
 services:
+
   postgres:
     image: postgres:17-alpine
     container_name: cacheflow-postgres
@@ -16,6 +17,31 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - cacheflow
+
+  api:
+    build:
+      context: /opt/cacheflow/api
+      dockerfile: Dockerfile
+    container_name: cacheflow-api
+    env_file: /opt/cacheflow/.env
+    ports:
+      - "8100:8100"
+    volumes:
+      - /mnt/local:/mnt/local
+      - /mnt/pool:/mnt/pool:ro
+      - /opt/cacheflow/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - cacheflow
+
+networks:
+  cacheflow:
+    driver: bridge
 
 volumes:
   postgres_data:
