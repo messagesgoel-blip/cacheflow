@@ -29,6 +29,15 @@ export default function Home() {
     if (t && e) { setToken(t); setEmail(e); refresh(t) }
   }, [refresh])
 
+  // Auto-poll every 5s while any file is pending or syncing
+  useEffect(() => {
+    if (!token) return
+    const hasActive = files.some(f => f.status === 'pending' || f.status === 'syncing')
+    if (!hasActive) return
+    const id = setInterval(() => refresh(token), 5000)
+    return () => clearInterval(id)
+  }, [token, files, refresh])
+
   function handleLogin(t: string, e: string) {
     localStorage.setItem('cf_token', t)
     localStorage.setItem('cf_email', e)
