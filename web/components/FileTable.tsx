@@ -1,5 +1,5 @@
 'use client'
-import { retryFile, deleteFile, downloadFile, createShareLink } from '@/lib/api'
+import { retryFile, deleteFile, downloadFile, createShareLink, renameFile } from '@/lib/api'
 
 const STATUS_COLORS: Record<string, string> = {
   synced: 'bg-green-100 text-green-700',
@@ -26,6 +26,10 @@ export default function FileTable({ files, token, onRefresh }: { files: any[], t
   }
   const [shareResult, setShareResult] = useState<{id: string, url: string} | null>(null)
   const [shareLoading, setShareLoading] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState<string>('')
+  const [renameLoading, setRenameLoading] = useState<string | null>(null)
+  const [renameError, setRenameError] = useState<string | null>(null)
 
   async function handleShare(id: string) {
     setShareLoading(id)
@@ -38,6 +42,39 @@ export default function FileTable({ files, token, onRefresh }: { files: any[], t
     } finally {
       setShareLoading(null)
     }
+  }
+
+  async function handleRename(id: string, currentPath: string) {
+    if (!renameValue.trim() || renameValue === currentPath.split('/').pop()) {
+      setEditingId(null)
+      setRenameError(null)
+      return
+    }
+
+    setRenameLoading(id)
+    setRenameError(null)
+    try {
+      await renameFile(id, renameValue.trim(), token)
+      setEditingId(null)
+      setRenameValue('')
+      onRefresh()
+    } catch (e: unknown) {
+      setRenameError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setRenameLoading(null)
+    }
+  }
+
+  function startRename(id: string, currentPath: string) {
+    setEditingId(id)
+    setRenameValue(currentPath.split('/').pop() || '')
+    setRenameError(null)
+  }
+
+  function cancelRename() {
+    setEditingId(null)
+    setRenameValue('')
+    setRenameError(null)
   }
 
   if (!files.length) return <p className="text-gray-400 text-center py-8">No files yet. Upload a file to get started.</p>
@@ -55,7 +92,45 @@ export default function FileTable({ files, token, onRefresh }: { files: any[], t
         <tbody>
           {files.map(f => (
             <tr key={f.id} className="border-b hover:bg-gray-50">
-              <td className="py-2 pr-4 font-mono text-xs truncate max-w-xs">{f.path.split('/').pop()}</td>
+              <td className="py-2 pr-4 font-mono text-xs truncate max-w-xs">
+                {editingId === f.id ? (
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-1">
+                      <input
+                        type="text"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRename(f.id, f.path)
+                          if (e.key === 'Escape') cancelRename()
+                        }}
+                        disabled={renameLoading === f.id}
+                        className="flex-1 px-2 py-1 text-xs border rounded bg-white disabled:bg-gray-50"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleRename(f.id, f.path)}
+                        disabled={renameLoading === f.id}
+                        className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 disabled:opacity-50"
+                      >
+                        {renameLoading === f.id ? '...' : 'Save'}
+                      </button>
+                      <button
+                        onClick={cancelRename}
+                        disabled={renameLoading === f.id}
+                        className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    {renameError && editingId === f.id && (
+                      <p className="text-xs text-red-500">{renameError}</p>
+                    )}
+                  </div>
+                ) : (
+                  f.path.split('/').pop()
+                )}
+              </td>
               <td className="py-2 pr-4 text-gray-500">{(f.size_bytes / 1024).toFixed(1)} KB</td>
               <td className="py-2 pr-4">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[f.status] || ''}`}>
@@ -77,6 +152,10 @@ export default function FileTable({ files, token, onRefresh }: { files: any[], t
                 {f.status === 'error' && (
                   <button onClick={() => handleRetry(f.id)}
                     className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100">Retry</button>
+                )}
+                {f.status !== 'deleted' && (
+                  <button onClick={() => startRename(f.id, f.path)}
+                    className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded hover:bg-gray-100">Rename</button>
                 )}
                 <button onClick={() => handleDelete(f.id)}
                   className="text-xs bg-red-50 text-red-500 px-2 py-1 rounded hover:bg-red-100">Delete</button>

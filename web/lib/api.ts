@@ -79,3 +79,12 @@ export async function createShareLink(id: string, token: string, password?: stri
   if (!res.ok) throw new Error(`Share failed: ${res.status}`)
   return res.json()
 }
+
+export async function renameFile(id: string, newName: string, token: string) {
+  const res = await apiFetch(`/files/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ path: newName })
+  }, token)
+  if (!res.ok) throw new Error(`Rename failed: ${res.status}`)
+  return res.json()
+}
