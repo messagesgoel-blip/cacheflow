@@ -14,6 +14,7 @@ export default function Home() {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<string>('date-newest')
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const refresh = useCallback(async (t: string) => {
@@ -27,7 +28,11 @@ export default function Home() {
   useEffect(() => {
     const t = localStorage.getItem('cf_token')
     const e = localStorage.getItem('cf_email')
+    const savedViewMode = localStorage.getItem('cf_view_mode') as 'list' | 'grid'
     if (t && e) { setToken(t); setEmail(e); refresh(t) }
+    if (savedViewMode && (savedViewMode === 'list' || savedViewMode === 'grid')) {
+      setViewMode(savedViewMode)
+    }
   }, [refresh])
 
   // Auto-poll every 5s while any file is pending or syncing
@@ -80,6 +85,12 @@ export default function Home() {
 
   function triggerFileInput() {
     fileInputRef.current?.click()
+  }
+
+  function toggleViewMode() {
+    const newMode = viewMode === 'list' ? 'grid' : 'list'
+    setViewMode(newMode)
+    localStorage.setItem('cf_view_mode', newMode)
   }
 
   const sortedFiles = [...files].sort((a, b) => {
@@ -139,7 +150,7 @@ export default function Home() {
               {uploadError}
             </div>
           )}
-          <div className="mb-4">
+          <div className="mb-4 flex items-center gap-3">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -152,8 +163,14 @@ export default function Home() {
               <option value="size-large">Size (largest)</option>
               <option value="size-small">Size (smallest)</option>
             </select>
+            <button
+              onClick={toggleViewMode}
+              className="border rounded px-2 py-1 text-sm bg-gray-50 hover:bg-gray-100"
+            >
+              {viewMode === 'list' ? 'Grid' : 'List'}
+            </button>
           </div>
-          <FileTable files={sortedFiles} token={token} onRefresh={() => refresh(token)} />
+          <FileTable files={sortedFiles} token={token} onRefresh={() => refresh(token)} viewMode={viewMode} />
         </div>
       </main>
     </div>
