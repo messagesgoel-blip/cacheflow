@@ -33,7 +33,8 @@
       "Bash(git -C /workspace/cacheflow commit -m \"Day 61: share dialog with password and expiry options\")",
       "Bash(git -C /workspace/cacheflow commit -m \"Day 62: public share page at /share/:token\")",
       "Bash(git -C /workspace/cacheflow commit -m \"Day 63: conflicts list page\")",
-      "Bash(git -C /workspace/cacheflow commit -m \"Day 64: conflict detail page with side-by-side viewer\")"
+      "Bash(git -C /workspace/cacheflow commit -m \"Day 64: conflict detail page with side-by-side viewer\")",
+      "Bash(git -C /workspace/cacheflow commit -m \"Day 65: conflict resolution buttons wired to API\")"
     ]
   }
 }

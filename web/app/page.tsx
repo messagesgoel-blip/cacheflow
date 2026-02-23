@@ -138,6 +138,7 @@ export default function Home() {
           <div className="flex gap-4">
             <a href="/" className="text-white font-medium text-sm">Files</a>
             <a href="/conflicts" className="text-blue-200 hover:text-white text-sm">Conflicts</a>
+            <a href="/admin" className="text-blue-200 hover:text-white text-sm">Admin</a>
           </div>
         </div>
         <div className="flex items-center gap-4">
