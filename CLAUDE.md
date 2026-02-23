@@ -3,8 +3,15 @@
 ## Identity
 - Project root: /opt/docker/apps/cacheflow/
 - Server: OCI ARM64, Ubuntu 24
-- Runtime user: sanjay uid=1002 gid=1002
-- All containers run as 1002:1002
+- Runtime user: node uid=1000 (Claude Code container user)
+- Server files owned by: sanjay uid=1002 gid=1002
+- All Docker app containers run as 1002:1002
+- You have ACL write access to /opt/docker/apps/cacheflow/ as node uid=1000
+
+## PORT REACHABILITY NOTE
+- You CANNOT curl http://127.0.0.1:{port} from inside this container — that is normal
+- Verify ports are listening on the HOST by checking git log and docker ps output instead
+- Do NOT fail a day milestone just because curl to 8100/3010 returns 000
 
 ## NEVER DO THESE
 - NEVER write files to /tmp — cleared on reboot and between sessions
