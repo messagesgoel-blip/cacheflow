@@ -3,7 +3,9 @@ CREATE TABLE users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    updated_at TIMESTAMP DEFAULT NOW(),
+    quota_bytes BIGINT NOT NULL DEFAULT 10737418240,
+    used_bytes  BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE files (

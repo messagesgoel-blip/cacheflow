@@ -24,6 +24,26 @@ services:
           memory: 1g
           cpus: '1.0'
 
+  redis:
+    image: redis:7-alpine
+    container_name: cacheflow-redis
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru --bind 127.0.0.1
+    ports:
+      - "127.0.0.1:6380:6379"
+    restart: unless-stopped
+    networks:
+      - cacheflow
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
     build:
       context: /opt/docker/apps/cacheflow/api
@@ -39,6 +59,8 @@ services:
       - /srv/docker/apps/cacheflow/logs:/app/logs
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
     networks:
