@@ -71,3 +71,19 @@ CREATE TABLE IF NOT EXISTS admin_notifications (
 );
 CREATE INDEX IF NOT EXISTS idx_admin_notifications_read ON admin_notifications(read);
 CREATE INDEX IF NOT EXISTS idx_admin_notifications_type ON admin_notifications(type);
+
+-- Tenants table (Day 47)
+CREATE TABLE IF NOT EXISTS tenants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(100) UNIQUE NOT NULL,
+  plan VARCHAR(50) NOT NULL DEFAULT 'free',
+  quota_bytes BIGINT NOT NULL DEFAULT 107374182400,
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+INSERT INTO tenants (id, name, slug, plan)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Default', 'default', 'free')
+ON CONFLICT DO NOTHING;
