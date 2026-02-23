@@ -25,7 +25,8 @@
       "Bash(/bin/bash -n /workspace/cacheflow-qa/qa_master_next_run.sh 2>&1)",
       "Bash(git -C /workspace/cacheflow commit -m \"Day 56: inline rename in web UI\")",
       "Bash(git -C /workspace/cacheflow log --oneline -3)",
-      "Bash(git -C /workspace/cacheflow commit -m \"Day 57: sort controls for file table\")"
+      "Bash(git -C /workspace/cacheflow commit -m \"Day 57: sort controls for file table\")",
+      "Bash(git -C /workspace/cacheflow commit -m \"Day 58: grid/list view toggle\")"
     ]
   }
 }

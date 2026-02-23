@@ -15,6 +15,7 @@ export default function Home() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<string>('date-newest')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [activeFilter, setActiveFilter] = useState<string>('all')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const refresh = useCallback(async (t: string) => {
@@ -93,7 +94,21 @@ export default function Home() {
     localStorage.setItem('cf_view_mode', newMode)
   }
 
-  const sortedFiles = [...files].sort((a, b) => {
+  // Count files by status
+  const statusCounts = {
+    all: files.length,
+    synced: files.filter(f => f.status === 'synced').length,
+    pending: files.filter(f => f.status === 'pending').length,
+    syncing: files.filter(f => f.status === 'syncing').length,
+    error: files.filter(f => f.status === 'error').length,
+  }
+
+  const filteredFiles = files.filter(f => {
+    if (activeFilter === 'all') return true
+    return f.status === activeFilter
+  })
+
+  const sortedFiles = [...filteredFiles].sort((a, b) => {
     switch (sortBy) {
       case 'name-asc':
         return (a.path.split('/').pop() || '').localeCompare(b.path.split('/').pop() || '')
@@ -150,6 +165,20 @@ export default function Home() {
               {uploadError}
             </div>
           )}
+          <div className="mb-4 flex flex-wrap gap-2">
+            {['all', 'synced', 'pending', 'syncing', 'error'].map(status => (
+              <button
+                key={status}
+                onClick={() => setActiveFilter(status)}
+                className={`px-3 py-1 text-sm rounded border ${activeFilter === status ? 'bg-blue-50 text-blue-700 border-blue-300' : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'} ${status === 'error' && statusCounts.error > 0 ? 'text-red-700' : ''}`}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+                <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded">
+                  {statusCounts[status as keyof typeof statusCounts]}
+                </span>
+              </button>
+            ))}
+          </div>
           <div className="mb-4 flex items-center gap-3">
             <select
               value={sortBy}
