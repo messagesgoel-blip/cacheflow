@@ -27,7 +27,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: cacheflow-redis
-    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru --bind 127.0.0.1
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
     ports:
       - "127.0.0.1:6380:6379"
     restart: unless-stopped

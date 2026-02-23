@@ -8,6 +8,42 @@ const fs          = require('fs');
 const crypto      = require('crypto');
 const { Pool }    = require('pg');
 
+// ── Redis ────────────────────────────────────────────────────────────────────
+const Redis = require('ioredis');
+const redis = new Redis({
+  host: process.env.REDIS_HOST || 'cacheflow-redis',
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+  retryStrategy: times => Math.min(times * 500, 5000)
+});
+redis.on('error', err => log('warn', 'redis error', { err: err.message }));
+redis.on('connect', () => log('info', 'redis connected'));
+
+const DAILY_TRANSFER_LIMIT = parseInt(process.env.DAILY_TRANSFER_LIMIT_BYTES || String(750 * 1024 * 1024 * 1024));
+
+async function getDailyTransferKey(userId) {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  return `cacheflow:transfer:${userId}:${today}`;
+}
+
+async function checkAndIncrementTransfer(userId, sizeBytes) {
+  try {
+    const key = await getDailyTransferKey(userId);
+    // Atomic increment first, then check — prevents TOCTOU race under concurrency
+    const newTotal = await redis.incrby(key, sizeBytes);
+    await redis.expire(key, 90000);
+    if (newTotal > DAILY_TRANSFER_LIMIT) {
+      // Roll back — this file won't be transferred today
+      await redis.decrby(key, sizeBytes);
+      return { allowed: false, current: newTotal, limit: DAILY_TRANSFER_LIMIT };
+    }
+    return { allowed: true, current: newTotal, limit: DAILY_TRANSFER_LIMIT };
+  } catch (err) {
+    // Redis failure is non-fatal — allow transfer but log
+    log('warn', 'redis transfer check failed, allowing', { err: err.message });
+    return { allowed: true };
+  }
+}
+
 // ── Config ────────────────────────────────────────────────────────────────────
 const WATCH_DIR   = process.env.SYNC_WATCH_DIR || '/mnt/local';
 const RCLONE_DEST = process.env.RCLONE_DEST    || 'goels:/srv/storage/remotes/parul-main/CacheFlow';
@@ -140,7 +176,23 @@ async function stage4Upload(fileId, filePath, rel) {
   const t0 = Date.now();
   const dest = `${RCLONE_DEST}/${path.dirname(rel)}`;
 
-  // Mark syncing
+
+  // Daily transfer limit check BEFORE marking syncing (size_bytes parsed as int)
+  const fileRow = await pool.query('SELECT user_id, size_bytes FROM files WHERE id=$1', [fileId]);
+  const transferUserId = fileRow.rows[0]?.user_id;
+  const transferSizeBytes = parseInt(fileRow.rows[0]?.size_bytes || '0', 10);
+  const transfer = await checkAndIncrementTransfer(transferUserId, transferSizeBytes);
+  if (!transfer.allowed) {
+    const reason = `daily transfer limit reached: ${transfer.current} >= ${transfer.limit} bytes`;
+    await pool.query(
+      `UPDATE files SET status='error', error_reason=$2, updated_at=NOW() WHERE id=$1`,
+      [fileId, reason]
+    );
+    log('warn', 'stage4: daily transfer limit reached', { file: rel, current: transfer.current, limit: transfer.limit });
+    return { ok: false, err: reason, duration: Date.now() - t0 };
+  }
+
+  // Mark syncing only after transfer check passes
   await pool.query(`UPDATE files SET status='syncing', updated_at=NOW() WHERE id=$1`, [fileId]);
   logTransition(fileId, rel, 'pending', 'syncing', 'upload started', Date.now() - t0);
 
