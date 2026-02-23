@@ -133,7 +133,13 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <nav className="bg-blue-700 text-white px-6 py-3 flex justify-between items-center shadow">
-        <span className="font-bold text-lg tracking-tight">CacheFlow</span>
+        <div className="flex items-center gap-6">
+          <span className="font-bold text-lg tracking-tight">CacheFlow</span>
+          <div className="flex gap-4">
+            <a href="/" className="text-white font-medium text-sm">Files</a>
+            <a href="/conflicts" className="text-blue-200 hover:text-white text-sm">Conflicts</a>
+          </div>
+        </div>
         <div className="flex items-center gap-4">
           <span className="text-blue-200 text-sm">{email}</span>
           <button onClick={handleLogout} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
