@@ -13,6 +13,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<string>('date-newest')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const refresh = useCallback(async (t: string) => {
@@ -81,6 +82,25 @@ export default function Home() {
     fileInputRef.current?.click()
   }
 
+  const sortedFiles = [...files].sort((a, b) => {
+    switch (sortBy) {
+      case 'name-asc':
+        return (a.path.split('/').pop() || '').localeCompare(b.path.split('/').pop() || '')
+      case 'name-desc':
+        return (b.path.split('/').pop() || '').localeCompare(a.path.split('/').pop() || '')
+      case 'size-large':
+        return b.size_bytes - a.size_bytes
+      case 'size-small':
+        return a.size_bytes - b.size_bytes
+      case 'date-newest':
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      case 'date-oldest':
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      default:
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    }
+  })
+
   if (!token) return <Login onLogin={handleLogin} />
 
   return (
@@ -119,7 +139,21 @@ export default function Home() {
               {uploadError}
             </div>
           )}
-          <FileTable files={files} token={token} onRefresh={() => refresh(token)} />
+          <div className="mb-4">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="date-newest">Date (newest)</option>
+              <option value="date-oldest">Date (oldest)</option>
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="size-large">Size (largest)</option>
+              <option value="size-small">Size (smallest)</option>
+            </select>
+          </div>
+          <FileTable files={sortedFiles} token={token} onRefresh={() => refresh(token)} />
         </div>
       </main>
     </div>
