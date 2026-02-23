@@ -93,6 +93,25 @@ services:
           memory: 256m
           cpus: '0.5'
 
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    container_name: cacheflow-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3010:3010"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://cacheflow-api:8100
+      - PORT=3010
+    depends_on:
+      - api
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
+
 networks:
   cacheflow:
     driver: bridge
