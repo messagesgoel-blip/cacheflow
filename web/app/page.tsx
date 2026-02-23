@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Login from '@/components/Login'
 import UsageBar from '@/components/UsageBar'
 import FileTable from '@/components/FileTable'
+import Breadcrumb from '@/components/Breadcrumb'
 import { getFiles, getUsage, uploadFile } from '@/lib/api'
 
 export default function Home() {
@@ -165,6 +166,7 @@ export default function Home() {
               {uploadError}
             </div>
           )}
+          <Breadcrumb path="My Files" />
           <div className="mb-4 flex flex-wrap gap-2">
             {['all', 'synced', 'pending', 'syncing', 'error'].map(status => (
               <button

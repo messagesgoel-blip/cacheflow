@@ -11,6 +11,11 @@ const STATUS_COLORS: Record<string, string> = {
 
 import { useState } from 'react'
 export default function FileTable({ files, token, onRefresh, viewMode = 'list' }: { files: any[], token: string, onRefresh: () => void, viewMode?: 'list' | 'grid' }) {
+  // Helper function to strip user_id UUID prefix from path for display
+  function stripUserIdPrefix(path: string): string {
+    // Strip anything matching /^[0-9a-f-]{36}\// from the start of path
+    return path.replace(/^[0-9a-f-]{36}\//, '')
+  }
   async function handleDownload(id: string, filepath: string) {
     const filename = filepath.split('/').pop() || 'download'
     await downloadFile(id, filename, token).catch(e => alert('Download failed: ' + e.message))
@@ -67,7 +72,7 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
 
   function startRename(id: string, currentPath: string) {
     setEditingId(id)
-    setRenameValue(currentPath.split('/').pop() || '')
+    setRenameValue(stripUserIdPrefix(currentPath).split('/').pop() || '')
     setRenameError(null)
   }
 
@@ -85,7 +90,7 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {files.map(f => (
             <div key={f.id} className="border rounded-lg p-4 hover:bg-gray-50">
-              <div className="font-mono text-xs truncate mb-2">{f.path.split('/').pop()}</div>
+              <div className="font-mono text-xs truncate mb-2">{stripUserIdPrefix(f.path).split('/').pop()}</div>
               <div className="flex items-center justify-between mb-2">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[f.status] || ''}`}>
                   {f.status}
@@ -218,7 +223,7 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
                     )}
                   </div>
                 ) : (
-                  f.path.split('/').pop()
+                  stripUserIdPrefix(f.path).split('/').pop()
                 )}
               </td>
               <td className="py-2 pr-4 text-gray-500">{(f.size_bytes / 1024).toFixed(1)} KB</td>
