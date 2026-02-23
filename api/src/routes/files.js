@@ -39,8 +39,8 @@ router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, path, size_bytes, hash, status, error_reason, retry_count, last_modified, synced_at, created_at
-       FROM files WHERE user_id=$1 AND status != 'deleted' ORDER BY created_at DESC`,
-      [req.user.id]
+       FROM files WHERE user_id=$1 AND tenant_id=$2 AND status != 'deleted' ORDER BY created_at DESC`,
+      [req.user.id, req.user.tenant_id]
     );
     res.json({ files: result.rows, count: result.rows.length });
   } catch (err) {
@@ -63,7 +63,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   try {
     // Quota check — reject if this upload would exceed the user's quota
     const quotaRes = await pool.query(
-      `SELECT quota_bytes, used_bytes FROM users WHERE id=$1`, [req.user.id]
+      `SELECT quota_bytes, used_bytes FROM users WHERE id=$1 AND tenant_id=$2`, [req.user.id, req.user.tenant_id]
     );
     const quota_bytes = parseInt(quotaRes.rows[0].quota_bytes, 10);
     const used_bytes  = parseInt(quotaRes.rows[0].used_bytes,  10);
@@ -103,8 +103,8 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 router.get('/:id/download', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT path, size_bytes FROM files WHERE id=$1 AND user_id=$2 AND status != 'deleted'`,
-      [req.params.id, req.user.id]
+      `SELECT path, size_bytes FROM files WHERE id=$1 AND user_id=$2 AND tenant_id=$3 AND status != 'deleted'`,
+      [req.params.id, req.user.id, req.user.tenant_id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'file not found' });
     const file = result.rows[0];
@@ -156,7 +156,7 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const result = await pool.query(
-      `UPDATE files SET status='deleted' WHERE id=$1 AND user_id=$2 AND status != 'deleted' RETURNING id, size_bytes`,
+      `UPDATE files SET status='deleted' WHERE id=$1 AND user_id=$2 AND tenant_id=$3 AND status != 'deleted' RETURNING id, size_bytes`,
       [req.params.id, req.user.id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'file not found' });
@@ -247,14 +247,14 @@ router.get('/usage', async (req, res) => {
       `SELECT quota_bytes, used_bytes,
               quota_bytes - used_bytes AS available_bytes,
               ROUND((used_bytes::numeric / NULLIF(quota_bytes,0)) * 100, 2) AS used_pct
-       FROM users WHERE id=$1`,
-      [req.user.id]
+       FROM users WHERE id=$1 AND tenant_id=$2`,
+      [req.user.id, req.user.tenant_id]
     );
     const counts = await pool.query(
       `SELECT status, COUNT(*) AS count, COALESCE(SUM(size_bytes),0) AS total_bytes
-       FROM files WHERE user_id=$1 AND status != 'deleted'
+       FROM files WHERE user_id=$1 AND tenant_id=$2 AND status != 'deleted'
        GROUP BY status`,
-      [req.user.id]
+      [req.user.id, req.user.tenant_id]
     );
     const row = usage.rows[0];
     res.json({
