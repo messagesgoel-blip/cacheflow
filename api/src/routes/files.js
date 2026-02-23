@@ -179,18 +179,34 @@ router.post('/:id/share', async (req, res) => {
 });
 
 // POST /files/:id/retry — reset error → pending so worker picks it up again
+const MAX_RETRY_COUNT = 10;
 router.post('/:id/retry', async (req, res) => {
   try {
+    // First check if file exists at all
+    const check = await pool.query(
+      `SELECT id, status, retry_count FROM files WHERE id=$1 AND user_id=$2 AND status != 'deleted'`,
+      [req.params.id, req.user.id]
+    );
+    if (!check.rows.length)
+      return res.status(404).json({ error: 'File not found' });
+
+    const file = check.rows[0];
+
+    // 409 if not in error state
+    if (file.status !== 'error')
+      return res.status(409).json({ error: `Cannot retry file with status '${file.status}'` });
+
+    // 409 if retry cap exceeded
+    if (file.retry_count >= MAX_RETRY_COUNT)
+      return res.status(409).json({ error: `Retry limit reached (${MAX_RETRY_COUNT}). Manual intervention required.` });
+
     const result = await pool.query(
       `UPDATE files
        SET status='pending', error_reason=NULL, updated_at=NOW()
-       WHERE id=$1 AND user_id=$2 AND status='error'
-       RETURNING id, path, status`,
+       WHERE id=$1 AND user_id=$2
+       RETURNING id, path, status, retry_count`,
       [req.params.id, req.user.id]
     );
-    if (!result.rows.length) {
-      return res.status(404).json({ error: 'File not found or not in error state' });
-    }
     res.json({ message: 'Queued for retry', file: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });
