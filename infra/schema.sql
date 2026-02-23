@@ -59,3 +59,15 @@ CREATE INDEX idx_files_user_status ON files(user_id, status);
 CREATE INDEX idx_files_modified ON files(last_modified DESC);
 CREATE INDEX idx_conflicts_unresolved ON conflicts(user_id, resolved);
 CREATE INDEX idx_shared_links_token ON shared_links(token);
+
+-- Admin notifications (Day 45)
+CREATE TABLE IF NOT EXISTS admin_notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type VARCHAR(50) NOT NULL,
+  message TEXT NOT NULL,
+  payload JSONB,
+  read BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_admin_notifications_read ON admin_notifications(read);
+CREATE INDEX IF NOT EXISTS idx_admin_notifications_type ON admin_notifications(type);

@@ -240,4 +240,36 @@ router.post('/:id/retry', async (req, res) => {
   }
 });
 
+// GET /files/usage — storage usage for current user
+router.get('/usage', async (req, res) => {
+  try {
+    const usage = await pool.query(
+      `SELECT quota_bytes, used_bytes,
+              quota_bytes - used_bytes AS available_bytes,
+              ROUND((used_bytes::numeric / NULLIF(quota_bytes,0)) * 100, 2) AS used_pct
+       FROM users WHERE id=$1`,
+      [req.user.id]
+    );
+    const counts = await pool.query(
+      `SELECT status, COUNT(*) AS count, COALESCE(SUM(size_bytes),0) AS total_bytes
+       FROM files WHERE user_id=$1 AND status != 'deleted'
+       GROUP BY status`,
+      [req.user.id]
+    );
+    const row = usage.rows[0];
+    res.json({
+      quota_bytes:     parseInt(row.quota_bytes, 10),
+      used_bytes:      parseInt(row.used_bytes, 10),
+      available_bytes: parseInt(row.available_bytes, 10),
+      used_pct:        parseFloat(row.used_pct || 0),
+      files:           counts.rows.reduce((acc, r) => {
+        acc[r.status] = { count: parseInt(r.count, 10), bytes: parseInt(r.total_bytes, 10) };
+        return acc;
+      }, {})
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

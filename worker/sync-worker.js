@@ -189,6 +189,16 @@ async function stage4Upload(fileId, filePath, rel) {
       [fileId, reason]
     );
     log('warn', 'stage4: daily transfer limit reached', { file: rel, current: transfer.current, limit: transfer.limit });
+    // Write admin notification
+    await pool.query(
+      `INSERT INTO admin_notifications (type, message, payload)
+       VALUES ('transfer_limit', $1, $2)
+       ON CONFLICT DO NOTHING`,
+      [
+        `Daily transfer limit reached for user ${transferUserId}`,
+        JSON.stringify({ user_id: transferUserId, current_bytes: transfer.current, limit_bytes: transfer.limit, file: rel, date: new Date().toISOString().slice(0,10) })
+      ]
+    );
     return { ok: false, err: reason, duration: Date.now() - t0 };
   }
 
