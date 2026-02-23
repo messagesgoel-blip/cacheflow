@@ -1,5 +1,5 @@
 'use client'
-import { retryFile, deleteFile } from '@/lib/api'
+import { retryFile, deleteFile, downloadFile } from '@/lib/api'
 
 const STATUS_COLORS: Record<string, string> = {
   synced: 'bg-green-100 text-green-700',
@@ -10,6 +10,10 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default function FileTable({ files, token, onRefresh }: { files: any[], token: string, onRefresh: () => void }) {
+  async function handleDownload(id: string, filepath: string) {
+    const filename = filepath.split('/').pop() || 'download'
+    await downloadFile(id, filename, token).catch(e => alert('Download failed: ' + e.message))
+  }
   async function handleRetry(id: string) {
     await retryFile(id, token)
     onRefresh()
@@ -43,6 +47,10 @@ export default function FileTable({ files, token, onRefresh }: { files: any[], t
                 {f.error_reason && <p className="text-xs text-red-400 mt-0.5 truncate max-w-xs">{f.error_reason}</p>}
               </td>
               <td className="py-2 flex gap-2">
+                {f.status === 'synced' && (
+                  <button onClick={() => handleDownload(f.id, f.path)}
+                    className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100">Download</button>
+                )}
                 {f.status === 'error' && (
                   <button onClick={() => handleRetry(f.id)}
                     className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100">Retry</button>

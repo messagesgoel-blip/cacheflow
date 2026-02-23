@@ -52,3 +52,17 @@ export async function uploadFile(file: File, token: string) {
 
   return res.json()
 }
+
+export async function downloadFile(id: string, filename: string, token: string) {
+  const res = await apiFetch(`/files/${id}/download`, {}, token)
+  if (!res.ok) throw new Error(`Download failed: ${res.status}`)
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
