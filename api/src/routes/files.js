@@ -61,6 +61,23 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     fs.renameSync(req.file.path, diskPath);
   }
   try {
+    // Quota check — reject if this upload would exceed the user's quota
+    const quotaRes = await pool.query(
+      `SELECT quota_bytes, used_bytes FROM users WHERE id=$1`, [req.user.id]
+    );
+    const quota_bytes = parseInt(quotaRes.rows[0].quota_bytes, 10);
+    const used_bytes  = parseInt(quotaRes.rows[0].used_bytes,  10);
+    if (used_bytes + req.file.size > quota_bytes) {
+      fs.unlink(diskPath, () => {});
+      return res.status(413).json({
+        error: 'Quota exceeded',
+        quota_bytes,
+        used_bytes,
+        file_size: req.file.size,
+        available_bytes: quota_bytes - used_bytes
+      });
+    }
+
     const hash = await fileHash(relativePath !== req.file.originalname ? diskPath : req.file.path);
     const result = await pool.query(
       `INSERT INTO files (user_id, path, size_bytes, hash, status, last_modified)
@@ -69,6 +86,11 @@ router.post('/upload', upload.single('file'), async (req, res) => {
        DO UPDATE SET size_bytes=$3, hash=$4, status='pending', last_modified=NOW(), synced_at=NULL
        RETURNING *`,
       [req.user.id, relativePath, req.file.size, hash]
+    );
+    // Increment used_bytes (on conflict, adjust for size difference)
+    await pool.query(
+      `UPDATE users SET used_bytes = used_bytes + $1 WHERE id = $2`,
+      [req.file.size, req.user.id]
     );
     res.status(201).json({ file: result.rows[0] });
   } catch (err) {
@@ -134,10 +156,15 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const result = await pool.query(
-      `UPDATE files SET status='deleted' WHERE id=$1 AND user_id=$2 AND status != 'deleted' RETURNING id`,
+      `UPDATE files SET status='deleted' WHERE id=$1 AND user_id=$2 AND status != 'deleted' RETURNING id, size_bytes`,
       [req.params.id, req.user.id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'file not found' });
+    // Decrement used_bytes on soft delete
+    await pool.query(
+      `UPDATE users SET used_bytes = GREATEST(0, used_bytes - $1) WHERE id = $2`,
+      [result.rows[0].size_bytes, req.user.id]
+    );
     res.json({ deleted: true, id: result.rows[0].id });
   } catch (err) {
     console.error('[files] delete:', err.message);

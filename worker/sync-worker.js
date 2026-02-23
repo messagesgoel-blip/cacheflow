@@ -111,11 +111,27 @@ function stage2Prioritise(filePath) {
   return filePriority(filePath);
 }
 
-// ── Stage 3: Check — quota gate (placeholder) ─────────────────────────────────
+// ── Stage 3: Check — quota gate ─────────────────────────────────────────────
 async function stage3Check(fileId, userId, rel) {
-  // TODO Days 41-45: enforce per-user quota and 750GB/day provider limit
-  // For now: always pass
-  log('info', 'stage3: quota check passed (placeholder)', { file: rel });
+  const result = await pool.query(
+    `SELECT u.quota_bytes, u.used_bytes, f.size_bytes
+     FROM users u JOIN files f ON f.user_id = u.id
+     WHERE f.id = $1`, [fileId]
+  );
+  if (!result.rows.length) {
+    log('warn', 'stage3: file or user not found', { file: rel });
+    return false;
+  }
+  const { quota_bytes, used_bytes, size_bytes } = result.rows[0];
+  if (used_bytes + size_bytes > quota_bytes) {
+    await pool.query(
+      `UPDATE files SET status='error', error_reason=$2, updated_at=NOW() WHERE id=$1`,
+      [fileId, `quota exceeded: ${used_bytes + size_bytes} > ${quota_bytes}`]
+    );
+    log('warn', 'stage3: quota exceeded', { file: rel, used_bytes, quota_bytes, size_bytes });
+    return false;
+  }
+  log('info', 'stage3: quota check passed', { file: rel, used_bytes, quota_bytes });
   return true;
 }
 
