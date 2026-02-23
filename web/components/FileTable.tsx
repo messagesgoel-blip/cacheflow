@@ -1,5 +1,6 @@
 'use client'
 import { retryFile, deleteFile, downloadFile, createShareLink, renameFile } from '@/lib/api'
+import ShareDialog from './ShareDialog'
 
 const STATUS_COLORS: Record<string, string> = {
   synced: 'bg-green-100 text-green-700',
@@ -29,24 +30,24 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
     await deleteFile(id, token)
     onRefresh()
   }
+  const [shareDialog, setShareDialog] = useState<{id: string, filename: string} | null>(null)
   const [shareResult, setShareResult] = useState<{id: string, url: string} | null>(null)
-  const [shareLoading, setShareLoading] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState<string>('')
   const [renameLoading, setRenameLoading] = useState<string | null>(null)
   const [renameError, setRenameError] = useState<string | null>(null)
 
-  async function handleShare(id: string) {
-    setShareLoading(id)
-    try {
-      const data = await createShareLink(id, token)
-      const url = `${window.location.origin}/share/${data.share_link?.token || data.token}`
-      setShareResult({ id, url })
-    } catch (e: unknown) {
-      alert('Share failed: ' + (e instanceof Error ? e.message : String(e)))
-    } finally {
-      setShareLoading(null)
-    }
+  function handleShareClick(id: string, filename: string) {
+    setShareDialog({ id, filename })
+  }
+
+  function handleShareCreated(url: string) {
+    setShareResult({ id: shareDialog!.id, url })
+    setShareDialog(null)
+  }
+
+  function handleShareDialogClose() {
+    setShareDialog(null)
   }
 
   async function handleRename(id: string, currentPath: string) {
@@ -84,10 +85,9 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
 
   if (!files.length) return <p className="text-gray-400 text-center py-8">No files yet. Upload a file to get started.</p>
 
-  if (viewMode === 'grid') {
-    return (
-      <div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+  const renderGridView = () => (
+    <div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {files.map(f => (
             <div key={f.id} className="border rounded-lg p-4 hover:bg-gray-50">
               <div className="font-mono text-xs truncate mb-2">{stripUserIdPrefix(f.path).split('/').pop()}</div>
@@ -104,9 +104,9 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
                     className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100">Download</button>
                 )}
                 {(f.status === 'synced' || f.status === 'pending') && (
-                  <button onClick={() => handleShare(f.id)} disabled={shareLoading === f.id}
-                    className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100 disabled:opacity-50">
-                    {shareLoading === f.id ? '...' : 'Share'}
+                  <button onClick={() => handleShareClick(f.id, stripUserIdPrefix(f.path).split('/').pop() || '')}
+                    className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100">
+                    Share
                   </button>
                 )}
                 {f.status === 'error' && (
@@ -172,8 +172,32 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
     )
   }
 
-  // List view (default)
-  return (
+  const renderListView = () => (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b text-left text-gray-500">
+            <th className="pb-2 pr-4">Name</th>
+            <th className="pb-2 pr-4">Size</th>
+            <th className="pb-2 pr-4">Status</th>
+            <th className="pb-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {files.map(f => (
+            <tr key={f.id} className="border-b hover:bg-gray-50">
+              <td className="py-2 pr-4 font-mono text-xs truncate max-w-xs">
+                {editingId === f.id ? (
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-1">
+                      <input
+                        type="text"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRename(f.id, f.path)
+                          if (e.key === 'Escape') cancelRename()
+                        }}
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
@@ -239,9 +263,9 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
                     className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100">Download</button>
                 )}
                 {(f.status === 'synced' || f.status === 'pending') && (
-                  <button onClick={() => handleShare(f.id)} disabled={shareLoading === f.id}
-                    className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100 disabled:opacity-50">
-                    {shareLoading === f.id ? '...' : 'Share'}
+                  <button onClick={() => handleShareClick(f.id, stripUserIdPrefix(f.path).split('/').pop() || '')}
+                    className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100">
+                    Share
                   </button>
                 )}
                 {f.status === 'error' && (
@@ -270,5 +294,20 @@ export default function FileTable({ files, token, onRefresh, viewMode = 'list' }
       </div>
     )}
     </div>
+  )
+
+  return (
+    <>
+      {viewMode === 'grid' ? renderGridView() : renderListView()}
+      {shareDialog && (
+        <ShareDialog
+          fileId={shareDialog.id}
+          filename={shareDialog.filename}
+          token={token}
+          onClose={handleShareDialogClose}
+          onShareCreated={handleShareCreated}
+        />
+      )}
+    </>
   )
 }
