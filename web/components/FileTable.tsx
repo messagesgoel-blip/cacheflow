@@ -1,5 +1,5 @@
 'use client'
-import { retryFile, deleteFile, downloadFile } from '@/lib/api'
+import { retryFile, deleteFile, downloadFile, createShareLink } from '@/lib/api'
 
 const STATUS_COLORS: Record<string, string> = {
   synced: 'bg-green-100 text-green-700',
@@ -9,6 +9,7 @@ const STATUS_COLORS: Record<string, string> = {
   deleted: 'bg-gray-100 text-gray-500',
 }
 
+import { useState } from 'react'
 export default function FileTable({ files, token, onRefresh }: { files: any[], token: string, onRefresh: () => void }) {
   async function handleDownload(id: string, filepath: string) {
     const filename = filepath.split('/').pop() || 'download'
@@ -23,6 +24,22 @@ export default function FileTable({ files, token, onRefresh }: { files: any[], t
     await deleteFile(id, token)
     onRefresh()
   }
+  const [shareResult, setShareResult] = useState<{id: string, url: string} | null>(null)
+  const [shareLoading, setShareLoading] = useState<string | null>(null)
+
+  async function handleShare(id: string) {
+    setShareLoading(id)
+    try {
+      const data = await createShareLink(id, token)
+      const url = `${window.location.origin}/share/${data.share_link?.token || data.token}`
+      setShareResult({ id, url })
+    } catch (e: unknown) {
+      alert('Share failed: ' + (e instanceof Error ? e.message : String(e)))
+    } finally {
+      setShareLoading(null)
+    }
+  }
+
   if (!files.length) return <p className="text-gray-400 text-center py-8">No files yet. Upload a file to get started.</p>
   return (
     <div className="overflow-x-auto">
@@ -51,6 +68,12 @@ export default function FileTable({ files, token, onRefresh }: { files: any[], t
                   <button onClick={() => handleDownload(f.id, f.path)}
                     className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100">Download</button>
                 )}
+                {(f.status === 'synced' || f.status === 'pending') && (
+                  <button onClick={() => handleShare(f.id)} disabled={shareLoading === f.id}
+                    className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100 disabled:opacity-50">
+                    {shareLoading === f.id ? '...' : 'Share'}
+                  </button>
+                )}
                 {f.status === 'error' && (
                   <button onClick={() => handleRetry(f.id)}
                     className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100">Retry</button>
@@ -62,6 +85,16 @@ export default function FileTable({ files, token, onRefresh }: { files: any[], t
           ))}
         </tbody>
       </table>
+    {shareResult && (
+      <div className="mt-4 p-3 bg-purple-50 rounded-lg flex items-center gap-3 text-sm">
+        <span className="text-purple-700 font-medium">Share link:</span>
+        <span className="flex-1 text-purple-600 truncate font-mono text-xs">{shareResult.url}</span>
+        <button onClick={() => { navigator.clipboard.writeText(shareResult.url); }}
+          className="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">Copy</button>
+        <button onClick={() => setShareResult(null)}
+          className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+      </div>
+    )}
     </div>
   )
 }

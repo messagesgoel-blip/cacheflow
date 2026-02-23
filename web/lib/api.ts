@@ -66,3 +66,16 @@ export async function downloadFile(id: string, filename: string, token: string) 
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
+
+export async function createShareLink(id: string, token: string, password?: string, expiryHours?: number) {
+  const body: Record<string, unknown> = {}
+  if (password) body.password = password
+  if (expiryHours) body.expires_in_hours = expiryHours
+  const res = await apiFetch(`/files/${id}/share`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }, token)
+  if (!res.ok) throw new Error(`Share failed: ${res.status}`)
+  return res.json()
+}
