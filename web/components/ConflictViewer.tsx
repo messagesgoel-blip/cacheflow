@@ -42,7 +42,7 @@ export default function ConflictViewer({ conflict, onResolve, resolving }: Confl
   }
 
   const handleButtonClick = (resolution: 'keep_local' | 'keep_cloud' | 'keep_both') => {
-    alert('Coming soon')
+    onResolve(resolution)
   }
 
   return (

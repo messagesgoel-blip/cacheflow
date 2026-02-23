@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import ConflictViewer from '@/components/ConflictViewer'
+import { resolveConflict } from '@/lib/api'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
 
@@ -83,13 +84,29 @@ export default function ConflictDetailPage() {
     }
   }
 
-  function handleResolve(resolution: 'keep_local' | 'keep_cloud' | 'keep_both') {
+  async function handleResolve(resolution: 'keep_local' | 'keep_cloud' | 'keep_both') {
+    if (!token || !conflict) return
+
     setResolving(resolution)
-    // Will be wired up in Day 65
-    setTimeout(() => {
-      alert('Resolution coming soon')
+    setError(null)
+
+    try {
+      await resolveConflict(conflict.id, resolution, token)
+
+      // Update conflict status
+      setConflict({
+        ...conflict,
+        status: 'resolved'
+      })
+
+      // Show success message
+      alert('Conflict resolved ✓')
+    } catch (err: any) {
+      setError(err.message || 'Failed to resolve conflict')
+      alert('Error: ' + err.message)
+    } finally {
       setResolving(null)
-    }, 500)
+    }
   }
 
   function handleLogout() {
