@@ -126,18 +126,24 @@ router.get('/:id/download', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const { path: newPath, status, synced_at, hash } = req.body;
   try {
+    // Fetch old path BEFORE update for disk rename
+    const existing = await pool.query(
+      `SELECT path FROM files WHERE id=$1 AND user_id=$2 AND tenant_id=$3 AND status != 'deleted'`,
+      [req.params.id, req.user.id, req.user.tenant_id]
+    );
+    if (!existing.rows.length) return res.status(404).json({ error: 'file not found' });
+    const oldPath = existing.rows[0].path;
     // DB update first — if it fails (e.g. unique constraint), disk is never touched
     const result = await pool.query(
       `UPDATE files SET
          path=COALESCE($1,path), status=COALESCE($2,status),
          synced_at=COALESCE($3::timestamptz,synced_at), hash=COALESCE($4,hash)
-       WHERE id=$5 AND user_id=$6 AND status != 'deleted' RETURNING *, (SELECT path FROM files WHERE id=$5) AS old_path`,
-      [newPath, status, synced_at, hash, req.params.id, req.user.id]
+       WHERE id=$5 AND user_id=$6 AND tenant_id=$7 AND status != 'deleted' RETURNING *`,
+      [newPath, status, synced_at, hash, req.params.id, req.user.id, req.user.tenant_id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'file not found' });
     // Disk rename only after DB succeeds
     if (newPath) {
-      const oldPath = result.rows[0].old_path;
       const oldDisk = path.join(LOCAL_PATH, req.user.id, oldPath);
       const newDisk = path.join(LOCAL_PATH, req.user.id, newPath);
       if (fs.existsSync(oldDisk)) {
