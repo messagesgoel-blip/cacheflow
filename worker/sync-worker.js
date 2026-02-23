@@ -163,16 +163,36 @@ async function stage5Verify(fileId, filePath, rel, uploadDuration) {
   }
 
   // SFTP remotes do not support remote hashing - pipe remote file through sha256 locally
+  // Validate remote path exists and capture exit code + stderr before trusting the hash
   const remotePath = `${RCLONE_DEST}/${rel}`;
-  const remoteHash = await new Promise((resolve) => {
+  const { remoteHash, remoteErr } = await new Promise((resolve) => {
     const { spawn } = require("child_process");
     const rclone = spawn("rclone", ["cat", remotePath, "--log-level", "ERROR", "--contimeout", "10s", "--timeout", "30s"]);
     const hash = require("crypto").createHash("sha256");
-    rclone.stdout.on("data", d => hash.update(d));
-    rclone.stdout.on("end", () => resolve(hash.digest("hex")));
-    rclone.on("error", () => resolve(null));
-    rclone.stderr.on("data", () => {});
+    let stderrBuf = "";
+    let stdoutBytes = 0;
+    rclone.stdout.on("data", d => { hash.update(d); stdoutBytes += d.length; });
+    rclone.stderr.on("data", d => { stderrBuf += d.toString(); });
+    rclone.on("error", err => resolve({ remoteHash: null, remoteErr: err.message }));
+    rclone.on("close", code => {
+      if (code !== 0 || stdoutBytes === 0) {
+        const reason = stderrBuf.trim() || `rclone cat exited with code ${code} — remote path may not exist`;
+        resolve({ remoteHash: null, remoteErr: reason });
+      } else {
+        resolve({ remoteHash: hash.digest("hex"), remoteErr: null });
+      }
+    });
   });
+
+  // If rclone cat failed, record the reason and bail — do not treat as hash mismatch
+  if (remoteErr !== null) {
+    await pool.query(
+      `UPDATE files SET status='error', error_reason=$2, retry_count=retry_count+1, updated_at=NOW() WHERE id=$1`,
+      [fileId, `stage5 rclone cat failed: ${remoteErr.slice(0, 200)}`]
+    );
+    logTransition(fileId, rel, 'syncing', 'error', `rclone cat failed: ${remoteErr.slice(0, 80)}`, Date.now() - t0);
+    return false;
+  }
 
   const duration = Date.now() - t0;
 
@@ -193,36 +213,32 @@ async function stage5Verify(fileId, filePath, rel, uploadDuration) {
 }
 
 // ── Stage 6: Resolve — detect conflict (both modified within 300s) ────────────
-async function stage6Resolve(fileId, rel) {
-  // Only flag conflict if file was previously synced and re-modified within CONFLICT_WINDOW_MS
+async function stage6Resolve(fileId, rel, filePath) {
   const row = await pool.query(
-    `SELECT updated_at, user_id, synced_at FROM files WHERE id=$1`, [fileId]
+    `SELECT user_id, synced_at FROM files WHERE id=$1`, [fileId]
   );
   if (!row.rows.length) return;
-
   const { user_id, synced_at } = row.rows[0];
-
-  // No previous sync = no conflict possible
   if (!synced_at) return;
 
+  // Conflict only if file was modified ON DISK after it was last synced
+  let mtime = 0;
+  try { mtime = require('fs').statSync(filePath).mtimeMs; } catch { return; }
   const syncedMs = new Date(synced_at).getTime();
-  const ageMs = Date.now() - syncedMs;
+  if (mtime <= syncedMs + 2000) return; // file not modified since sync, no conflict
 
-  // Only conflict if re-modified within 300s of last sync
-  if (ageMs < CONFLICT_WINDOW_MS) {
-    const existing = await pool.query(
-      `SELECT id FROM conflicts WHERE file_path=$1 AND resolved=false LIMIT 1`,
-      [rel]
-    );
-    if (existing.rows.length > 0) return;
+  const existing = await pool.query(
+    `SELECT id FROM conflicts WHERE file_path=$1 AND resolved=false LIMIT 1`, [rel]
+  );
+  if (existing.rows.length > 0) return;
 
-    await pool.query(`UPDATE files SET status='conflict', updated_at=NOW() WHERE id=$1`, [fileId]);
-    await pool.query(
-      `INSERT INTO conflicts (user_id, file_path, detected_at) VALUES ($1, $2, NOW())`,
-      [user_id, rel]
-    );
-    log('info', 'status transition', { file_id: fileId, file: rel, status_before: 'synced', status_after: 'conflict', reason: `re-modified ${Math.round(ageMs/1000)}s after sync`, duration_ms: 0 });
-  }
+  await pool.query(`UPDATE files SET status='conflict', updated_at=NOW() WHERE id=$1`, [fileId]);
+  await pool.query(
+    `INSERT INTO conflicts (user_id, file_path, detected_at) VALUES ($1, $2, NOW())`,
+    [user_id, rel]
+  );
+  log('info', 'status transition', { file_id: fileId, file: rel, status_before: 'synced',
+    status_after: 'conflict', reason: `mtime ${Math.round((mtime-syncedMs)/1000)}s after sync`, duration_ms: 0 });
 }
 
 // ── Retry with exponential backoff ────────────────────────────────────────────
@@ -279,7 +295,7 @@ async function runPipeline(filePath) {
   inFlight.add(filePath);
   try {
     const success = await runWithRetry(fileId, filePath, rel);
-    if (success) await stage6Resolve(fileId, rel);
+    if (success) await stage6Resolve(fileId, rel, filePath);
   } finally {
     inFlight.delete(filePath);
   }

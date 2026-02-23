@@ -7,11 +7,32 @@ const authRoutes   = require('./routes/auth');
 const filesRoutes  = require('./routes/files');
 const sharesRoutes = require('./routes/shares');
 
+const rateLimit = require('express-rate-limit');
 const app = express();
+
+// Basic throttle — shift-left from Days 79-80 to protect infra_cacheflow during QA
+// 200 req/min per IP globally; upload endpoint stricter at 30/min
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.ip === '127.0.0.1' || req.ip === '::1',
+  message: { error: 'Too many requests, please slow down.' }
+});
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.ip === '127.0.0.1' || req.ip === '::1',
+  message: { error: 'Upload rate limit exceeded.' }
+});
 
 app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
+app.use(globalLimiter);
 app.use(express.json());
 
 // Health — checks DB connectivity
@@ -25,6 +46,7 @@ app.get('/health', async (req, res) => {
 });
 
 app.use('/auth',   authRoutes);
+app.use('/files/upload', uploadLimiter);
 app.use('/files',  filesRoutes);
 app.use('/share',  sharesRoutes);   // public share-link downloads + creation
 

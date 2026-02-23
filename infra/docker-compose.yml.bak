@@ -1,0 +1,56 @@
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: cacheflow-postgres
+    environment:
+      POSTGRES_DB: cacheflow
+      POSTGRES_USER: cacheflow
+      POSTGRES_PASSWORD: changeme123
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - /srv/docker/apps/cacheflow/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cacheflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - cacheflow
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '1.0'
+
+  api:
+    build:
+      context: /opt/docker/apps/cacheflow/api
+      dockerfile: Dockerfile
+    container_name: cacheflow-api
+    env_file: /opt/docker/apps/cacheflow/.env
+    ports:
+      - "127.0.0.1:8100:8100"
+    volumes:
+      - /mnt/local:/mnt/local
+      - /mnt/pool:/mnt/pool:ro
+      - /srv/docker/apps/cacheflow/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - cacheflow
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '1.0'
+
+networks:
+  cacheflow:
+    driver: bridge
+
+volumes: {}

@@ -104,27 +104,25 @@ router.get('/:id/download', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const { path: newPath, status, synced_at, hash } = req.body;
   try {
+    // DB update first — if it fails (e.g. unique constraint), disk is never touched
+    const result = await pool.query(
+      `UPDATE files SET
+         path=COALESCE($1,path), status=COALESCE($2,status),
+         synced_at=COALESCE($3::timestamptz,synced_at), hash=COALESCE($4,hash)
+       WHERE id=$5 AND user_id=$6 AND status != 'deleted' RETURNING *, (SELECT path FROM files WHERE id=$5) AS old_path`,
+      [newPath, status, synced_at, hash, req.params.id, req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'file not found' });
+    // Disk rename only after DB succeeds
     if (newPath) {
-      const cur = await pool.query(
-        `SELECT path FROM files WHERE id=$1 AND user_id=$2 AND status != 'deleted'`,
-        [req.params.id, req.user.id]
-      );
-      if (!cur.rows.length) return res.status(404).json({ error: 'file not found' });
-      const oldDisk = path.join(LOCAL_PATH, req.user.id, cur.rows[0].path);
+      const oldPath = result.rows[0].old_path;
+      const oldDisk = path.join(LOCAL_PATH, req.user.id, oldPath);
       const newDisk = path.join(LOCAL_PATH, req.user.id, newPath);
       if (fs.existsSync(oldDisk)) {
         fs.mkdirSync(path.dirname(newDisk), { recursive: true });
         fs.renameSync(oldDisk, newDisk);
       }
     }
-    const result = await pool.query(
-      `UPDATE files SET
-         path=COALESCE($1,path), status=COALESCE($2,status),
-         synced_at=COALESCE($3::timestamptz,synced_at), hash=COALESCE($4,hash)
-       WHERE id=$5 AND user_id=$6 AND status != 'deleted' RETURNING *`,
-      [newPath, status, synced_at, hash, req.params.id, req.user.id]
-    );
-    if (!result.rows.length) return res.status(404).json({ error: 'file not found' });
     res.json({ file: result.rows[0] });
   } catch (err) {
     console.error('[files] patch:', err.message);
@@ -180,8 +178,6 @@ router.post('/:id/share', async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // POST /files/:id/retry — reset error → pending so worker picks it up again
 router.post('/:id/retry', async (req, res) => {
   try {
@@ -200,3 +196,5 @@ router.post('/:id/retry', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+module.exports = router;
