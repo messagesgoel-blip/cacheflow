@@ -12,6 +12,8 @@ const app = express();
 
 // Basic throttle — shift-left from Days 79-80 to protect infra_cacheflow during QA
 // 200 req/min per IP globally; upload endpoint stricter at 30/min
+app.set('trust proxy', 1); // Trust Cloudflare/proxy X-Forwarded-For headers
+
 const globalLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 200,

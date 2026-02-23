@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /workspace/cacheflow log --oneline -5)",
+      "Bash(netstat -ltnp 2>/dev/null || echo \"netstat not available\")",
+      "Bash(docker compose -f /workspace/cacheflow/infra/docker-compose.yml ps 2>/dev/null || echo \"docker compose not available\")",
+      "Bash(git -C /workspace/cacheflow add -A)",
+      "Bash(git -C /workspace/cacheflow commit -m \"Day 52 smoke test: StatusBadge component\")",
+      "Bash(git -C /workspace/cacheflow push origin main)",
+      "Bash(git config --global user.email \"claude@anthropic.com\" && git config --global user.name \"Claude Code\")",
+      "Bash(git -C /workspace/cacheflow remote -v)",
+      "Bash(ssh-keyscan github.com 2>/dev/null | head -1)",
+      "Bash(ssh -o StrictHostKeyChecking=no -T git@github.com 2>&1 | head -5)",
+      "Bash(git -C /workspace/cacheflow log --oneline -10)",
+      "Bash(ss -ltnp)",
+      "Bash(docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml ps)",
+      "Bash(git config --global --add safe.directory /workspace/cacheflow)",
+      "Bash(git add web/app/page.tsx web/lib/api.ts)",
+      "Bash(git commit -m \"$\\(cat <<'EOF'\nDay 52: file upload in web UI\n\n- Added upload button and file input to main page\n- POST to http://cacheflow-api:8100/files/upload with Authorization Bearer header\n- Show quota exceeded message on 413 response\n- Refresh file list and usage bar after successful upload\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push origin main)",
+      "Bash(find /workspace/cacheflow -type f -name \"*.py\" | xargs -I {} basename {} | sort)",
+      "Bash(cd /workspace/cacheflow-qa && bash -n qa_day30_34.sh)",
+      "Bash(cd /workspace/cacheflow-qa && /bin/bash -n qa.sh 2>&1)",
+      "Bash(/bin/bash -n /workspace/cacheflow-qa/qa_day59_80.sh 2>&1)",
+      "Bash(/bin/bash -n /workspace/cacheflow-qa/qa_master_next_run.sh 2>&1)"
+    ]
+  }
+}

@@ -99,6 +99,16 @@ async function stage1Detect(filePath) {
     return null;
   }
 
+  // Validate user exists in DB — skip orphan folders from deleted/old test users
+  const userCheck = await pool.query(
+    `SELECT 1 FROM users WHERE id = $1 LIMIT 1`,
+    [userId]
+  );
+  if (!userCheck.rows.length) {
+    log('info', 'stage1: skipping — unknown user folder (not in DB)', { userId, file: rel });
+    return null;
+  }
+
   // Look for existing file record by user + path
   const existing = await pool.query(
     `SELECT id, status, updated_at FROM files WHERE user_id = $1 AND path = $2 LIMIT 1`,

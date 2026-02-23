@@ -157,7 +157,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const result = await pool.query(
       `UPDATE files SET status='deleted' WHERE id=$1 AND user_id=$2 AND tenant_id=$3 AND status != 'deleted' RETURNING id, size_bytes`,
-      [req.params.id, req.user.id]
+      [req.params.id, req.user.id, req.user.tenant_id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'file not found' });
     // Decrement used_bytes on soft delete
