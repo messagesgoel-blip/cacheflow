@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import TransferChart from '@/components/TransferChart'
+import StorageChart from '@/components/StorageChart'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
 
@@ -186,12 +187,7 @@ export default function AdminPage() {
             <TransferChart token={token!} />
           </div>
           <div className="bg-white rounded-xl shadow p-6">
-            <div className="h-64 flex items-center justify-center text-gray-400">
-              <div className="text-center">
-                <div className="text-4xl mb-2">📊</div>
-                <p>Storage chart coming soon</p>
-              </div>
-            </div>
+            <StorageChart token={token!} />
           </div>
         </div>
 
