@@ -348,3 +348,15 @@ process.on('SIGTERM', () => {
   watcher.close().then(() => process.exit(0));
 });
 // PATCH APPLIED INLINE — see stage1Detect for uuid guard
+
+// ── Exports for unit testing ──────────────────────────────────────────────────
+if (process.env.NODE_ENV === 'test') {
+  module.exports = {
+    stage1Detect,
+    stage2Prioritise,
+    stage3Check,
+    stage4Upload,
+    stage5Verify,
+    stage6Resolve
+  };
+}
