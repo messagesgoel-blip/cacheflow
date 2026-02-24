@@ -39,7 +39,7 @@ function fileHash(filePath) {
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, path, size_bytes, hash, status, error_reason, retry_count, last_modified, synced_at, created_at
+      `SELECT id, path, size_bytes, hash, status, error_reason, retry_count, last_modified, synced_at, created_at, immutable_until
        FROM files WHERE user_id=$1 AND tenant_id=$2 AND status != 'deleted' ORDER BY created_at DESC`,
       [req.user.id, req.user.tenant_id]
     );
