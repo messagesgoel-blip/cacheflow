@@ -7,6 +7,7 @@ const authRoutes     = require('./routes/auth');
 const filesRoutes    = require('./routes/files');
 const sharesRoutes   = require('./routes/shares');
 const conflictsRoutes = require('./routes/conflicts');
+const searchRoutes = require('./routes/search');
 const { checkApiKey } = require('./services/embeddings');
 
 const rateLimit = require('express-rate-limit');
@@ -57,5 +58,6 @@ app.use('/files/upload', uploadLimiter);
 app.use('/files',  filesRoutes);
 app.use('/share',  sharesRoutes);   // public share-link downloads + creation
 app.use('/conflicts', conflictsRoutes);
+app.use('/search', searchRoutes);
 
 module.exports = app;
