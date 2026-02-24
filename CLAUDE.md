@@ -106,3 +106,9 @@ Restore immediately after test:
   `git -C /workspace/cacheflow log --oneline -5`
   `ss -ltnp`
   `docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml ps`
+
+## EMBEDDING MODEL DECISION (Day 71)
+- Use **Anthropic embeddings API** (`text-embedding-3-small` equivalent via claude-3)
+- Rationale: Already have ANTHROPIC_API_KEY in .env, no extra infra, 1536-dim vectors
+- Same vendor as AI merge (consistency)
+- Check current Anthropic docs for embeddings endpoint

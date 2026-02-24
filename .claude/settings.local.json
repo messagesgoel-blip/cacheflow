@@ -55,7 +55,31 @@
       "Bash(bash -n /workspace/cacheflow-qa/qa_suite_optimized.sh && echo \"Syntax OK\")",
       "Bash(docker compose -f /workspace/cacheflow/infra/docker-compose.yml --env-file /workspace/cacheflow/.env up -d web)",
       "Bash(docker restart cacheflow-web)",
-      "Bash(git add -A && git commit -m \"fix\\(T-09,T-102\\): restart policy + TransferChart component\")"
+      "Bash(git add -A && git commit -m \"fix\\(T-09,T-102\\): restart policy + TransferChart component\")",
+      "Bash(cd /workspace/cacheflow-qa && ./harness/run.sh canonical 2>&1 | tail -50)",
+      "Bash(cd /workspace/cacheflow-qa && ./qa_canonical_54.sh init && ./qa_canonical_54.sh all 2>&1 | tail -100)",
+      "Bash(docker ps --filter \"name=cacheflow-api\" --format \"table {{.Names}}\\\\t{{.Status}}\")",
+      "Bash(docker ps -a --filter \"name=cacheflow-api\" --format \"table {{.Names}}\\\\t{{.Status}}\")",
+      "Bash(docker compose -f /workspace/cacheflow/infra/docker-compose.yml build api 2>&1 | tail -20)",
+      "Bash(cd /workspace/cacheflow/infra && docker compose build api 2>&1 | tail -30)",
+      "Bash(docker compose up -d api)",
+      "Bash(cd /workspace/cacheflow-qa && ./qa_canonical_54.sh all 2>&1 | tail -150)",
+      "Bash(curl -s http://127.0.0.1:8100/health 2>&1 || echo \"CURL failed\")",
+      "Bash(docker exec cacheflow-api curl -s http://localhost:8100/health 2>&1)",
+      "Bash(docker start cacheflow-api && sleep 5 && docker ps --filter \"name=cacheflow-api\" --format \"table {{.Names}}\\\\t{{.Status}}\")",
+      "Bash(docker start cacheflow-api && sleep 10 && docker logs cacheflow-api 2>&1 | tail -30)",
+      "Bash(docker kill cacheflow-api && sleep 10 && docker ps -a --filter \"name=cacheflow-api\" --format \"table {{.Names}}\\\\t{{.Status}}\")",
+      "Bash(docker rm cacheflow-api && docker compose up -d api)",
+      "Bash(sleep 5 && docker kill cacheflow-api && sleep 10 && docker ps --filter \"name=cacheflow-api\" --format \"table {{.Names}}\\\\t{{.Status}}\")",
+      "Bash(docker compose up -d --force-recreate api)",
+      "Bash(docker start cacheflow-api && sleep 3 && docker ps -a --filter \"name=cacheflow-api\" --format \"table {{.Names}}\\\\t{{.Status}}\\\\t{{.RunningFor}}\")",
+      "Bash(cd /workspace/cacheflow-qa && ./qa_canonical_54.sh all 2>&1 | grep -A5 -B5 \"T-09\")",
+      "Bash(docker version)",
+      "Bash(./qa_day53_70.sh all 2>&1 | tail -100)",
+      "Bash(./qa_day53_70.sh init && ./qa_day53_70.sh all 2>&1 | tail -100)",
+      "Bash(apt-get update && apt-get install -y python3 2>&1 | tail -20)",
+      "Bash(docker exec cacheflow-postgres psql -U cacheflow -d cacheflow -c \"CREATE EXTENSION IF NOT EXISTS vector;\" 2>&1)",
+      "Bash(cd /workspace/cacheflow/infra && docker compose up -d --force-recreate postgres)"
     ]
   }
 }

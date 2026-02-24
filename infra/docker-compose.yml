@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17
     container_name: cacheflow-postgres
     environment:
       POSTGRES_DB: cacheflow
@@ -15,7 +15,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    restart: always
     networks:
       - cacheflow
     deploy:
@@ -30,7 +30,7 @@ services:
     command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
     ports:
       - "127.0.0.1:6380:6379"
-    restart: unless-stopped
+    restart: always
     networks:
       - cacheflow
     deploy:
@@ -46,11 +46,11 @@ services:
 
   api:
     build:
-      context: /opt/docker/apps/cacheflow/api
+      context: ../api
       dockerfile: Dockerfile
     container_name: cacheflow-api
     user: "1002:1002"
-    env_file: /opt/docker/apps/cacheflow/.env
+    env_file: ../.env
     ports:
       - "127.0.0.1:8100:8100"
     volumes:
@@ -62,7 +62,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
     networks:
       - cacheflow
     deploy:
@@ -73,10 +73,10 @@ services:
 
   worker:
     build:
-      context: /opt/docker/apps/cacheflow/worker
+      context: ../worker
       dockerfile: Dockerfile
     container_name: cacheflow-worker
-    env_file: /opt/docker/apps/cacheflow/.env
+    env_file: ../.env
     command: ["sh", "-c", "mkdir -p /app/logs && node sync-worker.js"]
     volumes:
       - /mnt/local:/mnt/local
@@ -86,7 +86,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
     networks:
       - cacheflow
     deploy:
@@ -100,7 +100,7 @@ services:
       context: ../web
       dockerfile: Dockerfile
     container_name: cacheflow-web
-    restart: unless-stopped
+    restart: always
     ports:
       - "127.0.0.1:3010:3010"
     environment:
