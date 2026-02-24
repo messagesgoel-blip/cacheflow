@@ -7,9 +7,13 @@ const authRoutes     = require('./routes/auth');
 const filesRoutes    = require('./routes/files');
 const sharesRoutes   = require('./routes/shares');
 const conflictsRoutes = require('./routes/conflicts');
+const { checkApiKey } = require('./services/embeddings');
 
 const rateLimit = require('express-rate-limit');
 const app = express();
+
+// Check ANTHROPIC_API_KEY on startup
+checkApiKey();
 
 // Basic throttle — shift-left from Days 79-80 to protect infra_cacheflow during QA
 // 200 req/min per IP globally; upload endpoint stricter at 30/min
