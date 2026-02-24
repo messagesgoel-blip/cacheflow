@@ -36,7 +36,21 @@
       "Bash(git -C /workspace/cacheflow commit -m \"Day 64: conflict detail page with side-by-side viewer\")",
       "Bash(git -C /workspace/cacheflow commit -m \"Day 65: conflict resolution buttons wired to API\")",
       "Bash(git -C /workspace/cacheflow commit -m \"Day 66: admin dashboard page with stat cards\")",
-      "Bash(git -C /workspace/cacheflow commit -m \"Day 67: admin user management page\")"
+      "Bash(git -C /workspace/cacheflow commit -m \"Day 67: admin user management page\")",
+      "Bash(git add worker/sync-worker.js web/app/page.tsx infra/docker-compose.yml)",
+      "Bash(git commit -m \"$\\(cat <<'EOF'\nFix T-81: add stale syncing file recovery to worker\n\n- Add STALE_SYNcing_TIMEOUT_MS constant \\(5 min\\)\n- Add recoverStaleSyncingFiles\\(\\) function to reset stuck files\n- Run recovery on worker startup to prevent files stuck in syncing\n\nAlso include T-86 fix: sort controls already present in page.tsx\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(cd /workspace/cacheflow/worker && npm test 2>&1)",
+      "Bash(cd /workspace/cacheflow/worker && npx jest tests/pipeline.test.js 2>&1)",
+      "Bash(git push)",
+      "Bash(sudo docker ps 2>/dev/null || docker --version 2>/dev/null || echo \"Docker not available\")",
+      "Bash(ls -la /opt/docker/apps/cacheflow/ 2>&1 || mount | grep -i opt)",
+      "Bash(mount | grep -E \"cacheflow|workspace|opt\")",
+      "Bash(cd /workspace/cacheflow-qa && CF_ROOT=/workspace/cacheflow ./qa_day53_70.sh t86 2>&1)",
+      "Bash(cd /workspace/cacheflow-qa && CF_ROOT=/workspace/cacheflow RUN_DIR=/tmp/test-run ./qa_day53_70.sh init 2>&1)",
+      "Bash(which python || which python3 || apt list --installed 2>/dev/null | grep python)",
+      "Bash(git add CLAUDE.md && git commit -m \"$\\(cat <<'EOF'\nUpdate CLAUDE.md with correct volume mount info\n\nClarify that /opt/docker/apps/cacheflow doesn't exist in this container,\nonly on the server. Document the actual mounts and SSH access.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(ssh -o StrictHostKeyChecking=no sanjay@100.91.230.7 \"hostname\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -o IdentityFile=~/.ssh/id_ed25519 node@100.91.230.7 \"hostname\" 2>&1 || ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 100.91.230.7 \"hostname\" 2>&1)"
     ]
   }
 }
