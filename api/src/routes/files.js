@@ -168,6 +168,22 @@ router.patch('/:id', async (req, res) => {
 // DELETE /files/:id (soft)
 router.delete('/:id', async (req, res) => {
   try {
+    // Check if file is immutable
+    const immutabilityCheck = await pool.query(
+      `SELECT immutable_until FROM files WHERE id=$1 AND user_id=$2 AND tenant_id=$3`,
+      [req.params.id, req.user.id, req.user.tenant_id]
+    );
+
+    if (immutabilityCheck.rows.length > 0 && immutabilityCheck.rows[0].immutable_until) {
+      const immutableUntil = new Date(immutabilityCheck.rows[0].immutable_until);
+      if (immutableUntil > new Date()) {
+        return res.status(403).json({
+          error: 'File is immutable',
+          immutable_until: immutableUntil.toISOString()
+        });
+      }
+    }
+
     const result = await pool.query(
       `UPDATE files SET status='deleted' WHERE id=$1 AND user_id=$2 AND tenant_id=$3 AND status != 'deleted' RETURNING id, size_bytes`,
       [req.params.id, req.user.id, req.user.tenant_id]
