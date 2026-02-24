@@ -51,6 +51,7 @@ const MIN_AGE_MS  = parseInt(process.env.SYNC_MIN_AGE_MS || '1200000'); // 20 mi
 const CONFLICT_WINDOW_MS = 300000; // 5 min
 const RETRY_DELAYS = [4000, 8000, 16000, 32000, 60000];
 const STALE_SYNcing_TIMEOUT_MS = 300000; // 5 min - recover files stuck in syncing
+const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_FILES || '3'); // Process max 3 files at once
 const EXCLUDE     = [/\.tmp$/, /\.lock$/, /\.part$/, /~$/];
 
 // Priority: 1=highest. docs > images > video > other
@@ -376,9 +377,39 @@ async function runWithRetry(fileId, filePath, rel, userId) {
 // ── Pipeline entry point ──────────────────────────────────────────────────────
 const inFlight = new Set();
 const debounceMap = new Map();
+const queue = [];
+let activeCount = 0;
+
+async function processQueue() {
+  while (queue.length > 0 && activeCount < MAX_CONCURRENT) {
+    const { filePath, resolve, reject } = queue.shift();
+    activeCount++;
+
+    (async () => {
+      try {
+        await runPipelineInternal(filePath);
+        resolve();
+      } catch (err) {
+        reject(err);
+      } finally {
+        activeCount--;
+        processQueue(); // Process next item in queue
+      }
+    })();
+  }
+}
 
 async function runPipeline(filePath) {
   if (shouldSkip(filePath)) return;
+  if (inFlight.has(filePath)) return;
+
+  return new Promise((resolve, reject) => {
+    queue.push({ filePath, resolve, reject });
+    processQueue();
+  });
+}
+
+async function runPipelineInternal(filePath) {
   if (inFlight.has(filePath)) return;
 
   const ctx = await stage1Detect(filePath);
