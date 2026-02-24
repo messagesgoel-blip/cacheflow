@@ -109,6 +109,7 @@ export default function Home() {
     return f.status === activeFilter
   })
 
+  const sortOrder = sortBy
   const sortedFiles = [...filteredFiles].sort((a, b) => {
     switch (sortBy) {
       case 'name-asc':
@@ -189,9 +190,13 @@ export default function Home() {
             ))}
           </div>
           <div className="mb-4 flex items-center gap-3">
+            <label htmlFor="sortBy" className="text-sm text-gray-600">Sort</label>
             <select
+              id="sortBy"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
+              aria-label="sort order"
+              data-sort-order={sortOrder}
               className="border rounded px-2 py-1 text-sm"
             >
               <option value="date-newest">Date (newest)</option>

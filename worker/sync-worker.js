@@ -50,6 +50,7 @@ const RCLONE_DEST = process.env.RCLONE_DEST    || 'goels:/srv/storage/remotes/pa
 const MIN_AGE_MS  = parseInt(process.env.SYNC_MIN_AGE_MS || '1200000'); // 20 min
 const CONFLICT_WINDOW_MS = 300000; // 5 min
 const RETRY_DELAYS = [4000, 8000, 16000, 32000, 60000];
+const STALE_SYNcing_TIMEOUT_MS = 300000; // 5 min - recover files stuck in syncing
 const EXCLUDE     = [/\.tmp$/, /\.lock$/, /\.part$/, /~$/];
 
 // Priority: 1=highest. docs > images > video > other
@@ -89,13 +90,18 @@ function sha256(fp) {
 
 // ── Stage 1: Detect — find or create DB record ────────────────────────────────
 async function stage1Detect(filePath) {
-  const rel = path.relative(WATCH_DIR, filePath);
+  const relUser = path.relative(WATCH_DIR, filePath);
   // Extract user_id from first path segment: /mnt/local/<user_id>/filename
-  const parts = rel.split(path.sep);
+  const parts = relUser.split(path.sep);
   const userId = parts[0];
+  const rel = parts.slice(1).join(path.sep);
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!UUID_RE.test(userId)) {
-    log('info', 'stage1: skipping — not in user subfolder', { file: rel });
+    log('info', 'stage1: skipping — not in user subfolder', { file: relUser });
+    return null;
+  }
+  if (!rel) {
+    log('info', 'stage1: skipping — empty relative path', { file: relUser, userId });
     return null;
   }
 
@@ -105,7 +111,7 @@ async function stage1Detect(filePath) {
     [userId]
   );
   if (!userCheck.rows.length) {
-    log('info', 'stage1: skipping — unknown user folder (not in DB)', { userId, file: rel });
+    log('info', 'stage1: skipping — unknown user folder (not in DB)', { userId, file: relUser });
     return null;
   }
 
@@ -149,7 +155,7 @@ async function stage1Detect(filePath) {
   );
   const fileId = inserted.rows[0].id;
   log('info', 'stage1: new file detected', { file: rel, file_id: fileId });
-  return { fileId, userId, rel, isNew: true, prevStatus: null };
+  return { fileId, userId, rel, relUser, isNew: true, prevStatus: null };
 }
 
 // ── Stage 2: Prioritise — return numeric priority for queue sorting ────────────
@@ -169,22 +175,27 @@ async function stage3Check(fileId, userId, rel) {
     return false;
   }
   const { quota_bytes, used_bytes, size_bytes } = result.rows[0];
-  if (used_bytes + size_bytes > quota_bytes) {
+  const usedBytes = parseInt(used_bytes, 10) || 0;
+  const quotaBytes = parseInt(quota_bytes, 10) || 0;
+  const sizeBytes = parseInt(size_bytes, 10) || 0;
+  if (usedBytes + sizeBytes >= quotaBytes) {
     await pool.query(
       `UPDATE files SET status='error', error_reason=$2, updated_at=NOW() WHERE id=$1`,
-      [fileId, `quota exceeded: ${used_bytes + size_bytes} > ${quota_bytes}`]
+      [fileId, `quota exceeded: ${usedBytes + sizeBytes} >= ${quotaBytes}`]
     );
-    log('warn', 'stage3: quota exceeded', { file: rel, used_bytes, quota_bytes, size_bytes });
+    log('warn', 'stage3: quota exceeded', { file: rel, used_bytes: usedBytes, quota_bytes: quotaBytes, size_bytes: sizeBytes });
     return false;
   }
-  log('info', 'stage3: quota check passed', { file: rel, used_bytes, quota_bytes });
+  log('info', 'stage3: quota check passed', { file: rel, used_bytes: usedBytes, quota_bytes: quotaBytes });
   return true;
 }
 
 // ── Stage 4: Upload — rclone copy, transition pending→syncing→done ────────────
-async function stage4Upload(fileId, filePath, rel) {
+async function stage4Upload(fileId, filePath, rel, userId) {
   const t0 = Date.now();
-  const dest = `${RCLONE_DEST}/${path.dirname(rel)}`;
+  const relDir = path.dirname(rel);
+  const remoteBase = `${RCLONE_DEST}/${userId}`;
+  const dest = relDir === '.' ? remoteBase : `${remoteBase}/${relDir}`;
 
 
   // Daily transfer limit check BEFORE marking syncing (size_bytes parsed as int)
@@ -236,7 +247,7 @@ async function stage4Upload(fileId, filePath, rel) {
 }
 
 // ── Stage 5: Verify — SHA-256 local vs remote ─────────────────────────────────
-async function stage5Verify(fileId, filePath, rel, uploadDuration) {
+async function stage5Verify(fileId, filePath, rel, userId, uploadDuration) {
   const t0 = Date.now();
 
   // Get local hash
@@ -252,7 +263,7 @@ async function stage5Verify(fileId, filePath, rel, uploadDuration) {
 
   // SFTP remotes do not support remote hashing - pipe remote file through sha256 locally
   // Validate remote path exists and capture exit code + stderr before trusting the hash
-  const remotePath = `${RCLONE_DEST}/${rel}`;
+  const remotePath = `${RCLONE_DEST}/${userId}/${rel}`;
   const { remoteHash, remoteErr } = await new Promise((resolve) => {
     const { spawn } = require("child_process");
     const rclone = spawn("rclone", ["cat", remotePath, "--log-level", "ERROR", "--contimeout", "10s", "--timeout", "30s"]);
@@ -330,7 +341,7 @@ async function stage6Resolve(fileId, rel, filePath) {
 }
 
 // ── Retry with exponential backoff ────────────────────────────────────────────
-async function runWithRetry(fileId, filePath, rel) {
+async function runWithRetry(fileId, filePath, rel, userId) {
   for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
     if (attempt > 0) {
       const delay = RETRY_DELAYS[attempt - 1];
@@ -341,7 +352,7 @@ async function runWithRetry(fileId, filePath, rel) {
       await pool.query(`UPDATE files SET status='pending', updated_at=NOW() WHERE id=$1`, [fileId]);
     }
 
-    const upload = await stage4Upload(fileId, filePath, rel);
+    const upload = await stage4Upload(fileId, filePath, rel, userId);
     if (!upload.ok) {
       // Store error reason
       await pool.query(
@@ -353,7 +364,7 @@ async function runWithRetry(fileId, filePath, rel) {
       return false;
     }
 
-    const verified = await stage5Verify(fileId, filePath, rel, upload.duration);
+    const verified = await stage5Verify(fileId, filePath, rel, userId, upload.duration);
     if (verified) return true;
 
     if (attempt < RETRY_DELAYS.length) continue;
@@ -382,7 +393,7 @@ async function runPipeline(filePath) {
 
   inFlight.add(filePath);
   try {
-    const success = await runWithRetry(fileId, filePath, rel);
+    const success = await runWithRetry(fileId, filePath, rel, userId);
     if (success) await stage6Resolve(fileId, rel, filePath);
   } finally {
     inFlight.delete(filePath);
@@ -417,6 +428,27 @@ pool.query('SELECT NOW()').then(r =>
 ).catch(e =>
   log('error', 'db connection failed', { err: e.message })
 );
+
+// ── Recovery: Reset stale syncing files on startup ───────────────────────────────
+async function recoverStaleSyncingFiles() {
+  const staleThreshold = new Date(Date.now() - STALE_SYNcing_TIMEOUT_MS);
+  const result = await pool.query(
+    `UPDATE files SET status='pending', error_reason='recovered from stale syncing', updated_at=NOW()
+     WHERE status='syncing' AND updated_at < $1
+     RETURNING id, path`,
+    [staleThreshold]
+  );
+  if (result.rows.length > 0) {
+    log('info', 'recovered stale syncing files', { count: result.rows.length, files: result.rows.map(r => r.path) });
+  }
+}
+
+// Run recovery on startup
+recoverStaleSyncingFiles().then(() => {
+  log('info', 'stale file recovery completed');
+}).catch(err => {
+  log('error', 'stale file recovery failed', { err: err.message });
+});
 
 const watcher = chokidar.watch(WATCH_DIR, {
   ignoreInitial:  false,
