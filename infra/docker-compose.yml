@@ -65,11 +65,7 @@ services:
     restart: always
     networks:
       - cacheflow
-    deploy:
-      resources:
-        limits:
-          memory: 512m
-          cpus: '1.0'
+    mem_limit: 1g
 
   worker:
     build:
