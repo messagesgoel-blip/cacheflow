@@ -50,7 +50,12 @@
       "Bash(which python || which python3 || apt list --installed 2>/dev/null | grep python)",
       "Bash(git add CLAUDE.md && git commit -m \"$\\(cat <<'EOF'\nUpdate CLAUDE.md with correct volume mount info\n\nClarify that /opt/docker/apps/cacheflow doesn't exist in this container,\nonly on the server. Document the actual mounts and SSH access.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(ssh -o StrictHostKeyChecking=no sanjay@100.91.230.7 \"hostname\")",
-      "Bash(ssh -o StrictHostKeyChecking=no -o IdentityFile=~/.ssh/id_ed25519 node@100.91.230.7 \"hostname\" 2>&1 || ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 100.91.230.7 \"hostname\" 2>&1)"
+      "Bash(ssh -o StrictHostKeyChecking=no -o IdentityFile=~/.ssh/id_ed25519 node@100.91.230.7 \"hostname\" 2>&1 || ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 100.91.230.7 \"hostname\" 2>&1)",
+      "Bash(chmod +x /workspace/cacheflow-qa/qa_suite_optimized.sh)",
+      "Bash(bash -n /workspace/cacheflow-qa/qa_suite_optimized.sh && echo \"Syntax OK\")",
+      "Bash(docker compose -f /workspace/cacheflow/infra/docker-compose.yml --env-file /workspace/cacheflow/.env up -d web)",
+      "Bash(docker restart cacheflow-web)",
+      "Bash(git add -A && git commit -m \"fix\\(T-09,T-102\\): restart policy + TransferChart component\")"
     ]
   }
 }

@@ -1,68 +1,86 @@
 # CacheFlow — Claude Code Rules
 
 ## Identity
-- Project root: /opt/docker/apps/cacheflow/ (on SERVER, not accessible here)
-- This container: Claude Code runtime (node uid=1000)
-- Server: OCI ARM64, Ubuntu 24 at hostname (see ~/.ssh/known_hosts)
-- Server files owned by: sanjay uid=1002 gid=1002
-- All Docker app containers run as 1002:1002
+- Project root (SERVER): `/opt/docker/apps/cacheflow/`
+- This container: `claude-code-web` (Tier B)
+  - Runs as **root** (uid=0) via compose `user: "0:0"`
+  - Has **/var/run/docker.sock** mounted → can control host Docker daemon
+  - Has **Docker CLI + docker compose plugin** installed (docker compose works)
+- Server: OCI ARM64, Ubuntu 24, hostname per SSH config
+- Server primary owner: `sanjay` (uid=1002 gid=1002)
+
+## Critical Reality (Tier B)
+This container has near-root control of the host via the Docker socket.
+- It **CAN** build/pull/push/restart containers on the host
+- It **CAN** read/write mounted host paths
+- It is reversible: remove `/var/run/docker.sock` mount + drop `user: "0:0"`
 
 ## VOLUME MOUNTS (this container)
 | Container Path | Host Path | Purpose |
 |----------------|-----------|---------|
-| /workspace/cacheflow | /srv/docker/apps/claude-code/workspace | Local git clone |
-| /workspace/cacheflow-qa | /home/sanjay/cacheflow-qa | QA test harness |
-| /workspace/cacheflow/worker/sync-worker.js | (same) | Worker source (git-synced) |
-| /workspace/cacheflow/web/app/page.tsx | (same) | Web app source (git-synced) |
+| `/workspace` | `/srv/docker/apps/claude-code/workspace` | scratch workspace |
+| `/workspace/cacheflow` | `/opt/docker/apps/cacheflow` | **LIVE server repo** (preferred) |
+| `/workspace/cacheflow-qa` | `/home/sanjay/cacheflow-qa` | QA harness |
+| `/mnt` | `/mnt` | shared mount points |
+| `/home/node/.claude` | `/srv/docker/apps/claude-code/claude-home` | Claude state |
+| `/home/node/.ssh` | `/srv/docker/apps/claude-code/node-ssh` | SSH keys (node path) |
+| `/root/.ssh` | `/srv/docker/apps/claude-code/node-ssh` | SSH keys (root path) |
+| `/var/run/docker.sock` | `/var/run/docker.sock` | host Docker control |
 
-**IMPORTANT**: /opt/docker/apps/cacheflow does NOT exist in this container. It only exists on the server.
-- Use /workspace/cacheflow for all file editing
-- After git push, SERVER must pull/rebuild
-- Docker is NOT available in this container
+## LITELLM / CLAUDE GATEWAY
+- Inside docker network (proxy): `http://litellm-proxy:4000`
+- Host has localhost publish for LiteLLM: `http://127.0.0.1:4000` (typically returns 401 without key; expected)
 
-## SSH ACCESS
-- SSH key available at ~/.ssh/id_ed25519
-- Can SSH to server if needed: `ssh <hostname>`
-- Useful for remote debugging or triggering builds
+## GIT SAFETY (required)
+Because the repo is mounted and ownership differs, Git may block with “dubious ownership”.
+Always ensure these are set inside the container:
+- `git config --global --add safe.directory /workspace/cacheflow`
+- `git config --global --add safe.directory /workspace/cacheflow-qa`
+
+(These should be applied automatically at container start; if they regress, re-run them.)
 
 ## PORT REACHABILITY NOTE
-- You CANNOT curl http://127.0.0.1:{port} from inside this container — that is normal
-- Verify ports are listening on the HOST by checking git log and docker ps output instead
-- Do NOT fail a day milestone just because curl to 8100/3010 returns 000
+- From inside this container, `127.0.0.1:{port}` refers to the **container**, not the host.
+- Prefer:
+  - Docker-level checks: `docker ps`, `docker compose ps`, container health
+  - Network checks by service name on `proxy` network (e.g., `litellm-proxy:4000`)
+  - Host port checks via `ss -ltnp` (run on host or via docker exec into host tools if available)
 
 ## NEVER DO THESE
-- NEVER write files to /tmp — cleared on reboot and between sessions
-- NEVER try to access /opt/docker/apps/cacheflow — it doesn't exist here
-- NEVER assume docker is available — it's on the server only
-- NEVER run docker compose run — always docker compose up -d
-- NEVER assume a port is free — always ss -ltnp first
+- NEVER assume a port is free — always `ss -ltnp` first
+- NEVER do giant rewrites — prefer small patch scripts
 - NEVER mark a day done without passing the verification checklist below
+- NEVER run destructive Docker commands without listing targets first (e.g., `docker system prune`)
 
 ## ALWAYS DO THESE
-- Write files to /workspace/cacheflow/{service}/ (git clone)
-- git add -A && git commit && git push after changes
-- After push, trigger server build: ssh to server and run docker compose build
+- Work in `/workspace/cacheflow` (LIVE server repo mount)
+- Make changes as small diffs; prefer automated patch scripts
+- `git add -A && git commit && git push` after changes
+- Use Docker safely:
+  - `docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml ...`
+  - Prefer `up -d` over `run`
 - rclone copy never rclone sync
 - parseInt() on all PostgreSQL BIGINT columns — pg driver returns strings
 - Atomic Redis INCRBY/DECRBY — never GET then SET for counters
-- Prefer small Python patch scripts over large file rewrites
-- docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml (on SERVER)
 
 ## VERIFICATION CHECKLIST — must pass before marking any day done
 
-### In this container (pre-push):
-1. git log --oneline -1            → commit exists
-2. git push                        → successful
-3. grep -c 'pattern' /workspace/cacheflow/{file} → verify code
+### In this container (pre-deploy / pre-push):
+1. `git -C /workspace/cacheflow log --oneline -1`
+2. `git -C /workspace/cacheflow status -sb`
+3. `npm/test/lint checks` as applicable for the patch
+4. Grep-level verification: `grep -n 'pattern' /workspace/cacheflow/{file}`
 
-### On server (post-push):
-1. ssh to server
-2. git pull
-3. docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml build {service}
-4. docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml up -d {service}
-5. ss -ltnp | grep {port}        → LISTEN
-6. docker compose ps | grep {svc} → Up
-7. curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:{port} → 200
+### Deploy on host (can be executed FROM THIS CONTAINER via docker.sock):
+1. `git -C /workspace/cacheflow pull --ff-only` (or ensure you’re on correct commit)
+2. Build:
+   - `docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml build {service}`
+3. Deploy:
+   - `docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml up -d {service}`
+4. Verify:
+   - `docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml ps | grep {service}`
+   - `ss -ltnp | grep {port}`  (host-side check)
+   - `docker logs --tail 120 {container}` for smoke sanity
 
 ## PORT MAP — do not conflict
 - 8100  → cacheflow-api
@@ -75,17 +93,16 @@
 
 ## SYNC_MIN_AGE_MS
 Default: 1200000ms (20 min). Test override:
-  echo "SYNC_MIN_AGE_MS=5000" >> .env
+  `echo "SYNC_MIN_AGE_MS=5000" >> .env`
 Restore immediately after test:
-  sed -i '/^SYNC_MIN_AGE_MS=5000/d' .env && docker compose up -d worker
+  `sed -i '/^SYNC_MIN_AGE_MS=5000/d' .env && docker compose up -d worker`
 
 ## GIT
-- Remote: github.com:messagesgoel-blip/cacheflow.git
-- Branch: main
-- Commit format: "Day N: description"
-- Git is the handoff between Claude.ai (planning) and Claude Code CLI (execution)
+- Remote: `github.com:messagesgoel-blip/cacheflow.git`
+- Branch: `main`
+- Commit format: `Day N: description`
 
 ## SESSION START RITUAL — run these 3 commands first, every time
-  git log --oneline -5
-  ss -ltnp
-  docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml ps
+  `git -C /workspace/cacheflow log --oneline -5`
+  `ss -ltnp`
+  `docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml ps`

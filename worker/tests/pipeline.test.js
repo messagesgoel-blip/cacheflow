@@ -3,6 +3,16 @@
 // ── Mocks must be declared before requires ────────────────────────────────────
 jest.mock('dotenv', () => ({ config: jest.fn() }));
 
+// Mock redis client used for transfer quota
+jest.mock('ioredis', () => {
+  return jest.fn().mockImplementation(() => ({
+    incrby: jest.fn().mockResolvedValue(0),
+    expire: jest.fn().mockResolvedValue(1),
+    decrby: jest.fn().mockResolvedValue(0),
+    on: jest.fn()
+  }));
+});
+
 // Mock pg Pool
 const mockQuery = jest.fn().mockResolvedValue({ rows: [{ now: new Date() }] });
 jest.mock('pg', () => ({
@@ -45,7 +55,7 @@ const worker = require('../sync-worker');
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const UUID_A = '04ff14a8-59b9-4791-88c2-8488911aafeb';
 const FILE_A = `/mnt/local/${UUID_A}/test.txt`;
-const REL_A  = `${UUID_A}/test.txt`;
+const REL_A  = 'test.txt';
 const FILE_ID = 'aaaaaaaa-0000-0000-0000-000000000001';
 
 beforeEach(() => {
@@ -62,9 +72,11 @@ describe('stage1Detect', () => {
   });
 
   test('skips files already syncing', async () => {
-    mockQuery.mockResolvedValueOnce({
-      rows: [{ id: FILE_ID, status: 'syncing', synced_at: null, updated_at: new Date() }]
-    });
+    mockQuery
+      .mockResolvedValueOnce({ rows: [{ id: UUID_A }] }) // user check
+      .mockResolvedValueOnce({
+        rows: [{ id: FILE_ID, status: 'syncing', synced_at: null, updated_at: new Date() }]
+      });
     const result = await worker.stage1Detect(FILE_A);
     expect(result).toBeNull();
   });
@@ -72,24 +84,30 @@ describe('stage1Detect', () => {
   test('skips synced files not modified since sync', async () => {
     const syncedAt = new Date(Date.now() - 60000); // synced 60s ago
     mockStatSync.mockReturnValue({ mtimeMs: syncedAt.getTime() - 1000, size: 100 });
-    mockQuery.mockResolvedValueOnce({
-      rows: [{ id: FILE_ID, status: 'synced', synced_at: syncedAt, updated_at: new Date() }]
-    });
+    mockQuery
+      .mockResolvedValueOnce({ rows: [{ id: UUID_A }] }) // user check
+      .mockResolvedValueOnce({
+        rows: [{ id: FILE_ID, status: 'synced', synced_at: syncedAt, updated_at: new Date() }]
+      });
     const result = await worker.stage1Detect(FILE_A);
     expect(result).toBeNull();
   });
 
   test('returns context for existing file in error state', async () => {
-    mockQuery.mockResolvedValueOnce({
-      rows: [{ id: FILE_ID, status: 'error', synced_at: null, updated_at: new Date() }]
-    });
+    mockQuery
+      .mockResolvedValueOnce({ rows: [{ id: UUID_A }] }) // user check
+      .mockResolvedValueOnce({
+        rows: [{ id: FILE_ID, status: 'error', synced_at: null, updated_at: new Date() }]
+      });
     const result = await worker.stage1Detect(FILE_A);
     expect(result).toMatchObject({ fileId: FILE_ID, userId: UUID_A, rel: REL_A, isNew: false });
   });
 
   test('inserts new file as pending and returns context', async () => {
-    // No existing record
-    mockQuery.mockResolvedValueOnce({ rows: [] });
+    // User exists, no existing record
+    mockQuery
+      .mockResolvedValueOnce({ rows: [{ id: UUID_A }] })
+      .mockResolvedValueOnce({ rows: [] });
     // sha256 read stream mock
     const EventEmitter = require('events');
     const stream = new EventEmitter();
@@ -135,6 +153,9 @@ describe('stage2Prioritise', () => {
 // ── Stage 3: Check ────────────────────────────────────────────────────────────
 describe('stage3Check', () => {
   test('always returns true (placeholder)', async () => {
+    mockQuery.mockResolvedValueOnce({
+      rows: [{ quota_bytes: 1000, used_bytes: 100, size_bytes: 100 }]
+    });
     const result = await worker.stage3Check(FILE_ID, UUID_A, REL_A);
     expect(result).toBe(true);
   });
@@ -143,20 +164,20 @@ describe('stage3Check', () => {
 // ── Stage 4: Upload ───────────────────────────────────────────────────────────
 describe('stage4Upload', () => {
   test('returns ok:true on successful rclone copy', async () => {
-    mockQuery.mockResolvedValue({ rows: [] }); // status update
+    mockQuery.mockResolvedValue({ rows: [{ user_id: UUID_A, size_bytes: 100 }] });
     mockExecFile.mockImplementation((_cmd, _args, cb) => cb(null, '', ''));
 
-    const result = await worker.stage4Upload(FILE_ID, FILE_A, REL_A);
+    const result = await worker.stage4Upload(FILE_ID, FILE_A, REL_A, UUID_A);
     expect(result.ok).toBe(true);
   });
 
   test('returns ok:false with error on rclone failure', async () => {
-    mockQuery.mockResolvedValue({ rows: [] });
+    mockQuery.mockResolvedValue({ rows: [{ user_id: UUID_A, size_bytes: 100 }] });
     mockExecFile.mockImplementation((_cmd, _args, cb) =>
       cb(new Error('connection failed'), '', 'SFTP error: connection refused')
     );
 
-    const result = await worker.stage4Upload(FILE_ID, FILE_A, REL_A);
+    const result = await worker.stage4Upload(FILE_ID, FILE_A, REL_A, UUID_A);
     expect(result.ok).toBe(false);
     expect(result.err).toContain('SFTP error');
   });
@@ -195,7 +216,7 @@ describe('stage5Verify', () => {
     mockRcloneCat({ data: 'hello' });
     mockQuery.mockResolvedValue({ rows: [] });
 
-    const result = await worker.stage5Verify(FILE_ID, FILE_A, REL_A, 100);
+    const result = await worker.stage5Verify(FILE_ID, FILE_A, REL_A, UUID_A, 100);
     expect(result).toBe(true);
     expect(mockQuery).toHaveBeenCalledWith(
       expect.stringContaining("status='synced'"),
@@ -208,7 +229,7 @@ describe('stage5Verify', () => {
     mockRcloneCat({ data: 'different content' });
     mockQuery.mockResolvedValue({ rows: [] });
 
-    const result = await worker.stage5Verify(FILE_ID, FILE_A, REL_A, 100);
+    const result = await worker.stage5Verify(FILE_ID, FILE_A, REL_A, UUID_A, 100);
     expect(result).toBe(false);
     expect(mockQuery).toHaveBeenCalledWith(
       expect.stringContaining("status='error'"),
@@ -221,7 +242,7 @@ describe('stage5Verify', () => {
     mockRcloneCat({ exitCode: 1, data: '', stderr: 'directory not found' });
     mockQuery.mockResolvedValue({ rows: [] });
 
-    const result = await worker.stage5Verify(FILE_ID, FILE_A, REL_A, 100);
+    const result = await worker.stage5Verify(FILE_ID, FILE_A, REL_A, UUID_A, 100);
     expect(result).toBe(false);
     expect(mockQuery).toHaveBeenCalledWith(
       expect.stringContaining("status='error'"),

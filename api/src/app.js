@@ -3,9 +3,10 @@ const cors         = require('cors');
 const helmet       = require('helmet');
 const morgan       = require('morgan');
 const pool         = require('./db/client');
-const authRoutes   = require('./routes/auth');
-const filesRoutes  = require('./routes/files');
-const sharesRoutes = require('./routes/shares');
+const authRoutes     = require('./routes/auth');
+const filesRoutes    = require('./routes/files');
+const sharesRoutes   = require('./routes/shares');
+const conflictsRoutes = require('./routes/conflicts');
 
 const rateLimit = require('express-rate-limit');
 const app = express();
@@ -51,5 +52,6 @@ app.use('/auth',   authRoutes);
 app.use('/files/upload', uploadLimiter);
 app.use('/files',  filesRoutes);
 app.use('/share',  sharesRoutes);   // public share-link downloads + creation
+app.use('/conflicts', conflictsRoutes);
 
 module.exports = app;
