@@ -20,10 +20,16 @@ interface FileTableProps {
   token: string
   onRefresh: () => void
   viewMode: 'list' | 'grid'
+  currentPath?: string
+  onMoveFile?: (fileId: string, newPath: string) => Promise<void>
 }
 
-function stripUUID(path: string) {
-  return path.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//, '')
+// Remove UUID prefix if present (for backward compatibility during migration)
+function cleanPath(path: string) {
+  // Remove UUID prefix if it exists
+  const withoutUUID = path.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//, '')
+  // Return just the filename (last segment)
+  return withoutUUID.split('/').pop() || withoutUUID
 }
 
 function formatBytes(b: string | number) {
@@ -34,15 +40,18 @@ function formatBytes(b: string | number) {
   return (n / 1024 / 1024 / 1024).toFixed(2) + ' GB'
 }
 
-export default function FileTable({ files, token, onRefresh, viewMode }: FileTableProps) {
+export default function FileTable({ files, token, onRefresh, viewMode, currentPath = '/', onMoveFile }: FileTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const [renameLoading, setRenameLoading] = useState(false)
   const [renameError, setRenameError] = useState<string | null>(null)
   const [shareDialog, setShareDialog] = useState<{ id: string; filename: string } | null>(null)
+  const [movingId, setMovingId] = useState<string | null>(null)
+  const [movePath, setMovePath] = useState('')
+  const [moveLoading, setMoveLoading] = useState(false)
 
   async function handleDownload(id: string, filepath: string) {
-    const filename = stripUUID(filepath)
+    const filename = cleanPath(filepath)
     await downloadFile(id, filename, token).catch(e => alert('Download failed: ' + e.message))
   }
 
@@ -59,7 +68,7 @@ export default function FileTable({ files, token, onRefresh, viewMode }: FileTab
 
   function startRename(id: string, filepath: string) {
     setEditingId(id)
-    setRenameValue(stripUUID(filepath))
+    setRenameValue(cleanPath(filepath))
     setRenameError(null)
   }
 
@@ -83,37 +92,102 @@ export default function FileTable({ files, token, onRefresh, viewMode }: FileTab
     }
   }
 
+  async function handleMove(id: string) {
+    if (!onMoveFile) return
+
+    setMoveLoading(true)
+    try {
+      await onMoveFile(id, movePath)
+      setMovingId(null)
+      setMovePath('')
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : 'Move failed')
+    } finally {
+      setMoveLoading(false)
+    }
+  }
+
+  function startMove(id: string, currentPath: string) {
+    setMovingId(id)
+    setMovePath(currentPath)
+  }
+
+  function cancelMove() {
+    setMovingId(null)
+    setMovePath('')
+  }
+
   if (!files.length) return (
     <p className="text-gray-400 text-center py-8">No files yet. Upload a file to get started.</p>
   )
 
-  const renderActions = (f: FileItem) => (
-    <div className="flex flex-wrap gap-1">
-      {f.status === 'synced' && (
-        <button onClick={() => handleDownload(f.id, f.path)}
-          className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100">Download</button>
-      )}
-      {(f.status === 'synced' || f.status === 'pending') && (
-        <button onClick={() => setShareDialog({ id: f.id, filename: stripUUID(f.path) })}
-          className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100">Share</button>
-      )}
-      <button onClick={() => startRename(f.id, f.path)}
-        className="text-xs bg-yellow-50 text-yellow-600 px-2 py-1 rounded hover:bg-yellow-100">Rename</button>
-      {f.status === 'error' && (
-        <button onClick={() => handleRetry(f.id)}
-          className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100">Retry</button>
-      )}
-      {f.immutable_until && new Date(f.immutable_until) > new Date() ? (
-        <span className="text-xs text-gray-400 flex items-center gap-1" title={`Locked until ${f.immutable_until}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Locked
+  const renderActions = (f: FileItem) => {
+    if (movingId === f.id) return (
+      <div className="flex flex-col gap-1">
+        <div className="flex gap-1">
+          <input
+            type="text"
+            value={movePath}
+            onChange={e => setMovePath(e.target.value)}
+            placeholder="New path"
+            className="border rounded px-2 py-0.5 text-xs font-mono w-48 focus:outline-none focus:ring-1 focus:ring-blue-400"
+            onKeyDown={e => {
+              if (e.key === 'Enter') handleMove(f.id)
+              if (e.key === 'Escape') cancelMove()
+            }}
+          />
+          <button
+            onClick={() => handleMove(f.id)}
+            disabled={moveLoading}
+            className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded disabled:opacity-50"
+          >
+            {moveLoading ? '...' : 'Move'}
+          </button>
+          <button
+            onClick={cancelMove}
+            className="text-xs text-gray-400 hover:text-gray-600 px-1"
+          >
+            X
+          </button>
+        </div>
+        <span className="text-xs text-gray-500">
+          Current: {cleanPath(f.path)}
         </span>
-      ) : (
-        <button onClick={() => handleDelete(f.id)}
-          className="text-xs bg-red-50 text-red-500 px-2 py-1 rounded hover:bg-red-100">Delete</button>
-      )}
-    </div>
-  )
+      </div>
+    )
+
+    return (
+      <div className="flex flex-wrap gap-1">
+        {f.status === 'synced' && (
+          <button onClick={() => handleDownload(f.id, f.path)}
+            className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100">Download</button>
+        )}
+        {(f.status === 'synced' || f.status === 'pending') && (
+          <button onClick={() => setShareDialog({ id: f.id, filename: cleanPath(f.path) })}
+            className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100">Share</button>
+        )}
+        <button onClick={() => startRename(f.id, f.path)}
+          className="text-xs bg-yellow-50 text-yellow-600 px-2 py-1 rounded hover:bg-yellow-100">Rename</button>
+        {onMoveFile && (
+          <button onClick={() => startMove(f.id, f.path)}
+            className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100">Move</button>
+        )}
+        {f.status === 'error' && (
+          <button onClick={() => handleRetry(f.id)}
+            className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100">Retry</button>
+        )}
+        {f.immutable_until && new Date(f.immutable_until) > new Date() ? (
+          <span className="text-xs text-gray-400 flex items-center gap-1" title={`Locked until ${f.immutable_until}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Locked
+          </span>
+        ) : (
+          <button onClick={() => handleDelete(f.id)}
+            className="text-xs bg-red-50 text-red-500 px-2 py-1 rounded hover:bg-red-100">Delete</button>
+        )}
+      </div>
+    )
+  }
 
   const renderName = (f: FileItem) => {
     if (editingId === f.id) return (
@@ -133,7 +207,7 @@ export default function FileTable({ files, token, onRefresh, viewMode }: FileTab
         {renameError && <span className="text-xs text-red-500">{renameError}</span>}
       </div>
     )
-    return <span className="font-mono text-xs truncate max-w-xs">{stripUUID(f.path)}</span>
+    return <span className="font-mono text-xs truncate max-w-xs">{cleanPath(f.path)}</span>
   }
 
   if (viewMode === 'grid') return (

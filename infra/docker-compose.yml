@@ -83,15 +83,20 @@ services:
     build:
       context: ../web
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://cacheflow-api:8100
     container_name: cacheflow-web
     restart: always
     ports:
-      - "127.0.0.1:3010:3010"
+      - "0.0.0.0:3010:3010"
     environment:
-      - NEXT_PUBLIC_API_URL=http://127.0.0.1:8100
+      - NEXT_PUBLIC_API_URL=http://cacheflow-api:8100
       - PORT=3010
+      - HOSTNAME=0.0.0.0
     depends_on:
       - api
+    networks:
+      - cacheflow
     mem_limit: 512m
 
   webdav:

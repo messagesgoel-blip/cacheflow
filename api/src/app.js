@@ -9,6 +9,7 @@ const sharesRoutes   = require('./routes/shares');
 const conflictsRoutes = require('./routes/conflicts');
 const searchRoutes = require('./routes/search');
 const adminRoutes = require('./routes/admin');
+const storageRoutes = require('./routes/storage');
 const { checkApiKey } = require('./services/embeddings');
 
 const rateLimit = require('express-rate-limit');
@@ -16,6 +17,29 @@ const app = express();
 
 // Check ANTHROPIC_API_KEY on startup
 checkApiKey();
+
+function isPrivateIp(ip = '') {
+  const normalized = ip.replace(/^::ffff:/, '');
+  if (normalized === '127.0.0.1' || normalized === '::1' || normalized === 'localhost') return true;
+  if (/^10\./.test(normalized)) return true;
+  if (/^192\.168\./.test(normalized)) return true;
+  const m = normalized.match(/^172\.(\d+)\./);
+  if (m) {
+    const n = Number(m[1]);
+    if (n >= 16 && n <= 31) return true;
+  }
+  return false;
+}
+
+function requestIsLocal(req) {
+  if (isPrivateIp(req.ip || '')) return true;
+  const fwd = req.headers['x-forwarded-for'];
+  if (typeof fwd === 'string') {
+    const first = fwd.split(',')[0].trim();
+    return isPrivateIp(first);
+  }
+  return false;
+}
 
 // Basic throttle — shift-left from Days 79-80 to protect infra_cacheflow during QA
 // 200 req/min per IP globally; upload endpoint stricter at 30/min
@@ -40,11 +64,12 @@ const uploadLimiter = rateLimit({
 
 // Auth endpoints — stricter: 10 per 15 minutes (brute force protection)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
+  windowMs: Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
+  max: Number(process.env.AUTH_RATE_LIMIT_MAX || 60),
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.ip === '127.0.0.1' || req.ip === '::1',
+  skipSuccessfulRequests: process.env.AUTH_RATE_LIMIT_SKIP_SUCCESS !== 'false',
+  skip: (req) => requestIsLocal(req),
   message: { error: 'Too many auth attempts, please try again later.' }
 });
 
@@ -88,5 +113,6 @@ app.use('/share',  sharesRoutes);   // public share-link downloads + creation
 app.use('/conflicts', conflictsRoutes);
 app.use('/search', searchRoutes);
 app.use('/admin', adminRoutes);
+app.use('/storage', storageRoutes);
 
 module.exports = app;

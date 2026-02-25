@@ -6,7 +6,7 @@ services:
     container_name: cacheflow-web-tailnet
     restart: always
     ports:
-      - "127.0.0.1:3011:3010"
+      - "0.0.0.0:3011:3010"
     environment:
       - NEXT_PUBLIC_API_URL=https://instance-20260108-1933.tailc5ab10.ts.net:8443
       - PORT=3010

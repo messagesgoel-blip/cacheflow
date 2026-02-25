@@ -1,14 +1,36 @@
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
 
-export async function apiFetch(path: string, opts: RequestInit = {}, token?: string) {
+export async function apiFetch(path: string, opts: RequestInit = {}, token?: string, timeoutMs = 15000) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(opts.headers as Record<string, string> || {}) }
   if (token) headers['Authorization'] = `Bearer ${token}`
-  const res = await fetch(`${API}${path}`, { ...opts, headers })
-  return res
+  const externalSignal = opts.signal
+  const controller = externalSignal ? null : new AbortController()
+  const timeout = controller ? setTimeout(() => controller.abort(), timeoutMs) : null
+
+  try {
+    const res = await fetch(`${API}${path}`, {
+      ...opts,
+      headers,
+      signal: externalSignal || controller?.signal
+    })
+    return res
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.')
+    }
+    throw err
+  } finally {
+    if (timeout) clearTimeout(timeout)
+  }
 }
 
 export async function login(email: string, password: string) {
-  const res = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
+  const res = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }, undefined, 8000)
+  return res.json()
+}
+
+export async function register(email: string, password: string) {
+  const res = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) }, undefined, 8000)
   return res.json()
 }
 
@@ -32,11 +54,12 @@ export async function retryFile(id: string, token: string) {
   return res.json()
 }
 
-export async function uploadFile(file: File, token: string) {
+export async function uploadFile(file: File, token: string, path?: string) {
   const formData = new FormData()
   formData.append('file', file)
 
-  const res = await fetch(`${API}/files/upload`, {
+  const url = path ? `/files/upload?path=${encodeURIComponent(path)}` : '/files/upload'
+  const res = await fetch(`${API}${url}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -104,5 +127,51 @@ export async function resolveConflict(id: string, resolution: 'keep_local' | 'ke
     throw new Error(`Resolution failed: ${res.status}`)
   }
 
+  return res.json()
+}
+
+// File browser APIs
+export async function browseFiles(path: string, token: string) {
+  const res = await apiFetch(`/files/browse?path=${encodeURIComponent(path)}`, {}, token)
+  if (!res.ok) throw new Error(`Browse failed: ${res.status}`)
+  return res.json()
+}
+
+export async function createFolder(path: string, token: string) {
+  const res = await apiFetch('/files/folders', {
+    method: 'POST',
+    body: JSON.stringify({ path })
+  }, token)
+  if (!res.ok) throw new Error(`Create folder failed: ${res.status}`)
+  return res.json()
+}
+
+export async function deleteFolder(path: string, token: string) {
+  const res = await apiFetch(`/files/folders?path=${encodeURIComponent(path)}`, {
+    method: 'DELETE'
+  }, token)
+  if (!res.ok) throw new Error(`Delete folder failed: ${res.status}`)
+  return res.json()
+}
+
+export async function moveFile(fileId: string, newPath: string, token: string) {
+  const res = await apiFetch(`/files/${fileId}/move`, {
+    method: 'PATCH',
+    body: JSON.stringify({ newPath })
+  }, token)
+  if (!res.ok) throw new Error(`Move file failed: ${res.status}`)
+  return res.json()
+}
+
+// Storage APIs
+export async function getStorageLocations(token: string) {
+  const res = await apiFetch('/storage/locations', {}, token)
+  if (!res.ok) throw new Error(`Get storage locations failed: ${res.status}`)
+  return res.json()
+}
+
+export async function getStorageUsage(token: string) {
+  const res = await apiFetch('/storage/usage', {}, token)
+  if (!res.ok) throw new Error(`Get storage usage failed: ${res.status}`)
   return res.json()
 }

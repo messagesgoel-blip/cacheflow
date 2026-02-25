@@ -1,24 +1,31 @@
 'use client'
 import { useState } from 'react'
-import { login } from '@/lib/api'
+import { login, register } from '@/lib/api'
 
 export default function Login({ onLogin }: { onLogin: (token: string, email: string) => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState<'login' | 'register'>('login')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const data = await login(email, password)
-    if (data.token) {
-      onLogin(data.token, email)
-    } else {
-      setError(data.error || 'Login failed')
+    try {
+      const action = mode === 'login' ? login : register
+      const data = await action(email, password)
+      if (data.token) {
+        onLogin(data.token, data?.user?.email || email)
+      } else {
+        setError(data.error || (mode === 'login' ? 'Login failed' : 'Registration failed'))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Request failed')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
@@ -33,7 +40,20 @@ export default function Login({ onLogin }: { onLogin: (token: string, email: str
             type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</button>
+            type="submit" disabled={loading}>
+            {loading ? (mode === 'login' ? 'Signing in...' : 'Creating account...') : (mode === 'login' ? 'Sign In' : 'Register')}
+          </button>
+          <button
+            className="w-full border border-blue-200 text-blue-700 py-2 rounded-lg hover:bg-blue-50 disabled:opacity-50"
+            type="button"
+            disabled={loading}
+            onClick={() => {
+              setError('')
+              setMode(mode === 'login' ? 'register' : 'login')
+            }}
+          >
+            {mode === 'login' ? 'Need an account? Register' : 'Already have an account? Sign In'}
+          </button>
         </form>
       </div>
     </div>
