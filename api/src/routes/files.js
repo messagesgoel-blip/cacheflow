@@ -334,18 +334,10 @@ router.get('/browse', async (req, res) => {
 
     let allFiles = result.rows;
 
-    // Optional location filter so the UI can browse each storage location independently.
-    if (locationId === 'local-cache' || locationId === 'readonly-pool') {
-      const basePath = locationId === 'local-cache' ? LOCAL_PATH : POOL_PATH;
-      allFiles = allFiles.filter((file) => {
-        if (file.hash === 'folder-marker') return true;
-        const diskPath = path.join(basePath, req.user.id, file.path);
-        return fs.existsSync(diskPath);
-      });
-    } else if (locationId.startsWith('cloud-')) {
-      // Cloud drives currently reflect synced content.
-      allFiles = allFiles.filter((file) => file.status === 'synced');
-    }
+    // NOTE: Location-based filtering by disk existence is too strict -
+    // files may exist in one location but the check fails for others.
+    // For now, show all files regardless of location selection.
+    // TODO: Add location metadata to files table for proper filtering.
 
     // Extract folders and files at the current path level
     const folders = new Set();
