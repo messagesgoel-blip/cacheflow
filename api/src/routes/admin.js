@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../db/client');
 const authMw = require('../middleware/auth');
+const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
 router.use(authMw);
@@ -33,6 +34,9 @@ router.post('/files/:id/lock', requireAdmin, async (req, res) => {
     );
 
     res.json({ immutable_until: immutableUntil });
+
+    // Audit log lock (non-blocking)
+    auditLog(req.user.id, 'lock', 'file', fileId, req, { retention_days }).catch(() => {});
   } catch (err) {
     console.error('[admin] lock error:', err.message);
     res.status(500).json({ error: 'internal server error' });
@@ -51,8 +55,45 @@ router.delete('/files/:id/lock', requireAdmin, async (req, res) => {
     );
 
     res.json({ success: true });
+
+    // Audit log unlock (non-blocking)
+    auditLog(req.user.id, 'unlock', 'file', fileId, req).catch(() => {});
   } catch (err) {
     console.error('[admin] unlock error:', err.message);
+    res.status(500).json({ error: 'internal server error' });
+  }
+});
+
+// GET /admin/audit
+// Returns audit logs (admin only)
+router.get('/audit', requireAdmin, async (req, res) => {
+  const limit = parseInt(req.query.limit || '50', 10);
+  const offset = parseInt(req.query.offset || '0', 10);
+  const userId = req.query.user_id;
+  const action = req.query.action;
+
+  try {
+    let query = 'SELECT * FROM audit_logs WHERE 1=1';
+    const params = [];
+    let paramCount = 1;
+
+    if (userId) {
+      query += ` AND user_id = $${paramCount++}`;
+      params.push(userId);
+    }
+    if (action) {
+      query += ` AND action = $${paramCount++}`;
+      params.push(action);
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT $' + paramCount++ + ' OFFSET $' + paramCount++;
+    params.push(limit, offset);
+
+    const result = await pool.query(query, params);
+
+    res.json({ audit_logs: result.rows, limit, offset });
+  } catch (err) {
+    console.error('[admin] audit:', err.message);
     res.status(500).json({ error: 'internal server error' });
   }
 });

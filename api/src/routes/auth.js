@@ -3,6 +3,7 @@ const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const pool    = require('../db/client');
 const authMw  = require('../middleware/auth');
+const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
 
@@ -51,6 +52,9 @@ router.post('/login', async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
     res.json({ user: { id: user.id, email: user.email }, token });
+
+    // Audit log login (non-blocking)
+    auditLog(user.id, 'login', 'auth', user.id, req).catch(() => {});
   } catch (err) {
     console.error('[auth] login:', err.message);
     res.status(500).json({ error: 'internal server error' });

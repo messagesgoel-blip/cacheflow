@@ -44,9 +44,36 @@ async function checkAndIncrementTransfer(userId, sizeBytes) {
   }
 }
 
+// Get rclone destination based on transfer limits (overflow routing)
+async function getRcloneDest(userId) {
+  const DAILY_LIMIT_BYTES = parseInt(process.env.DAILY_TRANSFER_LIMIT_BYTES || String(750 * 1024 * 1024 * 1024));
+  const OVERFLOW_THRESHOLD = DAILY_LIMIT_BYTES * 0.9; // 90% of limit (675GB)
+
+  try {
+    const key = await getDailyTransferKey(userId);
+    const current = parseInt(await redis.get(key) || '0', 10);
+
+    if (current >= OVERFLOW_THRESHOLD) {
+      log('info', 'overflow routing: primary near limit', {
+        userId,
+        currentBytes: current,
+        threshold: OVERFLOW_THRESHOLD,
+        destination: 'overflow'
+      });
+      return RCLONE_DEST_OVERFLOW;
+    }
+  } catch (err) {
+    // Redis failure - use primary destination
+    log('warn', 'overflow check failed, using primary', { err: err.message });
+  }
+
+  return RCLONE_DEST;
+}
+
 // ── Config ────────────────────────────────────────────────────────────────────
 const WATCH_DIR   = process.env.SYNC_WATCH_DIR || '/mnt/local';
 const RCLONE_DEST = process.env.RCLONE_DEST    || 'goels:/srv/storage/remotes/parul-main/CacheFlow';
+const RCLONE_DEST_OVERFLOW = process.env.RCLONE_DEST_OVERFLOW || 'goels-overflow:/srv/storage/remotes/parul-main/CacheFlow';
 const MIN_AGE_MS  = parseInt(process.env.SYNC_MIN_AGE_MS || '1200000'); // 20 min
 const CONFLICT_WINDOW_MS = 300000; // 5 min
 const RETRY_DELAYS = [4000, 8000, 16000, 32000, 60000];
@@ -197,7 +224,8 @@ async function stage3Check(fileId, userId, rel) {
 async function stage4Upload(fileId, filePath, rel, userId) {
   const t0 = Date.now();
   const relDir = path.dirname(rel);
-  const remoteBase = `${RCLONE_DEST}/${userId}`;
+  const rcloneDest = await getRcloneDest(userId);
+  const remoteBase = `${rcloneDest}/${userId}`;
   const dest = relDir === '.' ? remoteBase : `${remoteBase}/${relDir}`;
 
 

@@ -7,6 +7,7 @@ const bcrypt   = require('bcryptjs');
 const pool     = require('../db/client');
 const authMw   = require('../middleware/auth');
 const { generateEmbeddingForFile } = require('../services/embeddings');
+const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
 router.use(authMw);
@@ -93,10 +94,13 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       `UPDATE users SET used_bytes = used_bytes + $1 WHERE id = $2`,
       [req.file.size, req.user.id]
     );
+    const fileId = result.rows[0].id;
     res.status(201).json({ file: result.rows[0] });
 
+    // Audit log upload (fire-and-forget, non-blocking)
+    auditLog(req.user.id, 'upload', 'file', fileId, req, { size_bytes: req.file.size, path: relativePath }).catch(() => {});
+
     // Fire-and-forget: generate embedding in background
-    const fileId = result.rows[0].id;
     generateEmbeddingForFile(fileId, diskPath, req.file.mimetype).catch(err => {
       console.error('[files] Background embedding failed:', err.message);
     });
@@ -123,6 +127,11 @@ router.get('/:id/download', async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${path.basename(file.path)}"`);
     res.setHeader('Content-Length', file.size_bytes);
     fs.createReadStream(diskPath).pipe(res);
+
+    // Audit log download (non-blocking)
+    res.on('finish', () => {
+      auditLog(req.user.id, 'download', 'file', req.params.id, req, { size_bytes: file.size_bytes }).catch(() => {});
+    });
   } catch (err) {
     console.error('[files] download:', err.message);
     res.status(500).json({ error: 'internal server error' });
@@ -195,6 +204,9 @@ router.delete('/:id', async (req, res) => {
       [result.rows[0].size_bytes, req.user.id]
     );
     res.json({ deleted: true, id: result.rows[0].id });
+
+    // Audit log delete (non-blocking)
+    auditLog(req.user.id, 'delete', 'file', req.params.id, req, { size_bytes: result.rows[0].size_bytes }).catch(() => {});
   } catch (err) {
     console.error('[files] delete:', err.message);
     res.status(500).json({ error: 'internal server error' });
@@ -228,6 +240,9 @@ router.post('/:id/share', async (req, res) => {
       max_downloads: link.max_downloads,
       password_protected: !!password
     });
+
+    // Audit log share (non-blocking)
+    auditLog(req.user.id, 'share', 'file', req.params.id, req, { expires_in_hours, max_downloads, password_protected: !!password }).catch(() => {});
   } catch (err) {
     console.error('[share] create:', err.message);
     res.status(500).json({ error: 'internal server error' });
