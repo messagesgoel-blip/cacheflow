@@ -21,6 +21,29 @@ function parseJsonOrEmpty(value) {
   }
 }
 
+function getFsCapacity(targetPath) {
+  try {
+    if (!fs.existsSync(targetPath) || typeof fs.statfsSync !== 'function') {
+      return { totalBytes: null, usedBytes: null, availableBytes: null };
+    }
+    const stats = fs.statfsSync(targetPath);
+    const blockSize = Number(stats.bsize || stats.frsize || 0);
+    if (!blockSize || !Number.isFinite(blockSize)) {
+      return { totalBytes: null, usedBytes: null, availableBytes: null };
+    }
+    const totalBytes = Number(stats.blocks) * blockSize;
+    const availableBytes = Number(stats.bavail) * blockSize;
+    const usedBytes = Math.max(totalBytes - availableBytes, 0);
+    return {
+      totalBytes: Number.isFinite(totalBytes) ? totalBytes : null,
+      usedBytes: Number.isFinite(usedBytes) ? usedBytes : null,
+      availableBytes: Number.isFinite(availableBytes) ? availableBytes : null,
+    };
+  } catch {
+    return { totalBytes: null, usedBytes: null, availableBytes: null };
+  }
+}
+
 // GET /storage/locations - Get storage locations and usage info
 router.get('/locations', async (req, res) => {
   try {
@@ -91,6 +114,9 @@ router.get('/locations', async (req, res) => {
 
     const syncSummary = syncStats.rows[0];
 
+    const localCapacity = getFsCapacity(LOCAL_PATH);
+    const poolCapacity = getFsCapacity(POOL_PATH);
+
     // Build response
     const locations = [
       {
@@ -103,7 +129,10 @@ router.get('/locations', async (req, res) => {
         status: 'active',
         description: `Primary local storage (${LOCAL_PATH})`,
         color: 'blue',
-        icon: '💾'
+        icon: '💾',
+        totalBytes: localCapacity.totalBytes,
+        usedBytes: localCapacity.usedBytes,
+        availableBytes: localCapacity.availableBytes
       },
       {
         id: 'readonly-pool',
@@ -115,7 +144,10 @@ router.get('/locations', async (req, res) => {
         status: fs.existsSync(POOL_PATH) ? 'active' : 'unavailable',
         description: `Secondary pooled storage (${POOL_PATH})`,
         color: 'green',
-        icon: '📚'
+        icon: '📚',
+        totalBytes: poolCapacity.totalBytes,
+        usedBytes: poolCapacity.usedBytes,
+        availableBytes: poolCapacity.availableBytes
       }
     ];
 
@@ -124,6 +156,11 @@ router.get('/locations', async (req, res) => {
       const parsedConfig = parseJsonOrEmpty(config.config_json);
       const displayName = parsedConfig.displayName || `${config.provider} Cloud`;
       const region = parsedConfig.region || null;
+      const parsedTotal = Number(parsedConfig.totalBytes ?? parsedConfig.quotaTotalBytes);
+      const parsedUsed = Number(parsedConfig.usedBytes ?? parsedConfig.quotaUsedBytes ?? 0);
+      const totalBytes = Number.isFinite(parsedTotal) && parsedTotal > 0 ? parsedTotal : null;
+      const usedBytes = Number.isFinite(parsedUsed) && parsedUsed >= 0 ? parsedUsed : 0;
+      const availableBytes = totalBytes !== null ? Math.max(totalBytes - usedBytes, 0) : null;
       locations.push({
         id: `cloud-${config.id}`,
         name: displayName,
@@ -136,7 +173,11 @@ router.get('/locations', async (req, res) => {
         color: index % 2 === 0 ? 'purple' : 'orange',
         icon: parsedConfig.icon || '☁️',
         configId: config.id,
-        createdAt: config.created_at
+        createdAt: config.created_at,
+        totalSize: usedBytes,
+        totalBytes,
+        usedBytes,
+        availableBytes
       });
     });
 

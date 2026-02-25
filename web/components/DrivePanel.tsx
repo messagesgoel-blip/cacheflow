@@ -9,6 +9,7 @@ interface StorageLocation {
   type: 'local' | 'pool' | 'cloud'
   path?: string
   provider?: string
+  region?: string | null
   totalSize: number
   fileCount: number
   status: 'active' | 'inactive' | 'unavailable'
@@ -17,6 +18,9 @@ interface StorageLocation {
   icon: string
   isActive?: boolean
   configId?: string
+  totalBytes?: number | null
+  usedBytes?: number | null
+  availableBytes?: number | null
 }
 
 interface StorageSummary {
@@ -57,12 +61,23 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'locations' | 'usage'>('locations')
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
 
   useEffect(() => {
     if (token) {
       loadStorageData()
     }
   }, [token])
+
+  useEffect(() => {
+    if (!locations.length) {
+      setSelectedLocationId(null)
+      return
+    }
+    if (!selectedLocationId || !locations.some(location => location.id === selectedLocationId)) {
+      setSelectedLocationId(locations[0].id)
+    }
+  }, [locations, selectedLocationId])
 
   async function loadStorageData() {
     if (!token) return
@@ -87,11 +102,12 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     }
   }
 
-  function formatBytes(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B'
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-    if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB'
-    return (bytes / 1024 / 1024 / 1024).toFixed(2) + ' GB'
+  function formatBytes(bytes?: number | null): string {
+    if (bytes === null || bytes === undefined || !Number.isFinite(bytes)) return '—'
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
   }
 
   function getStatusColor(status: string): string {
@@ -112,6 +128,31 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     }
   }
 
+  function locationMetrics(location: StorageLocation) {
+    const used = Number.isFinite(location.usedBytes as number)
+      ? Number(location.usedBytes)
+      : Number(location.totalSize || 0)
+
+    const total = Number.isFinite(location.totalBytes as number) && Number(location.totalBytes) > 0
+      ? Number(location.totalBytes)
+      : null
+
+    const available = Number.isFinite(location.availableBytes as number)
+      ? Number(location.availableBytes)
+      : (total !== null ? Math.max(total - used, 0) : null)
+
+    const usedPct = total !== null && total > 0 ? Math.min((used / total) * 100, 100) : null
+
+    return { used, total, available, usedPct }
+  }
+
+  function safePct(part: number, total: number): string {
+    if (!total) return '0.0%'
+    return `${((part / total) * 100).toFixed(1)}%`
+  }
+
+  const selectedLocation = locations.find(location => location.id === selectedLocationId) || null
+
   if (loading && locations.length === 0) {
     return (
       <div className="border rounded-lg bg-white p-4">
@@ -128,7 +169,6 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
 
   return (
     <div className="border rounded-lg bg-white">
-      {/* Header */}
       <div className="p-3 border-b flex justify-between items-center">
         <h3 className="font-medium text-gray-700">Storage</h3>
         <button
@@ -139,18 +179,16 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
           className="text-xs text-blue-600 hover:text-blue-800"
           disabled={loading}
         >
-          {loading ? '↻' : '↻'}
+          ↻
         </button>
       </div>
 
-      {/* Error display */}
       {error && (
         <div className="p-3 border-b bg-red-50 text-red-700 text-sm">
           {error}
         </div>
       )}
 
-      {/* Tabs */}
       <div className="border-b">
         <div className="flex">
           <button
@@ -168,11 +206,9 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-3">
         {activeTab === 'locations' ? (
           <div className="space-y-3">
-            {/* Summary stats */}
             {summary && (
               <div className="grid grid-cols-2 gap-2 mb-4">
                 <div className="bg-gray-50 p-2 rounded text-center">
@@ -186,52 +222,85 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
               </div>
             )}
 
-            {/* Locations list */}
-            {locations.map(location => (
-              <div
-                key={location.id}
-                className={`p-3 border rounded-lg hover:shadow-sm cursor-pointer ${onLocationSelect ? 'hover:border-blue-300' : ''}`}
-                onClick={() => onLocationSelect?.(location.id)}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{location.icon}</span>
-                    <div>
-                      <div className="font-medium text-sm">{location.name}</div>
-                      <div className="text-xs text-gray-500">{location.description}</div>
+            {locations.map(location => {
+              const metrics = locationMetrics(location)
+              return (
+                <button
+                  type="button"
+                  key={location.id}
+                  className={`w-full text-left p-3 border rounded-lg hover:shadow-sm hover:border-blue-300 ${selectedLocationId === location.id ? 'border-blue-400 ring-1 ring-blue-200' : ''}`}
+                  onClick={() => {
+                    setSelectedLocationId(location.id)
+                    onLocationSelect?.(location.id)
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{location.icon}</span>
+                      <div>
+                        <div className="font-medium text-sm">{location.name}</div>
+                        <div className="text-xs text-gray-500">{location.description}</div>
+                      </div>
                     </div>
+                    <span className={`text-xs px-2 py-1 rounded ${getStatusColor(location.status)}`}>
+                      {location.status}
+                    </span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded ${getStatusColor(location.status)}`}>
-                    {location.status}
-                  </span>
-                </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <span className={`text-xs px-2 py-1 rounded ${getTypeColor(location.type)}`}>
-                    {location.type}
-                  </span>
-                  <div className="text-right">
-                    <div className="font-medium">{formatBytes(location.totalSize)}</div>
-                    <div className="text-xs text-gray-500">{location.fileCount} files</div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className={`text-xs px-2 py-1 rounded ${getTypeColor(location.type)}`}>
+                      {location.type}
+                    </span>
+                    <div className="text-right">
+                      <div className="font-medium">{formatBytes(metrics.used)} used</div>
+                      <div className="text-xs text-gray-500">{metrics.available !== null ? `${formatBytes(metrics.available)} free` : `${location.fileCount} files`}</div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Progress bar for cloud storage usage */}
-                {location.type === 'cloud' && usage && (
-                  <div className="mt-2">
-                    <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-blue-500"
-                        style={{ width: `${Math.min(100, (location.totalSize / usage.quota.total) * 100)}%` }}
-                      ></div>
+                  {metrics.usedPct !== null && (
+                    <div className="mt-2">
+                      <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-500"
+                          style={{ width: `${metrics.usedPct.toFixed(1)}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {metrics.usedPct.toFixed(1)}% used
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {((location.totalSize / usage.quota.total) * 100).toFixed(1)}% of quota
-                    </div>
-                  </div>
-                )}
+                  )}
+                </button>
+              )
+            })}
+
+            {selectedLocation && (
+              <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
+                <div className="font-medium text-sm text-blue-800 mb-2">Selected: {selectedLocation.name}</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <span className="text-blue-700">Used</span>
+                  <span className="text-right text-blue-900">{formatBytes(locationMetrics(selectedLocation).used)}</span>
+                  <span className="text-blue-700">Available</span>
+                  <span className="text-right text-blue-900">{formatBytes(locationMetrics(selectedLocation).available)}</span>
+                  <span className="text-blue-700">Total Capacity</span>
+                  <span className="text-right text-blue-900">{formatBytes(locationMetrics(selectedLocation).total)}</span>
+                  <span className="text-blue-700">Files</span>
+                  <span className="text-right text-blue-900">{selectedLocation.fileCount}</span>
+                  {selectedLocation.region && (
+                    <>
+                      <span className="text-blue-700">Region</span>
+                      <span className="text-right text-blue-900">{selectedLocation.region}</span>
+                    </>
+                  )}
+                  {selectedLocation.path && (
+                    <>
+                      <span className="text-blue-700">Path</span>
+                      <span className="text-right text-blue-900 break-all">{selectedLocation.path}</span>
+                    </>
+                  )}
+                </div>
               </div>
-            ))}
+            )}
 
             {locations.length === 0 && !loading && (
               <div className="text-center py-4 text-gray-400 text-sm">
@@ -240,10 +309,8 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
             )}
           </div>
         ) : (
-          /* Usage tab */
           usage ? (
             <div className="space-y-4">
-              {/* Quota usage */}
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600">Storage Quota</span>
@@ -263,7 +330,6 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
                 </div>
               </div>
 
-              {/* File type breakdown */}
               <div>
                 <h4 className="font-medium text-sm mb-2">File Types</h4>
                 <div className="space-y-2">
@@ -279,7 +345,6 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
                 </div>
               </div>
 
-              {/* Location breakdown */}
               {summary && (
                 <div>
                   <h4 className="font-medium text-sm mb-2">Storage Locations</h4>
@@ -288,18 +353,14 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
                       <span className="text-sm">Local Cache</span>
                       <div className="text-right">
                         <div className="text-sm font-medium">{formatBytes(summary.localCacheSize)}</div>
-                        <div className="text-xs text-gray-500">
-                          {((summary.localCacheSize / summary.totalSizeBytes) * 100).toFixed(1)}% of total
-                        </div>
+                        <div className="text-xs text-gray-500">{safePct(summary.localCacheSize, summary.totalSizeBytes)} of total</div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Read-Only Pool</span>
                       <div className="text-right">
                         <div className="text-sm font-medium">{formatBytes(summary.poolSize)}</div>
-                        <div className="text-xs text-gray-500">
-                          {((summary.poolSize / summary.totalSizeBytes) * 100).toFixed(1)}% of total
-                        </div>
+                        <div className="text-xs text-gray-500">{safePct(summary.poolSize, summary.totalSizeBytes)} of total</div>
                       </div>
                     </div>
                   </div>
@@ -314,7 +375,6 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
         )}
       </div>
 
-      {/* Footer */}
       <div className="p-3 border-t text-xs text-gray-500">
         <div className="flex justify-between">
           <span>{locations.length} locations</span>

@@ -61,6 +61,11 @@ export default function Home() {
     setToken(null); setEmail(''); setFiles([]); setUsage(null)
   }
 
+  function handleLocationSelect(_locationId: string) {
+    // Files are currently shown from a unified namespace; selecting a drive focuses root.
+    setCurrentPath('/')
+  }
+
   if (!token) return <Login onLogin={handleLogin} initialMode={loginMode} />
 
   return (
@@ -93,6 +98,7 @@ export default function Home() {
             />
             <DrivePanel
               token={token}
+              onLocationSelect={handleLocationSelect}
               onRefresh={() => refresh(token)}
             />
           </div>
