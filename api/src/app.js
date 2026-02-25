@@ -15,6 +15,7 @@ const config = require('./config');
 
 const rateLimit = require('express-rate-limit');
 const app = express();
+app.disable('etag');
 
 // Check ANTHROPIC_API_KEY on startup
 checkApiKey();
@@ -96,6 +97,12 @@ app.use(cors({
 app.use(morgan('combined'));
 app.use(globalLimiter);
 app.use(express.json());
+
+// API responses are user-specific and should never be cache-revalidated as 304.
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 // Health — checks DB connectivity
 app.get('/health', async (req, res) => {
