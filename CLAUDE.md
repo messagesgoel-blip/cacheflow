@@ -112,3 +112,24 @@ Restore immediately after test:
 - Rationale: Already have ANTHROPIC_API_KEY in .env, no extra infra, 1536-dim vectors
 - Same vendor as AI merge (consistency)
 - Check current Anthropic docs for embeddings endpoint
+
+## AUDIT LOGS TABLE (Day 83)
+```sql
+CREATE TABLE audit_logs (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES users(id),
+  action      VARCHAR(64) NOT NULL,        -- 'upload', 'download', 'delete', 'share', 'lock', 'unlock', 'login'
+  resource    VARCHAR(32) NOT NULL,        -- 'file', 'share', 'conflict', 'auth'
+  resource_id UUID,
+  ip_address  VARCHAR(45),
+  user_agent  VARCHAR(255),
+  metadata    JSONB,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Indexes on user_id, created_at DESC, action, resource_id
+```
+
+## FAILOVER RTO (Day 84)
+- MilesWeb brief outage (<5 min): Files auto-recovered by stale sync recovery (5 min timeout)
+- MilesWeb extended outage: Files stay in error state, manual retry after restore
+- Network flap: Exponential backoff: 4s → 8s → 16s → 32s → 60s
