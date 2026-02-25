@@ -10,3 +10,5 @@ node_modules/
 backups/*.sql.gz
 backups/*.sql
 worker/rclone
+web/tsconfig.tsbuildinfo
+webdav/webdav.htpasswd
