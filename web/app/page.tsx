@@ -14,6 +14,7 @@ export default function Home() {
   const [usage, setUsage] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [currentPath, setCurrentPath] = useState('/')
+  const [selectedLocationId, setSelectedLocationId] = useState('local-cache')
   const [loginMode, setLoginMode] = useState<'login' | 'register'>('login')
 
   const refresh = useCallback(async (t: string) => {
@@ -61,8 +62,8 @@ export default function Home() {
     setToken(null); setEmail(''); setFiles([]); setUsage(null)
   }
 
-  function handleLocationSelect(_locationId: string) {
-    // Files are currently shown from a unified namespace; selecting a drive focuses root.
+  function handleLocationSelect(locationId: string) {
+    setSelectedLocationId(locationId)
     setCurrentPath('/')
   }
 
@@ -92,12 +93,14 @@ export default function Home() {
           <div className="lg:col-span-1 space-y-6">
             <FolderTree
               token={token}
+              locationId={selectedLocationId}
               currentPath={currentPath}
               onFolderSelect={setCurrentPath}
               onRefresh={() => refresh(token)}
             />
             <DrivePanel
               token={token}
+              selectedLocationId={selectedLocationId}
               onLocationSelect={handleLocationSelect}
               onRefresh={() => refresh(token)}
             />
@@ -109,6 +112,7 @@ export default function Home() {
               <FileBrowser
                 token={token}
                 currentPath={currentPath}
+                locationId={selectedLocationId}
                 onPathChange={setCurrentPath}
                 onRefresh={() => refresh(token)}
               />

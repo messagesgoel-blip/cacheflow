@@ -12,12 +12,13 @@ interface FolderItem {
 
 interface FolderTreeProps {
   token: string
+  locationId?: string
   currentPath: string
   onFolderSelect: (path: string) => void
   onRefresh?: () => void
 }
 
-export default function FolderTree({ token, currentPath, onFolderSelect, onRefresh }: FolderTreeProps) {
+export default function FolderTree({ token, locationId, currentPath, onFolderSelect, onRefresh }: FolderTreeProps) {
   const [folders, setFolders] = useState<FolderItem[]>([])
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
@@ -25,8 +26,10 @@ export default function FolderTree({ token, currentPath, onFolderSelect, onRefre
 
   // Load root folders on mount
   useEffect(() => {
+    setFolders([])
+    setExpandedFolders(new Set())
     loadFolders('/')
-  }, [token])
+  }, [token, locationId])
 
   // Load folders for current path when it changes
   useEffect(() => {
@@ -46,7 +49,7 @@ export default function FolderTree({ token, currentPath, onFolderSelect, onRefre
     setError(null)
 
     try {
-      const data = await browseFiles(path, token)
+      const data = await browseFiles(path, token, locationId)
       const folderItems = data.folders || []
       setFolders(prev => {
         // Merge new folders with existing, avoiding duplicates

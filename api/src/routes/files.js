@@ -321,6 +321,7 @@ router.get('/browse', async (req, res) => {
   try {
     const requestedPath = req.query.path || '/';
     const normalizedPath = requestedPath === '/' ? '' : requestedPath.replace(/^\/+|\/+$/g, '');
+    const locationId = typeof req.query.location === 'string' ? req.query.location : 'local-cache';
 
     // Get all files for this user
     const result = await pool.query(
@@ -331,7 +332,20 @@ router.get('/browse', async (req, res) => {
       [req.user.id, req.user.tenant_id]
     );
 
-    const allFiles = result.rows;
+    let allFiles = result.rows;
+
+    // Optional location filter so the UI can browse each storage location independently.
+    if (locationId === 'local-cache' || locationId === 'readonly-pool') {
+      const basePath = locationId === 'local-cache' ? LOCAL_PATH : POOL_PATH;
+      allFiles = allFiles.filter((file) => {
+        if (file.hash === 'folder-marker') return true;
+        const diskPath = path.join(basePath, req.user.id, file.path);
+        return fs.existsSync(diskPath);
+      });
+    } else if (locationId.startsWith('cloud-')) {
+      // Cloud drives currently reflect synced content.
+      allFiles = allFiles.filter((file) => file.status === 'synced');
+    }
 
     // Extract folders and files at the current path level
     const folders = new Set();
@@ -352,6 +366,7 @@ router.get('/browse', async (req, res) => {
           // This shouldn't happen for valid paths
           continue;
         } else if (parts.length === 1) {
+          if (file.hash === 'folder-marker') continue;
           // File at current path
           filesAtPath.push({
             ...file,
@@ -371,6 +386,7 @@ router.get('/browse', async (req, res) => {
       path: normalizedPath === '' ? folderName : `${normalizedPath}/${folderName}`,
       isFolder: true,
       itemCount: allFiles.filter(f => {
+        if (f.hash === 'folder-marker') return false;
         const filePath = f.path;
         if (normalizedPath === '') {
           return filePath.startsWith(folderName + '/');
@@ -382,6 +398,7 @@ router.get('/browse', async (req, res) => {
 
     res.json({
       path: requestedPath,
+      location: locationId,
       folders: folderArray,
       files: filesAtPath,
       totalItems: folderArray.length + filesAtPath.length

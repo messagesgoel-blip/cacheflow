@@ -50,11 +50,12 @@ interface StorageUsage {
 
 interface DrivePanelProps {
   token: string
+  selectedLocationId?: string
   onLocationSelect?: (locationId: string) => void
   onRefresh?: () => void
 }
 
-export default function DrivePanel({ token, onLocationSelect, onRefresh }: DrivePanelProps) {
+export default function DrivePanel({ token, selectedLocationId: selectedLocationIdProp, onLocationSelect, onRefresh }: DrivePanelProps) {
   const [locations, setLocations] = useState<StorageLocation[]>([])
   const [summary, setSummary] = useState<StorageSummary | null>(null)
   const [usage, setUsage] = useState<StorageUsage | null>(null)
@@ -76,8 +77,11 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     }
     if (!selectedLocationId || !locations.some(location => location.id === selectedLocationId)) {
       setSelectedLocationId(locations[0].id)
+      onLocationSelect?.(locations[0].id)
     }
-  }, [locations, selectedLocationId])
+  }, [locations, selectedLocationId, onLocationSelect])
+
+  const activeLocationId = selectedLocationIdProp || selectedLocationId
 
   async function loadStorageData() {
     if (!token) return
@@ -151,7 +155,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     return `${((part / total) * 100).toFixed(1)}%`
   }
 
-  const selectedLocation = locations.find(location => location.id === selectedLocationId) || null
+  const selectedLocation = locations.find(location => location.id === activeLocationId) || null
 
   if (loading && locations.length === 0) {
     return (
@@ -228,7 +232,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
                 <button
                   type="button"
                   key={location.id}
-                  className={`w-full text-left p-3 border rounded-lg hover:shadow-sm hover:border-blue-300 ${selectedLocationId === location.id ? 'border-blue-400 ring-1 ring-blue-200' : ''}`}
+                  className={`w-full text-left p-3 border rounded-lg hover:shadow-sm hover:border-blue-300 ${activeLocationId === location.id ? 'border-blue-400 ring-1 ring-blue-200' : ''}`}
                   onClick={() => {
                     setSelectedLocationId(location.id)
                     onLocationSelect?.(location.id)

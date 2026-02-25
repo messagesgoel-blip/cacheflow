@@ -128,8 +128,10 @@ export async function resolveConflict(id: string, resolution: 'keep_local' | 'ke
 }
 
 // File browser APIs
-export async function browseFiles(path: string, token: string) {
-  const res = await apiFetch(`/files/browse?path=${encodeURIComponent(path)}`, {}, token)
+export async function browseFiles(path: string, token: string, locationId?: string) {
+  const qs = new URLSearchParams({ path })
+  if (locationId) qs.set('location', locationId)
+  const res = await apiFetch(`/files/browse?${qs.toString()}`, {}, token)
   if (!res.ok) throw new Error(`Browse failed: ${res.status}`)
   return res.json()
 }
