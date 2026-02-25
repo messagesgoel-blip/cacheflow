@@ -19,7 +19,7 @@ interface Conflict {
 
 interface ConflictViewerProps {
   conflict: Conflict
-  onResolve: (resolution: 'keep_local' | 'keep_cloud' | 'keep_both') => void
+  onResolve: (resolution: 'keep_local' | 'keep_remote') => void
   resolving?: string | null
 }
 
@@ -41,7 +41,7 @@ export default function ConflictViewer({ conflict, onResolve, resolving }: Confl
     return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
   }
 
-  const handleButtonClick = (resolution: 'keep_local' | 'keep_cloud' | 'keep_both') => {
+  const handleButtonClick = (resolution: 'keep_local' | 'keep_remote') => {
     onResolve(resolution)
   }
 
@@ -135,24 +135,16 @@ export default function ConflictViewer({ conflict, onResolve, resolving }: Confl
               Keep Mine
             </button>
             <button
-              onClick={() => handleButtonClick('keep_cloud')}
+              onClick={() => handleButtonClick('keep_remote')}
               disabled={!!resolving}
               className="px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 disabled:opacity-50"
             >
               Keep Cloud
             </button>
-            <button
-              onClick={() => handleButtonClick('keep_both')}
-              disabled={!!resolving}
-              className="px-4 py-2 border border-green-600 text-green-600 rounded hover:bg-green-50 disabled:opacity-50"
-            >
-              Keep Both
-            </button>
           </div>
           <p className="text-gray-500 text-sm mt-3">
             <strong>Keep Mine:</strong> Use your local version and discard cloud changes<br />
-            <strong>Keep Cloud:</strong> Use cloud version and discard your local changes<br />
-            <strong>Keep Both:</strong> Keep both versions (renames cloud version)
+            <strong>Keep Cloud:</strong> Use cloud version and discard your local changes
           </p>
         </div>
       )}

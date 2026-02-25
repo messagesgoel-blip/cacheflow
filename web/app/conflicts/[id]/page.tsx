@@ -84,7 +84,7 @@ export default function ConflictDetailPage() {
     }
   }
 
-  async function handleResolve(resolution: 'keep_local' | 'keep_cloud' | 'keep_both') {
+  async function handleResolve(resolution: 'keep_local' | 'keep_remote') {
     if (!token || !conflict) return
 
     setResolving(resolution)

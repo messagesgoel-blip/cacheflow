@@ -11,6 +11,7 @@ const searchRoutes = require('./routes/search');
 const adminRoutes = require('./routes/admin');
 const storageRoutes = require('./routes/storage');
 const { checkApiKey } = require('./services/embeddings');
+const config = require('./config');
 
 const rateLimit = require('express-rate-limit');
 const app = express();
@@ -64,8 +65,8 @@ const uploadLimiter = rateLimit({
 
 // Auth endpoints — stricter: 10 per 15 minutes (brute force protection)
 const authLimiter = rateLimit({
-  windowMs: Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
-  max: Number(process.env.AUTH_RATE_LIMIT_MAX || 60),
+  windowMs: config.authRateLimitWindowMs,
+  max: config.authRateLimitMax,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: process.env.AUTH_RATE_LIMIT_SKIP_SUCCESS !== 'false',

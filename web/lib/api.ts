@@ -112,16 +112,11 @@ export async function renameFile(id: string, newName: string, token: string) {
   return res.json()
 }
 
-export async function resolveConflict(id: string, resolution: 'keep_local' | 'keep_cloud' | 'keep_both', token: string) {
+export async function resolveConflict(id: string, resolution: 'keep_local' | 'keep_remote', token: string) {
   const res = await apiFetch(`/conflicts/${id}/resolve`, {
     method: 'POST',
     body: JSON.stringify({ resolution })
   }, token)
-
-  if (res.status === 404) {
-    // API endpoint not yet implemented
-    throw new Error('Resolution recorded (pending sync)')
-  }
 
   if (!res.ok) {
     throw new Error(`Resolution failed: ${res.status}`)

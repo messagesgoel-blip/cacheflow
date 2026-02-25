@@ -1,4 +1,5 @@
 require('dotenv').config();
+const config = require('./config');
 
 // Global safety net to prevent crashes from unhandled rejections
 process.on('unhandledRejection', (reason, promise) => {
@@ -11,7 +12,7 @@ process.on('uncaughtException', (err) => {
 });
 
 const app  = require('./app');
-const PORT = process.env.PORT || 8100;
+const PORT = config.port;
 
 app.listen(PORT, () => {
   console.log(`[cacheflow] API listening on port ${PORT}`);
