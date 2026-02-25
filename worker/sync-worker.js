@@ -51,7 +51,9 @@ const MIN_AGE_MS  = parseInt(process.env.SYNC_MIN_AGE_MS || '1200000'); // 20 mi
 const CONFLICT_WINDOW_MS = 300000; // 5 min
 const RETRY_DELAYS = [4000, 8000, 16000, 32000, 60000];
 const STALE_SYNcing_TIMEOUT_MS = 300000; // 5 min - recover files stuck in syncing
-const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_FILES || '3'); // Process max 3 files at once
+const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_FILES || '5'); // Process max 5 files at once (increased from 3)
+const STALE_SYNCING_SWEEP_MS = parseInt(process.env.STALE_SYNCING_SWEEP_MS || '120000'); // 2 min - periodic stale sync recovery
+const SYNC_PERF_LOG_INTERVAL_MS = parseInt(process.env.SYNC_PERF_LOG_INTERVAL_MS || '30000'); // 30s - performance logging interval
 const EXCLUDE     = [/\.tmp$/, /\.lock$/, /\.part$/, /~$/];
 
 // Priority: 1=highest. docs > images > video > other
@@ -450,8 +452,45 @@ function schedule(filePath) {
   debounceMap.set(filePath, t);
 }
 
+// ── Periodic stale sync recovery ──────────────────────────────────────────────
+async function periodicStaleSyncRecovery() {
+  try {
+    const staleThreshold = new Date(Date.now() - STALE_SYNcing_TIMEOUT_MS);
+    const result = await pool.query(
+      `UPDATE files SET status='pending', error_reason='periodic recovery from stale syncing', updated_at=NOW()
+       WHERE status='syncing' AND updated_at < $1
+       RETURNING id, path`,
+      [staleThreshold]
+    );
+    if (result.rows.length > 0) {
+      log('info', 'periodic stale sync recovery', { count: result.rows.length, files: result.rows.map(r => r.path) });
+    }
+  } catch (err) {
+    log('error', 'periodic stale sync recovery failed', { err: err.message });
+  }
+}
+
+// ── Performance logging ───────────────────────────────────────────────────────
+function logPerformanceMetrics() {
+  const metrics = {
+    queue_length: queue.length,
+    active_count: activeCount,
+    in_flight_size: inFlight.size,
+    max_concurrent: MAX_CONCURRENT,
+    debounce_map_size: debounceMap.size
+  };
+  log('info', 'sync performance metrics', metrics);
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
-log('info', 'sync worker starting', { watchDir: WATCH_DIR, minAgeMs: MIN_AGE_MS, conflictWindowMs: CONFLICT_WINDOW_MS });
+log('info', 'sync worker starting', {
+  watchDir: WATCH_DIR,
+  minAgeMs: MIN_AGE_MS,
+  conflictWindowMs: CONFLICT_WINDOW_MS,
+  maxConcurrent: MAX_CONCURRENT,
+  staleSyncSweepMs: STALE_SYNCING_SWEEP_MS,
+  perfLogIntervalMs: SYNC_PERF_LOG_INTERVAL_MS
+});
 
 // Verify DB connection
 pool.query('SELECT NOW()').then(r =>
@@ -492,10 +531,36 @@ watcher
   .on('add',    p => schedule(p))
   .on('change', p => schedule(p))
   .on('error',  e => log('error', 'watcher error', { err: String(e) }))
-  .on('ready',  () => log('info', 'initial scan done, watching for changes'));
+  .on('ready',  () => {
+    log('info', 'initial scan done, watching for changes');
+
+    // Start periodic stale sync recovery
+    staleSyncInterval = setInterval(() => {
+      periodicStaleSyncRecovery().catch(err => {
+        log('error', 'periodic stale sync recovery interval failed', { err: err.message });
+      });
+    }, STALE_SYNCING_SWEEP_MS);
+
+    // Start performance logging
+    perfLogInterval = setInterval(() => {
+      logPerformanceMetrics();
+    }, SYNC_PERF_LOG_INTERVAL_MS);
+
+    // Log initial performance metrics
+    logPerformanceMetrics();
+  });
+
+// Store interval IDs for cleanup
+let staleSyncInterval = null;
+let perfLogInterval = null;
 
 process.on('SIGTERM', () => {
   log('info', 'SIGTERM received, shutting down');
+
+  // Clear intervals
+  if (staleSyncInterval) clearInterval(staleSyncInterval);
+  if (perfLogInterval) clearInterval(perfLogInterval);
+
   watcher.close().then(() => process.exit(0));
 });
 // PATCH APPLIED INLINE — see stage1Detect for uuid guard
