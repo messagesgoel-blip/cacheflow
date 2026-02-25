@@ -44,26 +44,53 @@ router.get('/:id', async (req, res) => {
 
 // POST /conflicts/:id/resolve - resolve with manual choice
 router.post('/:id/resolve', async (req, res) => {
-  const { resolution, keep_local } = req.body;
+  const { resolution } = req.body;
   if (!resolution || !['keep_local', 'keep_remote'].includes(resolution)) {
     return res.status(400).json({ error: 'resolution must be keep_local or keep_remote' });
   }
 
   try {
-    // Get conflict
-    const conflict = await pool.query('SELECT * FROM conflicts WHERE id = $1', [req.params.id]);
-    if (!conflict.rows.length) {
+    // Get conflict with file path
+    const conflictResult = await pool.query(
+      `SELECT c.*, f.path as file_path
+       FROM conflicts c
+       JOIN files f ON f.id = c.file_id
+       WHERE c.id = $1`,
+      [req.params.id]
+    );
+    if (!conflictResult.rows.length) {
       return res.status(404).json({ error: 'conflict not found' });
     }
 
-    // TODO: Actually replace the file content based on resolution
-    // For now, just mark as resolved
+    const conflict = conflictResult.rows[0];
+    const localPath = path.join(process.env.LOCAL_CACHE_PATH || '/mnt/local', conflict.file_path);
+    const remotePath = path.join(process.env.POOL_PATH || '/mnt/pool', conflict.file_path);
+
+    // Copy chosen version to replace the other
+    let srcPath, destPath;
+    if (resolution === 'keep_local') {
+      srcPath = localPath;
+      destPath = remotePath;
+    } else {
+      srcPath = remotePath;
+      destPath = localPath;
+    }
+
+    // Verify source exists
+    if (!fs.existsSync(srcPath)) {
+      return res.status(404).json({ error: `Source file not found: ${srcPath}` });
+    }
+
+    // Copy file (overwrite destination)
+    fs.copyFileSync(srcPath, destPath);
+
+    // Update conflict status
     await pool.query(
       `UPDATE conflicts SET status='resolved', resolved_at=NOW(), resolution=$1 WHERE id=$2`,
       [resolution, req.params.id]
     );
 
-    res.json({ success: true, resolution });
+    res.json({ success: true, resolution, note: `Copied ${resolution} to replace other version` });
   } catch (err) {
     console.error('[conflicts] resolve:', err.message);
     res.status(500).json({ error: 'internal server error' });
