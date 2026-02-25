@@ -94,6 +94,26 @@ services:
       - api
     mem_limit: 512m
 
+  webdav:
+    image: rclone/rclone:latest
+    container_name: cacheflow-webdav
+    restart: always
+    user: "1002:1002"
+    mem_limit: 256m
+    command: >
+      serve webdav /data
+      --addr 0.0.0.0:8180
+      --vfs-cache-mode off
+      --log-level INFO
+      --htpasswd /config/webdav.htpasswd
+    volumes:
+      - /mnt/pool:/data:ro
+      - /srv/docker/apps/cacheflow/webdav:/config
+    ports:
+      - "127.0.0.1:8180:8180"
+    networks:
+      - cacheflow
+
 networks:
   cacheflow:
     driver: bridge

@@ -439,6 +439,265 @@ t162() {
 }
 
 # ============================================================================
+# Day 85: AI Merge Multi-Format Handler
+# ============================================================================
+
+t163() {
+  # AI merge service supports .txt files
+  if grep -q "\.txt.*text" "$CF_ROOT/api/src/services/aiMerge.js"; then
+    record "PASS" "T-163" "AI merge supports .txt" "merge type=text" "found in code" "ok"
+  else
+    record "FAIL" "T-163" "AI merge supports .txt" "merge type=text" "not found" "missing support"
+    return 1
+  fi
+}
+
+t164() {
+  # AI merge service supports code files (.py, .js, .ts)
+  local supported=0
+  for ext in ".py" ".js" ".ts"; do
+    if grep -q "$ext.*code" "$CF_ROOT/api/src/services/aiMerge.js"; then
+      ((supported++))
+    fi
+  done
+  if [[ "$supported" -ge 2 ]]; then
+    record "PASS" "T-164" "AI merge supports code files" "code types" "$supported/3 supported" "ok"
+  else
+    record "FAIL" "T-164" "AI merge supports code files" "code types" "$supported/3 supported" "missing types"
+    return 1
+  fi
+}
+
+t165() {
+  # POST /conflicts/:id/ai-merge endpoint exists
+  if grep -q "ai-merge" "$CF_ROOT/api/src/routes/conflicts.js"; then
+    record "PASS" "T-165" "AI merge endpoint exists" "route defined" "found" "ok"
+  else
+    record "FAIL" "T-165" "AI merge endpoint exists" "route defined" "not found" "missing endpoint"
+    return 1
+  fi
+}
+
+# ============================================================================
+# Day 76: WebDAV Container
+# ============================================================================
+
+t166() {
+  # WebDAV container is running
+  local webdav_status
+  webdav_status="$(docker ps --filter "name=cacheflow-webdav" --format "{{.Status}}" 2>/dev/null || true)"
+
+  if echo "$webdav_status" | grep -q "Up"; then
+    record "PASS" "T-166" "WebDAV container running" "status=Up" "$webdav_status" "ok"
+  else
+    record "FAIL" "T-166" "WebDAV container running" "status=Up" "not running" "container down"
+    return 1
+  fi
+}
+
+t167() {
+  # WebDAV port 8180 is bound
+  local port_check
+  port_check="$(ss -ltnp 2>/dev/null | grep ":8180 " || true)"
+
+  if [[ -n "$port_check" ]]; then
+    record "PASS" "T-167" "WebDAV port 8180 bound" "port open" "bound" "ok"
+  else
+    record "FAIL" "T-167" "WebDAV port 8180 bound" "port open" "not bound" "port not open"
+    return 1
+  fi
+}
+
+t168() {
+  # WebDAV htpasswd file exists
+  if [[ -f "$CF_ROOT/webdav/webdav.htpasswd" ]]; then
+    record "PASS" "T-168" "WebDAV htpasswd exists" "file exists" "found" "ok"
+  else
+    record "FAIL" "T-168" "WebDAV htpasswd exists" "file exists" "not found" "auth not configured"
+    return 1
+  fi
+}
+
+# ============================================================================
+# Day 77-78: WebDAV Documentation
+# ============================================================================
+
+t169() {
+  # WebDAV macOS guide exists
+  if [[ -f "$CF_ROOT/docs/webdav-macos.md" ]]; then
+    record "PASS" "T-169" "WebDAV macOS guide" "file exists" "found" "ok"
+  else
+    record "FAIL" "T-169" "WebDAV macOS guide" "file exists" "not found" "missing docs"
+    return 1
+  fi
+}
+
+t170() {
+  # WebDAV Windows guide exists
+  if [[ -f "$CF_ROOT/docs/webdav-windows.md" ]]; then
+    record "PASS" "T-170" "WebDAV Windows guide" "file exists" "found" "ok"
+  else
+    record "FAIL" "T-170" "WebDAV Windows guide" "file exists" "not found" "missing docs"
+    return 1
+  fi
+}
+
+# ============================================================================
+# Day 79: Rate Limiting
+# ============================================================================
+
+t171() {
+  # Rate limiting middleware exists
+  if [[ -f "$CF_ROOT/api/src/middleware/rateLimit.js" ]]; then
+    record "PASS" "T-171" "Rate limit middleware" "file exists" "found" "ok"
+  else
+    record "FAIL" "T-171" "Rate limit middleware" "file exists" "not found" "missing middleware"
+    return 1
+  fi
+}
+
+t172() {
+  # Rate limiting is applied to API endpoints (check app.js)
+  if grep -q "globalLimiter\|rateLimit" "$CF_ROOT/api/src/app.js"; then
+    record "PASS" "T-172" "Rate limiting enabled in API" "limiter configured" "found" "ok"
+  else
+    record "FAIL" "T-172" "Rate limiting enabled in API" "limiter configured" "not found" "not enabled"
+    return 1
+  fi
+}
+
+# ============================================================================
+# Day 80: Security Headers
+# ============================================================================
+
+t173() {
+  # Helmet security headers are configured
+  if grep -q "helmet" "$CF_ROOT/api/src/app.js"; then
+    record "PASS" "T-173" "Helmet security headers" "configured" "found" "ok"
+  else
+    record "FAIL" "T-173" "Helmet security headers" "configured" "not found" "not enabled"
+    return 1
+  fi
+}
+
+t174() {
+  # CORS is configured with allowed origins
+  if grep -q "cors" "$CF_ROOT/api/src/app.js"; then
+    record "PASS" "T-174" "CORS configured" "configured" "found" "ok"
+  else
+    record "FAIL" "T-174" "CORS configured" "configured" "not found" "not enabled"
+    return 1
+  fi
+}
+
+# ============================================================================
+# Security Page
+# ============================================================================
+
+t175() {
+  # Security page exists in web app
+  if [[ -f "$CF_ROOT/web/app/security/page.tsx" ]]; then
+    record "PASS" "T-175" "Security page exists" "file exists" "found" "ok"
+  else
+    record "FAIL" "T-175" "Security page exists" "file exists" "not found" "missing page"
+    return 1
+  fi
+}
+
+t176() {
+  # Security page mentions Zero-Retention
+  if grep -q "Zero-Retention" "$CF_ROOT/web/app/security/page.tsx" 2>/dev/null; then
+    record "PASS" "T-176" "Security page Zero-Retention" "mentioned" "found" "ok"
+  else
+    record "FAIL" "T-176" "Security page Zero-Retention" "mentioned" "not found" "missing content"
+    return 1
+  fi
+}
+
+# ============================================================================
+# E2E Tests
+# ============================================================================
+
+t177() {
+  # Full upload-download cycle works
+  local token tmp up_code file_id dl_code
+
+  token="$(get_token)" || { record "FAIL" "T-177" "E2E upload-download" "token" "login failed" "login failed"; return 1; }
+
+  # Upload
+  tmp="$RUN_DIR/t177_test.txt"
+  echo "E2E test $(date)" > "$tmp"
+  run_cmd "curl -sS -o '$RUN_DIR/t177_upload.json' -w '%{http_code}' -X POST '$API_BASE/files/upload' -H 'Authorization: Bearer $token' -F 'file=@$tmp' > '$RUN_DIR/t177_upload.code'"
+  up_code="$(cat "$RUN_DIR/t177_upload.code" 2>/dev/null | tr -d '[:space:]')"
+
+  if [[ "$up_code" != "201" ]]; then
+    record "FAIL" "T-177" "E2E upload-download" "HTTP 201" "HTTP $up_code" "upload failed"
+    return 1
+  fi
+
+  file_id="$(cat "$RUN_DIR/t177_upload.json" | jq -r '.file.id // .id' 2>/dev/null || true)"
+
+  if [[ -z "$file_id" ]]; then
+    record "FAIL" "T-177" "E2E upload-download" "file_id" "not found" "upload response invalid"
+    return 1
+  fi
+
+  # Download
+  run_cmd "curl -sS -o '$RUN_DIR/t177_download.txt' -w '%{http_code}' '$API_BASE/files/$file_id/download' -H 'Authorization: Bearer $token' > '$RUN_DIR/t177_download.code'"
+  dl_code="$(cat "$RUN_DIR/t177_download.code" 2>/dev/null | tr -d '[:space:]')"
+
+  if [[ "$dl_code" == "200" ]]; then
+    record "PASS" "T-177" "E2E upload-download" "HTTP 200" "HTTP $dl_code" "ok"
+  else
+    record "FAIL" "T-177" "E2E upload-download" "HTTP 200" "HTTP $dl_code" "download failed"
+    return 1
+  fi
+}
+
+t178() {
+  # Share link creation and download works
+  local token share_code share_id download_code
+
+  token="$(get_token)" || { record "FAIL" "T-178" "E2E share" "token" "login failed" "login failed"; return 1; }
+
+  # Get a file to share
+  http_json GET "$API_BASE/files" "" "$token"
+  local first_file_id
+  first_file_id="$(echo "$HTTP_BODY" | jq -r '.files[0].id // empty' 2>/dev/null || true)"
+
+  if [[ -z "$first_file_id" ]]; then
+    record "SKIP" "T-178" "E2E share" "file to share" "no files" "no files to test"
+    return 0
+  fi
+
+  # Create share link
+  http_json POST "$API_BASE/share" "{\"file_id\":\"$first_file_id\",\"expires_in\":3600}" "$token"
+
+  if [[ "$HTTP_CODE" != "201" ]]; then
+    record "FAIL" "T-178" "E2E share" "HTTP 201" "HTTP $HTTP_CODE" "share creation failed"
+    return 1
+  fi
+
+  share_id="$(echo "$HTTP_BODY" | jq -r '.share_id // .id // empty' 2>/dev/null || true)"
+
+  if [[ -z "$share_id" ]]; then
+    record "FAIL" "T-178" "E2E share" "share_id" "not found" "share response invalid"
+    return 1
+  fi
+
+  # Download via share link
+  run_cmd "curl -sS -o /dev/null -w '%{http_code}' '$API_BASE/share/$share_id' > '$RUN_DIR/t178.code'"
+  download_code="$(cat "$RUN_DIR/t178.code" 2>/dev/null | tr -d '[:space:]')"
+
+  if [[ "$download_code" == "200" ]]; then
+    record "PASS" "T-178" "E2E share" "HTTP 200" "HTTP $download_code" "ok"
+  else
+    record "FAIL" "T-178" "E2E share" "HTTP 200" "HTTP $download_code" "share download failed"
+    return 1
+  fi
+}
+
+# ============================================================================
 # Test Runners
 # ============================================================================
 
@@ -446,6 +705,32 @@ run_all() {
   run_step t150; run_step t151; run_step t152; run_step t153; run_step t154
   run_step t155; run_step t156; run_step t157; run_step t158; run_step t159
   run_step t160; run_step t161; run_step t162
+  run_step t163; run_step t164; run_step t165
+  run_step t166; run_step t167; run_step t168
+  run_step t169; run_step t170
+  run_step t171; run_step t172
+  run_step t173; run_step t174
+  run_step t175; run_step t176
+  run_step t177; run_step t178
+}
+
+run_day85() {
+  run_step t163; run_step t164; run_step t165
+}
+
+run_day86() {
+  run_step t166; run_step t167; run_step t168
+  run_step t169; run_step t170
+  run_step t177; run_step t178
+}
+
+run_day79() {
+  run_step t171; run_step t172
+}
+
+run_day80() {
+  run_step t173; run_step t174
+  run_step t175; run_step t176
 }
 
 run_day81() {
@@ -496,11 +781,27 @@ case "${1:-}" in
     load_run
     run_day84
     ;;
+  day85)
+    load_run
+    run_day85
+    ;;
+  day86)
+    load_run
+    run_day86
+    ;;
+  day79)
+    load_run
+    run_day79
+    ;;
+  day80)
+    load_run
+    run_day80
+    ;;
   *)
     load_run
     sel="$(normalize_sel "${1:-}")"
     if [[ -z "$sel" ]]; then
-      echo "usage: $0 <init|all|day81|day82|day83|day84|t150>"
+      echo "usage: $0 <init|all|day79|day80|day81|day82|day83|day84|day85|day86|t150>"
       exit 2
     fi
     if [[ "$sel" =~ ^[0-9]+$ ]]; then
