@@ -10,6 +10,16 @@ router.use(authMw);
 
 const LOCAL_PATH = process.env.LOCAL_CACHE_PATH || '/mnt/local';
 const POOL_PATH = process.env.POOL_PATH || '/mnt/pool';
+const LOCAL_DRIVE_NAME = process.env.LOCAL_DRIVE_NAME || 'NVMe Drive 1';
+const POOL_DRIVE_NAME = process.env.POOL_DRIVE_NAME || 'NVMe Drive 2';
+
+function parseJsonOrEmpty(value) {
+  try {
+    return value ? JSON.parse(value) : {};
+  } catch {
+    return {};
+  }
+}
 
 // GET /storage/locations - Get storage locations and usage info
 router.get('/locations', async (req, res) => {
@@ -19,7 +29,7 @@ router.get('/locations', async (req, res) => {
 
     // Get user's cloud configurations (no tenant_id in cloud_configs table)
     const cloudConfigs = await pool.query(
-      `SELECT id, provider, is_active, created_at
+      `SELECT id, provider, config_json, is_active, created_at
        FROM cloud_configs
        WHERE user_id=$1
        ORDER BY is_active DESC, created_at DESC`,
@@ -85,25 +95,25 @@ router.get('/locations', async (req, res) => {
     const locations = [
       {
         id: 'local-cache',
-        name: 'Local Cache',
+        name: LOCAL_DRIVE_NAME,
         type: 'local',
         path: LOCAL_PATH,
         totalSize: localCacheSize,
         fileCount: localCacheFiles,
         status: 'active',
-        description: 'Fast local storage for recently accessed files',
+        description: `Primary local storage (${LOCAL_PATH})`,
         color: 'blue',
         icon: '💾'
       },
       {
         id: 'readonly-pool',
-        name: 'Read-Only Pool',
+        name: POOL_DRIVE_NAME,
         type: 'pool',
         path: POOL_PATH,
         totalSize: poolSize,
         fileCount: poolFiles,
         status: fs.existsSync(POOL_PATH) ? 'active' : 'unavailable',
-        description: 'Shared read-only storage for common files',
+        description: `Secondary pooled storage (${POOL_PATH})`,
         color: 'green',
         icon: '📚'
       }
@@ -111,16 +121,20 @@ router.get('/locations', async (req, res) => {
 
     // Add cloud storage locations from configurations
     cloudConfigs.rows.forEach((config, index) => {
+      const parsedConfig = parseJsonOrEmpty(config.config_json);
+      const displayName = parsedConfig.displayName || `${config.provider} Cloud`;
+      const region = parsedConfig.region || null;
       locations.push({
         id: `cloud-${config.id}`,
-        name: `${config.provider} Cloud`,
+        name: displayName,
         type: 'cloud',
         provider: config.provider,
+        region,
         isActive: config.is_active,
         status: config.is_active ? 'active' : 'inactive',
-        description: `Cloud storage on ${config.provider}`,
+        description: region ? `Cloud storage in ${region}` : `Cloud storage on ${config.provider}`,
         color: index % 2 === 0 ? 'purple' : 'orange',
-        icon: '☁️',
+        icon: parsedConfig.icon || '☁️',
         configId: config.id,
         createdAt: config.created_at
       });
