@@ -17,6 +17,21 @@ jest.mock('../src/services/embeddings', () => ({
   generateEmbeddingForFile: jest.fn()
 }));
 
+jest.mock('../src/middleware/auth', () => (req, res, next) => {
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  if (header === 'Bearer admin-token') {
+    req.user = { id: 'admin-1', email: 'admin@example.com', tenant_id: 'tenant-1', is_admin: true };
+  } else {
+    req.user = { id: 'user-1', email: 'user@example.com', tenant_id: 'tenant-1', is_admin: false };
+  }
+
+  next();
+});
+
 jest.mock('../src/middleware/audit', () => ({
   auditLog: jest.fn().mockResolvedValue(undefined),
   auditMiddleware: jest.fn((req, _res, next) => next())
@@ -167,6 +182,86 @@ describe('API app', () => {
       const res = await request(app).get('/share/not-found-token');
       expect(res.status).toBe(404);
       expect(res.body.error).toMatch(/link not found/i);
+    });
+  });
+
+  describe('authenticated route behavior', () => {
+    test('GET /files returns list for authenticated user', async () => {
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ id: 'f-1', path: 'docs/a.txt', size_bytes: 123, status: 'synced' }]
+      });
+
+      const res = await request(app)
+        .get('/files')
+        .set('Authorization', 'Bearer user-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.count).toBe(1);
+      expect(res.body.files[0].id).toBe('f-1');
+    });
+
+    test('GET /storage/usage returns structured usage payload', async () => {
+      mockQuery
+        .mockResolvedValueOnce({
+          rows: [{ quota_bytes: '1000', used_bytes: '200', available_bytes: '800', used_pct: '20.00' }]
+        })
+        .mockResolvedValueOnce({
+          rows: [{ file_type: 'Documents', file_count: '2', total_size: '400' }]
+        })
+        .mockResolvedValueOnce({
+          rows: [{ id: 'f-2', path: 'docs/b.txt', size_bytes: '300', status: 'synced', created_at: '2026-02-25T00:00:00Z' }]
+        })
+        .mockResolvedValueOnce({
+          rows: [{ id: 'f-3', path: 'docs/c.txt', size_bytes: '100', status: 'pending', created_at: '2026-02-24T00:00:00Z' }]
+        });
+
+      const res = await request(app)
+        .get('/storage/usage')
+        .set('Authorization', 'Bearer user-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.quota.total).toBe(1000);
+      expect(res.body.quota.used).toBe(200);
+      expect(Array.isArray(res.body.fileTypes)).toBe(true);
+      expect(Array.isArray(res.body.largestFiles)).toBe(true);
+      expect(Array.isArray(res.body.oldestFiles)).toBe(true);
+    });
+
+    test('GET /conflicts returns conflicts list', async () => {
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ id: 'c-1', file_id: 'f-1', status: 'open' }]
+      });
+
+      const res = await request(app)
+        .get('/conflicts')
+        .set('Authorization', 'Bearer user-token');
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.conflicts)).toBe(true);
+      expect(res.body.conflicts[0].id).toBe('c-1');
+    });
+
+    test('GET /admin/audit denies non-admin users', async () => {
+      const res = await request(app)
+        .get('/admin/audit')
+        .set('Authorization', 'Bearer user-token');
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/admin access required/i);
+    });
+
+    test('GET /admin/audit allows admin users', async () => {
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ id: 'a-1', action: 'upload', user_id: 'user-1' }]
+      });
+
+      const res = await request(app)
+        .get('/admin/audit')
+        .set('Authorization', 'Bearer admin-token');
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.audit_logs)).toBe(true);
+      expect(res.body.audit_logs[0].id).toBe('a-1');
     });
   });
 });

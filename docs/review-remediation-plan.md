@@ -19,21 +19,26 @@ This checklist tracks follow-up work from the comprehensive review.
 - [x] Apply safe dependency updates
   - API: upgraded `pg` to latest 8.x line
   - Web: upgraded `recharts` to latest 2.x and `next` to 14.2.35
+- [x] Increase API and web unit/integration test breadth
+  - Expanded API tests to cover files/storage/conflicts/admin route behavior
+  - Added web Jest + Testing Library tests for conflict resolution UI interactions
+- [x] Expand config management beyond API startup
+  - Added worker config validation in `worker/config.js`
+  - Added web runtime config validation in `web/lib/config.ts`
+- [x] Complete dependency modernization requiring larger changes
+  - Migrated web stack to Next.js 16.1.6 + React 19.2.4
+  - Resolved high/critical web audit findings (`npm audit` now clean)
 
 ## Remaining items
 
-- [ ] Increase API and web unit/integration test breadth
-  - Target files/storage/conflicts/admin routes and core UI interactions
-- [ ] Expand config management beyond API startup
-  - Add similar validation patterns for worker and web runtime config
 - [ ] Complete naming consistency sweep
   - Standardize request/response naming across API and web DTOs
-- [ ] Complete dependency modernization requiring larger changes
-  - Web still has a high advisory in `next` requiring major upgrade to 16.x
-  - Worker dependency graph needs a curated upgrade pass (many major-version jumps)
+- [ ] Curate worker dependency modernization
+  - Worker dependency graph still has many outdated transitive/direct packages
+  - Requires a dedicated, staged upgrade plan with integration testing
 
 ## Immediate next suggested implementation order
 
-1. Add API tests for file browser/storage/conflicts routes with mocked DB.
-2. Add worker config validation module and startup checks.
-3. Plan and execute Next.js 14 -> 16 migration in a dedicated branch with regression tests.
+1. Complete naming consistency sweep for API/web contracts.
+2. Plan staged worker dependency upgrades (batch by risk/compatibility).
+3. Add integration smoke tests for upgraded worker dependency batches.

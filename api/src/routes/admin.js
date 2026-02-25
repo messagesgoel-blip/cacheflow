@@ -1,5 +1,5 @@
 const express = require('express');
-const { pool } = require('../db/client');
+const pool = require('../db/client');
 const authMw = require('../middleware/auth');
 const { auditLog } = require('../middleware/audit');
 

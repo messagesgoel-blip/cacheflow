@@ -1,4 +1,6 @@
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
+import { getPublicApiUrl } from './config'
+
+const API = getPublicApiUrl()
 
 export async function apiFetch(path: string, opts: RequestInit = {}, token?: string, timeoutMs = 15000) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(opts.headers as Record<string, string> || {}) }

@@ -7,18 +7,19 @@ const path        = require('path');
 const fs          = require('fs');
 const crypto      = require('crypto');
 const { Pool }    = require('pg');
+const config      = require('./config');
 
 // ── Redis ────────────────────────────────────────────────────────────────────
 const Redis = require('ioredis');
 const redis = new Redis({
-  host: process.env.REDIS_HOST || 'cacheflow-redis',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
+  host: config.redisHost,
+  port: config.redisPort,
   retryStrategy: times => Math.min(times * 500, 5000)
 });
 redis.on('error', err => log('warn', 'redis error', { err: err.message }));
 redis.on('connect', () => log('info', 'redis connected'));
 
-const DAILY_TRANSFER_LIMIT = parseInt(process.env.DAILY_TRANSFER_LIMIT_BYTES || String(750 * 1024 * 1024 * 1024));
+const DAILY_TRANSFER_LIMIT = config.dailyTransferLimitBytes;
 
 async function getDailyTransferKey(userId) {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -46,7 +47,7 @@ async function checkAndIncrementTransfer(userId, sizeBytes) {
 
 // Get rclone destination based on transfer limits (overflow routing)
 async function getRcloneDest(userId) {
-  const DAILY_LIMIT_BYTES = parseInt(process.env.DAILY_TRANSFER_LIMIT_BYTES || String(750 * 1024 * 1024 * 1024));
+  const DAILY_LIMIT_BYTES = config.dailyTransferLimitBytes;
   const OVERFLOW_THRESHOLD = DAILY_LIMIT_BYTES * 0.9; // 90% of limit (675GB)
 
   try {
@@ -71,16 +72,16 @@ async function getRcloneDest(userId) {
 }
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const WATCH_DIR   = process.env.SYNC_WATCH_DIR || '/mnt/local';
-const RCLONE_DEST = process.env.RCLONE_DEST    || 'goels:/srv/storage/remotes/parul-main/CacheFlow';
-const RCLONE_DEST_OVERFLOW = process.env.RCLONE_DEST_OVERFLOW || 'goels-overflow:/srv/storage/remotes/parul-main/CacheFlow';
-const MIN_AGE_MS  = parseInt(process.env.SYNC_MIN_AGE_MS || '1200000'); // 20 min
+const WATCH_DIR   = config.watchDir;
+const RCLONE_DEST = config.rcloneDest;
+const RCLONE_DEST_OVERFLOW = config.rcloneDestOverflow;
+const MIN_AGE_MS  = config.syncMinAgeMs; // 20 min
 const CONFLICT_WINDOW_MS = 300000; // 5 min
 const RETRY_DELAYS = [4000, 8000, 16000, 32000, 60000];
 const STALE_SYNcing_TIMEOUT_MS = 300000; // 5 min - recover files stuck in syncing
-const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_FILES || '5'); // Process max 5 files at once (increased from 3)
-const STALE_SYNCING_SWEEP_MS = parseInt(process.env.STALE_SYNCING_SWEEP_MS || '120000'); // 2 min - periodic stale sync recovery
-const SYNC_PERF_LOG_INTERVAL_MS = parseInt(process.env.SYNC_PERF_LOG_INTERVAL_MS || '30000'); // 30s - performance logging interval
+const MAX_CONCURRENT = config.maxConcurrentFiles; // Process max files concurrently
+const STALE_SYNCING_SWEEP_MS = config.staleSyncingSweepMs; // 2 min - periodic stale sync recovery
+const SYNC_PERF_LOG_INTERVAL_MS = config.syncPerfLogIntervalMs; // 30s - performance logging interval
 const EXCLUDE     = [/\.tmp$/, /\.lock$/, /\.part$/, /~$/];
 
 // Priority: 1=highest. docs > images > video > other
@@ -88,7 +89,7 @@ const PRIORITY = { doc:1, docx:1, pdf:1, txt:1, md:1, png:2, jpg:2, jpeg:2, gif:
 function filePriority(fp) { return PRIORITY[path.extname(fp).slice(1).toLowerCase()] || 4; }
 
 // ── DB ────────────────────────────────────────────────────────────────────────
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({ connectionString: config.databaseUrl });
 pool.on('error', err => log('error', 'db pool error', { err: err.message }));
 
 // ── Logger ────────────────────────────────────────────────────────────────────
