@@ -14,6 +14,7 @@ export default function Home() {
   const [usage, setUsage] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [currentPath, setCurrentPath] = useState('/')
+  const [loginMode, setLoginMode] = useState<'login' | 'register'>('login')
 
   const refresh = useCallback(async (t: string) => {
     setLoading(true)
@@ -33,6 +34,11 @@ export default function Home() {
     const e = localStorage.getItem('cf_email')
     if (t && e) { setToken(t); setEmail(e); refresh(t) }
   }, [refresh])
+
+  useEffect(() => {
+    const mode = new URLSearchParams(window.location.search).get('mode')
+    setLoginMode(mode === 'register' ? 'register' : 'login')
+  }, [])
 
   // Auto-poll every 5s while any file is pending or syncing
   useEffect(() => {
@@ -55,8 +61,7 @@ export default function Home() {
     setToken(null); setEmail(''); setFiles([]); setUsage(null)
   }
 
-
-  if (!token) return <Login onLogin={handleLogin} />
+  if (!token) return <Login onLogin={handleLogin} initialMode={loginMode} />
 
   return (
     <div className="min-h-screen">

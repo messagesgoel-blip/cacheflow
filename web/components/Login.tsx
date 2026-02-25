@@ -2,12 +2,18 @@
 import { useState } from 'react'
 import { login, register } from '@/lib/api'
 
-export default function Login({ onLogin }: { onLogin: (token: string, email: string) => void }) {
+export default function Login({
+  onLogin,
+  initialMode = 'login',
+}: {
+  onLogin: (token: string, email: string) => void
+  initialMode?: 'login' | 'register'
+}) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register'>(initialMode)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
