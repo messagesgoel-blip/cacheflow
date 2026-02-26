@@ -205,7 +205,10 @@ router.post('/:name/copy', async (req, res) => {
 function execRclone(cmd) {
   return new Promise((resolve, reject) => {
     const fullCmd = `/usr/local/bin/rclone ${cmd}`;
-    exec(fullCmd, { timeout: 30000 }, (err, stdout, stderr) => {
+    exec(fullCmd, {
+      timeout: 30000,
+      env: { ...process.env, RCLONE_CONFIG: '/app/data/rclone.conf' }
+    }, (err, stdout, stderr) => {
       if (err) {
         reject(new Error(stderr || err.message));
       } else {
