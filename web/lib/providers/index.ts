@@ -9,17 +9,20 @@ import { StorageProvider, providerRegistry } from './StorageProvider'
 // Import all providers
 import { GoogleDriveProvider } from './googleDrive'
 import { OneDriveProvider } from './oneDrive'
+import { DropboxProvider } from './dropbox'
+import { BoxProvider } from './box'
 import { WebDAVProvider } from './webdav'
+import { VPSProvider } from './vps'
 
-// Register providers
+// Register providers (Week 2a + 2b complete)
 providerRegistry.register('google', () => new GoogleDriveProvider())
 providerRegistry.register('onedrive', () => new OneDriveProvider())
+providerRegistry.register('dropbox', () => new DropboxProvider())
+providerRegistry.register('box', () => new BoxProvider())
 providerRegistry.register('webdav', () => new WebDAVProvider())
+providerRegistry.register('vps', () => new VPSProvider())
 
 // TODO: Register remaining providers when implemented
-// providerRegistry.register('onedrive', () => new OneDriveProvider())
-// providerRegistry.register('dropbox', () => new DropboxProvider())
-// providerRegistry.register('box', () => new BoxProvider())
 // providerRegistry.register('pcloud', () => new PCloudProvider())
 // providerRegistry.register('filen', () => new FilenProvider())
 // providerRegistry.register('yandex', () => new YandexProvider())
