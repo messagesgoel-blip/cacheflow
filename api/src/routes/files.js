@@ -317,83 +317,74 @@ router.get('/usage', async (req, res) => {
 });
 
 // GET /files/browse - Browse files and folders at a specific path
+// Reads directly from disk at /mnt/local/{user_id}/{path}
 router.get('/browse', async (req, res) => {
   try {
     const requestedPath = req.query.path || '/';
     const normalizedPath = requestedPath === '/' ? '' : requestedPath.replace(/^\/+|\/+$/g, '');
-    const locationId = typeof req.query.location === 'string' ? req.query.location : 'local-cache';
 
-    // Get all files for this user
-    const result = await pool.query(
-      `SELECT id, path, size_bytes, hash, status, error_reason, retry_count,
-              last_modified, synced_at, created_at, immutable_until
-       FROM files
-       WHERE user_id=$1 AND tenant_id=$2 AND status != 'deleted'`,
-      [req.user.id, req.user.tenant_id]
-    );
+    // Build the actual disk path
+    const userDiskPath = path.join(LOCAL_PATH, req.user.id, normalizedPath);
 
-    let allFiles = result.rows;
+    // Check if path exists
+    if (!fs.existsSync(userDiskPath)) {
+      return res.json({
+        path: requestedPath,
+        folders: [],
+        files: [],
+        totalItems: 0
+      });
+    }
 
-    // NOTE: Location-based filtering by disk existence is too strict -
-    // files may exist in one location but the check fails for others.
-    // For now, show all files regardless of location selection.
-    // TODO: Add location metadata to files table for proper filtering.
+    // Read directory from disk
+    const entries = fs.readdirSync(userDiskPath, { withFileTypes: true });
 
-    // Extract folders and files at the current path level
-    const folders = new Set();
-    const filesAtPath = [];
+    const folders = [];
+    const files = [];
 
-    for (const file of allFiles) {
-      const filePath = file.path;
+    for (const entry of entries) {
+      // Skip hidden files/folders
+      if (entry.name.startsWith('.')) continue;
 
-      // Check if file is at the current path or in a subdirectory
-      if (normalizedPath === '' || filePath.startsWith(normalizedPath + '/')) {
-        // Remove the current path prefix
-        const relativePath = normalizedPath === '' ? filePath : filePath.substring(normalizedPath.length + 1);
+      const fullPath = path.join(userDiskPath, entry.name);
+      const relativePath = normalizedPath ? `${normalizedPath}/${entry.name}` : entry.name;
 
-        // Split into components
-        const parts = relativePath.split('/').filter(p => p !== '');
+      if (entry.isDirectory()) {
+        // Count items in folder
+        let itemCount = 0;
+        try {
+          const subEntries = fs.readdirSync(fullPath);
+          itemCount = subEntries.filter(f => !f.startsWith('.')).length;
+        } catch {}
 
-        if (parts.length === 0) {
-          // This shouldn't happen for valid paths
-          continue;
-        } else if (parts.length === 1) {
-          if (file.hash === 'folder-marker') continue;
-          // File at current path
-          filesAtPath.push({
-            ...file,
-            name: parts[0],
-            isFolder: false
-          });
-        } else {
-          // File in subfolder - add first part as folder
-          folders.add(parts[0]);
-        }
+        folders.push({
+          name: entry.name,
+          path: relativePath,
+          isFolder: true,
+          itemCount
+        });
+      } else {
+        // Get file stats
+        const stat = fs.statSync(fullPath);
+        files.push({
+          name: entry.name,
+          path: relativePath,
+          isFolder: false,
+          size_bytes: stat.size,
+          last_modified: stat.mtime.toISOString()
+        });
       }
     }
 
-    // Convert folders set to array
-    const folderArray = Array.from(folders).map(folderName => ({
-      name: folderName,
-      path: normalizedPath === '' ? folderName : `${normalizedPath}/${folderName}`,
-      isFolder: true,
-      itemCount: allFiles.filter(f => {
-        if (f.hash === 'folder-marker') return false;
-        const filePath = f.path;
-        if (normalizedPath === '') {
-          return filePath.startsWith(folderName + '/');
-        } else {
-          return filePath.startsWith(`${normalizedPath}/${folderName}/`);
-        }
-      }).length
-    }));
+    // Sort folders and files alphabetically
+    folders.sort((a, b) => a.name.localeCompare(b.name));
+    files.sort((a, b) => a.name.localeCompare(b.name));
 
     res.json({
       path: requestedPath,
-      location: locationId,
-      folders: folderArray,
-      files: filesAtPath,
-      totalItems: folderArray.length + filesAtPath.length
+      folders,
+      files,
+      totalItems: folders.length + files.length
     });
 
   } catch (err) {

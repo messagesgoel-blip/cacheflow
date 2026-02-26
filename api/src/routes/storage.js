@@ -10,39 +10,6 @@ router.use(authMw);
 
 const LOCAL_PATH = process.env.LOCAL_CACHE_PATH || '/mnt/local';
 const POOL_PATH = process.env.POOL_PATH || '/mnt/pool';
-const LOCAL_DRIVE_NAME = process.env.LOCAL_DRIVE_NAME || 'NVMe Drive 1';
-const POOL_DRIVE_NAME = process.env.POOL_DRIVE_NAME || 'NVMe Drive 2';
-
-function parseJsonOrEmpty(value) {
-  try {
-    return value ? JSON.parse(value) : {};
-  } catch {
-    return {};
-  }
-}
-
-function getFsCapacity(targetPath) {
-  try {
-    if (!fs.existsSync(targetPath) || typeof fs.statfsSync !== 'function') {
-      return { totalBytes: null, usedBytes: null, availableBytes: null };
-    }
-    const stats = fs.statfsSync(targetPath);
-    const blockSize = Number(stats.bsize || stats.frsize || 0);
-    if (!blockSize || !Number.isFinite(blockSize)) {
-      return { totalBytes: null, usedBytes: null, availableBytes: null };
-    }
-    const totalBytes = Number(stats.blocks) * blockSize;
-    const availableBytes = Number(stats.bavail) * blockSize;
-    const usedBytes = Math.max(totalBytes - availableBytes, 0);
-    return {
-      totalBytes: Number.isFinite(totalBytes) ? totalBytes : null,
-      usedBytes: Number.isFinite(usedBytes) ? usedBytes : null,
-      availableBytes: Number.isFinite(availableBytes) ? availableBytes : null,
-    };
-  } catch {
-    return { totalBytes: null, usedBytes: null, availableBytes: null };
-  }
-}
 
 // GET /storage/locations - Get storage locations and usage info
 router.get('/locations', async (req, res) => {
@@ -52,7 +19,7 @@ router.get('/locations', async (req, res) => {
 
     // Get user's cloud configurations (no tenant_id in cloud_configs table)
     const cloudConfigs = await pool.query(
-      `SELECT id, provider, config_json, is_active, created_at
+      `SELECT id, provider, is_active, created_at
        FROM cloud_configs
        WHERE user_id=$1
        ORDER BY is_active DESC, created_at DESC`,
@@ -114,70 +81,48 @@ router.get('/locations', async (req, res) => {
 
     const syncSummary = syncStats.rows[0];
 
-    const localCapacity = getFsCapacity(LOCAL_PATH);
-    const poolCapacity = getFsCapacity(POOL_PATH);
-
     // Build response
     const locations = [
       {
         id: 'local-cache',
-        name: LOCAL_DRIVE_NAME,
+        name: 'Local Cache',
         type: 'local',
         path: LOCAL_PATH,
         totalSize: localCacheSize,
         fileCount: localCacheFiles,
         status: 'active',
-        description: `Primary local storage (${LOCAL_PATH})`,
+        description: 'Fast local storage for recently accessed files',
         color: 'blue',
-        icon: '💾',
-        totalBytes: localCapacity.totalBytes,
-        usedBytes: localCapacity.usedBytes,
-        availableBytes: localCapacity.availableBytes
+        icon: '💾'
       },
       {
         id: 'readonly-pool',
-        name: POOL_DRIVE_NAME,
+        name: 'Read-Only Pool',
         type: 'pool',
         path: POOL_PATH,
         totalSize: poolSize,
         fileCount: poolFiles,
         status: fs.existsSync(POOL_PATH) ? 'active' : 'unavailable',
-        description: `Secondary pooled storage (${POOL_PATH})`,
+        description: 'Shared read-only storage for common files',
         color: 'green',
-        icon: '📚',
-        totalBytes: poolCapacity.totalBytes,
-        usedBytes: poolCapacity.usedBytes,
-        availableBytes: poolCapacity.availableBytes
+        icon: '📚'
       }
     ];
 
     // Add cloud storage locations from configurations
     cloudConfigs.rows.forEach((config, index) => {
-      const parsedConfig = parseJsonOrEmpty(config.config_json);
-      const displayName = parsedConfig.displayName || `${config.provider} Cloud`;
-      const region = parsedConfig.region || null;
-      const parsedTotal = Number(parsedConfig.totalBytes ?? parsedConfig.quotaTotalBytes);
-      const parsedUsed = Number(parsedConfig.usedBytes ?? parsedConfig.quotaUsedBytes ?? 0);
-      const totalBytes = Number.isFinite(parsedTotal) && parsedTotal > 0 ? parsedTotal : null;
-      const usedBytes = Number.isFinite(parsedUsed) && parsedUsed >= 0 ? parsedUsed : 0;
-      const availableBytes = totalBytes !== null ? Math.max(totalBytes - usedBytes, 0) : null;
       locations.push({
         id: `cloud-${config.id}`,
-        name: displayName,
+        name: `${config.provider} Cloud`,
         type: 'cloud',
         provider: config.provider,
-        region,
         isActive: config.is_active,
         status: config.is_active ? 'active' : 'inactive',
-        description: region ? `Cloud storage in ${region}` : `Cloud storage on ${config.provider}`,
+        description: `Cloud storage on ${config.provider}`,
         color: index % 2 === 0 ? 'purple' : 'orange',
-        icon: parsedConfig.icon || '☁️',
+        icon: '☁️',
         configId: config.id,
-        createdAt: config.created_at,
-        totalSize: usedBytes,
-        totalBytes,
-        usedBytes,
-        availableBytes
+        createdAt: config.created_at
       });
     });
 

@@ -1,7 +1,12 @@
 FROM node:22-alpine
 
-# Install tini for proper signal handling
-RUN apk add --no-cache tini
+# Install tini and rclone (ARM64)
+RUN apk add --no-cache tini curl unzip && \
+    curl -sO https://downloads.rclone.org/rclone-current-linux-arm64.zip && \
+    unzip -o rclone-current-linux-arm64.zip && \
+    cp rclone-*-linux-arm64/rclone /usr/local/bin/ && \
+    chmod +x /usr/local/bin/rclone && \
+    rm -rf rclone-*-linux-arm64 rclone-current-linux-arm64.zip
 
 WORKDIR /app
 

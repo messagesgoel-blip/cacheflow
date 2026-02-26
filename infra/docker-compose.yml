@@ -41,14 +41,18 @@ services:
       context: ../api
       dockerfile: Dockerfile
     container_name: cacheflow-api
-    user: "1002:1002"
+    user: "0:0"
     env_file: ../.env
+    environment:
+      - HOME=/home/node
     ports:
       - "127.0.0.1:8100:8100"
     volumes:
       - /mnt/local:/mnt/local
       - /mnt/pool:/mnt/pool:ro
       - /srv/docker/apps/cacheflow/logs:/app/logs
+      - /home/sanjay/.config/rclone/rclone.conf:/home/node/.config/rclone/rclone.conf:ro
+      - /home/sanjay/.ssh:/home/sanjay/.ssh:ro
     depends_on:
       postgres:
         condition: service_healthy

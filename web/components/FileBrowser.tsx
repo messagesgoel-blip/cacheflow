@@ -9,7 +9,6 @@ import { useContextMenu, contextMenuItems } from './ContextMenu'
 interface FileBrowserProps {
   token: string
   currentPath?: string
-  locationId?: string
   onPathChange?: (path: string) => void
   onRefresh?: () => void
 }
@@ -26,7 +25,7 @@ interface BrowseResult {
   totalItems: number
 }
 
-export default function FileBrowser({ token, currentPath = '/', locationId, onPathChange, onRefresh }: FileBrowserProps) {
+export default function FileBrowser({ token, currentPath = '/', onPathChange, onRefresh }: FileBrowserProps) {
   const [browseData, setBrowseData] = useState<BrowseResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +40,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   // Load current path on mount and when path changes
   useEffect(() => {
     loadCurrentPath()
-  }, [currentPath, token, locationId])
+  }, [currentPath, token])
 
   async function loadCurrentPath() {
     if (!token) return
@@ -50,7 +49,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
     setError(null)
 
     try {
-      const data = await browseFiles(currentPath, token, locationId)
+      const data = await browseFiles(currentPath, token)
       setBrowseData(data)
     } catch (err: any) {
       setError(err.message || 'Failed to load files')
@@ -246,11 +245,6 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
 
       {/* Breadcrumb */}
       <Breadcrumb path={currentPath} onSegmentClick={handleBreadcrumbClick} />
-      {locationId && (
-        <div className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-2 py-1 inline-block">
-          Drive: {locationId}
-        </div>
-      )}
 
       {/* Toolbar */}
       <div className="flex flex-wrap gap-2 items-center justify-between">

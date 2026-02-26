@@ -1,10 +1,12 @@
 import React from 'react';
 
 interface StatusBadgeProps {
-  status: string;
+  status?: string;
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+  const safeStatus = status || 'unknown';
+
   const getStatusClasses = (status: string) => {
     switch (status.toLowerCase()) {
       case 'synced':
@@ -20,10 +22,10 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
     }
   };
 
-  const statusText = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  const statusText = safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1).toLowerCase();
 
   return (
-    <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusClasses(status)}`}>
+    <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusClasses(safeStatus)}`}>
       {statusText}
     </span>
   );
