@@ -114,7 +114,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
 
   if (loading && locations.length === 0) {
     return (
-      <div className="border rounded-lg bg-white p-4">
+      <div className="border rounded-lg bg-white dark:bg-gray-800 p-4">
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="space-y-3">
@@ -127,10 +127,10 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
   }
 
   return (
-    <div className="border rounded-lg bg-white">
+    <div className="border rounded-lg bg-white dark:bg-gray-800">
       {/* Header */}
-      <div className="p-3 border-b flex justify-between items-center">
-        <h3 className="font-medium text-gray-700">Storage</h3>
+      <div className="p-3 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 className="font-medium text-gray-700 dark:text-gray-200">Storage</h3>
         <button
           onClick={() => {
             loadStorageData()
@@ -145,22 +145,22 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
 
       {/* Error display */}
       {error && (
-        <div className="p-3 border-b bg-red-50 text-red-700 text-sm">
+        <div className="p-3 border-b dark:border-gray-700 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm">
           {error}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="border-b">
+      <div className="border-b dark:border-gray-700">
         <div className="flex">
           <button
-            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'locations' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'locations' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
             onClick={() => setActiveTab('locations')}
           >
             Locations
           </button>
           <button
-            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'usage' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'usage' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
             onClick={() => setActiveTab('usage')}
           >
             Usage
@@ -175,13 +175,13 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
             {/* Summary stats */}
             {summary && (
               <div className="grid grid-cols-2 gap-2 mb-4">
-                <div className="bg-gray-50 p-2 rounded text-center">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-2 rounded text-center">
                   <div className="text-lg font-semibold">{summary.totalFiles}</div>
-                  <div className="text-xs text-gray-500">Total Files</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Total Files</div>
                 </div>
-                <div className="bg-gray-50 p-2 rounded text-center">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-2 rounded text-center">
                   <div className="text-lg font-semibold">{formatBytes(summary.totalSizeBytes)}</div>
-                  <div className="text-xs text-gray-500">Total Size</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Total Size</div>
                 </div>
               </div>
             )}
@@ -190,15 +190,15 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
             {locations.map(location => (
               <div
                 key={location.id}
-                className={`p-3 border rounded-lg hover:shadow-sm cursor-pointer ${onLocationSelect ? 'hover:border-blue-300' : ''}`}
+                className={`p-3 border rounded-lg hover:shadow-sm cursor-pointer dark:border-gray-700 ${onLocationSelect ? 'hover:border-blue-300 dark:hover:border-blue-600' : ''}`}
                 onClick={() => onLocationSelect?.(location.id)}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{location.icon}</span>
                     <div>
-                      <div className="font-medium text-sm">{location.name}</div>
-                      <div className="text-xs text-gray-500">{location.description}</div>
+                      <div className="font-medium text-sm dark:text-gray-200">{location.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{location.description}</div>
                     </div>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded ${getStatusColor(location.status)}`}>
@@ -211,21 +211,21 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
                     {location.type}
                   </span>
                   <div className="text-right">
-                    <div className="font-medium">{formatBytes(location.totalSize)}</div>
-                    <div className="text-xs text-gray-500">{location.fileCount} files</div>
+                    <div className="font-medium dark:text-gray-200">{formatBytes(location.totalSize)}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{location.fileCount} files</div>
                   </div>
                 </div>
 
                 {/* Progress bar for cloud storage usage */}
                 {location.type === 'cloud' && usage && (
                   <div className="mt-2">
-                    <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500"
                         style={{ width: `${Math.min(100, (location.totalSize / usage.quota.total) * 100)}%` }}
                       ></div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {((location.totalSize / usage.quota.total) * 100).toFixed(1)}% of quota
                     </div>
                   </div>
@@ -246,18 +246,18 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
               {/* Quota usage */}
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Storage Quota</span>
-                  <span className="font-medium">
+                  <span className="text-gray-600 dark:text-gray-300">Storage Quota</span>
+                  <span className="font-medium dark:text-gray-200">
                     {formatBytes(usage.quota.used)} / {formatBytes(usage.quota.total)}
                   </span>
                 </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-500"
                     style={{ width: `${Math.min(100, usage.quota.usedPercentage)}%` }}
                   ></div>
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                   <span>{usage.quota.usedPercentage.toFixed(1)}% used</span>
                   <span>{formatBytes(usage.quota.available)} available</span>
                 </div>
@@ -265,14 +265,14 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
 
               {/* File type breakdown */}
               <div>
-                <h4 className="font-medium text-sm mb-2">File Types</h4>
+                <h4 className="font-medium text-sm dark:text-gray-200 mb-2">File Types</h4>
                 <div className="space-y-2">
                   {usage.fileTypes.map(fileType => (
                     <div key={fileType.type} className="flex items-center justify-between">
-                      <span className="text-sm">{fileType.type}</span>
+                      <span className="text-sm dark:text-gray-300">{fileType.type}</span>
                       <div className="text-right">
-                        <div className="text-sm font-medium">{formatBytes(fileType.totalSize)}</div>
-                        <div className="text-xs text-gray-500">{fileType.fileCount} files</div>
+                        <div className="text-sm font-medium dark:text-gray-200">{formatBytes(fileType.totalSize)}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{fileType.fileCount} files</div>
                       </div>
                     </div>
                   ))}
@@ -282,22 +282,22 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
               {/* Location breakdown */}
               {summary && (
                 <div>
-                  <h4 className="font-medium text-sm mb-2">Storage Locations</h4>
+                  <h4 className="font-medium text-sm dark:text-gray-200 mb-2">Storage Locations</h4>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Local Cache</span>
+                      <span className="text-sm dark:text-gray-300">Local Cache</span>
                       <div className="text-right">
-                        <div className="text-sm font-medium">{formatBytes(summary.localCacheSize)}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-sm font-medium dark:text-gray-200">{formatBytes(summary.localCacheSize)}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {((summary.localCacheSize / summary.totalSizeBytes) * 100).toFixed(1)}% of total
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Read-Only Pool</span>
+                      <span className="text-sm dark:text-gray-300">Read-Only Pool</span>
                       <div className="text-right">
-                        <div className="text-sm font-medium">{formatBytes(summary.poolSize)}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-sm font-medium dark:text-gray-200">{formatBytes(summary.poolSize)}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {((summary.poolSize / summary.totalSizeBytes) * 100).toFixed(1)}% of total
                         </div>
                       </div>
@@ -315,7 +315,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t text-xs text-gray-500">
+      <div className="p-3 border-t text-xs text-gray-500 dark:text-gray-400">
         <div className="flex justify-between">
           <span>{locations.length} locations</span>
           {usage && (

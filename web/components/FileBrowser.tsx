@@ -238,7 +238,7 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
     >
       {/* Error display */}
       {error && (
-        <div className="p-3 bg-red-50 text-red-700 rounded border border-red-200 text-sm">
+        <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded border border-red-200 dark:border-red-800 text-sm">
           {error}
         </div>
       )}
@@ -272,12 +272,12 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             {browseData?.totalItems || 0} items
           </span>
           <button
             onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-            className="px-2 py-1 text-sm border rounded hover:bg-gray-50"
+            className="px-2 py-1 text-sm border dark:border-gray-600 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             {viewMode === 'list' ? 'Grid View' : 'List View'}
           </button>
@@ -286,14 +286,14 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
 
       {/* New folder input */}
       {showNewFolder && (
-        <div className="p-3 bg-gray-50 rounded border">
+        <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded border dark:border-gray-600">
           <div className="flex gap-2">
             <input
               type="text"
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Folder name"
-              className="flex-1 border rounded px-3 py-1.5 text-sm"
+              className="flex-1 border dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-3 py-1.5 text-sm"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleCreateFolder()
                 if (e.key === 'Escape') {
@@ -315,7 +315,7 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
                 setShowNewFolder(false)
                 setNewFolderName('')
               }}
-              className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+              className="px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-500"
             >
               Cancel
             </button>
@@ -337,14 +337,14 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
           {folders.map(folder => (
             <div
               key={folder.path}
-              className="border rounded-lg p-3 bg-white hover:shadow-sm cursor-pointer group"
+              className="border rounded-lg p-3 bg-white dark:bg-gray-700 hover:shadow-sm cursor-pointer group dark:border-gray-600"
               onClick={() => handleFolderClick(folder.path)}
               onContextMenu={(e) => handleFolderContextMenu(e, folder)}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">📁</span>
-                  <span className="font-medium text-sm truncate">
+                  <span className="font-medium text-sm truncate dark:text-white">
                     {folder.name}
                   </span>
                 </div>
@@ -353,13 +353,13 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
                     e.stopPropagation()
                     handleDeleteFolder(folder.path)
                   }}
-                  className="opacity-0 group-hover:opacity-100 text-xs text-red-500 hover:text-red-700"
+                  className="opacity-0 group-hover:opacity-100 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                   title="Delete folder"
                 >
                   ×
                 </button>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 {folder.itemCount || 0} items
               </div>
             </div>
@@ -381,7 +381,7 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
           onMoveFile={handleMoveFile}
         />
       ) : folders.length === 0 && !loading && (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-gray-400 dark:text-gray-500">
           <p className="mb-2">This folder is empty</p>
           <p className="text-sm">Upload a file or create a folder to get started</p>
         </div>
@@ -389,7 +389,7 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
 
       {/* Loading state */}
       {loading && (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-gray-400 dark:text-gray-500">
           Loading...
         </div>
       )}

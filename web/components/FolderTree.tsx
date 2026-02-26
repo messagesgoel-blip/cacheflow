@@ -148,15 +148,15 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
   const rootFolders = folders.filter(f => getParentPath(f.path) === '/')
 
   return (
-    <div className="border rounded-lg bg-white">
-      <div className="p-3 border-b flex justify-between items-center">
-        <h3 className="font-medium text-gray-700">Folders</h3>
+    <div className="border rounded-lg bg-white dark:bg-gray-800">
+      <div className="p-3 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 className="font-medium text-gray-700 dark:text-gray-200">Folders</h3>
         <button
           onClick={() => {
             loadFolders('/')
             onRefresh?.()
           }}
-          className="text-xs text-blue-600 hover:text-blue-800"
+          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
           disabled={loading}
         >
           {loading ? '↻' : '↻'}
@@ -164,14 +164,14 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
       </div>
       <div className="p-2 max-h-[400px] overflow-y-auto">
         {error && (
-          <div className="p-2 mb-2 text-xs text-red-600 bg-red-50 rounded">
+          <div className="p-2 mb-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded">
             {error}
           </div>
         )}
 
         {/* Root/Home folder */}
         <div
-          className={`flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer ${currentPath === '/' ? 'bg-blue-50 text-blue-700' : ''}`}
+          className={`flex items-center py-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer ${currentPath === '/' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : ''}`}
           onClick={() => handleFolderClick('/')}
         >
           <span className="w-4 mr-1">🏠</span>
@@ -189,12 +189,12 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
           </div>
         )}
       </div>
-      <div className="p-2 border-t text-xs text-gray-500">
+      <div className="p-2 border-t dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
         <div className="flex justify-between">
           <span>{folders.length} folders</span>
           <button
             onClick={() => onFolderSelect('/')}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
           >
             Home
           </button>

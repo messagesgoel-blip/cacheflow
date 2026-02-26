@@ -1,11 +1,12 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Login from '@/components/Login'
+import Navbar from '@/components/Navbar'
 import UsageBar from '@/components/UsageBar'
 import FileBrowser from '@/components/FileBrowser'
 import DrivePanel from '@/components/DrivePanel'
 import FolderTree from '@/components/FolderTree'
-import { getFiles, getUsage, uploadFile } from '@/lib/api'
+import { getFiles, getUsage } from '@/lib/api'
 
 // Simple error boundary wrapper
 function withErrorBoundary<P extends object>(Component: React.ComponentType<P>) {
@@ -20,7 +21,7 @@ function withErrorBoundary<P extends object>(Component: React.ComponentType<P>) 
       return () => window.removeEventListener('error', handleError)
     }, [])
     if (error) {
-      return <div className="p-8"><h1 className="text-red-600">Error: {error.message}</h1></div>
+      return <div className="p-8"><h1 className="text-red-600 dark:text-red-400">Error: {error.message}</h1></div>
     }
     return <Component {...props} />
   }
@@ -89,22 +90,8 @@ export default function Home() {
   if (!token) return <Login onLogin={handleLogin} initialMode={loginMode} />
 
   return (
-    <div className="min-h-screen">
-      <nav className="bg-blue-700 text-white px-6 py-3 flex justify-between items-center shadow">
-        <div className="flex items-center gap-6">
-          <span className="font-bold text-lg tracking-tight">CacheFlow</span>
-          <div className="flex gap-4">
-            <a href="/" className="text-white font-medium text-sm">Files</a>
-            <a href="/remotes" className="text-blue-200 hover:text-white text-sm">Cloud Drives</a>
-            <a href="/conflicts" className="text-blue-200 hover:text-white text-sm">Conflicts</a>
-            <a href="/admin" className="text-blue-200 hover:text-white text-sm">Admin</a>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-blue-200 text-sm">{email}</span>
-          <button onClick={handleLogout} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navbar email={email} onLogout={handleLogout} />
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         <UsageBar usage={usage} />
 
@@ -131,7 +118,7 @@ export default function Home() {
 
           {/* Main content - File browser */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
               <FileBrowser
                 token={token}
                 currentPath={currentPath}
