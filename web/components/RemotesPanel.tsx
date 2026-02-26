@@ -357,16 +357,16 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                 </span>
               </div>
 
-              {remote.total > 0 && (
+              {remote.total && remote.total > 0 && (
                 <div className="mb-3">
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-blue-500"
-                      style={{ width: `${Math.min(100, (remote.used / remote.total) * 100)}%` }}
+                      style={{ width: `${Math.min(100, ((remote.used || 0) / remote.total) * 100)}%` }}
                     />
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>{formatBytes(remote.used)} used</span>
+                    <span>{formatBytes(remote.used || 0)} used</span>
                     <span>{formatBytes(remote.total)} total</span>
                   </div>
                 </div>
