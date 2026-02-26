@@ -203,10 +203,10 @@ export async function deleteRemote(name: string, token: string) {
   return res.json()
 }
 
-export async function setRemoteToken(name: string, token: string, authToken: string) {
+export async function setRemoteToken(name: string, token: string, authToken: string, credentials?: string) {
   const res = await apiFetch(`/remotes/${encodeURIComponent(name)}/token`, {
     method: 'POST',
-    body: JSON.stringify({ token })
+    body: JSON.stringify({ token, credentials })
   }, authToken)
   if (!res.ok) throw new Error(`Set token failed: ${res.status}`)
   return res.json()

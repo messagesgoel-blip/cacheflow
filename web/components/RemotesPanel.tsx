@@ -116,6 +116,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
   const [oauthRemoteName, setOauthRemoteName] = useState('')
   const [oauthAuthorizeCmd, setOauthAuthorizeCmd] = useState('')
   const [oauthToken, setOauthToken] = useState('')
+  const [oauthCredentials, setOauthCredentials] = useState('')
   const [oauthLoading, setOauthLoading] = useState(false)
 
   // Form state
@@ -238,6 +239,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
         setShowAddModal(false)
         setOauthRemoteName(newRemoteName)
         setOauthAuthorizeCmd(response.authorizeCommand)
+        setOauthCredentials(response.credentials || '')
         setShowOauthModal(true)
         resetForm()
         return
@@ -263,9 +265,10 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
     setError(null)
 
     try {
-      await setRemoteToken(oauthRemoteName, oauthToken, token)
+      await setRemoteToken(oauthRemoteName, oauthToken, token, oauthCredentials)
       setShowOauthModal(false)
       setOauthToken('')
+      setOauthCredentials('')
       loadRemotes()
     } catch (err: any) {
       setError(err.message || 'Failed to save token')
@@ -655,25 +658,25 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
             <div className="space-y-4">
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
                 <p className="text-yellow-800 dark:text-yellow-200 font-medium mb-2">
-                  Step 1: Run this command on your local machine with web browser:
+                  Step 1: Run this command on your LOCAL computer (with web browser):
                 </p>
-                <code className="block bg-gray-800 text-green-400 p-3 rounded text-sm font-mono overflow-x-auto">
+                <code className="block bg-gray-800 text-green-400 p-3 rounded text-sm font-mono overflow-x-auto whitespace-pre-wrap break-all">
                   {oauthAuthorizeCmd}
                 </code>
                 <p className="text-yellow-700 dark:text-yellow-300 text-xs mt-2">
-                  This will open a browser window to log in with Google.
+                  This opens a browser window. Log in with Google and authorize rclone.
                 </p>
               </div>
 
               <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
                 <p className="text-blue-800 dark:text-blue-200 font-medium mb-2">
-                  Step 2: After authorizing, copy the token it shows and paste below:
+                  Step 2: After authorizing, the command outputs a token (JSON). Copy the ENTIRE output and paste below:
                 </p>
                 <textarea
                   value={oauthToken}
                   onChange={(e) => setOauthToken(e.target.value)}
-                  placeholder='Paste the token here (starts with {"access_token":...)'
-                  className="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 h-24 text-sm font-mono"
+                  placeholder='Paste the entire token here, for example: {"access_token":"ya29.a0...","refresh_token":"1//0g...","token_type":"Bearer",...}'
+                  className="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 h-32 text-sm font-mono"
                 />
               </div>
             </div>

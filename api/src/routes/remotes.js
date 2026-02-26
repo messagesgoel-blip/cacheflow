@@ -180,6 +180,7 @@ router.post('/', async (req, res) => {
     if (needsOAuth && authorizeCommand) {
       response.needsOAuth = true;
       response.authorizeCommand = authorizeCommand.replace('rclone authorize', '/usr/local/bin/rclone authorize');
+      response.credentials = tokenValue; // Base64 encoded {client_id, client_secret}
     }
 
     res.json(response);
@@ -193,7 +194,7 @@ router.post('/', async (req, res) => {
 router.post('/:name/token', async (req, res) => {
   try {
     const { name } = req.params;
-    const { token } = req.body;
+    const { token, credentials } = req.body;
 
     if (!token) {
       return res.status(400).json({ error: 'token required' });
@@ -206,12 +207,20 @@ router.post('/:name/token', async (req, res) => {
       return res.status(404).json({ error: 'remote not found' });
     }
 
-    // Decode the base64 token to get credentials
-    const creds = JSON.parse(Buffer.from(token, 'base64').toString());
+    // The token is the raw JSON from rclone authorize: {"access_token":"...","refresh_token":"...","token_type":"Bearer",...}
+    // The credentials is the base64 encoded {client_id, client_secret}
+    let creds;
+    if (credentials) {
+      creds = JSON.parse(Buffer.from(credentials, 'base64').toString());
+    } else {
+      // Fallback: try to get from stored config
+      creds = remote.config;
+    }
 
     // Create config with token using non-interactive mode
+    const tokenJson = JSON.stringify(JSON.parse(token));
     await execRclone(
-      `config create "${name}" "drive" client_id="${creds.client_id}" client_secret="${creds.client_secret}" config_is_local=false config_token="${token}" --json`
+      `config create "${name}" "drive" client_id="${creds.client_id}" client_secret="${creds.client_secret}" config_is_local=false config_token="${tokenJson}" --json`
     );
 
     // Update remote status
