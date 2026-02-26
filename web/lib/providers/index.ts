@@ -8,10 +8,12 @@ import { StorageProvider, providerRegistry } from './StorageProvider'
 
 // Import all providers
 import { GoogleDriveProvider } from './googleDrive'
+import { OneDriveProvider } from './oneDrive'
 import { WebDAVProvider } from './webdav'
 
 // Register providers
 providerRegistry.register('google', () => new GoogleDriveProvider())
+providerRegistry.register('onedrive', () => new OneDriveProvider())
 providerRegistry.register('webdav', () => new WebDAVProvider())
 
 // TODO: Register remaining providers when implemented

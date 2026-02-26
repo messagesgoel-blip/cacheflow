@@ -16,6 +16,7 @@ export type ProviderId =
   | 'filen'
   | 'yandex'
   | 'webdav'
+  | 'vps'
 
 export interface ProviderConfig {
   id: ProviderId
@@ -111,6 +112,16 @@ export const PROVIDERS: ProviderConfig[] = [
     freeStorageGB: 0, // Varies
     description: 'Connect to any WebDAV server (Nextcloud, ownCloud, etc.)',
     authType: 'basic',
+    website: '',
+  },
+  {
+    id: 'vps',
+    name: 'VPS / SFTP',
+    icon: '/icons/vps.svg',
+    color: '#10B981',
+    freeStorageGB: 0, // Varies by server (typically 50-200GB)
+    description: 'Connect your own VPS or Linux server via SFTP',
+    authType: 'basic', // SSH key or password
     website: '',
   },
 ]
