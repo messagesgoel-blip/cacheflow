@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote } from '@/lib/api'
+import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote, setRemoteToken } from '@/lib/api'
 
 interface Remote {
   id: string
@@ -112,6 +112,11 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
   const [currentPath, setCurrentPath] = useState('/')
   const [selectedRemote, setSelectedRemote] = useState<string | null>(null)
   const [copying, setCopying] = useState<string | null>(null)
+  const [showOauthModal, setShowOauthModal] = useState(false)
+  const [oauthRemoteName, setOauthRemoteName] = useState('')
+  const [oauthAuthorizeCmd, setOauthAuthorizeCmd] = useState('')
+  const [oauthToken, setOauthToken] = useState('')
+  const [oauthLoading, setOauthLoading] = useState(false)
 
   // Form state
   const [newRemoteName, setNewRemoteName] = useState('')
@@ -226,7 +231,18 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
         type = formFields.port === '22' ? 'sftp' : 'ftp'
       }
 
-      await addRemote(newRemoteName, type, provider.name, config, token)
+      const response = await addRemote(newRemoteName, type, provider.name, config, token)
+
+      // Check if needs OAuth (Google Drive)
+      if (response.needsOAuth && response.authorizeCommand) {
+        setShowAddModal(false)
+        setOauthRemoteName(newRemoteName)
+        setOauthAuthorizeCmd(response.authorizeCommand)
+        setShowOauthModal(true)
+        resetForm()
+        return
+      }
+
       setShowAddModal(false)
       resetForm()
       loadRemotes()
@@ -234,6 +250,27 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       setError(err.message || 'Failed to add connection')
     } finally {
       setAdding(false)
+    }
+  }
+
+  async function handleSubmitOauthToken() {
+    if (!oauthToken.trim()) {
+      alert('Please paste the token')
+      return
+    }
+
+    setOauthLoading(true)
+    setError(null)
+
+    try {
+      await setRemoteToken(oauthRemoteName, oauthToken, token)
+      setShowOauthModal(false)
+      setOauthToken('')
+      loadRemotes()
+    } catch (err: any) {
+      setError(err.message || 'Failed to save token')
+    } finally {
+      setOauthLoading(false)
     }
   }
 
@@ -422,9 +459,10 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                 <span className={`text-xs px-2 py-1 rounded ${
                   remote.status === 'connected' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                   remote.status === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                  remote.status === 'pending_oauth' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
                   'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                 }`}>
-                  {remote.status || 'unknown'}
+                  {remote.status === 'pending_oauth' ? 'Needs Authorization' : (remote.status || 'unknown')}
                 </span>
               </div>
 
@@ -448,18 +486,40 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
               )}
 
               <div className="flex gap-2">
-                <button
-                  onClick={() => handleBrowse(remote.name, '/')}
-                  className="flex-1 px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Browse
-                </button>
-                <button
-                  onClick={() => handleDeleteRemote(remote.name)}
-                  className="px-3 py-1.5 text-sm text-red-600 border border-red-200 dark:border-red-800 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
-                >
-                  Remove
-                </button>
+                {remote.status === 'pending_oauth' ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        // For now, show info - user needs to delete and re-add
+                        alert('Please remove this integration and add it again to authorize.')
+                      }}
+                      className="flex-1 px-3 py-1.5 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                    >
+                      Authorize
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRemote(remote.name)}
+                      className="px-3 py-1.5 text-sm text-red-600 border border-red-200 dark:border-red-800 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
+                    >
+                      Remove
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleBrowse(remote.name, '/')}
+                      className="flex-1 px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Browse
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRemote(remote.name)}
+                      className="px-3 py-1.5 text-sm text-red-600 border border-red-200 dark:border-red-800 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
+                    >
+                      Remove
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}
@@ -578,6 +638,59 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
                 {adding ? 'Connecting...' : 'Connect'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* OAuth Modal for Google Drive */}
+      {showOauthModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">
+              Authorize Google Drive
+            </h3>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <p className="text-yellow-800 dark:text-yellow-200 font-medium mb-2">
+                  Step 1: Run this command on your local machine with web browser:
+                </p>
+                <code className="block bg-gray-800 text-green-400 p-3 rounded text-sm font-mono overflow-x-auto">
+                  {oauthAuthorizeCmd}
+                </code>
+                <p className="text-yellow-700 dark:text-yellow-300 text-xs mt-2">
+                  This will open a browser window to log in with Google.
+                </p>
+              </div>
+
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-blue-800 dark:text-blue-200 font-medium mb-2">
+                  Step 2: After authorizing, copy the token it shows and paste below:
+                </p>
+                <textarea
+                  value={oauthToken}
+                  onChange={(e) => setOauthToken(e.target.value)}
+                  placeholder='Paste the token here (starts with {"access_token":...)'
+                  className="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 h-24 text-sm font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setShowOauthModal(false); setOauthToken('') }}
+                className="flex-1 px-4 py-2 border dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitOauthToken}
+                disabled={oauthLoading || !oauthToken.trim()}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {oauthLoading ? 'Connecting...' : 'Complete'}
               </button>
             </div>
           </div>

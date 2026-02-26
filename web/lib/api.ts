@@ -203,6 +203,15 @@ export async function deleteRemote(name: string, token: string) {
   return res.json()
 }
 
+export async function setRemoteToken(name: string, token: string, authToken: string) {
+  const res = await apiFetch(`/remotes/${encodeURIComponent(name)}/token`, {
+    method: 'POST',
+    body: JSON.stringify({ token })
+  }, authToken)
+  if (!res.ok) throw new Error(`Set token failed: ${res.status}`)
+  return res.json()
+}
+
 export async function copyFromRemote(remoteName: string, remotePath: string, localPath: string, token: string) {
   const res = await apiFetch(`/remotes/${encodeURIComponent(remoteName)}/copy`, {
     method: 'POST',

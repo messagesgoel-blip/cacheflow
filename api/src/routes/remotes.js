@@ -119,30 +119,109 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ error: 'remote with this name already exists' });
     }
 
-    // Create the remote using rclone
-    const configStr = Object.entries(config)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('\n');
+    // For Google Drive, we need OAuth token - create config and get authorize command
+    let needsOAuth = false;
+    let authorizeCommand = null;
+    let tokenValue = null;
 
-    // Use rclone config create
-    await execRclone(`config create "${name}" "${type}" ${configStr}`);
+    if (type === 'drive' && config.client_id && config.client_secret) {
+      // Encode credentials for authorize command
+      const creds = Buffer.from(JSON.stringify({
+        client_id: config.client_id,
+        client_secret: config.client_secret
+      })).toString('base64');
+
+      // Create rclone config with non-interactive mode to get OAuth URL
+      try {
+        const authorizeOutput = await execRclone(
+          `config create "${name}" "${type}" client_id="${config.client_id}" client_secret="${config.client_secret}" config_is_local=false --json`
+        );
+
+        const result = JSON.parse(authorizeOutput);
+
+        // Check if it needs a token (result has Option with config_token)
+        if (result.Option && result.Option.Name === 'config_token') {
+          needsOAuth = true;
+          authorizeCommand = result.Option.Help.split('\n').find(line => line.includes('rclone authorize'));
+          tokenValue = creds; // Store encoded credentials for later
+        }
+      } catch (e) {
+        // If non-interactive fails, try regular create - might work for other providers
+        const configStr = Object.entries(config)
+          .map(([key, value]) => `${key}=${value}`)
+          .join('\n');
+        await execRclone(`config create "${name}" "${type}" ${configStr}`);
+      }
+    } else {
+      // Create the remote using rclone for non-drive types
+      const configStr = Object.entries(config)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n');
+      await execRclone(`config create "${name}" "${type}" ${configStr}`);
+    }
 
     // Add to our config
-    remotes.push({
+    const remote = {
       id: Date.now().toString(),
       name,
       type,
       provider: provider || type,
-      config: config, // Store for UI (in production, encrypt this)
+      config: config,
+      status: needsOAuth ? 'pending_oauth' : 'connected',
       createdAt: new Date().toISOString()
-    });
+    };
 
+    remotes.push(remote);
     saveRemotes(remotes);
 
-    res.json({ success: true, remote: { id: remotes[remotes.length - 1].id, name, type, provider } });
+    const response = { success: true, remote: { id: remote.id, name, type, provider } };
+
+    // If needs OAuth, add authorize info to response
+    if (needsOAuth && authorizeCommand) {
+      response.needsOAuth = true;
+      response.authorizeCommand = authorizeCommand.replace('rclone authorize', '/usr/local/bin/rclone authorize');
+    }
+
+    res.json(response);
   } catch (err) {
     console.error('[remotes] add:', err.message);
     res.status(500).json({ error: err.message || 'failed to add remote' });
+  }
+});
+
+// POST /remotes/:name/token - Complete OAuth flow
+router.post('/:name/token', async (req, res) => {
+  try {
+    const { name } = req.params;
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ error: 'token required' });
+    }
+
+    const remotes = getRemotes();
+    const remote = remotes.find(r => r.name === name);
+
+    if (!remote) {
+      return res.status(404).json({ error: 'remote not found' });
+    }
+
+    // Decode the base64 token to get credentials
+    const creds = JSON.parse(Buffer.from(token, 'base64').toString());
+
+    // Create config with token using non-interactive mode
+    await execRclone(
+      `config create "${name}" "drive" client_id="${creds.client_id}" client_secret="${creds.client_secret}" config_is_local=false config_token="${token}" --json`
+    );
+
+    // Update remote status
+    remote.status = 'connected';
+    saveRemotes(remotes);
+
+    res.json({ success: true, status: 'connected' });
+  } catch (err) {
+    console.error('[remotes] token:', err.message);
+    res.status(500).json({ error: err.message || 'failed to save token' });
   }
 });
 
