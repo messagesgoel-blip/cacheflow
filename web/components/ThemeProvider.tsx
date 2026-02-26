@@ -12,24 +12,28 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') return 'light'
+  const stored = localStorage.getItem('cf_theme') as Theme | null
+  if (stored) return stored
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light')
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme)
   const [mounted, setMounted] = useState(false)
 
+  // Apply theme to document
   useEffect(() => {
     setMounted(true)
-    const stored = localStorage.getItem('cf_theme') as Theme | null
-    if (stored) {
-      setThemeState(stored)
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setThemeState('dark')
-    }
-  }, [])
+    const root = document.documentElement
+    root.classList.remove('light', 'dark')
+    root.classList.add(theme)
+  }, [theme])
 
+  // Save to localStorage
   useEffect(() => {
     if (mounted) {
-      document.documentElement.classList.remove('light', 'dark')
-      document.documentElement.classList.add(theme)
       localStorage.setItem('cf_theme', theme)
     }
   }, [theme, mounted])
