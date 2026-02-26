@@ -36,10 +36,25 @@ const CLOUD_PROVIDERS = [
     icon: '📧',
     description: 'Connect to your Google Drive account',
     fields: [
-      { key: 'client_id', label: 'Client ID', placeholder: 'From Google Cloud Console', type: 'text' },
-      { key: 'client_secret', label: 'Client Secret', placeholder: 'From Google Cloud Console', type: 'password' },
+      { key: 'client_id', label: 'Client ID', placeholder: '.apps.googleusercontent.com', type: 'text' },
+      { key: 'client_secret', label: 'Client Secret', placeholder: 'Your client secret', type: 'password' },
     ],
-    help: 'Get credentials from Google Cloud Console > APIs & Services > Credentials > OAuth Client ID'
+    help: 'Get credentials from Google Cloud Console > APIs & Services > Credentials > OAuth Client ID',
+    setupInstructions: [
+      { step: 1, text: 'Go to https://console.cloud.google.com and create a new project (or select existing)' },
+      { step: 2, text: 'Navigate to APIs & Services > Library and enable the "Google Drive API"' },
+      { step: 3, text: 'Go to APIs & Services > OAuth consent screen' },
+      { step: 4, text: 'Select "External" user type and click Create' },
+      { step: 5, text: 'Fill in required fields: App name, User support email, Developer contact email' },
+      { step: 6, text: 'AddScopes: add ".../auth/drive.readonly" and ".../auth/drive.metadata.readonly"' },
+      { step: 7, text: 'AddTestUsers: add your Google email address (required for testing)' },
+      { step: 8, text: 'Click Save and Continue through remaining screens' },
+      { step: 9, text: 'Go to APIs & Services > Credentials > Create Credentials > OAuth Client ID' },
+      { step: 10, text: 'Application type: Web application' },
+      { step: 11, text: 'Add Authorized JavaScript origins: https://cacheflow.goels.in (your CacheFlow URL)' },
+      { step: 12, text: 'Add Authorized redirect URIs: https://cacheflow.goels.in (or your URL)' },
+      { step: 13, text: 'Click Create to get your Client ID and Client Secret' },
+    ]
   },
   {
     id: 'webdav',
@@ -363,12 +378,12 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold dark:text-white">Cloud Drives</h2>
+        <h2 className="text-xl font-semibold dark:text-white">Integrations</h2>
         <button
           onClick={() => setShowAddModal(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          + Add Cloud Drive
+          + Add Integration
         </button>
       </div>
 
@@ -383,13 +398,13 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       ) : remotes.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg dark:border-gray-700">
           <div className="text-4xl mb-4">☁️</div>
-          <h3 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">No Cloud Drives Connected</h3>
+          <h3 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">No Integrations Connected</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-4">Connect WebDAV, S3, B2, FTP servers and more</p>
           <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Add Your First Cloud Drive
+            Add Your First Integration
           </button>
         </div>
       ) : (
@@ -455,7 +470,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4 dark:text-white">Add Cloud Drive</h3>
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">Add Integration</h3>
 
             <div className="space-y-4">
               {/* Connection Name */}
@@ -475,7 +490,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
               {/* Provider Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Cloud Storage Provider
+                  Integration Type
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {CLOUD_PROVIDERS.map(provider => (
@@ -512,19 +527,42 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                 </div>
               ))}
 
-              {/* Help Text */}
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded text-sm">
-                <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">
-                  How to get credentials:
-                </p>
-                <ul className="text-blue-700 dark:text-blue-400 text-xs list-disc list-inside space-y-1">
-                  <li><strong>Google Drive:</strong> Google Cloud Console - APIs - Credentials - OAuth</li>
-                  <li><strong>WebDAV:</strong> Your Nextcloud/ownCloud server settings</li>
-                  <li><strong>S3:</strong> AWS IAM - Users - Create Access Key</li>
-                  <li><strong>B2:</strong> Backblaze - My Account - Application Keys</li>
-                  <li><strong>FTP:</strong> Your hosting provider&apos;s FTP/SFTP details</li>
-                </ul>
-              </div>
+              {/* Help Text - Show detailed instructions for selected provider */}
+              {(() => {
+                const provider = CLOUD_PROVIDERS.find(p => p.id === newRemoteType);
+                if (!provider?.setupInstructions) {
+                  return (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded text-sm">
+                      <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">
+                        How to get credentials:
+                      </p>
+                      <ul className="text-blue-700 dark:text-blue-400 text-xs list-disc list-inside space-y-1">
+                        <li><strong>WebDAV:</strong> Your Nextcloud/ownCloud server settings</li>
+                        <li><strong>S3:</strong> AWS IAM - Users - Create Access Key</li>
+                        <li><strong>B2:</strong> Backblaze - My Account - Application Keys</li>
+                        <li><strong>FTP:</strong> Your hosting provider&apos;s FTP/SFTP details</li>
+                      </ul>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="font-semibold text-blue-900 dark:text-blue-200 mb-3 flex items-center gap-2">
+                      <span className="text-lg">📋</span> Step-by-Step Setup for {provider.name}
+                    </p>
+                    <ol className="space-y-2">
+                      {provider.setupInstructions.map((inst) => (
+                        <li key={inst.step} className="flex items-start gap-3 text-sm">
+                          <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                            {inst.step}
+                          </span>
+                          <span className="text-blue-800 dark:text-blue-300">{inst.text}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="flex gap-3 mt-6">
