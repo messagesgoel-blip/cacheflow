@@ -1,9 +1,36 @@
 'use client'
 
-import { useTheme } from './ThemeProvider'
+import { useState, useEffect } from 'react'
 
 export default function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme()
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    // Read initial theme from localStorage or DOM
+    const stored = localStorage.getItem('cf_theme') as 'light' | 'dark' | null
+    const current = stored || (document.documentElement.classList.contains('dark') ? 'dark' : 'light')
+    setTheme(current)
+  }, [])
+
+  function toggleTheme() {
+    const newTheme = theme === 'light' ? 'dark' : 'light'
+    setTheme(newTheme)
+
+    // Update DOM directly
+    document.documentElement.classList.remove('light', 'dark')
+    document.documentElement.classList.add(newTheme)
+    localStorage.setItem('cf_theme', newTheme)
+  }
+
+  if (!mounted) {
+    return (
+      <button className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+        <div className="w-5 h-5" />
+      </button>
+    )
+  }
 
   return (
     <button
