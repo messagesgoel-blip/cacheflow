@@ -31,6 +31,17 @@ interface RemotesPanelProps {
 // Cloud provider options with setup instructions
 const CLOUD_PROVIDERS = [
   {
+    id: 'drive',
+    name: 'Google Drive',
+    icon: '📧',
+    description: 'Connect to your Google Drive account',
+    fields: [
+      { key: 'client_id', label: 'Client ID', placeholder: 'From Google Cloud Console', type: 'text' },
+      { key: 'client_secret', label: 'Client Secret', placeholder: 'From Google Cloud Console', type: 'password' },
+    ],
+    help: 'Get credentials from Google Cloud Console > APIs & Services > Credentials > OAuth Client ID'
+  },
+  {
     id: 'webdav',
     name: 'WebDAV',
     icon: '🌐',
@@ -165,7 +176,12 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       let config: Record<string, string> = {}
       let type = newRemoteType
 
-      if (newRemoteType === 'webdav') {
+      if (newRemoteType === 'drive') {
+        config = {
+          client_id: formFields.client_id || '',
+          client_secret: formFields.client_secret || '',
+        }
+      } else if (newRemoteType === 'webdav') {
         config = {
           url: formFields.url || '',
           vendor: 'other',
@@ -499,13 +515,14 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
               {/* Help Text */}
               <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded text-sm">
                 <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">
-                  Need help?
+                  How to get credentials:
                 </p>
                 <ul className="text-blue-700 dark:text-blue-400 text-xs list-disc list-inside space-y-1">
-                  <li><strong>WebDAV:</strong> Use your Nextcloud/ownCloud server URL</li>
-                  <li><strong>S3:</strong> Get keys from AWS IAM console</li>
-                  <li><strong>B2:</strong> Get keys from Backblaze dashboard</li>
-                  <li><strong>FTP:</strong> Use your hosting provider's FTP credentials</li>
+                  <li><strong>Google Drive:</strong> Google Cloud Console - APIs - Credentials - OAuth</li>
+                  <li><strong>WebDAV:</strong> Your Nextcloud/ownCloud server settings</li>
+                  <li><strong>S3:</strong> AWS IAM - Users - Create Access Key</li>
+                  <li><strong>B2:</strong> Backblaze - My Account - Application Keys</li>
+                  <li><strong>FTP:</strong> Your hosting provider&apos;s FTP/SFTP details</li>
                 </ul>
               </div>
             </div>
