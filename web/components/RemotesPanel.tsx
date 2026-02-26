@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote, setRemoteToken } from '@/lib/api'
+import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote, setRemoteToken, connectGoogleDrive } from '@/lib/api'
 
 interface Remote {
   id: string
@@ -181,7 +181,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       return
     }
 
-    // Validate required fields
+    // Validate required fields (skip for Google Drive which has no fields)
     const requiredFields = provider.fields.filter(f => f.key !== 'endpoint' && f.key !== 'port')
     const missing = requiredFields.find(f => !formFields[f.key]?.trim())
     if (missing) {
@@ -232,18 +232,28 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
         type = formFields.port === '22' ? 'sftp' : 'ftp'
       }
 
-      const response = await addRemote(newRemoteName, type, provider.name, config, token)
+      // For Google Drive, use the new simpler OAuth flow
+      if (newRemoteType === 'drive') {
+        try {
+          const driveResponse = await connectGoogleDrive(
+            newRemoteName,
+            { client_id: formFields.client_id, client_secret: formFields.client_secret },
+            token
+          )
 
-      // Check if needs OAuth (Google Drive)
-      if (response.needsOAuth && response.authorizeCommand) {
-        setShowAddModal(false)
-        setOauthRemoteName(newRemoteName)
-        setOauthAuthorizeCmd(response.authorizeCommand)
-        setOauthCredentials(response.credentials || '')
-        setShowOauthModal(true)
-        resetForm()
-        return
+          if (driveResponse.needsAuth && driveResponse.authUrl) {
+            // Redirect to Google OAuth
+            window.location.href = driveResponse.authUrl
+            return
+          }
+        } catch (err: any) {
+          setError(err.message || 'Failed to connect Google Drive')
+          setAdding(false)
+          return
+        }
       }
+
+      const response = await addRemote(newRemoteName, type, provider.name, config, token)
 
       setShowAddModal(false)
       resetForm()

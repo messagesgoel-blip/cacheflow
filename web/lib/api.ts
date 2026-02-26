@@ -203,6 +203,58 @@ export async function deleteRemote(name: string, token: string) {
   return res.json()
 }
 
+export function getGoogleOAuthUrl(token: string): string {
+  // Build Google OAuth URL
+  const clientId = '416179978413-909akdt6cjbh98q6be5mg5dg5i2o1tff.apps.googleusercontent.com'
+  const redirectUri = 'https://cacheflow-api.goels.in/remotes/google/callback'
+  const scope = encodeURIComponent('https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.metadata.readonly')
+  const state = encodeURIComponent(token) // Pass JWT as state for verification
+
+  return `https://accounts.google.com/o/oauth2/v2/auth?` +
+    `client_id=${clientId}&` +
+    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+    `response_type=code&` +
+    `scope=${scope}&` +
+    `access_type=offline&` +
+    `prompt=consent&` +
+    `state=${state}`
+}
+
+// Connect Google Drive with credentials (client-side OAuth flow)
+export async function connectGoogleDrive(
+  name: string,
+  credentials: { client_id: string; client_secret: string },
+  token: string
+): Promise<{ success: boolean; authUrl?: string; needsAuth?: boolean }> {
+  const res = await apiFetch('/remotes/google/connect', {
+    method: 'POST',
+    body: JSON.stringify({ name, credentials })
+  }, token)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to connect' }))
+    throw new Error(err.error || `Connect failed: ${res.status}`)
+  }
+  return res.json()
+}
+
+// Complete Google Drive OAuth with auth code
+export async function completeGoogleAuth(
+  name: string,
+  credentials: { client_id: string; client_secret: string },
+  authCode: string,
+  token: string
+): Promise<{ success: boolean }> {
+  const res = await apiFetch('/remotes/google/connect', {
+    method: 'POST',
+    body: JSON.stringify({ name, credentials, authCode })
+  }, token)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to complete auth' }))
+    throw new Error(err.error || `Complete auth failed: ${res.status}`)
+  }
+  return res.json()
+}
+
 export async function setRemoteToken(name: string, token: string, authToken: string, credentials?: string) {
   const res = await apiFetch(`/remotes/${encodeURIComponent(name)}/token`, {
     method: 'POST',
