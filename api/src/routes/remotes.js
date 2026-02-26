@@ -134,7 +134,7 @@ router.post('/', async (req, res) => {
       // Create rclone config with non-interactive mode to get OAuth URL
       try {
         const authorizeOutput = await execRclone(
-          `config create "${name}" "${type}" client_id="${config.client_id}" client_secret="${config.client_secret}" config_is_local=false --json`
+          `config create "${name}" "${type}" client_id="${config.client_id}" client_secret="${config.client_secret}" config_is_local=false --non-interactive`
         );
 
         const result = JSON.parse(authorizeOutput);
@@ -146,6 +146,7 @@ router.post('/', async (req, res) => {
           tokenValue = creds; // Store encoded credentials for later
         }
       } catch (e) {
+        console.error('[remotes] OAuth flow error:', e.message);
         // If non-interactive fails, try regular create - might work for other providers
         const configStr = Object.entries(config)
           .map(([key, value]) => `${key}=${value}`)
