@@ -174,3 +174,40 @@ export async function getStorageUsage(token: string) {
   if (!res.ok) throw new Error(`Get storage usage failed: ${res.status}`)
   return res.json()
 }
+
+// Cloud Remotes APIs
+export async function getRemotes(token: string) {
+  const res = await apiFetch('/remotes', {}, token)
+  if (!res.ok) throw new Error(`Get remotes failed: ${res.status}`)
+  return res.json()
+}
+
+export async function browseRemote(name: string, path: string, token: string) {
+  const res = await apiFetch(`/remotes/${encodeURIComponent(name)}/browse?path=${encodeURIComponent(path)}`, {}, token)
+  if (!res.ok) throw new Error(`Browse remote failed: ${res.status}`)
+  return res.json()
+}
+
+export async function addRemote(name: string, type: string, provider: string, config: Record<string, string>, token: string) {
+  const res = await apiFetch('/remotes', {
+    method: 'POST',
+    body: JSON.stringify({ name, type, provider, config })
+  }, token)
+  if (!res.ok) throw new Error(`Add remote failed: ${res.status}`)
+  return res.json()
+}
+
+export async function deleteRemote(name: string, token: string) {
+  const res = await apiFetch(`/remotes/${encodeURIComponent(name)}`, { method: 'DELETE' }, token)
+  if (!res.ok) throw new Error(`Delete remote failed: ${res.status}`)
+  return res.json()
+}
+
+export async function copyFromRemote(remoteName: string, remotePath: string, localPath: string, token: string) {
+  const res = await apiFetch(`/remotes/${encodeURIComponent(remoteName)}/copy`, {
+    method: 'POST',
+    body: JSON.stringify({ remotePath, localPath })
+  }, token)
+  if (!res.ok) throw new Error(`Copy from remote failed: ${res.status}`)
+  return res.json()
+}
