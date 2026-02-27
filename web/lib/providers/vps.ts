@@ -48,6 +48,7 @@ export class VPSProvider extends StorageProvider {
 
   setConfig(config: VPSConfig): void {
     this.config = config
+    if (typeof window === 'undefined') return
     // Store only non-sensitive config in localStorage
     const safeConfig = {
       id: config.id,
@@ -62,6 +63,7 @@ export class VPSProvider extends StorageProvider {
   }
 
   private loadConfig(): void {
+    if (typeof window === 'undefined') return
     const stored = localStorage.getItem('cacheflow_vps_config')
     if (stored) {
       try {

@@ -213,6 +213,7 @@ export class ProviderRegistry {
    * Get a provider instance
    */
   get(id: ProviderId): StorageProvider | undefined {
+    if (typeof window === 'undefined') return undefined
     const factory = this.providers.get(id)
     return factory ? factory() : undefined
   }

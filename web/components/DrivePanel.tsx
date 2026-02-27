@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getStorageLocations, getStorageUsage } from '@/lib/api'
+import { tokenManager } from '@/lib/tokenManager'
+import { PROVIDERS, ProviderId } from '@/lib/providers/types'
 
 interface StorageLocation {
   id: string
   name: string
-  type: 'local' | 'pool' | 'cloud'
-  path?: string
+  type: 'cloud'
   provider?: string
   totalSize: number
   fileCount: number
@@ -15,33 +15,6 @@ interface StorageLocation {
   description: string
   color: string
   icon: string
-  isActive?: boolean
-  configId?: string
-}
-
-interface StorageSummary {
-  totalFiles: number
-  syncedFiles: number
-  pendingFiles: number
-  syncingFiles: number
-  errorFiles: number
-  totalSizeBytes: number
-  localCacheSize: number
-  poolSize: number
-}
-
-interface StorageUsage {
-  quota: {
-    total: number
-    used: number
-    available: number
-    usedPercentage: number
-  }
-  fileTypes: Array<{
-    type: string
-    fileCount: number
-    totalSize: number
-  }>
 }
 
 interface DrivePanelProps {
@@ -52,11 +25,8 @@ interface DrivePanelProps {
 
 export default function DrivePanel({ token, onLocationSelect, onRefresh }: DrivePanelProps) {
   const [locations, setLocations] = useState<StorageLocation[]>([])
-  const [summary, setSummary] = useState<StorageSummary | null>(null)
-  const [usage, setUsage] = useState<StorageUsage | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'locations' | 'usage'>('locations')
 
   useEffect(() => {
     if (token) {
@@ -71,20 +41,42 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     setError(null)
 
     try {
-      const [locationsData, usageData] = await Promise.all([
-        getStorageLocations(token),
-        getStorageUsage(token)
-      ])
-
-      setLocations(locationsData.locations || [])
-      setSummary(locationsData.summary || null)
-      setUsage(usageData || null)
+      const cloudProviders = getCloudProviders()
+      setLocations(cloudProviders)
     } catch (err: any) {
       setError(err.message || 'Failed to load storage data')
       console.error('Failed to load storage data:', err)
     } finally {
       setLoading(false)
     }
+  }
+
+  function getCloudProviders(): StorageLocation[] {
+    if (typeof window === 'undefined') return []
+    
+    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
+    const cloudLocations: StorageLocation[] = []
+
+    for (const pid of providerIds) {
+      const t = tokenManager.getToken(pid)
+      if (t && t.accessToken) {
+        const providerConfig = PROVIDERS.find(p => p.id === pid)
+        cloudLocations.push({
+          id: `cloud-${pid}`,
+          name: providerConfig?.name || pid,
+          type: 'cloud',
+          provider: pid,
+          totalSize: 0,
+          fileCount: 0,
+          status: 'active',
+          description: t.accountEmail || 'Cloud storage',
+          color: providerConfig?.color || '#4285F4',
+          icon: providerConfig?.icon || '☁️'
+        })
+      }
+    }
+
+    return cloudLocations
   }
 
   function formatBytes(bytes: number): string {
@@ -105,8 +97,6 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
 
   function getTypeColor(type: string): string {
     switch (type) {
-      case 'local': return 'bg-blue-100 text-blue-800'
-      case 'pool': return 'bg-green-100 text-green-800'
       case 'cloud': return 'bg-purple-100 text-purple-800'
       default: return 'bg-gray-100 text-gray-800'
     }
@@ -130,7 +120,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     <div className="border rounded-lg bg-white dark:bg-gray-800">
       {/* Header */}
       <div className="p-3 border-b dark:border-gray-700 flex justify-between items-center">
-        <h3 className="font-medium text-gray-700 dark:text-gray-200">Storage</h3>
+        <h3 className="font-medium text-gray-700 dark:text-gray-200">Cloud Storage</h3>
         <button
           onClick={() => {
             loadStorageData()
@@ -150,177 +140,57 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="border-b dark:border-gray-700">
-        <div className="flex">
-          <button
-            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'locations' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-            onClick={() => setActiveTab('locations')}
-          >
-            Locations
-          </button>
-          <button
-            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'usage' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-            onClick={() => setActiveTab('usage')}
-          >
-            Usage
-          </button>
-        </div>
-      </div>
-
-      {/* Content */}
+      {/* Content - Cloud Providers Only */}
       <div className="p-3">
-        {activeTab === 'locations' ? (
-          <div className="space-y-3">
-            {/* Summary stats */}
-            {summary && (
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-2 rounded text-center">
-                  <div className="text-lg font-semibold">{summary.totalFiles}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Total Files</div>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-2 rounded text-center">
-                  <div className="text-lg font-semibold">{formatBytes(summary.totalSizeBytes)}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Total Size</div>
-                </div>
-              </div>
-            )}
-
-            {/* Locations list */}
-            {locations.map(location => (
-              <div
-                key={location.id}
-                className={`p-3 border rounded-lg hover:shadow-sm cursor-pointer dark:border-gray-700 ${onLocationSelect ? 'hover:border-blue-300 dark:hover:border-blue-600' : ''}`}
-                onClick={() => onLocationSelect?.(location.id)}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{location.icon}</span>
-                    <div>
-                      <div className="font-medium text-sm dark:text-gray-200">{location.name}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{location.description}</div>
-                    </div>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded ${getStatusColor(location.status)}`}>
-                    {location.status}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className={`text-xs px-2 py-1 rounded ${getTypeColor(location.type)}`}>
-                    {location.type}
-                  </span>
-                  <div className="text-right">
-                    <div className="font-medium dark:text-gray-200">{formatBytes(location.totalSize)}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{location.fileCount} files</div>
+        <div className="space-y-3">
+          {/* Cloud providers list */}
+          {locations.map(location => (
+            <div
+              key={location.id}
+              className={`p-3 border rounded-lg hover:shadow-sm cursor-pointer dark:border-gray-700 ${onLocationSelect ? 'hover:border-blue-300 dark:hover:border-blue-600' : ''}`}
+              onClick={() => onLocationSelect?.(location.id)}
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{location.icon}</span>
+                  <div>
+                    <div className="font-medium text-sm dark:text-gray-200">{location.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{location.description}</div>
                   </div>
                 </div>
-
-                {/* Progress bar for cloud storage usage */}
-                {location.type === 'cloud' && usage && (
-                  <div className="mt-2">
-                    <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-blue-500"
-                        style={{ width: `${Math.min(100, (location.totalSize / usage.quota.total) * 100)}%` }}
-                      ></div>
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {((location.totalSize / usage.quota.total) * 100).toFixed(1)}% of quota
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {locations.length === 0 && !loading && (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                No storage locations configured
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Usage tab */
-          usage ? (
-            <div className="space-y-4">
-              {/* Quota usage */}
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600 dark:text-gray-300">Storage Quota</span>
-                  <span className="font-medium dark:text-gray-200">
-                    {formatBytes(usage.quota.used)} / {formatBytes(usage.quota.total)}
-                  </span>
-                </div>
-                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500"
-                    style={{ width: `${Math.min(100, usage.quota.usedPercentage)}%` }}
-                  ></div>
-                </div>
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <span>{usage.quota.usedPercentage.toFixed(1)}% used</span>
-                  <span>{formatBytes(usage.quota.available)} available</span>
-                </div>
+                <span className={`text-xs px-2 py-1 rounded ${getStatusColor(location.status)}`}>
+                  {location.status}
+                </span>
               </div>
 
-              {/* File type breakdown */}
-              <div>
-                <h4 className="font-medium text-sm dark:text-gray-200 mb-2">File Types</h4>
-                <div className="space-y-2">
-                  {usage.fileTypes.map(fileType => (
-                    <div key={fileType.type} className="flex items-center justify-between">
-                      <span className="text-sm dark:text-gray-300">{fileType.type}</span>
-                      <div className="text-right">
-                        <div className="text-sm font-medium dark:text-gray-200">{formatBytes(fileType.totalSize)}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{fileType.fileCount} files</div>
-                      </div>
-                    </div>
-                  ))}
+              <div className="flex items-center justify-between text-sm">
+                <span className={`text-xs px-2 py-1 rounded ${getTypeColor(location.type)}`}>
+                  {location.type}
+                </span>
+                <div className="text-right">
+                  <div className="font-medium dark:text-gray-200">{formatBytes(location.totalSize)}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{location.fileCount} files</div>
                 </div>
               </div>
-
-              {/* Location breakdown */}
-              {summary && (
-                <div>
-                  <h4 className="font-medium text-sm dark:text-gray-200 mb-2">Storage Locations</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm dark:text-gray-300">Local Cache</span>
-                      <div className="text-right">
-                        <div className="text-sm font-medium dark:text-gray-200">{formatBytes(summary.localCacheSize)}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {((summary.localCacheSize / summary.totalSizeBytes) * 100).toFixed(1)}% of total
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm dark:text-gray-300">Read-Only Pool</span>
-                      <div className="text-right">
-                        <div className="text-sm font-medium dark:text-gray-200">{formatBytes(summary.poolSize)}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {((summary.poolSize / summary.totalSizeBytes) * 100).toFixed(1)}% of total
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
-          ) : (
+          ))}
+
+          {locations.length === 0 && !loading && (
             <div className="text-center py-4 text-gray-400 text-sm">
-              No usage data available
+              No cloud providers connected
             </div>
-          )
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="p-3 border-t text-xs text-gray-500 dark:text-gray-400">
-        <div className="flex justify-between">
-          <span>{locations.length} locations</span>
-          {usage && (
-            <span>{usage.quota.usedPercentage.toFixed(1)}% quota used</span>
           )}
+
+          {/* Add Provider Button */}
+          <a
+            href="/providers"
+            className="mt-3 flex items-center justify-center gap-2 w-full py-2 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Cloud Provider
+          </a>
         </div>
       </div>
     </div>

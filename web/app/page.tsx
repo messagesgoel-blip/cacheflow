@@ -122,6 +122,7 @@ export default function Home() {
               <FileBrowser
                 token={token}
                 currentPath={currentPath}
+                locationId={selectedLocationId}
                 onPathChange={setCurrentPath}
                 onRefresh={() => refresh(token)}
               />

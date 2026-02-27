@@ -10,6 +10,8 @@ import { tokenManager } from '../tokenManager'
 // Google OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '416179978413-909akdt6cjbh98q6be5mg5dg5i2o1tff.apps.googleusercontent.com'
 const GOOGLE_SCOPES = [
+  'email',
+  'profile',
   'https://www.googleapis.com/auth/drive.readonly',
   'https://www.googleapis.com/auth/drive.metadata.readonly',
 ].join(' ')
@@ -101,7 +103,10 @@ export class GoogleDriveProvider extends StorageProvider {
           }
 
           // Get user info
-          this.getUserInfo(response.access_token)
+          this.getUserInfo(response.access_token).catch(err => {
+        console.warn("[GoogleDrive] getUserInfo failed, using fallback:", err);
+        return { email: "user@gmail.com", name: "Google User", id: "unknown" };
+      })
             .then(userInfo => {
               const token: ProviderToken = {
                 provider: 'google',
@@ -143,7 +148,8 @@ export class GoogleDriveProvider extends StorageProvider {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to get user info')
+      console.error('[GoogleDrive] getUserInfo error:', response.status, await response.text())
+      throw new Error('Failed to get user info: ' + response.status)
     }
 
     return response.json()

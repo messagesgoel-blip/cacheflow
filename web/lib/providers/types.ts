@@ -35,7 +35,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'google',
     name: 'Google Drive',
-    icon: '/icons/google-drive.svg',
+    icon: '📧',
     color: '#4285F4',
     freeStorageGB: 15,
     description: 'Connect to your Google Drive account',
@@ -45,7 +45,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'onedrive',
     name: 'OneDrive',
-    icon: '/icons/onedrive.svg',
+    icon: '☁️',
     color: '#0078D4',
     freeStorageGB: 5,
     description: 'Connect to your Microsoft OneDrive account',
@@ -55,7 +55,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'dropbox',
     name: 'Dropbox',
-    icon: '/icons/dropbox.svg',
+    icon: '📦',
     color: '#0061FF',
     freeStorageGB: 2,
     description: 'Connect to your Dropbox account',
@@ -65,7 +65,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'box',
     name: 'Box',
-    icon: '/icons/box.svg',
+    icon: '📁',
     color: '#0061D5',
     freeStorageGB: 10,
     description: 'Connect to your Box.com account',
@@ -75,7 +75,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'pcloud',
     name: 'pCloud',
-    icon: '/icons/pcloud.svg',
+    icon: '🧊',
     color: '#004B8D',
     freeStorageGB: 10,
     description: 'Connect to pCloud storage',
@@ -86,7 +86,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'filen',
     name: 'Filen',
-    icon: '/icons/filen.svg',
+    icon: '🔒',
     color: '#FF6B35',
     freeStorageGB: 10,
     description: 'Connect to Filen (End-to-End Encrypted)',
@@ -97,7 +97,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'yandex',
     name: 'Yandex Disk',
-    icon: '/icons/yandex.svg',
+    icon: '📀',
     color: '#FFCC00',
     freeStorageGB: 10,
     description: 'Connect to Yandex Disk',
@@ -107,7 +107,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'webdav',
     name: 'WebDAV',
-    icon: '/icons/webdav.svg',
+    icon: '🌐',
     color: '#5C7CFA',
     freeStorageGB: 0, // Varies
     description: 'Connect to any WebDAV server (Nextcloud, ownCloud, etc.)',
@@ -117,7 +117,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'vps',
     name: 'VPS / SFTP',
-    icon: '/icons/vps.svg',
+    icon: '🖥️',
     color: '#10B981',
     freeStorageGB: 0, // Varies by server (typically 50-200GB)
     description: 'Connect your own VPS or Linux server via SFTP',

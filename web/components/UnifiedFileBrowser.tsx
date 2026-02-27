@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { ProviderId, FileMetadata, PROVIDERS, formatBytes } from '@/lib/providers/types'
-import { getMockFiles, getMockConnectedProviders } from '@/lib/providers/mockProviders'
+import { getProvider } from '@/lib/providers'
+import { tokenManager } from '@/lib/tokenManager'
+
+interface ConnectedProvider {
+  providerId: ProviderId
+  accountEmail: string
+  displayName: string
+}
 
 interface UnifiedFileBrowserProps {
   // TODO: Connect to real provider adapters when implemented
@@ -11,22 +18,78 @@ interface UnifiedFileBrowserProps {
 export default function UnifiedFileBrowser({}: UnifiedFileBrowserProps) {
   const [files, setFiles] = useState<FileMetadata[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingProviders, setLoadingProviders] = useState<ProviderId[]>([])
+  const [connectedProviders, setConnectedProviders] = useState<ConnectedProvider[]>([])
   const [selectedProvider, setSelectedProvider] = useState<ProviderId | 'all'>('all')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  // Load files (using mock data for now)
+  // Load connected providers from tokenManager
   useEffect(() => {
-    // TODO: Replace with real provider API calls when adapters are ready
-    setTimeout(() => {
-      const allFiles = getMockFiles()
+    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
+    const connected: ConnectedProvider[] = []
+    const loadingIds: ProviderId[] = []
+
+    for (const pid of providerIds) {
+      const token = tokenManager.getToken(pid)
+      if (token && token.accessToken) {
+        connected.push({
+          providerId: pid,
+          accountEmail: token.accountEmail || '',
+          displayName: token.displayName || pid
+        })
+        loadingIds.push(pid)
+      }
+    }
+
+    setConnectedProviders(connected)
+    setLoadingProviders(loadingIds)
+
+    // Load files from all connected providers
+    async function loadAllFiles() {
+      if (loadingIds.length === 0) {
+        setLoading(false)
+        return
+      }
+
+      const allFiles: FileMetadata[] = []
+      const errors: string[] = []
+
+      for (const pid of loadingIds) {
+        try {
+          const provider = getProvider(pid)
+          if (provider) {
+            const result = await provider.listFiles()
+            const providerConfig = PROVIDERS.find(p => p.id === pid)
+            
+            const filesWithProvider = result.files.map(file => ({
+              ...file,
+              provider: pid,
+              providerName: providerConfig?.name || pid
+            }))
+            
+            allFiles.push(...filesWithProvider)
+          }
+        } catch (err: any) {
+          console.error(`Error loading files from ${pid}:`, err)
+          errors.push(`${pid}: ${err.message}`)
+        }
+      }
+
+      if (errors.length > 0) {
+        setError(`Some providers failed to load: ${errors.join(', ')}`)
+      }
+
       setFiles(allFiles)
       setLoading(false)
-    }, 500)
-  }, [selectedProvider])
+    }
+
+    loadAllFiles()
+  }, [])
 
   // Filter files by provider
   const filteredFiles = files.filter(f =>
@@ -98,10 +161,10 @@ export default function UnifiedFileBrowser({}: UnifiedFileBrowserProps) {
           onChange={(e) => setSelectedProvider(e.target.value as ProviderId | 'all')}
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         >
-          <option value="all">All Providers</option>
-          {getMockConnectedProviders().map(cp => (
+          <option value="all">All Providers ({connectedProviders.length} connected)</option>
+          {connectedProviders.map(cp => (
             <option key={cp.providerId} value={cp.providerId}>
-              {PROVIDERS.find(p => p.id === cp.providerId)?.name}
+              {PROVIDERS.find(p => p.id === cp.providerId)?.name} ({cp.accountEmail})
             </option>
           ))}
         </select>
@@ -145,6 +208,13 @@ export default function UnifiedFileBrowser({}: UnifiedFileBrowserProps) {
         </div>
       </div>
 
+      {/* Error Banner */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        </div>
+      )}
+
       {/* Selection Bar (when files selected) */}
       {selectedFiles.size > 0 && (
         <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-between">
@@ -179,6 +249,20 @@ export default function UnifiedFileBrowser({}: UnifiedFileBrowserProps) {
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+        </div>
+      ) : connectedProviders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+          <svg className="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+          <p className="text-lg mb-2">No cloud providers connected</p>
+          <p className="text-sm mb-4">Connect a cloud storage provider to browse your files</p>
+          <a
+            href="/remotes"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Connect Provider
+          </a>
         </div>
       ) : sortedFiles.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">

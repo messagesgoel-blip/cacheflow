@@ -36,11 +36,13 @@ export class WebDAVProvider extends StorageProvider {
 
   setConfig(config: WebDAVConfig): void {
     this.config = config
+    if (typeof window === 'undefined') return
     // Store in localStorage for persistence
     localStorage.setItem('cacheflow_webdav_config', JSON.stringify(config))
   }
 
   private loadConfig(): void {
+    if (typeof window === 'undefined') return
     const stored = localStorage.getItem('cacheflow_webdav_config')
     if (stored) {
       try {

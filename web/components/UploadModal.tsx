@@ -1,14 +1,18 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { ProviderId, ProviderQuota, PROVIDERS, formatBytes } from '@/lib/providers/types'
-import { getMockConnectedProviders, getMockQuota } from '@/lib/providers/mockProviders'
+import { tokenManager } from '@/lib/tokenManager'
+import { getProvider } from '@/lib/providers'
 
 interface UploadModalProps {
   isOpen: boolean
   onClose: () => void
-  // TODO: Connect to real providers when adapters are implemented
-  // onUpload?: (files: File[], targetProvider: ProviderId, targetPath: string) => Promise<void>
+}
+
+interface ConnectedProviderInfo {
+  providerId: ProviderId
+  quota?: ProviderQuota
 }
 
 export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
@@ -18,10 +22,42 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
   const [dragOver, setDragOver] = useState(false)
+  const [connectedProviders, setConnectedProviders] = useState<ConnectedProviderInfo[]>([])
+  const [loadingQuotas, setLoadingQuotas] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Get connected providers with quotas
-  const connectedProviders = getMockConnectedProviders()
+  // Load connected providers and their quotas
+  useEffect(() => {
+    async function loadProviders() {
+      const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
+      const connected: ConnectedProviderInfo[] = []
+      setLoadingQuotas(true)
+
+      for (const pid of providerIds) {
+        const token = tokenManager.getToken(pid)
+        if (token && token.accessToken) {
+          let quota: ProviderQuota | undefined
+          try {
+            const provider = getProvider(pid)
+            if (provider) {
+              quota = await provider.getQuota()
+            }
+          } catch (err) {
+            console.error(`Failed to get quota for ${pid}:`, err)
+          }
+          connected.push({ providerId: pid, quota })
+        }
+      }
+
+      setConnectedProviders(connected)
+      setLoadingQuotas(false)
+    }
+
+    if (isOpen) {
+      loadProviders()
+    }
+  }, [isOpen])
+
   const providerQuotas = connectedProviders.reduce((acc, cp) => {
     acc[cp.providerId] = cp.quota
     return acc

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { browseFiles, uploadFile, createFolder, deleteFolder, moveFile } from '@/lib/api'
+import { getProvider } from '@/lib/providers'
+import { ProviderId, PROVIDERS, FileMetadata } from '@/lib/providers/types'
 import FileTable from './FileTable'
 import Breadcrumb from './Breadcrumb'
 import { useContextMenu, contextMenuItems } from './ContextMenu'
@@ -9,6 +11,7 @@ import { useContextMenu, contextMenuItems } from './ContextMenu'
 interface FileBrowserProps {
   token: string
   currentPath?: string
+  locationId?: string
   onPathChange?: (path: string) => void
   onRefresh?: () => void
 }
@@ -25,8 +28,9 @@ interface BrowseResult {
   totalItems: number
 }
 
-export default function FileBrowser({ token, currentPath = '/', onPathChange, onRefresh }: FileBrowserProps) {
+export default function FileBrowser({ token, currentPath = '/', locationId, onPathChange, onRefresh }: FileBrowserProps) {
   const [browseData, setBrowseData] = useState<BrowseResult | null>(null)
+  const [cloudFiles, setCloudFiles] = useState<FileMetadata[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -40,20 +44,66 @@ export default function FileBrowser({ token, currentPath = '/', onPathChange, on
   // Load current path on mount and when path changes
   useEffect(() => {
     loadCurrentPath()
-  }, [currentPath, token])
+  }, [currentPath, token, locationId])
 
   async function loadCurrentPath() {
     if (!token) return
+
+    // Check if selected location is a cloud provider (compute inside to avoid stale closure)
+    const isCloud = locationId?.startsWith('cloud-') ?? false
+    const providerId = isCloud ? locationId?.replace('cloud-', '') as ProviderId : null
 
     setLoading(true)
     setError(null)
 
     try {
+      // Handle cloud provider
+      if (isCloud && providerId) {
+        console.log('[FileBrowser] Cloud provider detected:', providerId)
+        const provider = getProvider(providerId)
+        if (provider) {
+          console.log('[FileBrowser] Loading files from provider:', providerId)
+          const result = await provider.listFiles()
+          console.log('[FileBrowser] Got files:', result.files.length, 'files')
+          const providerConfig = PROVIDERS.find(p => p.id === providerId)
+          
+          // Convert cloud files to browseData format
+          const folders = result.files.filter(f => f.isFolder).map(f => ({
+            name: f.name,
+            path: f.path,
+            isFolder: true,
+            itemCount: undefined
+          }))
+          
+          const files = result.files.filter(f => !f.isFolder).map(f => ({
+            name: f.name,
+            path: f.path,
+            isFolder: false,
+            size_bytes: f.size,
+            last_modified: f.modifiedTime
+          }))
+
+          setCloudFiles(result.files)
+          setBrowseData({
+            path: currentPath,
+            folders,
+            files,
+            totalItems: result.files.length
+          })
+        } else {
+          console.error('[FileBrowser] Provider not found:', providerId)
+          setError(`Provider ${providerId} not found`)
+        }
+        setLoading(false)
+        return
+      }
+
+      // Handle local storage
       const data = await browseFiles(currentPath, token)
       setBrowseData(data)
     } catch (err: any) {
+      console.error('[FileBrowser] Error loading files:', err)
       setError(err.message || 'Failed to load files')
-      console.error('Failed to load browse data:', err)
     } finally {
       setLoading(false)
     }

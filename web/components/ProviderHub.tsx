@@ -2,33 +2,44 @@
 
 import { useState, useEffect } from 'react'
 import { PROVIDERS, ProviderId, ConnectedProvider, ProviderQuota, formatBytes } from '@/lib/providers/types'
-import { mockConnectedProviders, getMockQuota } from '@/lib/providers/mockProviders'
+import { tokenManager } from '@/lib/tokenManager'
 
 interface ProviderHubProps {
-  // TODO: Connect to real provider states when adapters are implemented
-  // onConnect?: (providerId: ProviderId) => void
-  // onDisconnect?: (providerId: ProviderId) => void
 }
 
 export default function ProviderHub({}: ProviderHubProps) {
   const [connectedProviders, setConnectedProviders] = useState<ConnectedProvider[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Load connected providers (use mock data for now)
+  // Load connected providers from localStorage
   useEffect(() => {
-    // TODO: Replace with real API call when backend is ready
-    // const fetchProviders = async () => {
-    //   const res = await fetch('/api/providers')
-    //   const data = await res.json()
-    //   setConnectedProviders(data)
-    // }
-    // fetchProviders()
-
-    // Using mock data for UI development
-    setTimeout(() => {
-      setConnectedProviders(mockConnectedProviders)
-      setLoading(false)
-    }, 500)
+    async function loadConnectedProviders() {
+      try {
+        const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'webdav', 'vps']
+        const connected: ConnectedProvider[] = []
+        
+        for (const pid of providerIds) {
+          const token = tokenManager.getToken(pid as ProviderId)
+          if (token && token.accessToken) {
+            connected.push({
+              providerId: pid as ProviderId,
+              status: 'connected' as const,
+              accountEmail: token.accountEmail || pid + '@connected.com',
+              displayName: token.displayName || token.accountEmail?.split('@')[0] || pid,
+              connectedAt: Date.now(),
+              quota: undefined,
+            })
+          }
+        }
+        
+        setConnectedProviders(connected.length > 0 ? connected : [])
+      } catch (e) {
+        setConnectedProviders([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadConnectedProviders()
   }, [])
 
   const isConnected = (providerId: ProviderId) =>

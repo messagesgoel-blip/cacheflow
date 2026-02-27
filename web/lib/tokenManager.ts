@@ -35,6 +35,7 @@ class TokenManager {
    * Save token to localStorage
    */
   saveToken(provider: ProviderId, token: ProviderToken): void {
+    if (typeof window === 'undefined') return
     const key = this.getStorageKey(provider)
     const tokenData = {
       ...token,
@@ -47,6 +48,7 @@ class TokenManager {
    * Get token from localStorage
    */
   getToken(provider: ProviderId): ProviderToken | null {
+    if (typeof window === 'undefined') return null
     const key = this.getStorageKey(provider)
     const data = localStorage.getItem(key)
     if (!data) return null
@@ -68,6 +70,7 @@ class TokenManager {
    * Remove token from localStorage
    */
   removeToken(provider: ProviderId): void {
+    if (typeof window === 'undefined') return
     const key = this.getStorageKey(provider)
     localStorage.removeItem(key)
     this.cancelRefresh(provider)
@@ -77,6 +80,7 @@ class TokenManager {
    * Get all stored tokens
    */
   getAllTokens(): Map<ProviderId, ProviderToken> {
+    if (typeof window === 'undefined') return new Map()
     const tokens = new Map<ProviderId, ProviderToken>()
     const prefix = TOKEN_PREFIX
 
@@ -235,6 +239,7 @@ class TokenManager {
    * Load settings from localStorage
    */
   private loadSettings(): TokenManagerSettings {
+    if (typeof window === 'undefined') return DEFAULT_SETTINGS
     try {
       const data = localStorage.getItem(SETTINGS_KEY)
       if (data) {
@@ -250,6 +255,7 @@ class TokenManager {
    * Save settings to localStorage
    */
   saveSettings(settings: Partial<TokenManagerSettings>): void {
+    if (typeof window === 'undefined') return
     this.settings = { ...this.settings, ...settings }
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings))
   }

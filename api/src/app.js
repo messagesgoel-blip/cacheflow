@@ -11,6 +11,7 @@ const searchRoutes = require('./routes/search');
 const adminRoutes = require('./routes/admin');
 const storageRoutes = require('./routes/storage');
 const remotesRoutes = require('./routes/remotes');
+const tokensRoutes = require('./routes/tokens');
 const { checkApiKey } = require('./services/embeddings');
 const config = require('./config');
 
@@ -124,5 +125,6 @@ app.use('/search', searchRoutes);
 app.use('/admin', adminRoutes);
 app.use('/storage', storageRoutes);
 app.use('/remotes', remotesRoutes);
+app.use('/tokens', tokensRoutes);
 
 module.exports = app;

@@ -31,131 +31,77 @@ interface RemotesPanelProps {
 // Cloud provider options with setup instructions
 const CLOUD_PROVIDERS = [
   {
-    id: 'google',
+    id: 'drive',
     name: 'Google Drive',
     icon: '📧',
-    description: 'Connect to Google Drive (15 GB free)',
-    authType: 'oauth',
-    fields: [],
+    description: 'Connect to your Google Drive account',
+    fields: [
+      { key: 'client_id', label: 'Client ID', placeholder: '.apps.googleusercontent.com', type: 'text' },
+      { key: 'client_secret', label: 'Client Secret', placeholder: 'Your client secret', type: 'password' },
+    ],
+    help: 'Get credentials from Google Cloud Console > APIs & Services > Credentials > OAuth Client ID',
     setupInstructions: [
-      { step: 1, text: 'Go to console.cloud.google.com > APIs > Enable Drive API' },
-      { step: 2, text: 'Create OAuth Client ID credentials' },
-      { step: 3, text: 'Add authorized origin: https://cacheflow.goels.in' },      { step: 4, text: 'IMPORTANT: In OAuth Consent Screen, add your Google email as Test User' },
+      { step: 1, text: 'Go to https://console.cloud.google.com and create a new project (or select existing)' },
+      { step: 2, text: 'Navigate to APIs & Services > Library and enable the "Google Drive API"' },
+      { step: 3, text: 'Go to APIs & Services > OAuth consent screen' },
+      { step: 4, text: 'Select "External" user type and click Create' },
+      { step: 5, text: 'Fill in required fields: App name, User support email, Developer contact email' },
+      { step: 6, text: 'AddScopes: add ".../auth/drive.readonly" and ".../auth/drive.metadata.readonly"' },
+      { step: 7, text: 'AddTestUsers: add your Google email address (required for testing)' },
+      { step: 8, text: 'Click Save and Continue through remaining screens' },
+      { step: 9, text: 'Go to APIs & Services > Credentials > Create Credentials > OAuth Client ID' },
+      { step: 10, text: 'Application type: Web application' },
+      { step: 11, text: 'Add Authorized JavaScript origins: https://cacheflow.goels.in (your CacheFlow URL)' },
+      { step: 12, text: 'Add Authorized redirect URIs: https://cacheflow.goels.in (or your URL)' },
+      { step: 13, text: 'Click Create to get your Client ID and Client Secret' },
     ]
-  },
-  {
-    id: 'onedrive',
-    name: 'OneDrive',
-    icon: '☁️',
-    description: 'Connect to OneDrive (5 GB free)',
-    authType: 'oauth',
-    fields: [],
-    setupInstructions: [
-      { step: 1, text: 'Go to portal.azure.com > App Registrations' },
-      { step: 2, text: 'Create SPA app, redirect: https://cacheflow.goels.in' },
-    ]
-  },
-  {
-    id: 'dropbox',
-    name: 'Dropbox',
-    icon: '📦',
-    description: 'Connect to Dropbox (2 GB free)',
-    authType: 'oauth',
-    fields: [],
-    setupInstructions: [
-      { step: 1, text: 'Go to dropbox.com/developers/apps' },
-      { step: 2, text: 'Create scoped app, add redirect URI' },
-    ]
-  },
-  {
-    id: 'box',
-    name: 'Box',
-    icon: '📁',
-    description: 'Connect to Box (10 GB free)',
-    authType: 'oauth',
-    fields: [],
-    setupInstructions: [
-      { step: 1, text: 'Go to developer.box.com' },
-      { step: 2, text: 'Create Custom App with OAuth 2.0 PKCE' },
-    ]
-  },
-  {
-    id: 'pcloud',
-    name: 'pCloud',
-    icon: '🧊',
-    description: 'pCloud (10 GB free) - Coming Soon',
-    authType: 'oauth',
-    fields: [],
-    comingSoon: true,
-    setupInstructions: [{ step: 1, text: 'Coming soon' }]
-  },
-  {
-    id: 'filen',
-    name: 'Filen',
-    icon: '🔐',
-    description: 'Filen (10 GB, E2E) - Coming Soon',
-    authType: 'oauth',
-    fields: [],
-    comingSoon: true,
-    setupInstructions: [{ step: 1, text: 'Coming soon' }]
-  },
-  {
-    id: 'yandex',
-    name: 'Yandex Disk',
-    icon: '🟡',
-    description: 'Yandex Disk (10 GB) - Coming Soon',
-    authType: 'oauth',
-    fields: [],
-    comingSoon: true,
-    setupInstructions: [{ step: 1, text: 'Coming soon' }]
   },
   {
     id: 'webdav',
     name: 'WebDAV',
     icon: '🌐',
-    description: 'WebDAV server (Nextcloud, ownCloud)',
-    authType: 'basic',
+    description: 'Connect to any WebDAV server (Nextcloud, ownCloud, etc.)',
     fields: [
-      { key: 'url', label: 'WebDAV URL', placeholder: 'https://server.com/dav/', type: 'text' },
-      { key: 'user', label: 'Username', type: 'text' },
-      { key: 'pass', label: 'Password', type: 'password' },
-    ]
-  },
-  {
-    id: 'vps',
-    name: 'VPS / SFTP',
-    icon: '🖥️',
-    description: 'Connect Linux VPS via SFTP',
-    authType: 'ssh',
-    fields: [
-      { key: 'host', label: 'Host', placeholder: 'server.com', type: 'text' },
-      { key: 'port', label: 'Port', placeholder: '22', type: 'text' },
-      { key: 'user', label: 'Username', type: 'text' },
-      { key: 'pass', label: 'Password', type: 'password' },
+      { key: 'url', label: 'WebDAV URL', placeholder: 'https://your-server.com/remote.php/dav/files/username/', type: 'text' },
+      { key: 'user', label: 'Username', placeholder: 'Your username', type: 'text' },
+      { key: 'pass', label: 'Password', placeholder: 'Your password', type: 'password' },
     ]
   },
   {
     id: 's3',
     name: 'Amazon S3',
     icon: '🪣',
-    description: 'Amazon S3 - Coming Soon',
-    authType: 'api',
-    fields: [],
-    comingSoon: true,
-    setupInstructions: [{ step: 1, text: 'Coming soon' }]
+    description: 'Connect to Amazon S3 or S3-compatible storage',
+    fields: [
+      { key: 'access_key', label: 'Access Key ID', placeholder: 'AKIAIOSFODNN7EXAMPLE', type: 'text' },
+      { key: 'secret_key', label: 'Secret Access Key', placeholder: 'Your secret key', type: 'password' },
+      { key: 'endpoint', label: 'Endpoint (optional)', placeholder: 's3.amazonaws.com', type: 'text' },
+      { key: 'bucket', label: 'Bucket Name', placeholder: 'my-bucket', type: 'text' },
+    ]
   },
   {
     id: 'b2',
     name: 'Backblaze B2',
     icon: '💾',
-    description: 'Backblaze B2 - Coming Soon',
-    authType: 'api',
-    fields: [],
-    comingSoon: true,
-    setupInstructions: [{ step: 1, text: 'Coming soon' }]
+    description: 'Connect to Backblaze B2 cloud storage',
+    fields: [
+      { key: 'application_key_id', label: 'Application Key ID', placeholder: 'Your key ID', type: 'text' },
+      { key: 'application_key', label: 'Application Key', placeholder: 'Your application key', type: 'password' },
+    ]
+  },
+  {
+    id: 'ftp',
+    name: 'FTP/SFTP',
+    icon: '📂',
+    description: 'Connect to FTP or SFTP server',
+    fields: [
+      { key: 'host', label: 'Host', placeholder: 'ftp.example.com', type: 'text' },
+      { key: 'port', label: 'Port', placeholder: '21 (FTP) or 22 (SFTP)', type: 'text' },
+      { key: 'user', label: 'Username', placeholder: 'Your username', type: 'text' },
+      { key: 'pass', label: 'Password', placeholder: 'Your password', type: 'password' },
+    ]
   },
 ]
-
 
 export default function RemotesPanel({ token }: RemotesPanelProps) {
   const [remotes, setRemotes] = useState<Remote[]>([])
@@ -338,84 +284,6 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       setError(err.message || 'Failed to save token')
     } finally {
       setOauthLoading(false)
-    }
-  }
-
-  // Browser-based OAuth handler for OAuth providers
-  async function handleOAuthConnect(providerId: string) {
-    const providers = await import("@/lib/providers")
-    const getProvider = providers.getProvider
-    const provider = getProvider(providerId as any)
-    if (!provider) {
-      alert("Provider not found. Please refresh the page.")
-      return
-    }
-    
-    try {
-      setAdding(true)
-      setError(null)
-      
-      const providerToken = await provider.connect()
-      
-      // Save to backend for persistence
-      const response = await fetch("/api/tokens", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          provider: providerId,
-          accessToken: providerToken.accessToken,
-          refreshToken: providerToken.refreshToken || null,
-          expiresAt: providerToken.expiresAt,
-          accountEmail: providerToken.accountEmail,
-          accountId: providerToken.accountId || null
-        })
-      })
-      
-      console.log("Token save response:", response.status, response.statusText)
-      
-      if (false) { // Server save disabled - token in localStorage
-        const err = await response.json()
-        throw new Error(err.error || "Failed to save token")
-      }
-      
-      alert("Successfully connected to " + providerToken.accountEmail + "!")
-      setShowAddModal(false)
-      resetForm()
-      loadRemotes()
-    } catch (err: any) {
-      console.error("OAuth error:", err)
-      let errorMessage = err.message || "Failed to connect."
-      if (err.message?.includes("popup") || err.message?.includes("cancelled") || err.message?.includes("closed")) {
-        errorMessage = "Authentication was cancelled. Please try again."
-      } else if (err.message?.includes("403") || err.message?.includes("access_denied")) {
-        errorMessage = "Google OAuth not verified. Add your email as Test User in Google Cloud Console > OAuth Consent Screen, or publish the app."
-      }
-      setError(errorMessage)
-    } finally {
-      setAdding(false)
-    }
-  }
-
-  // Disconnect handler for browser-based providers
-  async function handleOAuthDisconnect(providerId: string) {
-    const providers = await import("@/lib/providers")
-    const getProvider = providers.getProvider
-    const provider = getProvider(providerId as any)
-    if (provider) {
-      await provider.disconnect()
-    }
-    
-    try {
-      await fetch(`/api/tokens/${providerId}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
-      })
-      loadRemotes()
-    } catch (err) {
-      console.error("Disconnect error:", err)
     }
   }
 
@@ -778,15 +646,8 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  const provider = CLOUD_PROVIDERS.find(p => p.id === newRemoteType)
-                  if (provider?.authType === "oauth") {
-                    handleOAuthConnect(newRemoteType)
-                  } else {
-                    handleAddRemote()
-                  }
-                }}
-                disabled={adding}
+                onClick={handleAddRemote}
+                disabled={adding || !newRemoteName.trim()}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
                 {adding ? 'Connecting...' : 'Connect'}
