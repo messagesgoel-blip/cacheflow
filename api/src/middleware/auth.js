@@ -21,7 +21,10 @@ module.exports = async (req, res, next) => {
       [decoded.id]
     );
     if (!result.rows.length) return res.status(401).json({ error: 'User not found' });
-    req.user = result.rows[0];
+    const user = result.rows[0];
+    // Check if user is admin based on ADMIN_EMAIL env variable
+    user.is_admin = user.email === process.env.ADMIN_EMAIL;
+    req.user = user;
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });
