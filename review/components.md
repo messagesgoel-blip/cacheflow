@@ -7,14 +7,12 @@
 **Before:** Computed inside `loadCurrentPath()` - causes stale closure issues
 ```typescript
 async function loadCurrentPath() {
-  // Computed inside function - stale closure bug!
   const isCloud = locationId?.startsWith('cloud-') ?? false
   const providerId = isCloud ? locationId?.replace('cloud-', '') as ProviderId : null
 ```
 
 **After:** Hoisted to component level
 ```typescript
-// Component-level derived values for cloud provider detection
 const isCloud = locationId?.startsWith('cloud-') ?? false
 const cloudProviderId = isCloud ? locationId?.replace('cloud-', '') as ProviderId : null
 ```
@@ -23,7 +21,6 @@ const cloudProviderId = isCloud ? locationId?.replace('cloud-', '') as ProviderI
 
 ```typescript
 async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-  // Handle cloud provider upload
   if (isCloud && cloudProviderId) {
     const provider = getProvider(cloudProviderId)
     if (provider) {
@@ -39,7 +36,6 @@ async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
 
 ```typescript
 async function handleCreateFolder() {
-  // Handle cloud provider folder creation
   if (isCloud && cloudProviderId) {
     const provider = getProvider(cloudProviderId)
     if (provider) {
@@ -52,7 +48,7 @@ async function handleCreateFolder() {
 }
 ```
 
-### Fix 4: Context menu stubs show alerts
+### Fix 4: Context menu stubs show banner instead of alert
 
 **Before:** Silent console.log
 ```typescript
@@ -61,12 +57,22 @@ async function handleDownload(fileId: string, filePath: string) {
 }
 ```
 
-**After:** Visible warnings
+**After:** Non-blocking banner
 ```typescript
+const [unimplementedMsg, setUnimplementedMsg] = useState<string | null>(null)
+
 async function handleDownload(fileId: string, filePath: string) {
   console.warn('not yet implemented: download', fileId, filePath)
-  alert('Download is not yet implemented')
+  setUnimplementedMsg('Download is not yet implemented')
 }
+
+// Render:
+{unimplementedMsg && (
+  <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 flex justify-between items-center">
+    <span>{unimplementedMsg}</span>
+    <button onClick={() => setUnimplementedMsg(null)}>×</button>
+  </div>
+)}
 ```
 
 ---
@@ -82,24 +88,27 @@ async function handleDownload(fileId: string, filePath: string) {
 const loadedPathsRef = useRef<Set<string>>(new Set())
 
 async function loadFolders(path: string) {
-  // Skip if already loaded
-  if (loadedPathsRef.current.has(path)) {
-    return
-  }
+  if (loadedPathsRef.current.has(path)) return  // Skip if already loaded
   // ... fetch logic ...
   loadedPathsRef.current.add(path)
 }
 
 async function ensureFolderLoaded(path: string) {
-  // Skip if already loaded
-  if (loadedPathsRef.current.has(path)) {
-    return
-  }
+  if (loadedPathsRef.current.has(path)) return
   await loadFolders(path)
 }
 ```
 
-### Fix 2: Cloud provider guard
+### Fix 2: Clear ref on refresh
+```typescript
+onClick={() => {
+  loadedPathsRef.current.clear()
+  loadFolders('/')
+  onRefresh?.()
+}}
+```
+
+### Fix 3: Cloud provider guard
 
 **Before:** Always called local browseFiles API
 ```typescript
@@ -108,17 +117,19 @@ const data = await browseFiles(path, token, locationId)
 
 **After:** Check for cloud provider first
 ```typescript
-// Handle cloud provider
 if (isCloud && cloudProviderId) {
   const provider = getProvider(cloudProviderId)
   if (provider) {
     const result = await provider.listFiles({ folderId: path })
     folderItems = result.files
       .filter((f: any) => f.isFolder)
-      .map((f: any) => ({ name: f.name, path: f.path, isFolder: true }))
+      .map((f: any) => ({
+        name: f.name,
+        path: f.id,  // Use ID for cloud providers
+        isFolder: true
+      }))
   }
 } else {
-  // Handle local storage
   const data = await browseFiles(path, token, locationId)
   folderItems = data.folders || []
 }
@@ -133,7 +144,7 @@ if (isCloud && cloudProviderId) {
 **Before:** Slow dynamic import
 ```typescript
 async function handleOAuthConnect(providerId: string) {
-  const providers = await import("@/lib/providers")  // SLOW!
+  const providers = await import("@/lib/providers")
   const getProvider = providers.getProvider
 ```
 
@@ -142,14 +153,14 @@ async function handleOAuthConnect(providerId: string) {
 import { getProvider } from '@/lib/providers'
 
 async function handleOAuthConnect(providerId: string) {
-  const provider = getProvider(providerId as any)  // FAST!
+  const provider = getProvider(providerId as any)
 ```
 
 ### Fix 2: Removed dead code
 
 **Before:**
 ```typescript
-if (false) { // Server save disabled - token in localStorage
+if (false) { // Server save disabled
   const err = await response.json()
   throw new Error(err.error || "Failed to save token")
 }
@@ -167,6 +178,13 @@ if (!response.ok) {
 
 ```typescript
 // Changed from '📧' to '🗂️' in CLOUD_PROVIDERS array
+```
+
+### Fix 4: Security Gap Documentation
+
+```typescript
+// TODO: SECURITY — OAuth tokens currently stored in localStorage (XSS risk).
+// Server-side token storage was disabled. Re-enable before production.
 ```
 
 ---
@@ -187,7 +205,6 @@ for (const pid of providerIds) {
 ```typescript
 const [quotaLoading, setQuotaLoading] = useState(false)
 
-// Fetch quotas in parallel
 setQuotaLoading(true)
 const quotaResults = await Promise.allSettled(
   locationsWithTokens.map(async ({ pid }) => {
@@ -197,52 +214,60 @@ const quotaResults = await Promise.allSettled(
   })
 )
 setQuotaLoading(false)
+
+// Handle rejected results:
+if (quotaResult.status === 'fulfilled') {
+  quota = { used: quotaResult.value.used, total: quotaResult.value.total }
+}
 ```
 
 ---
 
 ## ThemeToggle.tsx
 
-### Fix: Stale closure on keyboard shortcut
+### Fix 1: Use useCallback with functional setState
 
-**Before:** toggleTheme not in dependency array
+**Before:** Stale closure bug
 ```typescript
+const toggleTheme = () => {
+  const newIsDark = !isDark  // Stale value!
+  // ...
+}
 useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
-      toggleTheme()  // Stale isDark value!
-    }
-  }
-  window.addEventListener('keydown', handleKeyDown)
-}, [isDark])  // Missing toggleTheme
+  // toggleTheme not in dependency array
+}, [isDark])
 ```
 
-**After:** Use useCallback with functional setState
+**After:** Stable callback
 ```typescript
 const toggleTheme = useCallback(() => {
   setIsDark(prev => {
     const newIsDark = !prev
-    // Use prev instead of isDark - no stale closure!
     if (newIsDark) {
       document.documentElement.classList.add('dark')
       localStorage.setItem('cf_theme', 'dark')
     } else {
-      document.documentElement.classList.add('light')
+      document.documentElement.classList.remove('dark')
       localStorage.setItem('cf_theme', 'light')
     }
     return newIsDark
   })
-}, [])  // Stable reference
+}, [])
 
 useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
-      toggleTheme()  // Now uses stable callback
-    }
+  // ...
+}, [toggleTheme])
+```
+
+### Fix 2: Safari private mode compatibility
+```typescript
+const [isDark, setIsDark] = useState<boolean>(() => {
+  try {
+    return localStorage.getItem('cf_theme') === 'dark'
+  } catch {
+    return false
   }
-  window.addEventListener('keydown', handleKeyDown)
-  return () => window.removeEventListener('keydown', handleKeyDown)
-}, [toggleTheme])  // Now includes toggleTheme
+})
 ```
 
 ---
@@ -259,6 +284,9 @@ useEffect(() => {
 **After:**
 ```typescript
 <span>{provider?.icon || '📁'}</span>
+
+// Add warning for missing provider:
+if (!provider) console.warn(`No provider config found for: ${cp.providerId}`)
 ```
 
 ---
@@ -270,7 +298,7 @@ useEffect(() => {
 ```typescript
 function getProviderIcon(providerId: ProviderId): string {
   const icons: Record<ProviderId, string> = {
-    google: '🗂️',  // Was: '📧'
+    google: '🗂️',  // Was: 📧
     // ...
   }
 }
@@ -282,111 +310,10 @@ function getProviderIcon(providerId: ProviderId): string {
 
 | Component | Key Fix |
 |-----------|---------|
-| FileBrowser.tsx | Cloud upload/folder creation, context menu alerts, replace alert() with banner |
-| FolderTree.tsx | loadedPaths ref, cloud provider guard, clear ref on refresh, use f.id for cloud |
-| RemotesPanel.tsx | Static import, removed dead code, security gap TODO |
-| DrivePanel.tsx | Parallel quota fetching, Promise.allSettled fix |
-| ThemeToggle.tsx | useCallback for stale closure, localStorage try/catch, remove incorrect class |
-| UploadModal.tsx | Use provider.icon, provider lookup warning |
+| FileBrowser.tsx | Cloud upload/folder creation, context menu banners |
+| FolderTree.tsx | loadedPaths ref, cloud provider guard, clear ref, use f.id |
+| RemotesPanel.tsx | Static import, dead code removal, security gap TODO |
+| DrivePanel.tsx | Parallel quota fetching, Promise.allSettled |
+| ThemeToggle.tsx | useCallback, localStorage try/catch |
+| UploadModal.tsx | Use provider.icon, provider warning |
 | ProviderHub.tsx | Fix Google Drive icon |
-
----
-
-## Additional Fixes (Round 2)
-
-### ThemeToggle.tsx - Additional Fixes
-
-**Safari private mode compatibility:**
-```typescript
-// BEFORE: Can throw if localStorage unavailable
-const [isDark, setIsDark] = useState(false)
-
-// AFTER: Wrapped in try/catch
-const [isDark, setIsDark] = useState<boolean>(() => {
-  try {
-    return localStorage.getItem('cf_theme') === 'dark'
-  } catch {
-    return false
-  }
-})
-```
-
-**Toggle class fix (toggle to light):**
-```typescript
-// BEFORE: Added 'light' class (incorrect)
-} else {
-  document.documentElement.classList.add('light')  // WRONG
-  document.documentElement.classList.remove('dark')
-}
-
-// AFTER: Just remove dark class
-} else {
-  document.documentElement.classList.remove('dark')
-  localStorage.setItem('cf_theme', 'light')
-}
-```
-
-### FileBrowser.tsx - Replace alert() with Banner
-
-**Before:**
-```typescript
-async function handleDownload(fileId: string, filePath: string) {
-  console.warn('not yet implemented: download', fileId, filePath)
-  alert('Download is not yet implemented')  // Blocking!
-}
-```
-
-**After:**
-```typescript
-const [unimplementedMsg, setUnimplementedMsg] = useState<string | null>(null)
-
-async function handleDownload(fileId: string, filePath: string) {
-  console.warn('not yet implemented: download', fileId, filePath)
-  setUnimplementedMsg('Download is not yet implemented')
-}
-
-// Render:
-{unimplementedMsg && (
-  <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 flex justify-between items-center">
-    <span>{unimplementedMsg}</span>
-    <button onClick={() => setUnimplementedMsg(null)}>×</button>
-  </div>
-)}
-```
-
-### FolderTree.tsx - Additional Fixes
-
-**Clear ref on refresh:**
-```typescript
-onClick={() => {
-  loadedPathsRef.current.clear()  // NEW
-  loadFolders('/')
-  onRefresh?.()
-}}
-```
-
-**Use f.id for cloud providers:**
-```typescript
-folderItems = result.files
-  .filter((f: any) => f.isFolder)
-  .map((f: any) => ({
-    name: f.name,
-    path: f.id,  // Use ID for cloud (was: f.path)
-    isFolder: true,
-  }))
-```
-
-### RemotesPanel.tsx - Security Gap Documentation
-
-```typescript
-// TODO: SECURITY — OAuth tokens currently stored in localStorage (XSS risk).
-// Server-side token storage was disabled. Re-enable before production.
-// See: /api/tokens endpoint
-```
-
-### UploadModal.tsx - Provider Lookup Warning
-
-```typescript
-const provider = PROVIDERS.find(p => p.id === cp.providerId)
-if (!provider) console.warn(`No provider config found for ${cp.providerId}`)
-```

@@ -29,11 +29,7 @@ export async function generateCodeChallenge(verifier: string): Promise<string> {
 }
 
 export function base64UrlEncode(array: Uint8Array): string {
-  let str = ''
-  array.forEach(byte => {
-    str += String.fromCharCode(byte)
-  })
-  return btoa(str)
+  return btoa(Array.from(array, b => String.fromCharCode(b)).join(''))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '')
@@ -47,6 +43,23 @@ export function base64UrlEncode(array: Uint8Array): string {
  * Shared utility functions for provider adapters
  */
 
+/**
+ * Fetch with timeout support
+ */
+export function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs = 15000
+): Promise<Response> {
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeoutMs)
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(id))
+}
+
+/**
+ * Format bytes to human-readable string
+ */
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
   const k = 1024
@@ -55,6 +68,9 @@ export function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
+/**
+ * Get MIME type from filename extension
+ */
 export function formatMimeType(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase() || ''
   const mimeTypes: Record<string, string> = {
@@ -97,7 +113,7 @@ export function formatMimeType(filename: string): string {
 
 # PART 2: PROVIDER FIXES
 
-## web/lib/providers/box.ts (Key Changes)
+## box.ts (Key Changes)
 
 ```typescript
 import { generateCodeVerifier, generateCodeChallenge } from './pkce'
@@ -107,59 +123,54 @@ import { formatBytes } from './utils'
 // Before: client_secret: process.env.NEXT_PUBLIC_BOX_CLIENT_SECRET || ''
 // After: Removed entirely (PKCE doesn't require it)
 
-// FIXED: Quota field name (alloted -> allocated)
-const total = space.allocated || 0  // Was: space.alloted
+// FIXED: Quota field name + fallback chain
+const total = space.allocated ?? space.space_amount ?? 0
 
-// FIXED: Added retried parameter to prevent infinite 401 loops
+// FIXED: Added retried parameter
 private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
-  // ...
   if (!response.ok) {
-    if (response.status === 401 && !retried) {  // Added !retried check
+    if (response.status === 401 && !retried) {
       const refreshed = await tokenManager.refreshToken('box')
       if (refreshed) {
         this.accessToken = refreshed.accessToken
-        return this.makeRequest(url, options, true)  // Pass retried=true
+        return this.makeRequest(url, options, true)
       }
+      throw new Error('SESSION_EXPIRED')
     }
   }
 }
 ```
 
-## web/lib/providers/filen.ts (Key Changes)
+## filen.ts (Key Changes)
 
 ```typescript
 import { generateCodeVerifier, generateCodeChallenge } from './pkce'
 import { formatBytes, formatMimeType } from './utils'
 
-// SECURITY FIX: Token moved from URL query param to Authorization header
-private async req(ep: string, body?: any, retried = false): Promise<any> {
-  // BEFORE: Token in URL
-  // const u = new URL(FILEN_API_BASE+ep)
-  // if (this.accessToken) u.searchParams.set('auth', this.accessToken)
-  
-  // AFTER: Token in Authorization header
-  const res = await fetch(FILEN_API_BASE+ep, {
-    method: 'POST', 
+// SECURITY FIX: Token moved to Authorization header
+private async req(ep: string, body?: any, retried = false, method = 'POST'): Promise<any> {
+  const res = await fetch(FILEN_API_BASE + ep, {
+    method,
     headers: { 
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this.accessToken}`  // SECURE
+      Authorization: `Bearer ${this.accessToken}`
     },
-    body: body ? JSON.stringify(body) : undefined
+    body: method !== 'GET' && body ? JSON.stringify(body) : undefined
   })
   
-  // FIXED: Added retried parameter
   if (res.status === 401 && !retried) {
     const nt = await tokenManager.refreshToken('filen')
     if (nt) {
       this.accessToken = nt.accessToken
-      return this.req(ep, body, true)  // Pass retried=true
+      return this.req(ep, body, true, method)
     }
+    throw new Error('SESSION_EXPIRED')
   }
 }
 
-// SECURITY FIX: uploadFile and downloadFile also use Authorization header
+// SECURITY FIX: uploadFile and downloadFile use Authorization header
 async uploadFile(f: File, o?: UploadOptions): Promise<FileMetadata> {
-  const res = await fetch(FILEN_API_BASE+'/v1/file/upload', { 
+  const res = await fetch(FILEN_API_BASE + '/v1/file/upload', { 
     method: 'POST', 
     body: fd,
     headers: { Authorization: `Bearer ${this.accessToken}` }
@@ -167,52 +178,47 @@ async uploadFile(f: File, o?: UploadOptions): Promise<FileMetadata> {
 }
 
 async downloadFile(id: string): Promise<Blob> {
-  const res = await fetch(FILEN_API_BASE+'/v1/file/download?uuid='+id, {
+  const res = await fetch(FILEN_API_BASE + '/v1/file/download?uuid=' + id, {
     headers: { Authorization: `Bearer ${this.accessToken}` }
   })
 }
 
-// FIXED: Use formatMimeType instead of buggy gm()
+// FIXED: Use formatMimeType
 private mf(i: any): FileMetadata {
   return { 
-    // ...
-    mimeType: f ? 'application/vnd.folder' : formatMimeType(i.name),  // Was: gm(i.name)
+    mimeType: f ? 'application/vnd.folder' : formatMimeType(i.name),
   }
 }
 ```
 
-## web/lib/providers/pcloud.ts (Key Changes)
+## pcloud.ts (Key Changes)
 
-```typescript
-// SECURITY FIX: Token moved to Authorization header
-private async req(ep: string, body?: any, retried = false): Promise<any> {
-  const u = new URL(PCLOUD_API_BASE+ep)
-  // BEFORE: if (this.accessToken) u.searchParams.set('access_token', this.accessToken)
-  
-  const res = await fetch(u.toString(), {
-    headers: { Authorization: `Bearer ${this.accessToken}` }  // SECURE
+``` FIX: Token moved to Authorization header
+typescript
+// SECURITYprivate async req(ep: string, body?: any, retried = false): Promise<any> {
+  const res = await fetch(PCLOUD_API_BASE + ep, {
+    headers: { Authorization: `Bearer ${this.accessToken}` }
   })
   
   if (res.status === 401 && !retried) { /* ... */ }
 }
 ```
 
-## web/lib/providers/dropbox.ts (Key Changes)
+## dropbox.ts (Key Changes)
 
 ```typescript
 import { generateCodeVerifier, generateCodeChallenge } from './pkce'
 import { formatBytes, formatMimeType } from './utils'
 
-// FIXED: Added retried parameter
+// FIXED: Added retried parameter + SESSION_EXPIRED
 private async makeRequest(endpoint: string, body?: any, retried = false): Promise<any> {
-  if (!response.ok) {
-    if (response.status === 401 && !retried) {  // Added !retried
-      const refreshed = await tokenManager.refreshToken('dropbox')
-      if (refreshed) {
-        this.accessToken = refreshed.accessToken
-        return this.makeRequest(endpoint, body, true)  // Pass retried=true
-      }
+  if (response.status === 401 && !retried) {
+    const refreshed = await tokenManager.refreshToken('dropbox')
+    if (refreshed) {
+      this.accessToken = refreshed.accessToken
+      return this.makeRequest(endpoint, body, true)
     }
+    throw new Error('SESSION_EXPIRED')
   }
 }
 
@@ -220,7 +226,7 @@ private async makeRequest(endpoint: string, body?: any, retried = false): Promis
 mimeType: isFolder ? 'application/vnd.folder' : formatMimeType(item.name)
 ```
 
-## web/lib/providers/oneDrive.ts (Key Changes)
+## oneDrive.ts (Key Changes)
 
 ```typescript
 import { formatBytes, formatMimeType } from './utils'
@@ -228,22 +234,37 @@ import { formatBytes, formatMimeType } from './utils'
 // FIXED: downloadUrl access method
 async downloadFile(fileId: string): Promise<Blob> {
   const file = await this.getFile(fileId)
-  const downloadUrl = (file as any).downloadUrl  // Was: file['@microsoft.graph.downloadUrl']
+  const downloadUrl = (file as any)['@microsoft.graph.downloadUrl']
   if (!downloadUrl) throw new Error('Download URL not available')
   const response = await fetch(downloadUrl)
   return response.blob()
 }
 
-// FIXED: Added retried parameter
+// FIXED: Added retried parameter + SESSION_EXPIRED
 private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
-  if (response.status === 401 && !retried) { /* ... */ }
+  if (response.status === 401 && !retried) {
+    const refreshed = await tokenManager.refreshToken('onedrive')
+    if (refreshed) {
+      this.accessToken = refreshed.accessToken
+      return this.makeRequest(url, options, true)
+    }
+    throw new Error('SESSION_EXPIRED')
+  }
 }
 ```
 
-## web/lib/providers/googleDrive.ts (Key Changes)
+## googleDrive.ts (Key Changes)
 
 ```typescript
-// FIXED: Explicit allowlist for Google Docs export
+import { fetchWithTimeout } from './utils'
+
+// FIXED: Non-exportable types
+const NON_EXPORTABLE = ['application/vnd.google-apps.script']
+if (NON_EXPORTABLE.includes(metadata.mimeType)) {
+  throw new Error('This file type cannot be downloaded.')
+}
+
+// FIXED: Google Docs export allowlist
 const googleDocsTypes = [
   'application/vnd.google-apps.document',
   'application/vnd.google-apps.spreadsheet',
@@ -252,9 +273,8 @@ const googleDocsTypes = [
   'application/vnd.google-apps.form',
   'application/vnd.google-apps.audio',
 ]
-if (googleDocsTypes.includes(metadata.mimeType)) { /* export */ }
 
-// FIXED: moveFile - direct API call instead of cached data
+// FIXED: moveFile - direct API call
 async moveFile(fileId: string, newParentId: string): Promise<FileMetadata> {
   const fileResponse = await fetch(
     `https://www.googleapis.com/drive/v3/files/${fileId}?fields=parents`,
@@ -266,22 +286,28 @@ async moveFile(fileId: string, newParentId: string): Promise<FileMetadata> {
 }
 
 // FIXED: Icon
-getIcon(): string { return '📁' }  // Was: '📧'
+getIcon(): string { return '🗂️' }
 
-// FIXED: Added retried parameter
+// FIXED: Added retried parameter + SESSION_EXPIRED
 private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
-  if (response.status === 401 && !retried) { /* ... */ }
+  if (response.status === 401 && !retried) {
+    const refreshed = await tokenManager.refreshToken('google')
+    if (refreshed) {
+      this.accessToken = refreshed.accessToken
+      return this.makeRequest(url, options, true)
+    }
+    throw new Error('SESSION_EXPIRED')
+  }
 }
 ```
 
-## web/lib/providers/types.ts (Key Change)
+## types.ts (Key Change)
 
 ```typescript
-// FIXED: Google Drive icon
 {
   id: 'google',
   name: 'Google Drive',
-  icon: '📁',  // Was: '📧'
+  icon: '🗂️',  // FIXED: Was 📧, then 📁
   // ...
 }
 ```
@@ -290,13 +316,11 @@ private async makeRequest(url: string, options: RequestInit = {}, retried = fals
 
 # PART 3: COMPONENT FIXES
 
-## web/components/FileBrowser.tsx (Key Sections)
+## FileBrowser.tsx (Key Sections)
 
 ```typescript
 export default function FileBrowser({ token, currentPath = '/', locationId, onPathChange, onRefresh }) {
-  // ...
-  
-  // COMPONENT-LEVEL: Cloud provider detection (FIXED: moved outside loadCurrentPath)
+  // COMPONENT-LEVEL: Cloud provider detection
   const isCloud = locationId?.startsWith('cloud-') ?? false
   const cloudProviderId = isCloud ? locationId?.replace('cloud-', '') as ProviderId : null
 
@@ -325,16 +349,17 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
     }
   }
 
-  // FIXED: Context menu stubs now show alerts
+  // FIXED: Non-blocking banner for unimplemented features
+  const [unimplementedMsg, setUnimplementedMsg] = useState<string | null>(null)
+
   async function handleDownload(fileId: string, filePath: string) {
     console.warn('not yet implemented: download', fileId, filePath)
-    alert('Download is not yet implemented')
+    setUnimplementedMsg('Download is not yet implemented')
   }
-  // ... similarly for handleShare, handleRename, handleMove, handleDelete, handleRetry
 }
 ```
 
-## web/components/FolderTree.tsx (Key Sections)
+## FolderTree.tsx (Key Sections)
 
 ```typescript
 import { useState, useEffect, useRef } from 'react'
@@ -345,53 +370,57 @@ import { ProviderId } from '@/lib/providers/types'
 export default function FolderTree({ token, locationId, currentPath, onFolderSelect, onRefresh }) {
   const loadedPathsRef = useRef<Set<string>>(new Set())
   
-  // Cloud provider detection
   const isCloud = locationId?.startsWith('cloud-') ?? false
   const cloudProviderId = isCloud ? locationId?.replace('cloud-', '') as ProviderId : null
 
-  // FIXED: Prevent re-fetching empty folders
+  // FIXED: Clear ref on refresh
+  useEffect(() => {
+    loadedPathsRef.current.clear()
+  }, [locationId])
+
+  // FIXED: Use loadedPathsRef + cloud provider guard
   async function loadFolders(path: string) {
-    if (loadedPathsRef.current.has(path)) return  // Skip if already loaded
+    if (loadedPathsRef.current.has(path)) return
     
-    // FIXED: Cloud provider guard
     if (isCloud && cloudProviderId) {
       const provider = getProvider(cloudProviderId)
       if (provider) {
         const result = await provider.listFiles({ folderId: path })
         folderItems = result.files
           .filter((f: any) => f.isFolder)
-          .map((f: any) => ({ name: f.name, path: f.path, isFolder: true }))
+          .map((f: any) => ({
+            name: f.name,
+            path: f.id,  // FIXED: Use ID for cloud
+            isFolder: true
+          }))
       }
     } else {
       const data = await browseFiles(path, token, locationId)
       folderItems = data.folders || []
     }
     
-    loadedPathsRef.current.add(path)  // Mark as loaded
-  }
-
-  // FIXED: Use loadedPathsRef instead of hasChildren check
-  async function ensureFolderLoaded(path: string) {
-    if (loadedPathsRef.current.has(path)) return
-    await loadFolders(path)
+    loadedPathsRef.current.add(path)
   }
 }
 ```
 
-## web/components/RemotesPanel.tsx (Key Sections)
+## RemotesPanel.tsx (Key Sections)
 
 ```typescript
-// FIXED: Static import instead of dynamic
 import { getProvider } from '@/lib/providers'
 
-// ...
+// TODO: SECURITY — OAuth tokens currently stored in localStorage (XSS risk).
+// Server-side token storage was disabled. Re-enable before production.
+// See: /api/tokens endpoint
 
 async function handleOAuthConnect(providerId: string) {
-  // BEFORE: const providers = await import("@/lib/providers")
-  // AFTER: Direct use of imported getProvider
   const provider = getProvider(providerId as any)
+  if (!provider) {
+    alert("Provider not found. Please refresh the page.")
+    return
+  }
   
-  // FIXED: Proper error handling instead of if(false) block
+  // Proper error handling instead of if(false)
   const response = await fetch("/api/tokens", { /* ... */ })
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
@@ -400,47 +429,52 @@ async function handleOAuthConnect(providerId: string) {
 }
 ```
 
-## web/components/DrivePanel.tsx (Key Sections)
+## DrivePanel.tsx (Key Sections)
 
 ```typescript
-export default function DrivePanel({ token, onLocationSelect, onRefresh }) {
+async function getCloudProvidersWithQuotas() {
   const [quotaLoading, setQuotaLoading] = useState(false)
 
-  async function getCloudProvidersWithQuotas() {
-    // FIXED: Parallel quota fetching
-    setQuotaLoading(true)
-    const quotaResults = await Promise.allSettled(
-      locationsWithTokens.map(async ({ pid }) => {
-        const provider = getProvider(pid)
-        if (provider) return await provider.getQuota()
-        return { used: 0, total: 0, ... }
-      })
-    )
-    setQuotaLoading(false)
-    
-    // Build locations with quota data
-    // ...
-  }
+  setQuotaLoading(true)
+  const quotaResults = await Promise.allSettled(
+    locationsWithTokens.map(async ({ pid }) => {
+      const provider = getProvider(pid)
+      if (provider) return await provider.getQuota()
+      return { used: 0, total: 0, ... }
+    })
+  )
+  setQuotaLoading(false)
 
-  // In render:
-  {quotaLoading ? (
-    <div className="animate-pulse">
-      <div className="h-4 bg-gray-200 rounded w-16 mb-1"></div>
-      <div className="h-3 bg-gray-200 rounded w-12"></div>
-    </div>
-  ) : (
-    <>{formatBytes(location.totalSize)}</>
-  )}
+  // Handle rejected results properly
+  const cloudLocations = locationsWithTokens.map(({ pid, token: t, config }, index) => {
+    const quotaResult = quotaResults[index]
+    let quota = { used: 0, total: 0 }
+    
+    if (quotaResult.status === 'fulfilled') {
+      quota = { used: quotaResult.value.used, total: quotaResult.value.total }
+    }
+    
+    return { /* ... */ }
+  })
 }
 ```
 
-## web/components/ThemeToggle.tsx (Key Sections)
+## ThemeToggle.tsx (Key Sections)
 
 ```typescript
 import { useState, useEffect, useCallback } from 'react'
 
 export default function ThemeToggle() {
-  // FIXED: Use useCallback with functional setState to avoid stale closure
+  // FIXED: Safari private mode + functional setState
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('cf_theme') === 'dark'
+    } catch {
+      return false
+    }
+  })
+
+  // FIXED: useCallback with functional setState
   const toggleTheme = useCallback(() => {
     setIsDark(prev => {
       const newIsDark = !prev
@@ -448,47 +482,48 @@ export default function ThemeToggle() {
         document.documentElement.classList.add('dark')
         localStorage.setItem('cf_theme', 'dark')
       } else {
-        document.documentElement.classList.add('light')
+        document.documentElement.classList.remove('dark')  // FIXED: Remove, not add
         localStorage.setItem('cf_theme', 'light')
       }
       return newIsDark
     })
-  }, [])  // Stable reference
+  }, [])
 
   // FIXED: toggleTheme in dependency array
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
         e.preventDefault()
-        toggleTheme()  // Now uses stable callback
+        toggleTheme()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [toggleTheme])  // Includes toggleTheme
+  }, [toggleTheme])
 }
 ```
 
-## web/components/UploadModal.tsx (Key Change)
+## UploadModal.tsx (Key Change)
 
 ```typescript
 // FIXED: Use provider.icon instead of hardcoded emoji
 {
   connectedProviders.map(cp => {
     const provider = PROVIDERS.find(p => p.id === cp.providerId)
+    if (!provider) console.warn(`No provider config found for: ${cp.providerId}`)
     return (
-      <span>{provider?.icon || '📁'}</span>  // Was: provider?.name === 'Google Drive' ? '📧' : ...
+      <span>{provider?.icon || '📁'}</span>
     )
   })
 }
 ```
 
-## web/components/ProviderHub.tsx (Key Change)
+## ProviderHub.tsx (Key Change)
 
 ```typescript
 function getProviderIcon(providerId: ProviderId): string {
   const icons: Record<ProviderId, string> = {
-    google: '🗂️',  // Was: '📧'
+    google: '🗂️',  // FIXED
     onedrive: '☁️',
     dropbox: '📦',
     box: '📁',
@@ -511,11 +546,12 @@ function getProviderIcon(providerId: ProviderId): string {
 2. ✅ Moved tokens from URL query params to Authorization headers (filen.ts, pcloud.ts)
 3. ✅ Added `retried` parameter to prevent infinite 401 loops (all providers)
 4. ✅ Added SESSION_EXPIRED error on 401 refresh failure (all providers)
+5. ✅ Fixed base64UrlEncode for bytes > 127 (pkce.ts)
 
 ## High Priority Bugs
 1. ✅ FileBrowser: handleUpload routes to correct cloud provider
 2. ✅ FileBrowser: handleCreateFolder routes to correct cloud provider
-3. ✅ FileBrowser: Context menu alerts replaced with non-blocking banner
+3. ✅ FileBrowser: Context menu banners instead of alerts
 4. ✅ FolderTree: loadedPaths ref prevents re-fetching empty folders
 5. ✅ FolderTree: Cloud provider guard for browseFiles
 6. ✅ FolderTree: Clear ref on refresh, use f.id for cloud providers
@@ -527,16 +563,14 @@ function getProviderIcon(providerId: ProviderId): string {
 1. ✅ DrivePanel: Parallel quota fetching with loading state
 2. ✅ ThemeToggle: Fixed stale closure on keyboard shortcut
 3. ✅ ThemeToggle: Added localStorage try/catch for Safari private mode
-4. ✅ ThemeToggle: Fixed toggle to light mode (remove dark class, not add light)
-5. ✅ ProviderHub/RemotesPanel: Fixed Google Drive icon (🗂️)
+4. ✅ ThemeToggle: Fixed toggle to light mode (remove dark class)
+5. ✅ ProviderHub/RemotesPanel/types: Fixed Google Drive icon (🗂️)
 6. ✅ UploadModal: Use provider.icon instead of hardcoded emojis
 7. ✅ UploadModal: Added provider lookup warning
 8. ✅ googleDrive.ts: Added script exclusion (non-exportable type)
-9. ✅ googleDrive.ts: Fixed icon to 🗂️
-10. ✅ oneDrive.ts: Fixed downloadUrl access (@microsoft.graph.downloadUrl)
-11. ✅ box.ts: Fixed quota fallback chain (allocated ?? space_amount ?? 0)
-12. ✅ filen.ts: Added method parameter to req() for GET/POST routing
-13. ✅ pkce.ts: Fixed base64UrlEncode for bytes > 127
+9. ✅ oneDrive.ts: Fixed downloadUrl access (@microsoft.graph.downloadUrl)
+10. ✅ box.ts: Fixed quota fallback chain (allocated ?? space_amount ?? 0)
+11. ✅ filen.ts: Added method parameter to req() for GET/POST routing
 
 ## Utility Improvements
 1. ✅ Created shared pkce.ts module
@@ -546,8 +580,8 @@ function getProviderIcon(providerId: ProviderId): string {
 
 ## Cleanup
 1. ✅ Deleted backup/tmp files
-2. ✅ Deleted old review/roadmap.md
+2. ✅ Deleted old review files
 
 ---
 
-*End of file - All fixes combined (updated Feb 27, 2026)*
+*End of file - All fixes combined (Updated Feb 27, 2026)*
