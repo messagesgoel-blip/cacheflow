@@ -152,8 +152,14 @@ class TokenManager {
     // Cancel existing timer
     this.cancelRefresh(provider)
 
+    // If no expiresAt, skip auto-refresh (e.g., basic auth tokens)
+    const expiresAt = token.expiresAt
+    if (!expiresAt) {
+      return
+    }
+
     // Calculate time until refresh needed
-    const refreshTime = token.expiresAt - this.settings.refreshBufferMs
+    const refreshTime = expiresAt - this.settings.refreshBufferMs
     const delay = refreshTime - Date.now()
 
     if (delay <= 0) {
@@ -214,7 +220,7 @@ class TokenManager {
   async refreshAllTokens(): Promise<void> {
     const tokens = this.getAllTokens()
 
-    for (const [provider, token] of tokens) {
+    for (const [provider, token] of Array.from(tokens.entries())) {
       if (this.needsRefresh(token)) {
         await this.refreshToken(provider)
       }
@@ -262,7 +268,7 @@ class TokenManager {
     this.saveSettings({ autoRefresh: enabled })
     if (!enabled) {
       // Cancel all refresh timers
-      for (const provider of this.refreshTimers.keys()) {
+      for (const [provider] of Array.from(this.refreshTimers)) {
         this.cancelRefresh(provider)
       }
     }
@@ -290,7 +296,7 @@ class TokenManager {
    * Clear all tokens (logout from all providers)
    */
   clearAllTokens(): void {
-    for (const provider of this.getAllTokens().keys()) {
+    for (const [provider] of Array.from(this.getAllTokens())) {
       this.removeToken(provider)
     }
   }

@@ -82,6 +82,15 @@ const mockQuotas: Record<ProviderId, ProviderQuota> = {
     freeDisplay: '35 GB',
     percentUsed: 30,
   },
+  vps: {
+    used: 25_000_000_000,
+    total: 100_000_000_000,
+    free: 75_000_000_000,
+    usedDisplay: '25 GB',
+    totalDisplay: '100 GB',
+    freeDisplay: '75 GB',
+    percentUsed: 25,
+  },
 }
 
 // ============================================================================
@@ -345,6 +354,32 @@ const mockFiles: Record<ProviderId, FileMetadata[]> = {
       providerName: 'WebDAV',
     },
   ],
+  vps: [
+    {
+      id: 'vps-1',
+      name: 'Documents',
+      path: '/home/user/Documents',
+      pathDisplay: '/home/user/Documents',
+      size: 0,
+      mimeType: 'application/vnd.folder',
+      isFolder: true,
+      modifiedTime: '2026-02-25T10:00:00Z',
+      provider: 'vps',
+      providerName: 'VPS / SFTP',
+    },
+    {
+      id: 'vps-2',
+      name: 'notes.txt',
+      path: '/home/user/Documents/notes.txt',
+      pathDisplay: '/home/user/Documents/notes.txt',
+      size: 4_500,
+      mimeType: 'text/plain',
+      isFolder: false,
+      modifiedTime: '2026-02-25T10:00:00Z',
+      provider: 'vps',
+      providerName: 'VPS / SFTP',
+    },
+  ],
 }
 
 // ============================================================================
@@ -433,7 +468,7 @@ export const mockTransfers: TransferJob[] = [
   {
     id: 'transfer-2',
     type: 'upload',
-    sourceProvider: 'local',
+    sourceProvider: 'google',
     targetProvider: 'dropbox',
     sourceFile: {
       id: 'local-1',
@@ -444,7 +479,7 @@ export const mockTransfers: TransferJob[] = [
       mimeType: 'application/pdf',
       isFolder: false,
       modifiedTime: new Date().toISOString(),
-      provider: 'local',
+      provider: 'google',
       providerName: 'Local',
     },
     targetPath: '/Backup/New Document.pdf',

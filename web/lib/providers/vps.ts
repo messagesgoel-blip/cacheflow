@@ -113,6 +113,7 @@ export class VPSProvider extends StorageProvider {
     const token: ProviderToken = {
       provider: 'vps',
       accessToken: data.id, // Use connection ID as token
+      expiresAt: null, // VPS tokens don't expire
       accountEmail: config.username,
       displayName: config.displayName,
     }

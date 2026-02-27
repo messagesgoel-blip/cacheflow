@@ -83,6 +83,7 @@ export class WebDAVProvider extends StorageProvider {
     const token: ProviderToken = {
       provider: 'webdav',
       accessToken: credentials,
+      expiresAt: null,
       accountEmail: config.username,
       displayName: config.url,
     }
@@ -129,7 +130,9 @@ export class WebDAVProvider extends StorageProvider {
     try {
       const response = await this.request('PROPFIND', '', {
         Depth: '0',
-        'Content-Type': 'application/xml',
+        headers: {
+          'Content-Type': 'application/xml',
+        },
       })
 
       if (response.ok) {
@@ -166,7 +169,9 @@ export class WebDAVProvider extends StorageProvider {
 
     const response = await this.request('PROPFIND', folderPath, {
       Depth: depth,
-      'Content-Type': 'application/xml',
+      headers: {
+        'Content-Type': 'application/xml',
+      },
     })
 
     if (!response.ok && response.status !== 207) {
@@ -278,7 +283,7 @@ export class WebDAVProvider extends StorageProvider {
 
     const response = await this.request('MOVE', fileId, {
       method: 'MOVE',
-      Destination: this.getFullUrl(newPath),
+      headers: { Destination: this.getFullUrl(newPath) },
     })
 
     if (!response.ok && response.status !== 201) {
@@ -299,7 +304,7 @@ export class WebDAVProvider extends StorageProvider {
 
     const response = await this.request('COPY', fileId, {
       method: 'COPY',
-      Destination: this.getFullUrl(newPath),
+      headers: { Destination: this.getFullUrl(newPath) },
     })
 
     if (!response.ok && response.status !== 201) {
@@ -322,7 +327,7 @@ export class WebDAVProvider extends StorageProvider {
 
     const response = await this.request('MOVE', fileId, {
       method: 'MOVE',
-      Destination: this.getFullUrl(newPath),
+      headers: { Destination: this.getFullUrl(newPath) },
     })
 
     if (!response.ok && response.status !== 201) {
@@ -414,6 +419,7 @@ export class WebDAVProvider extends StorageProvider {
       body?: any
       headers?: Record<string, string>
       Depth?: string
+      [key: string]: any
     } = {}
   ): Promise<Response> {
     const config = this.getConfig()

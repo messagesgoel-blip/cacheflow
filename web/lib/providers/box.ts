@@ -431,7 +431,7 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
 }
 
 function base64UrlEncode(array: Uint8Array): string {
-  return btoa(String.fromCharCode(...array))
+  return btoa(String.fromCharCode(...Array.from(array)))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '')

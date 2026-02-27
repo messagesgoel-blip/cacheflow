@@ -134,7 +134,7 @@ export interface ProviderToken {
   provider: ProviderId
   accessToken: string
   refreshToken?: string
-  expiresAt: number // Unix timestamp (ms)
+  expiresAt: number | null // Unix timestamp (ms), null if no expiration
   accountEmail: string
   displayName: string
   accountId?: string // Provider's internal account ID
@@ -159,6 +159,7 @@ export interface FileMetadata {
   thumbnailUrl?: string
   webUrl?: string // Preview URL
   shareLink?: string // Public share link
+  [key: string]: any // Allow dynamic properties from providers
 }
 
 export interface FolderMetadata extends FileMetadata {
@@ -256,7 +257,7 @@ export interface TransferJob {
 // SEARCH TYPES
 // ============================================================================
 
-export interface SearchResult {
+export interface AggregatedSearchResult {
   query: string
   results: FileMetadata[]
   providersSearched: ProviderId[]
