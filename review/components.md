@@ -282,10 +282,111 @@ function getProviderIcon(providerId: ProviderId): string {
 
 | Component | Key Fix |
 |-----------|---------|
-| FileBrowser.tsx | Cloud upload/folder creation, context menu alerts |
-| FolderTree.tsx | loadedPaths ref, cloud provider guard |
-| RemotesPanel.tsx | Static import, removed dead code |
-| DrivePanel.tsx | Parallel quota fetching |
-| ThemeToggle.tsx | useCallback for stale closure |
-| UploadModal.tsx | Use provider.icon |
+| FileBrowser.tsx | Cloud upload/folder creation, context menu alerts, replace alert() with banner |
+| FolderTree.tsx | loadedPaths ref, cloud provider guard, clear ref on refresh, use f.id for cloud |
+| RemotesPanel.tsx | Static import, removed dead code, security gap TODO |
+| DrivePanel.tsx | Parallel quota fetching, Promise.allSettled fix |
+| ThemeToggle.tsx | useCallback for stale closure, localStorage try/catch, remove incorrect class |
+| UploadModal.tsx | Use provider.icon, provider lookup warning |
 | ProviderHub.tsx | Fix Google Drive icon |
+
+---
+
+## Additional Fixes (Round 2)
+
+### ThemeToggle.tsx - Additional Fixes
+
+**Safari private mode compatibility:**
+```typescript
+// BEFORE: Can throw if localStorage unavailable
+const [isDark, setIsDark] = useState(false)
+
+// AFTER: Wrapped in try/catch
+const [isDark, setIsDark] = useState<boolean>(() => {
+  try {
+    return localStorage.getItem('cf_theme') === 'dark'
+  } catch {
+    return false
+  }
+})
+```
+
+**Toggle class fix (toggle to light):**
+```typescript
+// BEFORE: Added 'light' class (incorrect)
+} else {
+  document.documentElement.classList.add('light')  // WRONG
+  document.documentElement.classList.remove('dark')
+}
+
+// AFTER: Just remove dark class
+} else {
+  document.documentElement.classList.remove('dark')
+  localStorage.setItem('cf_theme', 'light')
+}
+```
+
+### FileBrowser.tsx - Replace alert() with Banner
+
+**Before:**
+```typescript
+async function handleDownload(fileId: string, filePath: string) {
+  console.warn('not yet implemented: download', fileId, filePath)
+  alert('Download is not yet implemented')  // Blocking!
+}
+```
+
+**After:**
+```typescript
+const [unimplementedMsg, setUnimplementedMsg] = useState<string | null>(null)
+
+async function handleDownload(fileId: string, filePath: string) {
+  console.warn('not yet implemented: download', fileId, filePath)
+  setUnimplementedMsg('Download is not yet implemented')
+}
+
+// Render:
+{unimplementedMsg && (
+  <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 flex justify-between items-center">
+    <span>{unimplementedMsg}</span>
+    <button onClick={() => setUnimplementedMsg(null)}>×</button>
+  </div>
+)}
+```
+
+### FolderTree.tsx - Additional Fixes
+
+**Clear ref on refresh:**
+```typescript
+onClick={() => {
+  loadedPathsRef.current.clear()  // NEW
+  loadFolders('/')
+  onRefresh?.()
+}}
+```
+
+**Use f.id for cloud providers:**
+```typescript
+folderItems = result.files
+  .filter((f: any) => f.isFolder)
+  .map((f: any) => ({
+    name: f.name,
+    path: f.id,  // Use ID for cloud (was: f.path)
+    isFolder: true,
+  }))
+```
+
+### RemotesPanel.tsx - Security Gap Documentation
+
+```typescript
+// TODO: SECURITY — OAuth tokens currently stored in localStorage (XSS risk).
+// Server-side token storage was disabled. Re-enable before production.
+// See: /api/tokens endpoint
+```
+
+### UploadModal.tsx - Provider Lookup Warning
+
+```typescript
+const provider = PROVIDERS.find(p => p.id === cp.providerId)
+if (!provider) console.warn(`No provider config found for ${cp.providerId}`)
+```

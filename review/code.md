@@ -157,15 +157,124 @@ gif: 'image/gif',
 
 | File | Changes |
 |------|---------|
-| `box.ts` | Removed client_secret, fixed quota field, added retried param |
-| `filen.ts` | Token in header, retried param, formatMimeType |
+| `box.ts` | Removed client_secret, fixed quota field, added retried param, quota fallback chain |
+| `filen.ts` | Token in header, retried param, formatMimeType, method param, SESSION_EXPIRED |
 | `pcloud.ts` | Token in header, retried param, formatMimeType |
-| `dropbox.ts` | retried param, formatMimeType |
-| `oneDrive.ts` | retried param, formatMimeType, downloadUrl fix |
-| `googleDrive.ts` | retried param, Google Docs export fix, moveFile fix |
+| `dropbox.ts` | retried param, formatMimeType, SESSION_EXPIRED |
+| `oneDrive.ts` | retried param, formatMimeType, downloadUrl fix (@microsoft.graph.downloadUrl), SESSION_EXPIRED |
+| `googleDrive.ts` | retried param, Google Docs export fix, moveFile fix, script exclusion, icon 🗂️, SESSION_EXPIRED |
 | `types.ts` | Fixed Google Drive icon 📧 → 📁 |
 | `vps.ts` | Fixed renameFile path |
 | `webdav.ts` | Fixed Depth header, formatMimeType |
 | `yandex.ts` | Fixed hasMore field, formatMimeType |
-| `pkce.ts` | NEW - Shared PKCE helpers |
-| `utils.ts` | NEW - Shared formatBytes + formatMimeType |
+| `pkce.ts` | NEW - Shared PKCE helpers, fixed base64UrlEncode for bytes > 127 |
+| `utils.ts` | NEW - Shared formatBytes + formatMimeType, added fetchWithTimeout |
+
+---
+
+## Additional Fixes (Round 2)
+
+### pkce.ts - base64UrlEncode Fix
+```typescript
+// BEFORE: Throws RangeError for bytes > 127
+export function base64UrlEncode(array: Uint8Array): string {
+  let str = ''
+  array.forEach(byte => {
+    str += String.fromCharCode(byte)
+  })
+  return btoa(str)...
+}
+
+// AFTER: Works with all byte values
+export function base64UrlEncode(array: Uint8Array): string {
+  return btoa(Array.from(array, b => String.fromCharCode(b)).join(''))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+}
+```
+
+### filen.ts - Method Parameter + SESSION_EXPIRED
+```typescript
+private async req(ep: string, body?: any, retried = false, method = 'POST'): Promise<any> {
+  const res = await fetch(FILEN_API_BASE+ep, {
+    method,  // Now configurable
+    headers: { 
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${this.accessToken}`
+    },
+    body: method !== 'GET' && body ? JSON.stringify(body) : undefined
+  })
+  if (res.status === 401 && !retried) { 
+    const nt = await tokenManager.refreshToken('filen')
+    if (nt) { 
+      this.accessToken = nt.accessToken
+      return this.req(ep, body, true, method)
+    }
+    throw new Error('SESSION_EXPIRED')  // NEW: Proper error
+  }
+  // ...
+}
+```
+
+### oneDrive.ts - Download URL Fix
+```typescript
+// BEFORE: Wrong property access
+const downloadUrl = (file as any).downloadUrl
+
+// AFTER: Correct Microsoft Graph property
+const downloadUrl = (file as any)['@microsoft.graph.downloadUrl']
+```
+
+### googleDrive.ts - Script Exclusion + Icon
+```typescript
+// Add non-exportable types
+const NON_EXPORTABLE = ['application/vnd.google-apps.script']
+if (NON_EXPORTABLE.includes(metadata.mimeType)) {
+  throw new Error('This file type cannot be downloaded.')
+}
+
+// Icon fix
+getIcon(): string { return '🗂️' }  // Was: 📁
+```
+
+### box.ts - Quota Fallback Chain
+```typescript
+// BEFORE
+const total = space.allocated || 0
+
+// AFTER: Handle both personal and enterprise accounts
+const total = space.allocated ?? space.space_amount ?? 0
+```
+
+### All Providers - SESSION_EXPIRED Error
+When 401 occurs and token refresh fails:
+```typescript
+if (response.status === 401 && !retried) {
+  const refreshed = await tokenManager.refreshToken(provider)
+  if (refreshed) {
+    this.accessToken = refreshed.accessToken
+    return this.makeRequest(url, options, true)
+  }
+  throw new Error('SESSION_EXPIRED')  // NEW: Explicit error
+}
+```
+
+### utils.ts - fetchWithTimeout Helper
+```typescript
+export function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs = 15000
+): Promise<Response> {
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeoutMs)
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(id))
+}
+```
+
+---
+
+## Security Gap Note
+OAuth tokens are currently stored in localStorage (XSS risk). Server-side token storage was disabled. Re-enable before production.

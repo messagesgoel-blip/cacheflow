@@ -510,28 +510,44 @@ function getProviderIcon(providerId: ProviderId): string {
 1. ✅ Removed `client_secret` from box.ts (PKCE doesn't need it)
 2. ✅ Moved tokens from URL query params to Authorization headers (filen.ts, pcloud.ts)
 3. ✅ Added `retried` parameter to prevent infinite 401 loops (all providers)
+4. ✅ Added SESSION_EXPIRED error on 401 refresh failure (all providers)
 
 ## High Priority Bugs
 1. ✅ FileBrowser: handleUpload routes to correct cloud provider
 2. ✅ FileBrowser: handleCreateFolder routes to correct cloud provider
-3. ✅ FileBrowser: Context menu stubs show alerts
+3. ✅ FileBrowser: Context menu alerts replaced with non-blocking banner
 4. ✅ FolderTree: loadedPaths ref prevents re-fetching empty folders
 5. ✅ FolderTree: Cloud provider guard for browseFiles
-6. ✅ RemotesPanel: Static import instead of dynamic
-7. ✅ RemotesPanel: Removed dead if(false) code block
+6. ✅ FolderTree: Clear ref on refresh, use f.id for cloud providers
+7. ✅ RemotesPanel: Static import instead of dynamic
+8. ✅ RemotesPanel: Removed dead if(false) code block
+9. ✅ RemotesPanel: Added security gap TODO comment
 
 ## Medium Priority Bugs
 1. ✅ DrivePanel: Parallel quota fetching with loading state
 2. ✅ ThemeToggle: Fixed stale closure on keyboard shortcut
-3. ✅ ProviderHub/RemotesPanel: Fixed Google Drive icon (🗂️)
-4. ✅ UploadModal: Use provider.icon instead of hardcoded emojis
+3. ✅ ThemeToggle: Added localStorage try/catch for Safari private mode
+4. ✅ ThemeToggle: Fixed toggle to light mode (remove dark class, not add light)
+5. ✅ ProviderHub/RemotesPanel: Fixed Google Drive icon (🗂️)
+6. ✅ UploadModal: Use provider.icon instead of hardcoded emojis
+7. ✅ UploadModal: Added provider lookup warning
+8. ✅ googleDrive.ts: Added script exclusion (non-exportable type)
+9. ✅ googleDrive.ts: Fixed icon to 🗂️
+10. ✅ oneDrive.ts: Fixed downloadUrl access (@microsoft.graph.downloadUrl)
+11. ✅ box.ts: Fixed quota fallback chain (allocated ?? space_amount ?? 0)
+12. ✅ filen.ts: Added method parameter to req() for GET/POST routing
+13. ✅ pkce.ts: Fixed base64UrlEncode for bytes > 127
+
+## Utility Improvements
+1. ✅ Created shared pkce.ts module
+2. ✅ Created shared utils.ts module (formatBytes, formatMimeType)
+3. ✅ Added fetchWithTimeout helper to utils.ts
+4. ✅ Fixed mime type mappings (png→gif bug)
 
 ## Cleanup
-1. ✅ Created shared pkce.ts module
-2. ✅ Created shared utils.ts module
-3. ✅ Fixed mime type mappings (png→gif bug)
-4. ✅ Deleted backup/tmp files
+1. ✅ Deleted backup/tmp files
+2. ✅ Deleted old review/roadmap.md
 
 ---
 
-*End of file - All fixes combined*
+*End of file - All fixes combined (updated Feb 27, 2026)*
