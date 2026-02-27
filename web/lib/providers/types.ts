@@ -35,7 +35,7 @@ export const PROVIDERS: ProviderConfig[] = [
   {
     id: 'google',
     name: 'Google Drive',
-    icon: '📁',
+    icon: '🗂️',
     color: '#4285F4',
     freeStorageGB: 15,
     description: 'Connect to your Google Drive account',

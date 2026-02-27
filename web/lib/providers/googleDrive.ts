@@ -6,6 +6,7 @@
 import { StorageProvider, ProviderOptions, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 import { tokenManager } from '../tokenManager'
+import { fetchWithTimeout } from './utils'
 
 // Google OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '416179978413-909akdt6cjbh98q6be5mg5dg5i2o1tff.apps.googleusercontent.com'

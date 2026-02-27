@@ -248,8 +248,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
         }, 100)
       },
       onRename: () => {
-        // TODO: Implement folder rename
-        alert('Folder rename not yet implemented')
+        setUnimplementedMsg('Folder rename not yet implemented')
       },
       onDelete: () => handleDeleteFolder(folder.path)
     })
