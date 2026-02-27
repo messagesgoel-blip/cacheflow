@@ -1,0 +1,215 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote, setRemoteToken, connectGoogleDrive } from '@/lib/api'
+
+interface Remote {
+  id: string
+  name: string
+  type: string
+  provider: string
+  status?: string
+  used?: number
+  total?: number
+  free?: number
+  error?: string
+}
+
+interface RemoteBrowseResult {
+  path: string
+  folders: Array<{ name: string; path: string; isFolder: boolean }>
+  files: Array<{ name: string; path: string; isFolder: boolean; size_bytes: number; last_modified: string }>
+  totalItems: number
+  remoteName: string
+  remoteType: string
+}
+
+interface RemotesPanelProps {
+  token: string
+}
+
+// Cloud provider options with setup instructions
+const CLOUD_PROVIDERS = [
+  {
+    id: 'google',
+    name: 'Google Drive',
+    icon: '📧',
+    description: 'Connect to your Google Drive account (15 GB free)',
+    authType: 'oauth',
+    fields: [],
+    help: 'Get credentials from Google Cloud Console > APIs & Services > Credentials > OAuth Client ID',
+    setupInstructions: [
+      { step: 1, text: 'Go to https://console.cloud.google.com and create a new project (or select existing)' },
+      { step: 2, text: 'Navigate to APIs & Services > Library and enable the "Google Drive API"' },
+      { step: 3, text: 'Go to APIs & Services > OAuth consent screen' },
+      { step: 4, text: 'Select "External" user type and click Create' },
+      { step: 5, text: 'Fill in required fields: App name, User support email, Developer contact email' },
+      { step: 6, text: 'AddScopes: add ".../auth/drive.readonly" and ".../auth/drive.metadata.readonly"' },
+      { step: 7, text: 'AddTestUsers: add your Google email address (required for testing)' },
+      { step: 8, text: 'Click Save and Continue through remaining screens' },
+      { step: 9, text: 'Go to APIs & Services > Credentials > Create Credentials > OAuth Client ID' },
+      { step: 10, text: 'Application type: Web application' },
+      { step: 11, text: 'Add Authorized JavaScript origins: https://cacheflow.goels.in (your CacheFlow URL)' },
+      { step: 12, text: 'Add Authorized redirect URIs: https://cacheflow.goels.in (or your URL)' },
+      { step: 13, text: 'Click Create to get your Client ID and Client Secret' },
+    ]
+  },
+  {
+    id: 'onedrive',
+    name: 'OneDrive',
+    icon: '☁️',
+    description: 'Connect to your Microsoft OneDrive account (5 GB free)',
+    authType: 'oauth',
+    fields: [],
+    help: 'Get credentials from Azure Portal > App Registrations',
+    setupInstructions: [
+      { step: 1, text: 'Go to https://portal.azure.com and navigate to App Registrations' },
+      { step: 2, text: 'Click "New registration" and give it a name (e.g., CacheFlow)' },
+      { step: 3, text: 'Set Redirect URI to "Single-page application (SPA)" and enter: https://cacheflow.goels.in' },
+      { step: 4, text: 'Click Register and note your Application (client) ID' },
+      { step: 5, text: 'Go to "Certificates & secrets" and create a new client secret' },
+      { step: 6, text: 'Go to "API permissions" > "Add permission" > "Microsoft Graph" > "Delegated permissions"' },
+      { step: 7, text: 'Add: Files.ReadWrite.All, offline_access' },
+      { step: 8, text: 'Click "Grant admin consent" if needed' },
+    ]
+  },
+  {
+    id: 'dropbox',
+    name: 'Dropbox',
+    icon: '📦',
+    description: 'Connect to your Dropbox account (2 GB free)',
+    authType: 'oauth',
+    fields: [],
+    help: 'Get credentials from Dropbox App Console',
+    setupInstructions: [
+      { step: 1, text: 'Go to https://www.dropbox.com/developers/apps' },
+      { step: 2, text: 'Click "Create app" and select "Scoped access"' },
+      { step: 3, text: 'Choose "Full Dropbox" or "App folder" access' },
+      { step: 4, text: 'Name your app and click "Create app"' },
+      { step: 5, text: 'In Settings > OAuth 2, add Redirect URI: https://cacheflow.goels.in' },
+      { step: 6, text: 'Note your App key (client ID)' },
+    ]
+  },
+  {
+    id: 'box',
+    name: 'Box',
+    icon: '📁',
+    description: 'Connect to your Box.com account (10 GB free)',
+    authType: 'oauth',
+    fields: [],
+    help: 'Get credentials from Box Developer Console',
+    setupInstructions: [
+      { step: 1, text: 'Go to https://developer.box.com/' },
+      { step: 2, text: 'Navigate to "My Apps" > "Create New App" > "Custom App"' },
+      { step: 3, text: 'Choose "OAuth 2.0 (with PKCE)" authentication method' },
+      { step: 4, text: 'Name your app and create it' },
+      { step: 5, text: 'In OAuth 2.0 redirect URIs, add: https://cacheflow.goels.in' },
+      { step: 6, text: 'Note your Client ID' },
+    ]
+  },
+  {
+    id: 'pcloud',
+    name: 'pCloud',
+    icon: '🧊',
+    description: 'Connect to pCloud storage (10 GB free)',
+    authType: 'oauth',
+    fields: [],
+    help: 'Get credentials from pCloud Developer',
+    comingSoon: true,
+    setupInstructions: [
+      { step: 1, text: 'Go to https://docs.pcloud.com/' },
+      { step: 2, text: 'Register your app to get Client ID' },
+      { step: 3, text: 'Coming soon - OAuth implementation in progress' },
+    ]
+  },
+  {
+    id: 'filen',
+    name: 'Filen',
+    icon: '🔐',
+    description: 'Connect to Filen (10 GB free, E2E encrypted)',
+    authType: 'oauth',
+    fields: [],
+    help: 'Get API key from Filen account settings',
+    comingSoon: true,
+    setupInstructions: [
+      { step: 1, text: 'Go to https://filen.io and create an account' },
+      { step: 2, text: 'Go to Settings > Security > API' },
+      { step: 3, text: 'Generate an API key' },
+      { step: 4, text: 'Coming soon - implementation in progress' },
+    ]
+  },
+  {
+    id: 'yandex',
+    name: 'Yandex Disk',
+    icon: '🟡',
+    description: 'Connect to Yandex Disk (10 GB free)',
+    authType: 'oauth',
+    fields: [],
+    help: 'Get credentials from Yandex OAuth',
+    comingSoon: true,
+    setupInstructions: [
+      { step: 1, text: 'Go to https://oauth.yandex.com/' },
+      { step: 2, text: 'Create a new application' },
+      { step: 3, text: 'Set Redirect URI to: https://cacheflow.goels.in' },
+      { step: 4, text: 'Select permissions: cloud_api:disk.read, cloud_api:disk.write' },
+      { step: 5, text: 'Note your Client ID' },
+    ]
+  },
+  {
+    id: 'webdav',
+    name: 'WebDAV',
+    icon: '🌐',
+    description: 'Connect to any WebDAV server (Nextcloud, ownCloud, etc.)',
+    authType: 'basic',
+    fields: [
+      { key: 'url', label: 'WebDAV URL', placeholder: 'https://your-server.com/remote.php/dav/files/username/', type: 'text' },
+      { key: 'user', label: 'Username', placeholder: 'Your username', type: 'text' },
+      { key: 'pass', label: 'Password', placeholder: 'Your password', type: 'password' },
+    ]
+  },
+  {
+    id: 'vps',
+    name: 'VPS / SFTP',
+    icon: '🖥️',
+    description: 'Connect your own Linux VPS or dedicated server via SFTP',
+    authType: 'ssh',
+    fields: [
+      { key: 'host', label: 'Host', placeholder: 'your-server.com', type: 'text' },
+      { key: 'port', label: 'Port', placeholder: '22', type: 'text' },
+      { key: 'user', label: 'Username', placeholder: 'ubuntu', type: 'text' },
+      { key: 'auth_type', label: 'Auth Type', type: 'select', options: ['password', 'key'] },
+      { key: 'password', label: 'Password', placeholder: 'Your SSH password', type: 'password' },
+    ]
+  },
+  {
+    id: 's3',
+    name: 'Amazon S3',
+    icon: '🪣',
+    description: 'Connect to Amazon S3 (legacy - adapter coming soon)',
+    authType: 'api',
+    fields: [],
+    comingSoon: true,
+    setupInstructions: [
+      { step: 1, text: 'Go to AWS Console > IAM' },
+      { step: 2, text: 'Create user with S3 access permissions' },
+      { step: 3, text: 'Get Access Key ID and Secret Access Key' },
+      { step: 4, text: 'Coming soon - S3 adapter implementation' },
+    ]
+  },
+  {
+    id: 'b2',
+    name: 'Backblaze B2',
+    icon: '💾',
+    description: 'Connect to Backblaze B2 (legacy - adapter coming soon)',
+    authType: 'api',
+    fields: [],
+    comingSoon: true,
+    setupInstructions: [
+      { step: 1, text: 'Go to https://www.backblaze.com/b2' },
+      { step: 2, text: 'Create an account and go to App Keys' },
+      { step: 3, text: 'Create an Application Key' },
+      { step: 4, text: 'Note Key ID and Application Key' },
+      { step: 5, text: 'Coming soon - B2 adapter implementation' },
+    ]
+  },
+]
