@@ -163,7 +163,7 @@ gif: 'image/gif',
 | `dropbox.ts` | retried param, formatMimeType, SESSION_EXPIRED |
 | `oneDrive.ts` | retried param, formatMimeType, downloadUrl fix (@microsoft.graph.downloadUrl), SESSION_EXPIRED |
 | `googleDrive.ts` | retried param, Google Docs export fix, moveFile fix, script exclusion, icon 🗂️, SESSION_EXPIRED |
-| `types.ts` | Fixed Google Drive icon 📧 → 📁 |
+| `types.ts` | Fixed Google Drive icon 📧 → 🗂️ |
 | `vps.ts` | Fixed renameFile path |
 | `webdav.ts` | Fixed Depth header, formatMimeType |
 | `yandex.ts` | Fixed hasMore field, formatMimeType |
@@ -234,9 +234,18 @@ if (NON_EXPORTABLE.includes(metadata.mimeType)) {
   throw new Error('This file type cannot be downloaded.')
 }
 
-// Icon fix
+// Icon fix (also in types.ts)
 getIcon(): string { return '🗂️' }  // Was: 📁
 ```
+
+### types.ts - Google Drive Icon
+```typescript
+{
+  id: 'google',
+  name: 'Google Drive',
+  icon: '🗂️',  // Was: 📁
+  // ...
+}
 
 ### box.ts - Quota Fallback Chain
 ```typescript
