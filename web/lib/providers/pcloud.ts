@@ -6,6 +6,8 @@
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 import { tokenManager } from '../tokenManager'
+import { generateCodeVerifier, generateCodeChallenge } from './pkce'
+import { formatBytes, formatMimeType } from './utils'
 
 const PCLOUD_CLIENT_ID = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_PCLOUD_CLIENT_ID || 'YOUR_PCLOUD_CLIENT_ID') : ''
 const PCLOUD_API_BASE = 'https://api.pcloud.com'
@@ -112,7 +114,7 @@ export class PCloudProvider extends StorageProvider {
   async getQuota(): Promise<ProviderQuota> {
     const r = await this.req('/getuserquota')
     const u = r.used, tot = r.quota
-    return { used: u, total: tot, free: tot - u, usedDisplay: fb(u), totalDisplay: fb(tot), freeDisplay: fb(tot - u), percentUsed: tot > 0 ? (u/tot)*100 : 0 }
+    return { used: u, total: tot, free: tot - u, usedDisplay: formatBytes(u), totalDisplay: formatBytes(tot), freeDisplay: formatBytes(tot - u), percentUsed: tot > 0 ? (u/tot)*100 : 0 }
   }
 
   async listFiles(o?: { folderId?: string }): Promise<ListFilesResult> {
@@ -122,14 +124,18 @@ export class PCloudProvider extends StorageProvider {
 
   async uploadFile(f: File, o?: UploadOptions): Promise<FileMetadata> {
     const fd = new FormData(); fd.append('file', f); fd.append('folderid', o?.folderId||'0'); fd.append('filename', o?.fileName||f.name)
-    const res = await fetch(PCLOUD_API_BASE+'/uploadfile?access_token='+this.accessToken, { method: 'POST', body: fd })
+    const res = await fetch(PCLOUD_API_BASE+'/uploadfile', { 
+      method: 'POST', 
+      body: fd,
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    })
     if (!res.ok) throw new Error('Upload failed')
     return this.mf((await res.json()).metadata)
   }
 
   async downloadFile(id: string): Promise<Blob> {
     const r = await this.req('/getfilelink', { fileid: id })
-    return (await fetch(r.getfilelink)).blob()
+    return (await fetch(r.getfilelink, { headers: { Authorization: `Bearer ${this.accessToken}` } })).blob()
   }
 
   async deleteFile(id: string): Promise<void> { await this.req('/deletefile', { fileid: id }) }
@@ -150,13 +156,14 @@ export class PCloudProvider extends StorageProvider {
   async renameFile(id: string, name: string): Promise<FileMetadata> { throw new Error('Not implemented') }
   async revokeShareLink(id: string): Promise<void> { throw new Error('Not implemented') }
 
-  private async req(ep: string, body?: any): Promise<any> {
+  private async req(ep: string, body?: any, retried = false): Promise<any> {
     if (!this.accessToken) { const t = tokenManager.getToken('pcloud'); if (!t) throw new Error('Not auth'); this.accessToken = t.accessToken }
     const u = new URL(PCLOUD_API_BASE+ep)
-    if (this.accessToken) u.searchParams.set('access_token', this.accessToken)
     if (body) Object.entries(body).forEach(([k,v]) => u.searchParams.set(k, String(v)))
-    const res = await fetch(u.toString())
-    if (res.status===401) { const nt = await tokenManager.refreshToken('pcloud'); if (nt) { this.accessToken = nt.accessToken; return this.req(ep,body) } }
+    const res = await fetch(u.toString(), {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    })
+    if (res.status===401 && !retried) { const nt = await tokenManager.refreshToken('pcloud'); if (nt) { this.accessToken = nt.accessToken; return this.req(ep,body,true) } }
     const d = await res.json()
     if (d.result!==0) throw new Error('pCloud error')
     return d
@@ -164,13 +171,8 @@ export class PCloudProvider extends StorageProvider {
 
   private mf(i: any): FileMetadata {
     const f = !!i.isfolder
-    return { id: String(i.fileid||i.folderid), name: i.name, path: i.path||'/'+i.name, pathDisplay: i.path, size: i.size||0, mimeType: f?'application/vnd.folder':gm(i.name), isFolder: f, createdTime: i.created, modifiedTime: i.modified, provider: 'pcloud', providerName: 'pCloud' }
+    return { id: String(i.fileid||i.folderid), name: i.name, path: i.path||'/'+i.name, pathDisplay: i.path, size: i.size||0, mimeType: f?'application/vnd.folder':formatMimeType(i.name), isFolder: f, createdTime: i.created, modifiedTime: i.modified, provider: 'pcloud', providerName: 'pCloud' }
   }
 }
-
-function gm(n: string): string { const e=n.split('.').pop()?.toLowerCase(), m:Record<string,string>={jpg:'image/jpeg',png:'image/gif',pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',mp3:'audio/mpeg',mp4:'video/mp4',zip:'application/zip'}; return m[e||'']||'application/octet-stream' }
-function fb(b: number): string { if(!b)return'0 B';const k=1024,s=['B','KB','MB','GB','TB'],i=Math.floor(Math.log(b)/Math.log(k)); return (b/Math.pow(k,i)).toFixed(2)+' '+s[i] }
-function generateCodeVerifier(): string { const a=new Uint8Array(32); crypto.getRandomValues(a); return btoa(String.fromCharCode(...Array.from(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'') }
-async function generateCodeChallenge(v: string): Promise<string> { const e=new TextEncoder().encode(v), d=await crypto.subtle.digest('SHA-256',e); return btoa(String.fromCharCode(...Array.from(new Uint8Array(d)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'') }
 
 export const pcloudProvider = new PCloudProvider()

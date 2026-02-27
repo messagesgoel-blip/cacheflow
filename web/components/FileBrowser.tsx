@@ -41,6 +41,10 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { contextMenu, showContextMenu, hideContextMenu, ContextMenuComponent } = useContextMenu()
 
+  // Component-level derived values for cloud provider detection
+  const isCloud = locationId?.startsWith('cloud-') ?? false
+  const cloudProviderId = isCloud ? locationId?.replace('cloud-', '') as ProviderId : null
+
   // Load current path on mount and when path changes
   useEffect(() => {
     loadCurrentPath()
@@ -49,23 +53,19 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   async function loadCurrentPath() {
     if (!token) return
 
-    // Check if selected location is a cloud provider (compute inside to avoid stale closure)
-    const isCloud = locationId?.startsWith('cloud-') ?? false
-    const providerId = isCloud ? locationId?.replace('cloud-', '') as ProviderId : null
-
     setLoading(true)
     setError(null)
 
     try {
       // Handle cloud provider
-      if (isCloud && providerId) {
-        console.log('[FileBrowser] Cloud provider detected:', providerId)
-        const provider = getProvider(providerId)
+      if (isCloud && cloudProviderId) {
+        console.log('[FileBrowser] Cloud provider detected:', cloudProviderId)
+        const provider = getProvider(cloudProviderId)
         if (provider) {
-          console.log('[FileBrowser] Loading files from provider:', providerId)
+          console.log('[FileBrowser] Loading files from provider:', cloudProviderId)
           const result = await provider.listFiles()
           console.log('[FileBrowser] Got files:', result.files.length, 'files')
-          const providerConfig = PROVIDERS.find(p => p.id === providerId)
+          const providerConfig = PROVIDERS.find(p => p.id === cloudProviderId)
           
           // Convert cloud files to browseData format
           const folders = result.files.filter(f => f.isFolder).map(f => ({
@@ -91,8 +91,8 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
             totalItems: result.files.length
           })
         } else {
-          console.error('[FileBrowser] Provider not found:', providerId)
-          setError(`Provider ${providerId} not found`)
+          console.error('[FileBrowser] Provider not found:', cloudProviderId)
+          setError(`Provider ${cloudProviderId} not found`)
         }
         setLoading(false)
         return
@@ -117,7 +117,19 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
     setError(null)
 
     try {
-      await uploadFile(file, token, currentPath === '/' ? undefined : currentPath)
+      // Handle cloud provider upload
+      if (isCloud && cloudProviderId) {
+        const provider = getProvider(cloudProviderId)
+        if (provider) {
+          await provider.uploadFile(file, { folderId: currentPath === '/' ? undefined : currentPath })
+          console.log('[FileBrowser] Uploaded to cloud provider:', cloudProviderId)
+        } else {
+          throw new Error(`Provider ${cloudProviderId} not found`)
+        }
+      } else {
+        // Handle local storage upload
+        await uploadFile(file, token, currentPath === '/' ? undefined : currentPath)
+      }
       await loadCurrentPath()
       onRefresh?.()
     } catch (err: any) {
@@ -138,8 +150,20 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
     setError(null)
 
     try {
-      const folderPath = currentPath === '/' ? newFolderName : `${currentPath}/${newFolderName}`
-      await createFolder(folderPath, token)
+      // Handle cloud provider folder creation
+      if (isCloud && cloudProviderId) {
+        const provider = getProvider(cloudProviderId)
+        if (provider) {
+          await provider.createFolder(newFolderName, currentPath === '/' ? undefined : currentPath)
+          console.log('[FileBrowser] Created folder in cloud provider:', cloudProviderId)
+        } else {
+          throw new Error(`Provider ${cloudProviderId} not found`)
+        }
+      } else {
+        // Handle local storage folder creation
+        const folderPath = currentPath === '/' ? newFolderName : `${currentPath}/${newFolderName}`
+        await createFolder(folderPath, token)
+      }
       setNewFolderName('')
       setShowNewFolder(false)
       await loadCurrentPath()
@@ -249,33 +273,33 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
 
   // Helper functions for context menu actions
   async function handleDownload(fileId: string, filePath: string) {
-    // TODO: Implement download
-    console.log('Download file:', fileId, filePath)
+    console.warn('not yet implemented: download', fileId, filePath)
+    alert('Download is not yet implemented')
   }
 
   async function handleShare(fileId: string, filePath: string) {
-    // TODO: Implement share
-    console.log('Share file:', fileId, filePath)
+    console.warn('not yet implemented: share', fileId, filePath)
+    alert('Share is not yet implemented')
   }
 
   async function handleRename(fileId: string, filePath: string) {
-    // TODO: Implement rename via FileTable
-    console.log('Rename file:', fileId, filePath)
+    console.warn('not yet implemented: rename', fileId, filePath)
+    alert('Rename is not yet implemented')
   }
 
   async function handleMove(fileId: string, filePath: string) {
-    // TODO: Implement move via FileTable
-    console.log('Move file:', fileId, filePath)
+    console.warn('not yet implemented: move', fileId, filePath)
+    alert('Move is not yet implemented')
   }
 
   async function handleDelete(fileId: string) {
-    // TODO: Implement delete
-    console.log('Delete file:', fileId)
+    console.warn('not yet implemented: delete', fileId)
+    alert('Delete is not yet implemented')
   }
 
   async function handleRetry(fileId: string) {
-    // TODO: Implement retry
-    console.log('Retry file:', fileId)
+    console.warn('not yet implemented: retry', fileId)
+    alert('Retry is not yet implemented')
   }
 
   const files = browseData?.files || []

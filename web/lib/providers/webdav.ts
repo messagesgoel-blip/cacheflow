@@ -6,6 +6,7 @@
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 import { tokenManager } from '../tokenManager'
+import { formatBytes, formatMimeType } from './utils'
 
 export interface WebDAVConfig {
   url: string
@@ -167,10 +168,9 @@ export class WebDAVProvider extends StorageProvider {
    */
   async listFiles(options?: { folderId?: string; pageSize?: number; pageToken?: string }): Promise<ListFilesResult> {
     const folderPath = options?.folderId || '/'
-    const depth = options?.pageSize ? String(options.pageSize) : '1'
 
     const response = await this.request('PROPFIND', folderPath, {
-      Depth: depth,
+      Depth: '1',
       headers: {
         'Content-Type': 'application/xml',
       },
@@ -511,7 +511,7 @@ export class WebDAVProvider extends StorageProvider {
         path: filePath,
         pathDisplay: filePath,
         size,
-        mimeType: isCollection ? 'application/vnd.folder' : 'application/octet-stream',
+        mimeType: isCollection ? 'application/vnd.folder' : formatMimeType(displayName),
         isFolder: isCollection,
         modifiedTime,
         provider: 'webdav',
@@ -521,6 +521,12 @@ export class WebDAVProvider extends StorageProvider {
 
     return files
   }
+}
+
+// Helper function for auth header
+function getAuthHeader(): Record<string, string> {
+  const token = localStorage.getItem('cf_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 // Export singleton with default config

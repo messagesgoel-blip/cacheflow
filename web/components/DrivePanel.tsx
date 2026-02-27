@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { tokenManager } from '@/lib/tokenManager'
+import { getProvider } from '@/lib/providers'
 import { PROVIDERS, ProviderId } from '@/lib/providers/types'
 
 interface StorageLocation {
@@ -26,6 +27,7 @@ interface DrivePanelProps {
 export default function DrivePanel({ token, onLocationSelect, onRefresh }: DrivePanelProps) {
   const [locations, setLocations] = useState<StorageLocation[]>([])
   const [loading, setLoading] = useState(false)
+  const [quotaLoading, setQuotaLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     setError(null)
 
     try {
-      const cloudProviders = getCloudProviders()
+      const cloudProviders = await getCloudProvidersWithQuotas()
       setLocations(cloudProviders)
     } catch (err: any) {
       setError(err.message || 'Failed to load storage data')
@@ -51,30 +53,55 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     }
   }
 
-  function getCloudProviders(): StorageLocation[] {
+  async function getCloudProvidersWithQuotas(): Promise<StorageLocation[]> {
     if (typeof window === 'undefined') return []
     
     const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
-    const cloudLocations: StorageLocation[] = []
+    const locationsWithTokens: { pid: ProviderId; token: any; config: any }[] = []
 
     for (const pid of providerIds) {
       const t = tokenManager.getToken(pid)
       if (t && t.accessToken) {
         const providerConfig = PROVIDERS.find(p => p.id === pid)
-        cloudLocations.push({
-          id: `cloud-${pid}`,
-          name: providerConfig?.name || pid,
-          type: 'cloud',
-          provider: pid,
-          totalSize: 0,
-          fileCount: 0,
-          status: 'active',
-          description: t.accountEmail || 'Cloud storage',
-          color: providerConfig?.color || '#4285F4',
-          icon: providerConfig?.icon || '☁️'
-        })
+        locationsWithTokens.push({ pid, token: t, config: providerConfig })
       }
     }
+
+    // Fetch quotas in parallel
+    setQuotaLoading(true)
+    const quotaResults = await Promise.allSettled(
+      locationsWithTokens.map(async ({ pid }) => {
+        const provider = getProvider(pid)
+        if (provider) {
+          return await provider.getQuota()
+        }
+        return { used: 0, total: 0, free: 0, usedDisplay: '0 B', totalDisplay: '0 B', freeDisplay: '0 B', percentUsed: 0 }
+      })
+    )
+    setQuotaLoading(false)
+
+    // Build locations array with quotas
+    const cloudLocations: StorageLocation[] = locationsWithTokens.map(({ pid, token: t, config }, index) => {
+      const quotaResult = quotaResults[index]
+      let quota = { used: 0, total: 0 }
+      
+      if (quotaResult.status === 'fulfilled') {
+        quota = { used: quotaResult.value.used, total: quotaResult.value.total }
+      }
+      
+      return {
+        id: `cloud-${pid}`,
+        name: config?.name || pid,
+        type: 'cloud',
+        provider: pid,
+        totalSize: quota.total,
+        fileCount: 0,
+        status: 'active' as const,
+        description: t.accountEmail || 'Cloud storage',
+        color: config?.color || '#4285F4',
+        icon: config?.icon || '☁️'
+      }
+    })
 
     return cloudLocations
   }
@@ -168,8 +195,17 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
                   {location.type}
                 </span>
                 <div className="text-right">
-                  <div className="font-medium dark:text-gray-200">{formatBytes(location.totalSize)}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{location.fileCount} files</div>
+                  {quotaLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-16 mb-1"></div>
+                      <div className="h-3 bg-gray-200 rounded w-12"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="font-medium dark:text-gray-200">{formatBytes(location.totalSize)}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{location.fileCount} files</div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

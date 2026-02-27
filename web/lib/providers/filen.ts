@@ -6,6 +6,8 @@
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 import { tokenManager } from '../tokenManager'
+import { generateCodeVerifier, generateCodeChallenge } from './pkce'
+import { formatBytes, formatMimeType } from './utils'
 
 const FILEN_CLIENT_ID = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_FILEN_CLIENT_ID || 'YOUR_FILEN_CLIENT_ID') : ''
 const FILEN_API_BASE = 'https://api.filen.io'
@@ -113,7 +115,7 @@ export class FilenProvider extends StorageProvider {
   async getQuota(): Promise<ProviderQuota> {
     const r = await this.req('/v1/user/space')
     const u = r.data.used, tot = r.data.total
-    return { used: u, total: tot, free: tot - u, usedDisplay: fb(u), totalDisplay: fb(tot), freeDisplay: fb(tot - u), percentUsed: tot > 0 ? (u/tot)*100 : 0 }
+    return { used: u, total: tot, free: tot - u, usedDisplay: formatBytes(u), totalDisplay: formatBytes(tot), freeDisplay: formatBytes(tot - u), percentUsed: tot > 0 ? (u/tot)*100 : 0 }
   }
 
   async listFiles(o?: { folderId?: string }): Promise<ListFilesResult> {
@@ -123,13 +125,19 @@ export class FilenProvider extends StorageProvider {
 
   async uploadFile(f: File, o?: UploadOptions): Promise<FileMetadata> {
     const fd = new FormData(); fd.append('file', f); fd.append('parent', o?.folderId||''); fd.append('name', o?.fileName||f.name)
-    const res = await fetch(FILEN_API_BASE+'/v1/file/upload?auth='+this.accessToken, { method: 'POST', body: fd })
+    const res = await fetch(FILEN_API_BASE+'/v1/file/upload', { 
+      method: 'POST', 
+      body: fd,
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    })
     if (!res.ok) throw new Error('Upload failed')
     return this.mf((await res.json()).data)
   }
 
   async downloadFile(id: string): Promise<Blob> {
-    const res = await fetch(FILEN_API_BASE+'/v1/file/download?auth='+this.accessToken+'&uuid='+id)
+    const res = await fetch(FILEN_API_BASE+'/v1/file/download?uuid='+id, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    })
     if (!res.ok) throw new Error('Download failed')
     return res.blob()
   }
@@ -152,15 +160,17 @@ export class FilenProvider extends StorageProvider {
   async renameFile(id: string, name: string): Promise<FileMetadata> { throw new Error('Not implemented') }
   async revokeShareLink(id: string): Promise<void> { throw new Error('Not implemented') }
 
-  private async req(ep: string, body?: any): Promise<any> {
+  private async req(ep: string, body?: any, retried = false): Promise<any> {
     if (!this.accessToken) { const t = tokenManager.getToken('filen'); if (!t) throw new Error('Not auth'); this.accessToken = t.accessToken }
-    const u = new URL(FILEN_API_BASE+ep)
-    if (this.accessToken) u.searchParams.set('auth', this.accessToken)
-    const res = await fetch(u.toString(), {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    const res = await fetch(FILEN_API_BASE+ep, {
+      method: 'POST', 
+      headers: { 
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.accessToken}`
+      },
       body: body ? JSON.stringify(body) : undefined
     })
-    if (res.status===401) { const nt = await tokenManager.refreshToken('filen'); if (nt) { this.accessToken = nt.accessToken; return this.req(ep,body) } }
+    if (res.status===401 && !retried) { const nt = await tokenManager.refreshToken('filen'); if (nt) { this.accessToken = nt.accessToken; return this.req(ep,body,true) } }
     const d = await res.json()
     if (!d.success) throw new Error(d.errorMessage || 'Filen error')
     return d
@@ -168,13 +178,8 @@ export class FilenProvider extends StorageProvider {
 
   private mf(i: any): FileMetadata {
     const f = i.type === 'folder'
-    return { id: i.uuid, name: i.name, path: i.path||'/'+i.name, pathDisplay: i.path, size: i.size||0, mimeType: f?'application/vnd.folder':gm(i.name), isFolder: f, createdTime: i.createdAt, modifiedTime: i.updatedAt, provider: 'filen', providerName: 'Filen' }
+    return { id: i.uuid, name: i.name, path: i.path||'/'+i.name, pathDisplay: i.path, size: i.size||0, mimeType: f?'application/vnd.folder':formatMimeType(i.name), isFolder: f, createdTime: i.createdAt, modifiedTime: i.updatedAt, provider: 'filen', providerName: 'Filen' }
   }
 }
-
-function gm(n: string): string { const e=n.split('.').pop()?.toLowerCase(), m:Record<string,string>={jpg:'image/jpeg',png:'image/gif',pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',mp3:'audio/mpeg',mp4:'video/mp4',zip:'application/zip'}; return m[e||'']||'application/octet-stream' }
-function fb(b: number): string { if(!b)return'0 B';const k=1024,s=['B','KB','MB','GB','TB'],i=Math.floor(Math.log(b)/Math.log(k)); return (b/Math.pow(k,i)).toFixed(2)+' '+s[i] }
-function generateCodeVerifier(): string { const a=new Uint8Array(32); crypto.getRandomValues(a); return btoa(String.fromCharCode(...Array.from(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'') }
-async function generateCodeChallenge(v: string): Promise<string> { const e=new TextEncoder().encode(v), d=await crypto.subtle.digest('SHA-256',e); return btoa(String.fromCharCode(...Array.from(new Uint8Array(d)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'') }
 
 export const filenProvider = new FilenProvider()

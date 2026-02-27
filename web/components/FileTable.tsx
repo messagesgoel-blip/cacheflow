@@ -79,6 +79,8 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
   }
 
   async function handleRename(id: string) {
+    // Server contract: PATCH /files/:id expects { path: newName } where newName is just the filename
+    // The server handles reconstructing the full path from the file's current parent directory
     setRenameLoading(true)
     setRenameError(null)
     try {

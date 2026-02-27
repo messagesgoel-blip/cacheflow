@@ -6,6 +6,8 @@
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 import { tokenManager } from '../tokenManager'
+import { generateCodeVerifier, generateCodeChallenge } from './pkce'
+import { formatBytes } from './utils'
 
 // Box OAuth configuration
 const BOX_CLIENT_ID = process.env.NEXT_PUBLIC_BOX_CLIENT_ID || 'YOUR_BOX_CLIENT_ID'
@@ -90,6 +92,7 @@ export class BoxProvider extends StorageProvider {
     const codeVerifier = sessionStorage.getItem('box_code_verifier')
     sessionStorage.removeItem('box_code_verifier')
 
+    // PKCE flow - no client_secret needed
     const response = await fetch('https://api.box.com/oauth2/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -97,7 +100,6 @@ export class BoxProvider extends StorageProvider {
         grant_type: 'authorization_code',
         code,
         client_id: BOX_CLIENT_ID,
-        client_secret: process.env.NEXT_PUBLIC_BOX_CLIENT_SECRET || '',
         code_verifier: codeVerifier || '',
       }),
     })
@@ -147,6 +149,7 @@ export class BoxProvider extends StorageProvider {
   async refreshToken(token: ProviderToken): Promise<ProviderToken> {
     if (!token.refreshToken) throw new Error('No refresh token')
 
+    // PKCE flow - no client_secret needed
     const response = await fetch('https://api.box.com/oauth2/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -154,7 +157,6 @@ export class BoxProvider extends StorageProvider {
         grant_type: 'refresh_token',
         refresh_token: token.refreshToken,
         client_id: BOX_CLIENT_ID,
-        client_secret: process.env.NEXT_PUBLIC_BOX_CLIENT_SECRET || '',
       }),
     })
 
@@ -185,7 +187,7 @@ export class BoxProvider extends StorageProvider {
     const response = await this.makeRequest(`${BOX_API_BASE}/users/me`)
 
     const space = response.space_usage
-    const total = space.alloted || 0
+    const total = space.allocated || 0
     const used = space.used || 0
 
     return {
@@ -366,7 +368,7 @@ export class BoxProvider extends StorageProvider {
     return 10
   }
 
-  private async makeRequest(url: string, options: RequestInit = {}): Promise<any> {
+  private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
     if (!this.accessToken) {
       const token = tokenManager.getToken('box')
       if (!token) throw new Error('Not authenticated')
@@ -383,11 +385,11 @@ export class BoxProvider extends StorageProvider {
     })
 
     if (!response.ok) {
-      if (response.status === 401) {
+      if (response.status === 401 && !retried) {
         const refreshed = await tokenManager.refreshToken('box')
         if (refreshed) {
           this.accessToken = refreshed.accessToken
-          return this.makeRequest(url, options)
+          return this.makeRequest(url, options, true)
         }
       }
       throw new Error(`Box API error: ${response.statusText}`)
@@ -414,35 +416,6 @@ export class BoxProvider extends StorageProvider {
       shareLink: item.shared_link?.url,
     }
   }
-}
-
-// PKCE Helpers
-function generateCodeVerifier(): string {
-  const array = new Uint8Array(32)
-  crypto.getRandomValues(array)
-  return base64UrlEncode(array)
-}
-
-async function generateCodeChallenge(verifier: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(verifier)
-  const digest = await crypto.subtle.digest('SHA-256', data)
-  return base64UrlEncode(new Uint8Array(digest))
-}
-
-function base64UrlEncode(array: Uint8Array): string {
-  return btoa(String.fromCharCode(...Array.from(array)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 export const boxProvider = new BoxProvider()

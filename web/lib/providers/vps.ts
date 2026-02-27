@@ -377,7 +377,7 @@ export class VPSProvider extends StorageProvider {
     const parentPath = parts.join('/') || '/'
     const newPath = parentPath === '/' ? `/${newName}` : `${parentPath}/${newName}`
 
-    return this.moveFile(fileId, parentPath)
+    return this.moveFile(fileId, newPath)
   }
 
   // ===========================================================================

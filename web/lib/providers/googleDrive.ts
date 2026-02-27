@@ -339,8 +339,18 @@ export class GoogleDriveProvider extends StorageProvider {
 
     const metadata = await response.json()
 
+    // Google Docs types that need export (explicit allowlist)
+    const googleDocsTypes = [
+      'application/vnd.google-apps.document',
+      'application/vnd.google-apps.spreadsheet',
+      'application/vnd.google-apps.presentation',
+      'application/vnd.google-apps.drawing',
+      'application/vnd.google-apps.form',
+      'application/vnd.google-apps.audio',
+    ]
+
     // Check if it's a Google Doc that needs export
-    if (metadata.mimeType.includes('googleapps')) {
+    if (googleDocsTypes.includes(metadata.mimeType)) {
       // Export as PDF
       const exportResponse = await fetch(
         `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=application/pdf`,
@@ -394,9 +404,15 @@ export class GoogleDriveProvider extends StorageProvider {
    * Move a file
    */
   async moveFile(fileId: string, newParentId: string): Promise<FileMetadata> {
-    // Get current parents
-    const file = await this.getFile(fileId)
-    const previousParents = (file as any).parents || []
+    // Fetch current parents directly from API
+    const fileResponse = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${fileId}?fields=parents`,
+      {
+        headers: { Authorization: `Bearer ${this.accessToken}` },
+      }
+    )
+    const fileData = await fileResponse.json()
+    const previousParents = fileData.parents || []
 
     // Update with new parent
     await this.makeRequest(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
@@ -503,7 +519,7 @@ export class GoogleDriveProvider extends StorageProvider {
   // ===========================================================================
 
   getIcon(): string {
-    return '📧'
+    return '📁'
   }
 
   getColor(): string {
@@ -517,7 +533,7 @@ export class GoogleDriveProvider extends StorageProvider {
   /**
    * Make authenticated request
    */
-  private async makeRequest(url: string, options: RequestInit = {}): Promise<any> {
+  private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
     if (!this.accessToken) {
       const token = tokenManager.getToken('google')
       if (!token) {
@@ -535,13 +551,13 @@ export class GoogleDriveProvider extends StorageProvider {
     })
 
     if (!response.ok) {
-      // Handle 401 - try to refresh token
-      if (response.status === 401) {
+      // Handle 401 - try to refresh token once only
+      if (response.status === 401 && !retried) {
         const refreshed = await tokenManager.refreshToken('google')
         if (refreshed) {
           this.accessToken = refreshed.accessToken
-          // Retry request
-          return this.makeRequest(url, options)
+          // Retry request with retried=true to prevent infinite recursion
+          return this.makeRequest(url, options, true)
         }
       }
 

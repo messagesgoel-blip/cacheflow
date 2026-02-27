@@ -344,7 +344,7 @@ function ConnectModal({ provider, connected, onClose }: ConnectModalProps) {
 // Provider Icon Helper
 function getProviderIcon(providerId: ProviderId): string {
   const icons: Record<ProviderId, string> = {
-    google: '📧',
+    google: '🗂️',
     onedrive: '☁️',
     dropbox: '📦',
     box: '📁',

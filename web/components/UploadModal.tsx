@@ -342,7 +342,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                         )}
                       </div>
                     </div>
-                    <span>{provider?.name === 'Google Drive' ? '📧' : provider?.name === 'OneDrive' ? '☁️' : '📁'}</span>
+                    <span>{provider?.icon || '📁'}</span>
                   </label>
                 )
               })}

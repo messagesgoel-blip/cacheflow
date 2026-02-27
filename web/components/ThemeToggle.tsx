@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 export default function ThemeToggle() {
   const [isDark, setIsDark] = useState(false)
@@ -13,20 +13,23 @@ export default function ThemeToggle() {
     setIsDark(stored === 'dark' || (!stored && hasDark))
   }, [])
 
-  const toggleTheme = () => {
-    const newIsDark = !isDark
-    setIsDark(newIsDark)
+  const toggleTheme = useCallback(() => {
+    setIsDark(prev => {
+      const newIsDark = !prev
 
-    if (newIsDark) {
-      document.documentElement.classList.add('dark')
-      document.documentElement.classList.remove('light')
-      localStorage.setItem('cf_theme', 'dark')
-    } else {
-      document.documentElement.classList.add('light')
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('cf_theme', 'light')
-    }
-  }
+      if (newIsDark) {
+        document.documentElement.classList.add('dark')
+        document.documentElement.classList.remove('light')
+        localStorage.setItem('cf_theme', 'dark')
+      } else {
+        document.documentElement.classList.add('light')
+        document.documentElement.classList.remove('dark')
+        localStorage.setItem('cf_theme', 'light')
+      }
+
+      return newIsDark
+    })
+  }, [])
 
   // Keyboard shortcut: Ctrl/Cmd + Shift + D
   useEffect(() => {
@@ -38,7 +41,7 @@ export default function ThemeToggle() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isDark])
+  }, [toggleTheme])
 
   if (!mounted) {
     return (

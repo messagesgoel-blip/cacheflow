@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { browseFiles } from '@/lib/api'
+import { getProvider } from '@/lib/providers'
+import { ProviderId } from '@/lib/providers/types'
 
 interface FolderItem {
   name: string
@@ -23,11 +25,17 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const loadedPathsRef = useRef<Set<string>>(new Set())
+
+  // Check if we're viewing a cloud provider
+  const isCloud = locationId?.startsWith('cloud-') ?? false
+  const cloudProviderId = isCloud ? locationId?.replace('cloud-', '') as ProviderId : null
 
   // Load root folders on mount
   useEffect(() => {
     setFolders([])
     setExpandedFolders(new Set())
+    loadedPathsRef.current = new Set()
     loadFolders('/')
   }, [token, locationId])
 
@@ -45,12 +53,40 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
   async function loadFolders(path: string) {
     if (!token) return
 
+    // Skip if already loaded
+    if (loadedPathsRef.current.has(path)) {
+      return
+    }
+
     setLoading(true)
     setError(null)
 
     try {
-      const data = await browseFiles(path, token, locationId)
-      const folderItems = data.folders || []
+      let folderItems: FolderItem[] = []
+
+      // Handle cloud provider
+      if (isCloud && cloudProviderId) {
+        const provider = getProvider(cloudProviderId)
+        if (provider) {
+          const result = await provider.listFiles({ folderId: path })
+          folderItems = result.files
+            .filter((f: any) => f.isFolder)
+            .map((f: any) => ({
+              name: f.name,
+              path: f.path,
+              isFolder: true,
+              itemCount: undefined
+            }))
+        }
+      } else {
+        // Handle local storage
+        const data = await browseFiles(path, token, locationId)
+        folderItems = data.folders || []
+      }
+      
+      // Mark as loaded
+      loadedPathsRef.current.add(path)
+      
       setFolders(prev => {
         // Merge new folders with existing, avoiding duplicates
         const newFolders = [...prev]
@@ -70,11 +106,12 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
   }
 
   async function ensureFolderLoaded(path: string) {
-    // Check if we already have this folder's children loaded
-    const hasChildren = folders.some(f => getParentPath(f.path) === path)
-    if (!hasChildren && path !== '/') {
-      await loadFolders(path)
+    // Skip if already loaded
+    if (loadedPathsRef.current.has(path)) {
+      return
     }
+    // Load folder if not already in the loaded set
+    await loadFolders(path)
   }
 
   function getParentPath(path: string): string {

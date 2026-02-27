@@ -6,6 +6,8 @@
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 import { tokenManager } from '../tokenManager'
+import { generateCodeVerifier, generateCodeChallenge } from './pkce'
+import { formatBytes, formatMimeType } from './utils'
 
 const YANDEX_CLIENT_ID = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_YANDEX_CLIENT_ID || 'YOUR_YANDEX_CLIENT_ID') : ''
 const YANDEX_API_BASE = 'https://cloud-api.yandex.net/v1'
@@ -122,7 +124,7 @@ export class YandexProvider extends StorageProvider {
   async getQuota(): Promise<ProviderQuota> {
     const r = await this.req('/disk')
     const u = r.used_space, tot = r.total_space, f = r.total_space - r.used_space
-    return { used: u, total: tot, free: f, usedDisplay: fb(u), totalDisplay: fb(tot), freeDisplay: fb(f), percentUsed: tot > 0 ? (u/tot)*100 : 0 }
+    return { used: u, total: tot, free: f, usedDisplay: formatBytes(u), totalDisplay: formatBytes(tot), freeDisplay: formatBytes(f), percentUsed: tot > 0 ? (u/tot)*100 : 0 }
   }
 
   async listFiles(o?: { folderId?: string }): Promise<ListFilesResult> {
@@ -153,7 +155,7 @@ export class YandexProvider extends StorageProvider {
   }
   async searchFiles(o: { query: string }): Promise<SearchResult> {
     const r = await this.req('/disk/resources/search?query='+encodeURIComponent(o.query)+'&limit=100')
-    return { files: (r.items||[]).map((i:any)=>this.mf(i)), hasMore: r.hasMore }
+    return { files: (r.items||[]).map((i:any)=>this.mf(i)), hasMore: r._embedded?.has_more || false }
   }
   async getFile(id: string): Promise<FileMetadata> { throw new Error('Not implemented') }
   async moveFile(id: string, pid: string): Promise<FileMetadata> { throw new Error('Not implemented') }
@@ -171,13 +173,8 @@ export class YandexProvider extends StorageProvider {
 
   private mf(i: any): FileMetadata {
     const f = i.type === 'dir'
-    return { id: i.path, name: i.name, path: i.path, pathDisplay: i.path, size: i.size||0, mimeType: f?'application/vnd.folder':gm(i.name), isFolder: f, createdTime: i.created, modifiedTime: i.modified, provider: 'yandex', providerName: 'Yandex Disk' }
+    return { id: i.path, name: i.name, path: i.path, pathDisplay: i.path, size: i.size||0, mimeType: f?'application/vnd.folder':formatMimeType(i.name), isFolder: f, createdTime: i.created, modifiedTime: i.modified, provider: 'yandex', providerName: 'Yandex Disk' }
   }
 }
-
-function gm(n: string): string { const e=n.split('.').pop()?.toLowerCase(), m:Record<string,string>={jpg:'image/jpeg',png:'image/gif',pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',mp3:'audio/mpeg',mp4:'video/mp4',zip:'application/zip'}; return m[e||'']||'application/octet-stream' }
-function fb(b: number): string { if(!b)return'0 B';const k=1024,s=['B','KB','MB','GB','TB'],i=Math.floor(Math.log(b)/Math.log(k)); return (b/Math.pow(k,i)).toFixed(2)+' '+s[i] }
-function generateCodeVerifier(): string { const a=new Uint8Array(32); crypto.getRandomValues(a); return btoa(String.fromCharCode(...Array.from(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'') }
-async function generateCodeChallenge(v: string): Promise<string> { const e=new TextEncoder().encode(v), d=await crypto.subtle.digest('SHA-256',e); return btoa(String.fromCharCode(...Array.from(new Uint8Array(d)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'') }
 
 export const yandexProvider = new YandexProvider()

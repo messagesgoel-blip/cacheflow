@@ -203,27 +203,31 @@ export async function deleteRemote(name: string, token: string) {
   return res.json()
 }
 
-export function getGoogleOAuthUrl(token: string): string {
-  // Build Google OAuth URL
-  const clientId = '416179978413-909akdt6cjbh98q6be5mg5dg5i2o1tff.apps.googleusercontent.com'
-  const redirectUri = 'https://cacheflow-api.goels.in/remotes/google/callback'
-  const scope = encodeURIComponent('https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.metadata.readonly')
-  const state = encodeURIComponent(token) // Pass JWT as state for verification
+// CSRF nonce helpers for OAuth flows
+const CSRF_NONCE_KEY = 'cacheflow_oauth_nonce'
 
-  return `https://accounts.google.com/o/oauth2/v2/auth?` +
-    `client_id=${clientId}&` +
-    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-    `response_type=code&` +
-    `scope=${scope}&` +
-    `access_type=offline&` +
-    `prompt=consent&` +
-    `state=${state}`
+export function generateOAuthNonce(): string {
+  const nonce = crypto.randomUUID()
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem(CSRF_NONCE_KEY, nonce)
+  }
+  return nonce
 }
 
-// Connect Google Drive with credentials (client-side OAuth flow)
+export function verifyOAuthNonce(nonce: string): boolean {
+  if (typeof window === 'undefined') return false
+  const stored = sessionStorage.getItem(CSRF_NONCE_KEY)
+  if (stored === nonce) {
+    sessionStorage.removeItem(CSRF_NONCE_KEY)
+    return true
+  }
+  return false
+}
+
+// Connect Google Drive with credentials - client_secret removed for security
 export async function connectGoogleDrive(
   name: string,
-  credentials: { client_id: string; client_secret: string },
+  credentials: { client_id: string },
   token: string
 ): Promise<{ success: boolean; authUrl?: string; needsAuth?: boolean }> {
   const res = await apiFetch('/remotes/google/connect', {
@@ -237,10 +241,10 @@ export async function connectGoogleDrive(
   return res.json()
 }
 
-// Complete Google Drive OAuth with auth code
+// Complete Google Drive OAuth with auth code - client_secret removed for security
 export async function completeGoogleAuth(
   name: string,
-  credentials: { client_id: string; client_secret: string },
+  credentials: { client_id: string },
   authCode: string,
   token: string
 ): Promise<{ success: boolean }> {

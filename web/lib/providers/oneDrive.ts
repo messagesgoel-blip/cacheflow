@@ -6,6 +6,7 @@
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 import { tokenManager } from '../tokenManager'
+import { formatBytes, formatMimeType } from './utils'
 
 // Microsoft OAuth configuration
 const MSAL_CLIENT_ID = process.env.NEXT_PUBLIC_MSAL_CLIENT_ID || 'YOUR_MSAL_CLIENT_ID'
@@ -285,11 +286,13 @@ export class OneDriveProvider extends StorageProvider {
     // First get the download URL
     const file = await this.getFile(fileId)
 
-    if (!file['@microsoft.graph.downloadUrl']) {
+    // The download URL should be in the file metadata
+    const downloadUrl = (file as any).downloadUrl
+    if (!downloadUrl) {
       throw new Error('Download URL not available')
     }
 
-    const response = await fetch(file['@microsoft.graph.downloadUrl'])
+    const response = await fetch(downloadUrl)
 
     if (!response.ok) {
       throw new Error(`Download failed: ${response.status}`)
@@ -458,7 +461,7 @@ export class OneDriveProvider extends StorageProvider {
   /**
    * Make authenticated request to Microsoft Graph
    */
-  private async makeRequest(url: string, options: RequestInit = {}): Promise<any> {
+  private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
     if (!this.accessToken) {
       const token = tokenManager.getToken('onedrive')
       if (!token) {
@@ -478,12 +481,12 @@ export class OneDriveProvider extends StorageProvider {
 
     if (!response.ok) {
       // Handle 401 - try to refresh token
-      if (response.status === 401) {
+      if (response.status === 401 && !retried) {
         const refreshed = await tokenManager.refreshToken('onedrive')
         if (refreshed) {
           this.accessToken = refreshed.accessToken
           // Retry request
-          return this.makeRequest(url, options)
+          return this.makeRequest(url, options, true)
         }
       }
 
@@ -518,15 +521,6 @@ export class OneDriveProvider extends StorageProvider {
       thumbnailUrl: item.thumbnailUrl,
     }
   }
-}
-
-// Helper function
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 // Export singleton

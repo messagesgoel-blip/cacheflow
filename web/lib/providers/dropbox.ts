@@ -6,6 +6,8 @@
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 import { tokenManager } from '../tokenManager'
+import { generateCodeVerifier, generateCodeChallenge } from './pkce'
+import { formatBytes, formatMimeType } from './utils'
 
 // Dropbox OAuth configuration
 const DROPBOX_APP_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY || 'YOUR_DROPBOX_APP_KEY'
@@ -439,7 +441,7 @@ export class DropboxProvider extends StorageProvider {
   // API Helpers
   // ===========================================================================
 
-  private async makeRequest(endpoint: string, body?: any): Promise<any> {
+  private async makeRequest(endpoint: string, body?: any, retried = false): Promise<any> {
     if (!this.accessToken) {
       const token = tokenManager.getToken('dropbox')
       if (!token) throw new Error('Not authenticated')
@@ -456,11 +458,11 @@ export class DropboxProvider extends StorageProvider {
     })
 
     if (!response.ok) {
-      if (response.status === 401) {
+      if (response.status === 401 && !retried) {
         const refreshed = await tokenManager.refreshToken('dropbox')
         if (refreshed) {
           this.accessToken = refreshed.accessToken
-          return this.makeRequest(endpoint, body)
+          return this.makeRequest(endpoint, body, true)
         }
       }
       throw new Error(`Dropbox API error: ${response.statusText}`)
@@ -510,7 +512,7 @@ export class DropboxProvider extends StorageProvider {
       path: item.path_display || item.path_lower || '',
       pathDisplay: item.path_display || '',
       size: item.size || 0,
-      mimeType: isFolder ? 'application/vnd.folder' : (item.name?.split('.').pop() ? `application/${item.name.split('.').pop()}` : 'application/octet-stream'),
+      mimeType: isFolder ? 'application/vnd.folder' : formatMimeType(item.name),
       isFolder,
       createdTime: item.client_modified,
       modifiedTime: item.server_modified,
@@ -518,35 +520,6 @@ export class DropboxProvider extends StorageProvider {
       providerName: 'Dropbox',
     }
   }
-}
-
-// PKCE Helpers
-function generateCodeVerifier(): string {
-  const array = new Uint8Array(32)
-  crypto.getRandomValues(array)
-  return base64UrlEncode(array)
-}
-
-async function generateCodeChallenge(verifier: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(verifier)
-  const digest = await crypto.subtle.digest('SHA-256', data)
-  return base64UrlEncode(new Uint8Array(digest))
-}
-
-function base64UrlEncode(array: Uint8Array): string {
-  return btoa(String.fromCharCode(...Array.from(array)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 export const dropboxProvider = new DropboxProvider()

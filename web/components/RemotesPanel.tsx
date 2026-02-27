@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote, setRemoteToken, connectGoogleDrive } from '@/lib/api'
+import { getProvider } from '@/lib/providers'
 
 interface Remote {
   id: string
@@ -33,7 +34,7 @@ const CLOUD_PROVIDERS = [
   {
     id: 'google',
     name: 'Google Drive',
-    icon: '📧',
+    icon: '🗂️',
     description: 'Connect to Google Drive (15 GB free)',
     authType: 'oauth',
     fields: [],
@@ -154,6 +155,19 @@ const CLOUD_PROVIDERS = [
     comingSoon: true,
     setupInstructions: [{ step: 1, text: 'Coming soon' }]
   },
+  {
+    id: 'drive',
+    name: 'drive',
+    icon: '🗂️',
+    description: 'Connect to Google Drive (15 GB free)',
+    authType: 'oauth',
+    fields: [],
+    setupInstructions: [
+      { step: 1, text: 'Go to console.cloud.google.com > APIs > Enable Drive API' },
+      { step: 2, text: 'Create OAuth Client ID credentials' },
+      { step: 3, text: 'Add authorized origin: https://cacheflow.goels.in' },      { step: 4, text: 'IMPORTANT: In OAuth Consent Screen, add your Google email as Test User' },
+    ]
+  },
 ]
 
 
@@ -254,7 +268,6 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       if (newRemoteType === 'drive') {
         config = {
           client_id: formFields.client_id || '',
-          client_secret: formFields.client_secret || '',
         }
       } else if (newRemoteType === 'webdav') {
         config = {
@@ -291,7 +304,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
         try {
           const driveResponse = await connectGoogleDrive(
             newRemoteName,
-            { client_id: formFields.client_id, client_secret: formFields.client_secret },
+            { client_id: formFields.client_id },
             token
           )
 
@@ -343,8 +356,6 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
 
   // Browser-based OAuth handler for OAuth providers
   async function handleOAuthConnect(providerId: string) {
-    const providers = await import("@/lib/providers")
-    const getProvider = providers.getProvider
     const provider = getProvider(providerId as any)
     if (!provider) {
       alert("Provider not found. Please refresh the page.")
@@ -374,10 +385,8 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
         })
       })
       
-      console.log("Token save response:", response.status, response.statusText)
-      
-      if (false) { // Server save disabled - token in localStorage
-        const err = await response.json()
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
         throw new Error(err.error || "Failed to save token")
       }
       
@@ -401,8 +410,6 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
 
   // Disconnect handler for browser-based providers
   async function handleOAuthDisconnect(providerId: string) {
-    const providers = await import("@/lib/providers")
-    const getProvider = providers.getProvider
     const provider = getProvider(providerId as any)
     if (provider) {
       await provider.disconnect()
