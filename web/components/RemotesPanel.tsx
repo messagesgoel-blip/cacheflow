@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react'
 import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote, setRemoteToken, connectGoogleDrive } from '@/lib/api'
 import { getProvider } from '@/lib/providers'
 
+// TODO: SECURITY — OAuth tokens currently stored in localStorage (XSS risk).
+// Server-side token storage was disabled. Re-enable before production.
+// See: /api/tokens endpoint
+
 interface Remote {
   id: string
   name: string

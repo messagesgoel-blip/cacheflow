@@ -26,11 +26,7 @@ export async function generateCodeChallenge(verifier: string): Promise<string> {
  * Base64 URL-safe encoding (replaces + with -, / with _, removes padding)
  */
 export function base64UrlEncode(array: Uint8Array): string {
-  let str = ''
-  array.forEach(byte => {
-    str += String.fromCharCode(byte)
-  })
-  return btoa(str)
+  return btoa(Array.from(array, b => String.fromCharCode(b)).join(''))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '')

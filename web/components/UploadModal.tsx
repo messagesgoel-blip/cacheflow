@@ -305,6 +305,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
               {/* Individual providers */}
               {connectedProviders.map(cp => {
                 const provider = PROVIDERS.find(p => p.id === cp.providerId)
+                if (!provider) console.warn(`No provider config found for: ${cp.providerId}`)
                 const quota = cp.quota
 
                 return (

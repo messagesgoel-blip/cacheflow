@@ -3,14 +3,26 @@
 import { useState, useEffect, useCallback } from 'react'
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('cf_theme') === 'dark'
+    } catch {
+      return false
+    }
+  })
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    const stored = localStorage.getItem('cf_theme')
     const hasDark = document.documentElement.classList.contains('dark')
-    setIsDark(stored === 'dark' || (!stored && hasDark))
+    try {
+      const stored = localStorage.getItem('cf_theme')
+      if (stored === 'dark' || (!stored && hasDark)) {
+        setIsDark(true)
+      }
+    } catch {
+      // localStorage unavailable
+    }
   }, [])
 
   const toggleTheme = useCallback(() => {
@@ -19,10 +31,8 @@ export default function ThemeToggle() {
 
       if (newIsDark) {
         document.documentElement.classList.add('dark')
-        document.documentElement.classList.remove('light')
         localStorage.setItem('cf_theme', 'dark')
       } else {
-        document.documentElement.classList.add('light')
         document.documentElement.classList.remove('dark')
         localStorage.setItem('cf_theme', 'light')
       }

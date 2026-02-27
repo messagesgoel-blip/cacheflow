@@ -160,17 +160,24 @@ export class FilenProvider extends StorageProvider {
   async renameFile(id: string, name: string): Promise<FileMetadata> { throw new Error('Not implemented') }
   async revokeShareLink(id: string): Promise<void> { throw new Error('Not implemented') }
 
-  private async req(ep: string, body?: any, retried = false): Promise<any> {
+  private async req(ep: string, body?: any, retried = false, method = 'POST'): Promise<any> {
     if (!this.accessToken) { const t = tokenManager.getToken('filen'); if (!t) throw new Error('Not auth'); this.accessToken = t.accessToken }
     const res = await fetch(FILEN_API_BASE+ep, {
-      method: 'POST', 
+      method,
       headers: { 
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.accessToken}`
       },
-      body: body ? JSON.stringify(body) : undefined
+      body: method !== 'GET' && body ? JSON.stringify(body) : undefined
     })
-    if (res.status===401 && !retried) { const nt = await tokenManager.refreshToken('filen'); if (nt) { this.accessToken = nt.accessToken; return this.req(ep,body,true) } }
+    if (res.status === 401 && !retried) { 
+      const nt = await tokenManager.refreshToken('filen')
+      if (nt) { 
+        this.accessToken = nt.accessToken
+        return this.req(ep, body, true, method)
+      }
+      throw new Error('SESSION_EXPIRED')
+    }
     const d = await res.json()
     if (!d.success) throw new Error(d.errorMessage || 'Filen error')
     return d

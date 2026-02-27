@@ -187,7 +187,7 @@ export class BoxProvider extends StorageProvider {
     const response = await this.makeRequest(`${BOX_API_BASE}/users/me`)
 
     const space = response.space_usage
-    const total = space.allocated || 0
+    const total = space.allocated ?? space.space_amount ?? 0
     const used = space.used || 0
 
     return {
@@ -391,6 +391,7 @@ export class BoxProvider extends StorageProvider {
           this.accessToken = refreshed.accessToken
           return this.makeRequest(url, options, true)
         }
+        throw new Error('SESSION_EXPIRED')
       }
       throw new Error(`Box API error: ${response.statusText}`)
     }

@@ -73,7 +73,7 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
             .filter((f: any) => f.isFolder)
             .map((f: any) => ({
               name: f.name,
-              path: f.path,
+              path: f.id,  // Use ID for cloud providers
               isFolder: true,
               itemCount: undefined
             }))
@@ -190,6 +190,7 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
         <h3 className="font-medium text-gray-700 dark:text-gray-200">Folders</h3>
         <button
           onClick={() => {
+            loadedPathsRef.current.clear()
             loadFolders('/')
             onRefresh?.()
           }}

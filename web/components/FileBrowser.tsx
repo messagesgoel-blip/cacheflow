@@ -38,6 +38,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   const [newFolderName, setNewFolderName] = useState('')
   const [creatingFolder, setCreatingFolder] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [unimplementedMsg, setUnimplementedMsg] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { contextMenu, showContextMenu, hideContextMenu, ContextMenuComponent } = useContextMenu()
 
@@ -274,32 +275,32 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   // Helper functions for context menu actions
   async function handleDownload(fileId: string, filePath: string) {
     console.warn('not yet implemented: download', fileId, filePath)
-    alert('Download is not yet implemented')
+    setUnimplementedMsg('Download is not yet implemented')
   }
 
   async function handleShare(fileId: string, filePath: string) {
     console.warn('not yet implemented: share', fileId, filePath)
-    alert('Share is not yet implemented')
+    setUnimplementedMsg('Share is not yet implemented')
   }
 
   async function handleRename(fileId: string, filePath: string) {
     console.warn('not yet implemented: rename', fileId, filePath)
-    alert('Rename is not yet implemented')
+    setUnimplementedMsg('Rename is not yet implemented')
   }
 
   async function handleMove(fileId: string, filePath: string) {
     console.warn('not yet implemented: move', fileId, filePath)
-    alert('Move is not yet implemented')
+    setUnimplementedMsg('Move is not yet implemented')
   }
 
   async function handleDelete(fileId: string) {
     console.warn('not yet implemented: delete', fileId)
-    alert('Delete is not yet implemented')
+    setUnimplementedMsg('Delete is not yet implemented')
   }
 
   async function handleRetry(fileId: string) {
     console.warn('not yet implemented: retry', fileId)
-    alert('Retry is not yet implemented')
+    setUnimplementedMsg('Retry is not yet implemented')
   }
 
   const files = browseData?.files || []
@@ -314,6 +315,14 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
       {error && (
         <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded border border-red-200 dark:border-red-800 text-sm">
           {error}
+        </div>
+      )}
+
+      {/* Unimplemented feature notice */}
+      {unimplementedMsg && (
+        <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded border border-yellow-200 dark:border-yellow-800 text-sm flex justify-between items-center">
+          <span>{unimplementedMsg}</span>
+          <button onClick={() => setUnimplementedMsg(null)} className="text-yellow-600 hover:text-yellow-800">×</button>
         </div>
       )}
 

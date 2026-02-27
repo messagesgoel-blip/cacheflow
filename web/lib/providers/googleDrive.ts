@@ -349,6 +349,14 @@ export class GoogleDriveProvider extends StorageProvider {
       'application/vnd.google-apps.audio',
     ]
 
+    // Types that cannot be exported (will cause 403)
+    const NON_EXPORTABLE = ['application/vnd.google-apps.script']
+
+    // Check if it's a non-exportable type
+    if (NON_EXPORTABLE.includes(metadata.mimeType)) {
+      throw new Error('This file type cannot be downloaded.')
+    }
+
     // Check if it's a Google Doc that needs export
     if (googleDocsTypes.includes(metadata.mimeType)) {
       // Export as PDF
@@ -519,7 +527,7 @@ export class GoogleDriveProvider extends StorageProvider {
   // ===========================================================================
 
   getIcon(): string {
-    return '📁'
+    return '🗂️'
   }
 
   getColor(): string {
@@ -559,6 +567,7 @@ export class GoogleDriveProvider extends StorageProvider {
           // Retry request with retried=true to prevent infinite recursion
           return this.makeRequest(url, options, true)
         }
+        throw new Error('SESSION_EXPIRED')
       }
 
       const error = await response.text().catch(() => 'Unknown error')

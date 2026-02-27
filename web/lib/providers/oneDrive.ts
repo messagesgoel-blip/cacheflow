@@ -287,7 +287,7 @@ export class OneDriveProvider extends StorageProvider {
     const file = await this.getFile(fileId)
 
     // The download URL should be in the file metadata
-    const downloadUrl = (file as any).downloadUrl
+    const downloadUrl = (file as any)['@microsoft.graph.downloadUrl']
     if (!downloadUrl) {
       throw new Error('Download URL not available')
     }
@@ -488,6 +488,7 @@ export class OneDriveProvider extends StorageProvider {
           // Retry request
           return this.makeRequest(url, options, true)
         }
+        throw new Error('SESSION_EXPIRED')
       }
 
       const error = await response.text().catch(() => 'Unknown error')

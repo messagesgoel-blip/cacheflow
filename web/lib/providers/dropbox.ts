@@ -464,6 +464,7 @@ export class DropboxProvider extends StorageProvider {
           this.accessToken = refreshed.accessToken
           return this.makeRequest(endpoint, body, true)
         }
+        throw new Error('SESSION_EXPIRED')
       }
       throw new Error(`Dropbox API error: ${response.statusText}`)
     }
