@@ -71,17 +71,18 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
           // Convert cloud files to browseData format
           const folders = result.files.filter(f => f.isFolder).map(f => ({
             name: f.name,
-            path: f.path,
+            path: f.id,
             isFolder: true,
-            itemCount: undefined
+            itemCount: undefined  // Cloud folders - count requires extra API call
           }))
           
           const files = result.files.filter(f => !f.isFolder).map(f => ({
             name: f.name,
-            path: f.path,
+            path: f.id,
             isFolder: false,
             size_bytes: f.size,
-            last_modified: f.modifiedTime
+            last_modified: f.modifiedTime,
+            status: 'synced' // Cloud files are considered synced
           }))
 
           setCloudFiles(result.files)
@@ -442,7 +443,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
                 </button>
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                {folder.itemCount || 0} items
+                {folder.itemCount !== undefined ? `${folder.itemCount} items` : '-'}
               </div>
             </div>
           ))}

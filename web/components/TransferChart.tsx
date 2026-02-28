@@ -18,6 +18,7 @@ export default function TransferChart({ token }: TransferChartProps) {
   const [data, setData] = useState<TransferData[]>([])
   const [loading, setLoading] = useState(true)
   const [todayTransfer, setTodayTransfer] = useState(0)
+  const [isMockData, setIsMockData] = useState(false)
 
   useEffect(() => {
     fetchTransferStats()
@@ -55,6 +56,7 @@ export default function TransferChart({ token }: TransferChartProps) {
   }
 
   function generateMockData() {
+    setIsMockData(true)
     const mockData: TransferData[] = []
     const today = new Date()
 
@@ -101,7 +103,12 @@ export default function TransferChart({ token }: TransferChartProps) {
         </div>
       </div>
 
-      <div className="h-64 mb-4">
+      <div className="h-64 mb-4 relative">
+        {isMockData && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 z-10">
+            <span className="text-4xl font-bold text-gray-500 -rotate-[30deg]">SAMPLE DATA</span>
+          </div>
+        )}
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
             <XAxis dataKey="date" />

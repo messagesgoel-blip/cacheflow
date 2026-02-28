@@ -64,6 +64,42 @@ router.delete('/files/:id/lock', requireAdmin, async (req, res) => {
   }
 });
 
+// GET /admin/stats
+// Returns admin statistics
+router.get('/stats', requireAdmin, async (req, res) => {
+  try {
+    // Get total users
+    const usersResult = await pool.query('SELECT COUNT(*) as count FROM users');
+    const totalUsers = parseInt(usersResult.rows[0]?.count || '0', 10);
+
+    // Get total files
+    const filesResult = await pool.query('SELECT COUNT(*) as count FROM files');
+    const totalFiles = parseInt(filesResult.rows[0]?.count || '0', 10);
+
+    // Get total storage used
+    const storageResult = await pool.query('SELECT COALESCE(SUM(size_bytes), 0) as total FROM files');
+    const storageUsedBytes = parseInt(storageResult.rows[0]?.total || '0', 10);
+
+    // Get daily transfer (last 24 hours)
+    const transferResult = await pool.query(
+      `SELECT COALESCE(SUM(bytes_transferred), 0) as total 
+       FROM transfer_logs 
+       WHERE created_at > NOW() - INTERVAL '24 hours'`
+    );
+    const dailyTransferBytes = parseInt(transferResult.rows[0]?.total || '0', 10);
+
+    res.json({
+      total_users: totalUsers,
+      total_files: totalFiles,
+      storage_used_bytes: storageUsedBytes,
+      daily_transfer_bytes: dailyTransferBytes
+    });
+  } catch (err) {
+    console.error('[admin] stats error:', err.message);
+    res.status(500).json({ error: 'internal server error' });
+  }
+});
+
 // GET /admin/audit
 // Returns audit logs (admin only)
 router.get('/audit', requireAdmin, async (req, res) => {

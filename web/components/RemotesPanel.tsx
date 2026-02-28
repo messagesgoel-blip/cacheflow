@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote, setRemoteToken, connectGoogleDrive } from '@/lib/api'
 import { getProvider } from '@/lib/providers'
+import { tokenManager } from '@/lib/tokenManager'
+import { PROVIDERS } from '@/lib/providers/types'
 
 // TODO: SECURITY — OAuth tokens currently stored in localStorage (XSS risk).
 // Server-side token storage was disabled. Re-enable before production.
@@ -18,6 +20,7 @@ interface Remote {
   total?: number
   free?: number
   error?: string
+  accountEmail?: string
 }
 
 interface RemoteBrowseResult {
@@ -205,11 +208,36 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
     if (!token) return
     setLoading(true)
     setError(null)
+
+    // First, load cloud providers from tokenManager (localStorage)
+    const connectedRemotes: Remote[] = []
+    const allTokens = tokenManager.getAllTokens()
+    
+    for (const [providerId, tokenData] of Array.from(allTokens.entries())) {
+      if (tokenData && tokenData.accessToken) {
+        const providerConfig = PROVIDERS.find(p => p.id === providerId)
+        connectedRemotes.push({
+          id: `cloud-${providerId}`,
+          name: providerConfig?.name || providerId,
+          type: 'cloud',
+          provider: providerId,
+          status: 'connected',
+          accountEmail: tokenData.accountEmail || ''
+        })
+      }
+    }
+
+    // Also try to load from server (for VPS/WebDAV remotes)
     getRemotes(token)
-      .then(data => setRemotes(data.remotes || []))
+      .then(data => {
+        // Merge server remotes with cloud remotes from tokenManager
+        const serverRemotes = data.remotes || []
+        setRemotes([...connectedRemotes, ...serverRemotes])
+      })
       .catch(err => {
-        setError(err.message || 'Failed to load remotes')
-        console.error('Failed to load remotes:', err)
+        // If server fails, just show cloud remotes
+        console.error('Failed to load server remotes:', err)
+        setRemotes(connectedRemotes)
       })
       .finally(() => setLoading(false))
   }

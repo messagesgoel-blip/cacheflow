@@ -41,7 +41,7 @@ export default function FilesPage() {
         window.location.href = '/login'
       }} />
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <UnifiedFileBrowser />
+        <UnifiedFileBrowser token={token} />
       </div>
     </div>
   )

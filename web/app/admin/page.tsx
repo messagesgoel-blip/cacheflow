@@ -22,6 +22,12 @@ export default function AdminPage() {
   const [stats, setStats] = useState<AdminStats>({})
   const [loading, setLoading] = useState(true)
   const [apiAvailable, setApiAvailable] = useState(true)
+  const [showAdminBanner, setShowAdminBanner] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('admin_banner_dismissed')
+    }
+    return true
+  })
 
   useEffect(() => {
     const t = localStorage.getItem('cf_token')
@@ -113,11 +119,22 @@ export default function AdminPage() {
           <p className="text-gray-600 dark:text-gray-400 mt-1">System overview and statistics</p>
         </div>
 
-        {!apiAvailable && (
+        {!apiAvailable && showAdminBanner && (
           <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <div className="flex items-center gap-2">
-              <span className="text-yellow-600 dark:text-yellow-400">⚠</span>
-              <span className="text-yellow-700 dark:text-yellow-300">Admin API coming soon. Showing placeholder data.</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-yellow-600 dark:text-yellow-400">⚠</span>
+                <span className="text-yellow-700 dark:text-yellow-300">Admin API coming soon. Showing placeholder data.</span>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowAdminBanner(false)
+                  sessionStorage.setItem('admin_banner_dismissed', '1')
+                }}
+                className="text-yellow-600 hover:text-yellow-800 text-sm font-medium"
+              >
+                Dismiss
+              </button>
             </div>
           </div>
         )}

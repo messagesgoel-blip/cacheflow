@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ProviderId, FileMetadata, PROVIDERS, formatBytes } from '@/lib/providers/types'
 import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
+import { browseFiles } from '@/lib/api'
 
 interface ConnectedProvider {
   providerId: ProviderId
@@ -12,15 +13,16 @@ interface ConnectedProvider {
 }
 
 interface UnifiedFileBrowserProps {
-  // TODO: Connect to real provider adapters when implemented
+  token: string
 }
 
-export default function UnifiedFileBrowser({}: UnifiedFileBrowserProps) {
+export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [files, setFiles] = useState<FileMetadata[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingProviders, setLoadingProviders] = useState<ProviderId[]>([])
   const [connectedProviders, setConnectedProviders] = useState<ConnectedProvider[]>([])
-  const [selectedProvider, setSelectedProvider] = useState<ProviderId | 'all'>('all')
+  const [selectedProvider, setSelectedProvider] = useState<ProviderId | 'all' | 'local'>('all')
+  const [currentPath, setCurrentPath] = useState('/')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -33,6 +35,13 @@ export default function UnifiedFileBrowser({}: UnifiedFileBrowserProps) {
     const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
     const connected: ConnectedProvider[] = []
     const loadingIds: ProviderId[] = []
+
+    // Always add local as available
+    connected.push({
+      providerId: 'local' as ProviderId,
+      accountEmail: 'Local Storage',
+      displayName: 'Local'
+    })
 
     for (const pid of providerIds) {
       const token = tokenManager.getToken(pid)
@@ -51,14 +60,30 @@ export default function UnifiedFileBrowser({}: UnifiedFileBrowserProps) {
 
     // Load files from all connected providers
     async function loadAllFiles() {
-      if (loadingIds.length === 0) {
-        setLoading(false)
-        return
-      }
-
       const allFiles: FileMetadata[] = []
       const errors: string[] = []
 
+      // Load local storage files
+      try {
+        const localData = await browseFiles(currentPath, token)
+        const localFiles = (localData.files || []).map((f: any) => ({
+          id: f.path || f.name,
+          name: f.name,
+          path: f.path || '/' + f.name,
+          pathDisplay: f.path || '/' + f.name,
+          size: f.size_bytes || 0,
+          mimeType: f.isFolder ? 'application/vnd.folder' : 'application/octet-stream',
+          isFolder: f.isFolder,
+          modifiedTime: f.last_modified,
+          provider: 'local' as ProviderId,
+          providerName: 'Local'
+        }))
+        allFiles.push(...localFiles)
+      } catch (err: any) {
+        console.error('Error loading local files:', err)
+      }
+
+      // Load cloud provider files
       for (const pid of loadingIds) {
         try {
           const provider = getProvider(pid)
@@ -89,12 +114,13 @@ export default function UnifiedFileBrowser({}: UnifiedFileBrowserProps) {
     }
 
     loadAllFiles()
-  }, [])
+  }, [token, currentPath, selectedProvider])
 
   // Filter files by provider
-  const filteredFiles = files.filter(f =>
-    selectedProvider === 'all' || f.provider === selectedProvider
-  )
+  const filteredFiles = files.filter(f => {
+    if (selectedProvider === 'all' || selectedProvider === 'local') return true
+    return f.provider === selectedProvider
+  })
 
   // Filter by search query
   const searchedFiles = searchQuery
