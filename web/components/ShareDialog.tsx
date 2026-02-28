@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createShareLink } from '@/lib/api'
 
 interface ShareDialogProps {
@@ -12,34 +12,36 @@ interface ShareDialogProps {
 }
 
 export default function ShareDialog({ fileId, filename, token, onClose, onShareCreated }: ShareDialogProps) {
-  const [password, setPassword] = useState('')
-  const [expiry, setExpiry] = useState<string>('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      const expiryHours = expiry === '' ? undefined : parseInt(expiry)
-      const data = await createShareLink(fileId, token, password || undefined, expiryHours)
-      const url = `${window.location.origin}/share/${data.share_link?.token || data.token}`
-      setShareUrl(url)
-      onShareCreated(url)
-    } catch (err: any) {
-      setError(err.message || 'Failed to create share link')
-    } finally {
-      setLoading(false)
-    }
-  }
+  useEffect(() => {
+    // Auto-create share link on mount
+    createShareLink(fileId, token)
+      .then((data: any) => {
+        const url = `${window.location.origin}/share/${data.share_link?.token || data.token}`
+        setShareUrl(url)
+        // Auto-copy to clipboard
+        navigator.clipboard.writeText(url)
+        setCopied(true)
+        onShareCreated(url)
+      })
+      .catch((err: any) => {
+        console.error('Share error:', err)
+        setError(err.message || 'Failed to create share link')
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [fileId, token])
 
   const handleCopy = () => {
     if (shareUrl) {
       navigator.clipboard.writeText(shareUrl)
-      alert('Share link copied to clipboard!')
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
   }
 
@@ -51,97 +53,65 @@ export default function ShareDialog({ fileId, filename, token, onClose, onShareC
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={handleBackdropClick}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="font-semibold text-gray-800">Share "{filename}"</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+          <h3 className="font-semibold text-gray-800 dark:text-white">Share "{filename}"</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
         </div>
 
-        {shareUrl ? (
-          <div className="p-6">
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Share link created</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={shareUrl}
-                  className="flex-1 px-3 py-2 border rounded text-sm bg-gray-50"
-                />
-                <button
-                  onClick={handleCopy}
-                  className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
-                >
-                  Copy
-                </button>
-              </div>
+        <div className="p-6">
+          {loading ? (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-gray-500 dark:text-gray-400">Creating share link...</p>
             </div>
-            <div className="flex justify-end">
+          ) : error ? (
+            <div className="text-center py-4">
+              <p className="text-red-500 dark:text-red-400">{error}</p>
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                className="mt-4 px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm"
               >
                 Close
               </button>
             </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="p-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password (optional)
+          ) : shareUrl ? (
+            <div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Share link (auto-copied!)
                 </label>
-                <input
-                  type="text"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Leave empty for no password"
-                  className="w-full px-3 py-2 border rounded text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Link expires after
-                </label>
-                <select
-                  value={expiry}
-                  onChange={(e) => setExpiry(e.target.value)}
-                  className="w-full px-3 py-2 border rounded text-sm"
-                >
-                  <option value="">No expiry</option>
-                  <option value="24">1 day</option>
-                  <option value="168">7 days</option>
-                  <option value="720">30 days</option>
-                </select>
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-50 text-red-700 rounded text-sm">
-                  {error}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={shareUrl}
+                    className="flex-1 px-3 py-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded text-sm bg-gray-50"
+                  />
+                  <button
+                    onClick={handleCopy}
+                    className={`px-4 py-2 rounded text-sm text-white ${
+                      copied ? 'bg-green-500' : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {copied ? 'Copied!' : 'Copy'}
+                  </button>
                 </div>
-              )}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                Anyone with this link can view the file
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                >
+                  Done
+                </button>
+              </div>
             </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? 'Creating...' : 'Create Share Link'}
-              </button>
-            </div>
-          </form>
-        )}
+          ) : null}
+        </div>
       </div>
     </div>
   )

@@ -56,12 +56,16 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       const allFiles: FileMetadata[] = []
       const errors: string[] = []
 
+      // Determine folderId based on currentPath
+      // For cloud providers, "/" means "root", otherwise use the path
+      const folderId = currentPath === '/' ? 'root' : currentPath
+
       // Load cloud provider files
       for (const pid of loadingIds) {
         try {
           const provider = getProvider(pid)
           if (provider) {
-            const result = await provider.listFiles()
+            const result = await provider.listFiles({ folderId })
             const providerConfig = PROVIDERS.find(p => p.id === pid)
             
             const filesWithProvider = result.files.map(file => ({
@@ -137,6 +141,16 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     } else {
       setSelectedFiles(new Set(sortedFiles.map(f => f.id)))
     }
+  }
+
+  // Handle folder click - navigate into folder
+  const handleFolderClick = (folderPath: string) => {
+    setCurrentPath(folderPath)
+  }
+
+  // Handle breadcrumb click
+  const handleBreadcrumbClick = (path: string) => {
+    setCurrentPath(path)
   }
 
   return (
@@ -316,6 +330,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                   file={file}
                   selected={selectedFiles.has(file.id)}
                   onSelect={() => toggleFileSelection(file.id)}
+                  onFolderClick={handleFolderClick}
                 />
               ))}
             </tbody>
@@ -330,6 +345,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               file={file}
               selected={selectedFiles.has(file.id)}
               onSelect={() => toggleFileSelection(file.id)}
+              onFolderClick={handleFolderClick}
             />
           ))}
         </div>
@@ -343,13 +359,23 @@ interface FileRowProps {
   file: FileMetadata
   selected: boolean
   onSelect: () => void
+  onFolderClick: (path: string) => void
 }
 
-function FileRow({ file, selected, onSelect }: FileRowProps) {
+function FileRow({ file, selected, onSelect, onFolderClick }: FileRowProps) {
   const provider = PROVIDERS.find(p => p.id === file.provider)
 
+  const handleClick = () => {
+    if (file.isFolder) {
+      onFolderClick(file.path)
+    }
+  }
+
   return (
-    <tr className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${selected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+    <tr
+      className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${selected ? 'bg-blue-50 dark:bg-blue-900/20' : ''} ${file.isFolder ? 'cursor-pointer' : ''}`}
+      onClick={handleClick}
+    >
       <td className="px-4 py-3">
         <input
           type="checkbox"
@@ -398,15 +424,29 @@ function FileRow({ file, selected, onSelect }: FileRowProps) {
 }
 
 // File Card Component (Grid View)
-function FileCard({ file, selected, onSelect }: FileRowProps) {
+function FileCard({ file, selected, onSelect, onFolderClick }: FileRowProps) {
+  const handleClick = () => {
+    if (file.isFolder) {
+      onFolderClick(file.path)
+    }
+  }
   const provider = PROVIDERS.find(p => p.id === file.provider)
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (file.isFolder) {
+      e.stopPropagation()
+      onFolderClick(file.path)
+    } else {
+      onSelect()
+    }
+  }
 
   return (
     <div
       className={`relative bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border-2 cursor-pointer transition-all hover:shadow-md ${
         selected ? 'border-blue-500' : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
       }`}
-      onClick={onSelect}
+      onClick={handleClick}
     >
       {selected && (
         <div className="absolute top-2 right-2">
