@@ -276,32 +276,170 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
 
   // Helper functions for context menu actions
   async function handleDownload(fileId: string, filePath: string) {
-    console.warn('not yet implemented: download', fileId, filePath)
-    setUnimplementedMsg('Download is not yet implemented')
+    try {
+      if (isCloud && cloudProviderId) {
+        const provider = getProvider(cloudProviderId)
+        if (provider) {
+          const blob = await provider.downloadFile(fileId)
+          // Create download link
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = filePath.split('/').pop() || 'download'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+          return
+        }
+      }
+      // For local/VPS, use API
+      const response = await fetch(`/api/files/download?path=${encodeURIComponent(filePath)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!response.ok) throw new Error('Download failed')
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filePath.split('/').pop() || 'download'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      console.error('Download error:', err)
+      setError(err.message || 'Download failed')
+    }
   }
 
   async function handleShare(fileId: string, filePath: string) {
-    console.warn('not yet implemented: share', fileId, filePath)
-    setUnimplementedMsg('Share is not yet implemented')
+    try {
+      let shareLink = ''
+      if (isCloud && cloudProviderId) {
+        const provider = getProvider(cloudProviderId)
+        if (provider) {
+          shareLink = await provider.getShareLink(fileId) || ''
+        }
+      }
+      if (shareLink) {
+        await navigator.clipboard.writeText(shareLink)
+        setUnimplementedMsg('Share link copied to clipboard!')
+      } else {
+        // For local/VPS, create a share token via API
+        const response = await fetch('/api/share', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ filePath })
+        })
+        if (!response.ok) throw new Error('Failed to create share link')
+        const data = await response.json()
+        const link = `${window.location.origin}/share/${data.token}`
+        await navigator.clipboard.writeText(link)
+        setUnimplementedMsg('Share link copied to clipboard!')
+      }
+    } catch (err: any) {
+      console.error('Share error:', err)
+      setError(err.message || 'Failed to create share link')
+    }
   }
 
   async function handleRename(fileId: string, filePath: string) {
-    console.warn('not yet implemented: rename', fileId, filePath)
-    setUnimplementedMsg('Rename is not yet implemented')
+    const newName = prompt('Enter new name:', filePath.split('/').pop())
+    if (!newName || newName === filePath.split('/').pop()) return
+
+    try {
+      if (isCloud && cloudProviderId) {
+        const provider = getProvider(cloudProviderId)
+        if (provider) {
+          await provider.renameFile(fileId, newName)
+          await loadCurrentPath()
+          return
+        }
+      }
+      // For local/VPS, use API
+      const response = await fetch('/api/files/rename', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ path: filePath, newName })
+      })
+      if (!response.ok) throw new Error('Rename failed')
+      await loadCurrentPath()
+    } catch (err: any) {
+      console.error('Rename error:', err)
+      setError(err.message || 'Rename failed')
+    }
   }
 
   async function handleMove(fileId: string, filePath: string) {
-    console.warn('not yet implemented: move', fileId, filePath)
-    setUnimplementedMsg('Move is not yet implemented')
+    const newPath = prompt('Enter destination folder path:', '/')
+    if (!newPath) return
+
+    try {
+      if (isCloud && cloudProviderId) {
+        const provider = getProvider(cloudProviderId)
+        if (provider) {
+          await provider.moveFile(fileId, newPath)
+          await loadCurrentPath()
+          return
+        }
+      }
+      // For local/VPS, use API
+      const response = await fetch('/api/files/move', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ path: filePath, newPath })
+      })
+      if (!response.ok) throw new Error('Move failed')
+      await loadCurrentPath()
+    } catch (err: any) {
+      console.error('Move error:', err)
+      setError(err.message || 'Move failed')
+    }
   }
 
   async function handleDelete(fileId: string) {
-    console.warn('not yet implemented: delete', fileId)
-    setUnimplementedMsg('Delete is not yet implemented')
+    // Find the file to get its path
+    const file = files.find(f => f.path === fileId || f.id === fileId)
+    if (!file) {
+      setError('File not found')
+      return
+    }
+
+    if (!confirm(`Delete "${file.name}"?`)) return
+
+    try {
+      if (isCloud && cloudProviderId) {
+        const provider = getProvider(cloudProviderId)
+        if (provider) {
+          await provider.deleteFile(fileId)
+          await loadCurrentPath()
+          return
+        }
+      }
+      // For local/VPS, use API
+      const response = await fetch(`/api/files?path=${encodeURIComponent(file.path)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!response.ok) throw new Error('Delete failed')
+      await loadCurrentPath()
+    } catch (err: any) {
+      console.error('Delete error:', err)
+      setError(err.message || 'Delete failed')
+    }
   }
 
   async function handleRetry(fileId: string) {
-    console.warn('not yet implemented: retry', fileId)
     setUnimplementedMsg('Retry is not yet implemented')
   }
 
