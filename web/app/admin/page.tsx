@@ -88,7 +88,7 @@ export default function AdminPage() {
   }
 
   function formatGB(bytes: number | undefined): string {
-    if (!bytes) return '—'
+    if (!bytes) return 'N/A'
     return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
   }
 
@@ -147,9 +147,13 @@ export default function AdminPage() {
               <div className="text-blue-500">👥</div>
             </div>
             <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-              {loading ? '...' : (stats.total_users || '—')}
+              {loading ? '...' : (stats.total_users ? stats.total_users : 'N/A')}
             </div>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Registered accounts</p>
+            {stats.total_users ? (
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Registered accounts</p>
+            ) : (
+              <p className="text-xs bg-blue-900/40 text-blue-400 rounded px-2 py-0.5 mt-1 inline-block">API coming soon</p>
+            )}
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
@@ -158,9 +162,13 @@ export default function AdminPage() {
               <div className="text-green-500">📄</div>
             </div>
             <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-              {loading ? '...' : (stats.total_files || '—')}
+              {loading ? '...' : (stats.total_files ? stats.total_files : 'N/A')}
             </div>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Files stored</p>
+            {stats.total_files ? (
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Files stored</p>
+            ) : (
+              <p className="text-xs bg-blue-900/40 text-blue-400 rounded px-2 py-0.5 mt-1 inline-block">API coming soon</p>
+            )}
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
@@ -169,9 +177,13 @@ export default function AdminPage() {
               <div className="text-purple-500">💾</div>
             </div>
             <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-              {loading ? '...' : formatGB(stats.storage_used_bytes)}
+              {loading ? '...' : (stats.storage_used_bytes ? formatGB(stats.storage_used_bytes) : 'N/A')}
             </div>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Total storage consumed</p>
+            {stats.storage_used_bytes ? (
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Total storage consumed</p>
+            ) : (
+              <p className="text-xs bg-blue-900/40 text-blue-400 rounded px-2 py-0.5 mt-1 inline-block">API coming soon</p>
+            )}
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
@@ -180,9 +192,13 @@ export default function AdminPage() {
               <div className="text-orange-500">📤</div>
             </div>
             <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-              {loading ? '...' : formatGB(stats.daily_transfer_bytes)}
+              {loading ? '...' : (stats.daily_transfer_bytes ? formatGB(stats.daily_transfer_bytes) : 'N/A')}
             </div>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Today's data transfer</p>
+            {stats.daily_transfer_bytes ? (
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Today's data transfer</p>
+            ) : (
+              <p className="text-xs bg-blue-900/40 text-blue-400 rounded px-2 py-0.5 mt-1 inline-block">API coming soon</p>
+            )}
           </div>
         </div>
 

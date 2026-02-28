@@ -227,13 +227,14 @@ export class GoogleDriveProvider extends StorageProvider {
    * Get storage quota
    */
   async getQuota(): Promise<ProviderQuota> {
-    const response = await this.makeRequest('https://www.googleapis.com/drive/v3/about?fields=storageQuota')
+    const response = await this.makeRequest('https://www.googleapis.com/drive/v3/about?fields=storageQuota,user')
 
     const quota = response.storageQuota
 
-    const used = parseInt(quota.usage) || 0
-    const total = parseInt(quota.limit) || 0
-    const free = total - used
+    // Use usageInDrive (files in Drive) vs total storage quota
+    const used = parseInt(quota.usageInDrive ?? quota.usage ?? '0')
+    const total = parseInt(quota.limit ?? '0')
+    const free = total > 0 ? total - used : 0
 
     return {
       used,

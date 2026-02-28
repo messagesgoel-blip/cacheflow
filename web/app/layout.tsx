@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import SessionHandler from '@/components/SessionHandler'
 
 export const metadata: Metadata = {
   title: 'CacheFlow',
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <SessionHandler />
         {children}
       </body>
     </html>

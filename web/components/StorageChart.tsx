@@ -23,6 +23,12 @@ export default function StorageChart({ token }: StorageChartProps) {
   // Calculate percentage once and reuse
   const getPercent = (value: number) => totalGB > 0 ? ((value / totalGB) * 100).toFixed(1) + '%' : '0%'
 
+  // Store calculated percentages for consistency
+  const percentages = data.reduce((acc, item) => {
+    acc[item.name] = totalGB > 0 ? ((item.value / totalGB) * 100).toFixed(1) : '0.0'
+    return acc
+  }, {} as Record<string, string>)
+
   useEffect(() => {
     fetchStorageBreakdown()
   }, [token])
@@ -129,7 +135,7 @@ export default function StorageChart({ token }: StorageChartProps) {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+              label={({ name }) => `${name}: ${percentages[name] || '0.0'}%`}
               outerRadius={80}
               fill="#8884d8"
               dataKey="value"
@@ -156,7 +162,7 @@ export default function StorageChart({ token }: StorageChartProps) {
               <span className="text-gray-700">{item.name}</span>
             </div>
             <div className="text-gray-600">
-              {item.value.toFixed(1)} GB ({getPercent(item.value)})
+              {item.value.toFixed(1)} GB ({percentages[item.name] || '0.0'}%)
             </div>
           </div>
         ))}

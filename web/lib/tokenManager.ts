@@ -99,6 +99,21 @@ class TokenManager {
   }
 
   /**
+   * Get all connected provider IDs from localStorage
+   */
+  getConnectedProviders(): string[] {
+    if (typeof window === 'undefined') return []
+    const connected: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith(TOKEN_PREFIX)) {
+        connected.push(key.replace(TOKEN_PREFIX, ''))
+      }
+    }
+    return connected
+  }
+
+  /**
    * Check if token exists
    */
   hasToken(provider: ProviderId): boolean {
