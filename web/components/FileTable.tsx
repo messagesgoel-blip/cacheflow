@@ -7,6 +7,7 @@ import ShareDialog from '@/components/ShareDialog'
 interface FileItem {
   id: string
   path: string
+  name?: string  // Optional - for cloud providers that pass name separately
   size_bytes: string | number
   status: string
   error_reason?: string
@@ -68,7 +69,7 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
 
   function startRename(id: string, filepath: string) {
     setEditingId(id)
-    setRenameValue(cleanPath(filepath))
+    setRenameValue(file.name || cleanPath(filepath))
     setRenameError(null)
   }
 
@@ -153,7 +154,7 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
           </button>
         </div>
         <span className="text-xs text-gray-500">
-          Current: {cleanPath(f.path)}
+          Current: {f.name || cleanPath(f.path)}
         </span>
       </div>
     )
@@ -165,7 +166,7 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
             className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100">Download</button>
         )}
         {(f.status === 'synced' || f.status === 'pending') && (
-          <button onClick={() => setShareDialog({ id: f.id, filename: cleanPath(f.path) })}
+          <button onClick={() => setShareDialog({ id: f.id, filename: f.name || cleanPath(f.path) })}
             className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100">Share</button>
         )}
         <button onClick={() => startRename(f.id, f.path)}
@@ -209,7 +210,7 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
         {renameError && <span className="text-xs text-red-500">{renameError}</span>}
       </div>
     )
-    return <span className="font-mono text-xs truncate max-w-xs">{cleanPath(f.path)}</span>
+    return <span className="font-mono text-xs truncate max-w-xs">{f.name || cleanPath(f.path)}</span>
   }
 
   if (viewMode === 'grid') return (
