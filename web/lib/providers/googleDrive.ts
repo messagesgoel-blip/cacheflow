@@ -113,7 +113,7 @@ export class GoogleDriveProvider extends StorageProvider {
                 provider: 'google',
                 accessToken: response.access_token,
                 refreshToken: response.refresh_token,
-                expiresAt: Date.now() + (response.expires_in * 1000),
+                expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
                 accountEmail: userInfo.email,
                 displayName: userInfo.name,
                 accountId: userInfo.id,
@@ -199,7 +199,7 @@ export class GoogleDriveProvider extends StorageProvider {
           const newToken: ProviderToken = {
             ...token,
             accessToken: response.access_token,
-            expiresAt: Date.now() + (response.expires_in * 1000),
+            expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
           }
 
           this.accessToken = newToken.accessToken

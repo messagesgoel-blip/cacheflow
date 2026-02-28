@@ -28,6 +28,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   // Load connected providers from tokenManager
   useEffect(() => {
@@ -91,7 +92,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     }
 
     loadAllFiles()
-  }, [token, currentPath, selectedProvider])
+  }, [token, currentPath, selectedProvider, refreshKey])
 
   // Filter files by provider
   const filteredFiles = files.filter(f => {
@@ -151,6 +152,76 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   // Handle breadcrumb click
   const handleBreadcrumbClick = (path: string) => {
     setCurrentPath(path)
+  }
+
+  // File action handlers
+  const handleFileDownload = async (file: FileMetadata) => {
+    try {
+      const provider = getProvider(file.provider)
+      if (provider) {
+        const blob = await provider.downloadFile(file.id)
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = file.name
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+    } catch (err: any) {
+      console.error('Download error:', err)
+      alert('Download failed: ' + err.message)
+    }
+  }
+
+  const handleFileShare = async (file: FileMetadata) => {
+    try {
+      const provider = getProvider(file.provider)
+      if (provider) {
+        const shareLink = await provider.getShareLink(file.id)
+        if (shareLink) {
+          await navigator.clipboard.writeText(shareLink)
+          alert('Share link copied to clipboard!')
+        } else {
+          alert('Failed to get share link')
+        }
+      }
+    } catch (err: any) {
+      console.error('Share error:', err)
+      alert('Share failed: ' + err.message)
+    }
+  }
+
+  const handleFileRename = async (file: FileMetadata) => {
+    const newName = prompt('Enter new name:', file.name)
+    if (!newName || newName === file.name) return
+    try {
+      const provider = getProvider(file.provider)
+      if (provider) {
+        await provider.renameFile(file.id, newName)
+        // Reload files
+        setRefreshKey(k => k + 1)
+      }
+    } catch (err: any) {
+      console.error('Rename error:', err)
+      alert('Rename failed: ' + err.message)
+    }
+  }
+
+  const handleFileDelete = async (file: FileMetadata) => {
+    if (!confirm(`Delete "${file.name}"?`)) return
+    try {
+      const provider = getProvider(file.provider)
+      if (provider) {
+        await provider.deleteFile(file.id)
+        // Reload files
+        setRefreshKey(k => k + 1)
+      }
+    } catch (err: any) {
+      console.error('Delete error:', err)
+      alert('Delete failed: ' + err.message)
+    }
   }
 
   return (
@@ -331,6 +402,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                   selected={selectedFiles.has(file.id)}
                   onSelect={() => toggleFileSelection(file.id)}
                   onFolderClick={handleFolderClick}
+                  onDownload={handleFileDownload}
+                  onShare={handleFileShare}
+                  onRename={handleFileRename}
+                  onDelete={handleFileDelete}
                 />
               ))}
             </tbody>
@@ -346,6 +421,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               selected={selectedFiles.has(file.id)}
               onSelect={() => toggleFileSelection(file.id)}
               onFolderClick={handleFolderClick}
+              onDownload={handleFileDownload}
+              onShare={handleFileShare}
+              onRename={handleFileRename}
+              onDelete={handleFileDelete}
             />
           ))}
         </div>
@@ -360,9 +439,13 @@ interface FileRowProps {
   selected: boolean
   onSelect: () => void
   onFolderClick: (path: string) => void
+  onDownload: (file: FileMetadata) => void
+  onShare: (file: FileMetadata) => void
+  onRename: (file: FileMetadata) => void
+  onDelete: (file: FileMetadata) => void
 }
 
-function FileRow({ file, selected, onSelect, onFolderClick }: FileRowProps) {
+function FileRow({ file, selected, onSelect, onFolderClick, onDownload, onShare, onRename, onDelete }: FileRowProps) {
   const provider = PROVIDERS.find(p => p.id === file.provider)
 
   const handleClick = () => {
@@ -417,19 +500,20 @@ function FileRow({ file, selected, onSelect, onFolderClick }: FileRowProps) {
         {formatDate(file.modifiedTime)}
       </td>
       <td className="px-4 py-3 text-right">
-        <FileActions file={file} />
+        <FileActions
+          file={file}
+          onDownload={onDownload}
+          onShare={onShare}
+          onRename={onRename}
+          onDelete={onDelete}
+        />
       </td>
     </tr>
   )
 }
 
 // File Card Component (Grid View)
-function FileCard({ file, selected, onSelect, onFolderClick }: FileRowProps) {
-  const handleClick = () => {
-    if (file.isFolder) {
-      onFolderClick(file.path)
-    }
-  }
+function FileCard({ file, selected, onSelect, onFolderClick, onDownload, onShare, onRename, onDelete }: FileRowProps) {
   const provider = PROVIDERS.find(p => p.id === file.provider)
 
   const handleClick = (e: React.MouseEvent) => {
@@ -474,7 +558,16 @@ function FileCard({ file, selected, onSelect, onFolderClick }: FileRowProps) {
           />
           <span>{file.providerName}</span>
         </div>
-        <span>{file.isFolder ? '—' : formatBytes(file.size)}</span>
+        <div className="flex items-center gap-2">
+          <span>{file.isFolder ? '—' : formatBytes(file.size)}</span>
+          <FileActions
+            file={file}
+            onDownload={onDownload}
+            onShare={onShare}
+            onRename={onRename}
+            onDelete={onDelete}
+          />
+        </div>
       </div>
     </div>
   )
@@ -483,10 +576,19 @@ function FileCard({ file, selected, onSelect, onFolderClick }: FileRowProps) {
 // File Actions Dropdown
 interface FileActionsProps {
   file: FileMetadata
+  onDownload: (file: FileMetadata) => void
+  onShare: (file: FileMetadata) => void
+  onRename: (file: FileMetadata) => void
+  onDelete: (file: FileMetadata) => void
 }
 
-function FileActions({ file }: FileActionsProps) {
+function FileActions({ file, onDownload, onShare, onRename, onDelete }: FileActionsProps) {
   const [showMenu, setShowMenu] = useState(false)
+
+  const handleAction = (action: () => void) => {
+    action()
+    setShowMenu(false)
+  }
 
   return (
     <div className="relative">
@@ -504,20 +606,41 @@ function FileActions({ file }: FileActionsProps) {
 
       {showMenu && (
         <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
-          <button className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button
+            onClick={() => handleAction(() => onDownload(file))}
+            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
             Download
           </button>
-          <button className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-            Copy to...
-          </button>
-          <button className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-            Move to...
-          </button>
-          <button className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button
+            onClick={() => handleAction(() => onShare(file))}
+            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
             Share link
           </button>
+          <button
+            onClick={() => handleAction(() => onRename(file))}
+            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Rename
+          </button>
           <hr className="my-1 border-gray-200 dark:border-gray-700" />
-          <button className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+          <button
+            onClick={() => handleAction(() => onDelete(file))}
+            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
             Delete
           </button>
         </div>

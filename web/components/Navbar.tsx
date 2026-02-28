@@ -11,7 +11,6 @@ interface NavbarProps {
 
 const navItems = [
   { href: '/files', label: 'Files' },
-  { href: '/', label: 'Local' },
   { href: '/remotes', label: 'Cloud Drives' },
   { href: '/conflicts', label: 'Conflicts' },
   { href: '/admin', label: 'Admin' },
