@@ -64,7 +64,9 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
         const provider = getProvider(cloudProviderId)
         if (provider) {
           console.log('[FileBrowser] Loading files from provider:', cloudProviderId)
-          const result = await provider.listFiles()
+          // Convert "/" to "root" for cloud providers
+          const folderId = currentPath === '/' ? 'root' : currentPath
+          const result = await provider.listFiles({ folderId })
           console.log('[FileBrowser] Got files:', result.files.length, 'files')
           const providerConfig = PROVIDERS.find(p => p.id === cloudProviderId)
           
@@ -123,7 +125,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
       if (isCloud && cloudProviderId) {
         const provider = getProvider(cloudProviderId)
         if (provider) {
-          await provider.uploadFile(file, { folderId: currentPath === '/' ? undefined : currentPath })
+          await provider.uploadFile(file, { folderId: currentPath === '/' ? 'root' : currentPath })
           console.log('[FileBrowser] Uploaded to cloud provider:', cloudProviderId)
         } else {
           throw new Error(`Provider ${cloudProviderId} not found`)
@@ -156,7 +158,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
       if (isCloud && cloudProviderId) {
         const provider = getProvider(cloudProviderId)
         if (provider) {
-          await provider.createFolder(newFolderName, currentPath === '/' ? undefined : currentPath)
+          await provider.createFolder(newFolderName, currentPath === '/' ? 'root' : currentPath)
           console.log('[FileBrowser] Created folder in cloud provider:', cloudProviderId)
         } else {
           throw new Error(`Provider ${cloudProviderId} not found`)

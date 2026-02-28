@@ -68,7 +68,9 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
       if (isCloud && cloudProviderId) {
         const provider = getProvider(cloudProviderId)
         if (provider) {
-          const result = await provider.listFiles({ folderId: path })
+          // Convert "/" to "root" for cloud providers
+          const folderId = path === '/' ? 'root' : path
+          const result = await provider.listFiles({ folderId })
           folderItems = result.files
             .filter((f: any) => f.isFolder)
             .map((f: any) => ({
