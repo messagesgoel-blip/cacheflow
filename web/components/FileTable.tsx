@@ -67,9 +67,9 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
     onRefresh()
   }
 
-  function startRename(id: string, filepath: string) {
+  function startRename(id: string, filepath: string, filename?: string) {
     setEditingId(id)
-    setRenameValue(file.name || cleanPath(filepath))
+    setRenameValue(filename || cleanPath(filepath))
     setRenameError(null)
   }
 
@@ -169,7 +169,7 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
           <button onClick={() => setShareDialog({ id: f.id, filename: f.name || cleanPath(f.path) })}
             className="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded hover:bg-purple-100">Share</button>
         )}
-        <button onClick={() => startRename(f.id, f.path)}
+        <button onClick={() => startRename(f.id, f.path, f.name)}
           className="text-xs bg-yellow-50 text-yellow-600 px-2 py-1 rounded hover:bg-yellow-100">Rename</button>
         {onMoveFile && (
           <button onClick={() => startMove(f.id, f.path)}
