@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { PROVIDERS, ProviderId, ConnectedProvider, ProviderQuota, formatBytes } from '@/lib/providers/types'
+import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
 
 interface ProviderHubProps {
@@ -267,12 +268,43 @@ function ConnectModal({ provider, connected, onClose }: ConnectModalProps) {
 
   const handleConnect = async () => {
     setConnecting(true)
-    // TODO: Implement OAuth flow
-    // For Google: Open OAuth popup
-    // For WebDAV: Show credentials form
-    alert(`Connect ${provider.name}: OAuth flow not yet implemented`)
-    setConnecting(false)
-    onClose()
+    try {
+      const providerInstance = getProvider(provider.id)
+      if (!providerInstance) {
+        alert(`Provider ${provider.name} is not available`)
+        setConnecting(false)
+        onClose()
+        return
+      }
+
+      const providerToken = await providerInstance.connect()
+
+      // Save to tokenManager
+      tokenManager.saveToken(provider.id, {
+        provider: provider.id,
+        accessToken: providerToken.accessToken,
+        refreshToken: providerToken.refreshToken || undefined,
+        expiresAt: providerToken.expiresAt || undefined,
+        accountEmail: providerToken.accountEmail,
+        displayName: providerToken.displayName
+      } as any)
+
+      alert(`Successfully connected to ${providerToken.accountEmail}!`)
+      onClose()
+      // Refresh the list
+      window.location.reload()
+    } catch (err: any) {
+      console.error("OAuth error:", err)
+      let errorMessage = err.message || "Failed to connect."
+      if (err.message?.includes("popup") || err.message?.includes("cancelled") || err.message?.includes("closed")) {
+        errorMessage = "Authentication was cancelled. Please try again."
+      } else if (err.message?.includes("403") || err.message?.includes("access_denied")) {
+        errorMessage = "Google OAuth not verified. Add your email as Test User in Google Cloud Console > OAuth Consent Screen, or publish the app."
+      }
+      alert(errorMessage)
+    } finally {
+      setConnecting(false)
+    }
   }
 
   const handleDisconnect = async () => {
