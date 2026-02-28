@@ -400,27 +400,15 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       
       const providerToken = await provider.connect()
       
-      // Save to backend for persistence
-      const response = await fetch("/api/tokens", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          provider: providerId,
-          accessToken: providerToken.accessToken,
-          refreshToken: providerToken.refreshToken || null,
-          expiresAt: providerToken.expiresAt,
-          accountEmail: providerToken.accountEmail,
-          accountId: providerToken.accountId || null
-        })
-      })
-      
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error || "Failed to save token")
-      }
+      // Save to tokenManager (localStorage) - server-side storage disabled
+      tokenManager.saveToken(providerId as any, {
+        provider: providerId,
+        accessToken: providerToken.accessToken,
+        refreshToken: providerToken.refreshToken || undefined,
+        expiresAt: providerToken.expiresAt || undefined,
+        accountEmail: providerToken.accountEmail,
+        displayName: providerToken.accountEmail
+      } as any)
       
       alert("Successfully connected to " + providerToken.accountEmail + "!")
       setShowAddModal(false)
