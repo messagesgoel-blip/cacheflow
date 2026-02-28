@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { ProviderId, FileMetadata, PROVIDERS, formatBytes } from '@/lib/providers/types'
 import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
-import { browseFiles } from '@/lib/api'
 
 interface ConnectedProvider {
   providerId: ProviderId
@@ -21,7 +20,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [loading, setLoading] = useState(true)
   const [loadingProviders, setLoadingProviders] = useState<ProviderId[]>([])
   const [connectedProviders, setConnectedProviders] = useState<ConnectedProvider[]>([])
-  const [selectedProvider, setSelectedProvider] = useState<ProviderId | 'all' | 'local'>('all')
+  const [selectedProvider, setSelectedProvider] = useState<ProviderId | 'all'>('all')
   const [currentPath, setCurrentPath] = useState('/')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date')
@@ -32,17 +31,11 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
   // Load connected providers from tokenManager
   useEffect(() => {
-    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
+    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav']
     const connected: ConnectedProvider[] = []
     const loadingIds: ProviderId[] = []
 
-    // Always add local as available
-    connected.push({
-      providerId: 'local' as ProviderId,
-      accountEmail: 'Local Storage',
-      displayName: 'Local'
-    })
-
+    // Load cloud providers from tokenManager
     for (const pid of providerIds) {
       const token = tokenManager.getToken(pid)
       if (token && token.accessToken) {
@@ -62,26 +55,6 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     async function loadAllFiles() {
       const allFiles: FileMetadata[] = []
       const errors: string[] = []
-
-      // Load local storage files
-      try {
-        const localData = await browseFiles(currentPath, token)
-        const localFiles = (localData.files || []).map((f: any) => ({
-          id: f.path || f.name,
-          name: f.name,
-          path: f.path || '/' + f.name,
-          pathDisplay: f.path || '/' + f.name,
-          size: f.size_bytes || 0,
-          mimeType: f.isFolder ? 'application/vnd.folder' : 'application/octet-stream',
-          isFolder: f.isFolder,
-          modifiedTime: f.last_modified,
-          provider: 'local' as ProviderId,
-          providerName: 'Local'
-        }))
-        allFiles.push(...localFiles)
-      } catch (err: any) {
-        console.error('Error loading local files:', err)
-      }
 
       // Load cloud provider files
       for (const pid of loadingIds) {
@@ -118,7 +91,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
   // Filter files by provider
   const filteredFiles = files.filter(f => {
-    if (selectedProvider === 'all' || selectedProvider === 'local') return true
+    if (selectedProvider === 'all') return true
     return f.provider === selectedProvider
   })
 
