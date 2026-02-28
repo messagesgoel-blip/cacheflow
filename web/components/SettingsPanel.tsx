@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { UserSettings } from '@/lib/providers/types'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 
 interface SettingsPanelProps {
   // TODO: Connect to real settings when backend is ready
@@ -21,6 +22,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
   const [settings, setSettings] = useState<UserSettings>(defaultSettings)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const actions = useActionCenter()
 
   const handleToggle = (key: keyof UserSettings) => {
     if (typeof settings[key] === 'boolean') {
@@ -49,16 +51,36 @@ export default function SettingsPanel({}: SettingsPanelProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-        Settings
-      </h1>
-      <p className="text-gray-600 dark:text-gray-400 mb-8">
-        Manage your CacheFlow preferences
-      </p>
+    <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Settings
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Manage your CacheFlow preferences
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSettings(defaultSettings)}
+            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            Reset
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}
+          </button>
+        </div>
+      </div>
 
       {/* Privacy Section */}
-      <section className="mb-8">
+      <section className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -66,9 +88,9 @@ export default function SettingsPanel({}: SettingsPanelProps) {
           Privacy & Security
         </h2>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Browser-only Mode */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 dark:text-white">
@@ -120,7 +142,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
           </div>
 
           {/* Auto-refresh Tokens */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 dark:text-white">
@@ -141,7 +163,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
       </section>
 
       {/* Storage Section */}
-      <section className="mb-8">
+      <section className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
@@ -151,7 +173,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
 
         <div className="space-y-4">
           {/* Cache TTL */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 dark:text-white">
@@ -193,12 +215,16 @@ export default function SettingsPanel({}: SettingsPanelProps) {
                 </p>
               </div>
               <button
-                onClick={() => {
-                  if (confirm('Clear all cached data? This will require reloading file listings.')) {
-                    // TODO: Clear IndexedDB cache
-                    localStorage.removeItem('cacheflow_cache')
-                    alert('Cache cleared')
-                  }
+                onClick={async () => {
+                  const ok = await actions.confirm({
+                    title: 'Clear cached data?',
+                    message: 'Clear all cached data? This will require reloading file listings.',
+                    confirmText: 'Clear',
+                    cancelText: 'Cancel',
+                  })
+                  if (!ok) return
+                  localStorage.removeItem('cacheflow_cache')
+                  actions.notify({ kind: 'success', title: 'Cache cleared' })
                 }}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
@@ -218,7 +244,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
           Appearance
         </h2>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="font-medium text-gray-900 dark:text-white">
@@ -307,37 +333,8 @@ export default function SettingsPanel({}: SettingsPanelProps) {
         </div>
       </section>
 
-      {/* Save Button */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 flex items-center gap-2"
-        >
-          {saving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-              Saving...
-            </>
-          ) : saved ? (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Saved!
-            </>
-          ) : (
-            'Save Settings'
-          )}
-        </button>
-
-        <button
-          onClick={() => setSettings(defaultSettings)}
-          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-        >
-          Reset to defaults
-        </button>
-      </div>
+      {/* Footer spacing */}
+      <div className="h-2" />
     </div>
   )
 }

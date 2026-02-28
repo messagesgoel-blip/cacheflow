@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import SessionHandler from '@/components/SessionHandler'
+import ActionCenterProvider from '@/components/ActionCenterProvider'
 
 export const metadata: Metadata = {
   title: 'CacheFlow',
@@ -12,15 +13,7 @@ export const metadata: Metadata = {
     title: 'CacheFlow',
   },
   icons: {
-    icon: [
-      { url: '/icons/icon-32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icons/icon-96.png', sizes: '96x96', type: 'image/png' },
-      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/icons/icon-152.png', sizes: '152x152', type: 'image/png' },
-      { url: '/icons/icon-180.png', sizes: '180x180', type: 'image/png' },
-    ],
+    icon: [{ url: '/icons/icon.svg', type: 'image/svg+xml' }],
   },
 }
 
@@ -62,7 +55,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <SessionHandler />
-        {children}
+        <ActionCenterProvider>
+          {children}
+        </ActionCenterProvider>
       </body>
     </html>
   )

@@ -88,14 +88,37 @@ app.use(helmet({
   },
   hsts: { maxAge: 31536000, includeSubDomains: true },
 }));
-app.use(cors({
-  origin: [
-    'https://cacheflow.goels.in',
-    'http://127.0.0.1:3010',   // local dev only
-  ],
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Authorization', 'Content-Type'],
-}));
+
+const corsAllowLocalhost = String(process.env.CACHEFLOW_ALLOW_LOCALHOST_CORS || '').toLowerCase() === 'true';
+const corsAllowedOrigins = new Set([
+  'https://cacheflow.goels.in',
+]);
+
+if (corsAllowLocalhost) {
+  // Local QA only (explicitly gated)
+  corsAllowedOrigins.add('http://localhost:3010');
+  corsAllowedOrigins.add('http://127.0.0.1:3010');
+  // Common Next dev ports
+  corsAllowedOrigins.add('http://localhost:3000');
+  corsAllowedOrigins.add('http://127.0.0.1:3000');
+  corsAllowedOrigins.add('http://localhost:4010');
+  corsAllowedOrigins.add('http://127.0.0.1:4010');
+}
+
+const corsMiddleware = cors({
+  origin: (origin, cb) => {
+    // Non-browser clients (curl, health checks) typically send no Origin
+    if (!origin) return cb(null, true);
+    return cb(null, corsAllowedOrigins.has(origin));
+  },
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type', 'X-Share-Password'],
+  credentials: false,
+  maxAge: 600,
+});
+
+app.use(corsMiddleware);
+// cors middleware automatically handles preflight OPTIONS
 app.use(morgan('combined'));
 app.use(globalLimiter);
 app.use(express.json());

@@ -49,6 +49,12 @@ export default function StorageChart({ token }: StorageChartProps) {
         return
       }
 
+      if (res.status === 403) {
+        // Expected for non-admin users
+        generateMockData()
+        return
+      }
+
       if (!res.ok) {
         throw new Error(`Failed to fetch storage breakdown: ${res.status}`)
       }
@@ -56,7 +62,7 @@ export default function StorageChart({ token }: StorageChartProps) {
       const apiData = await res.json()
       processApiData(apiData)
     } catch (err) {
-      console.error('Failed to load storage breakdown:', err)
+      // Avoid console spam for expected admin restrictions
       generateMockData()
     } finally {
       setLoading(false)

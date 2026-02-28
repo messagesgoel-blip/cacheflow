@@ -3,12 +3,17 @@
 import { useState, useEffect } from 'react'
 import { ProviderId, FileMetadata, PROVIDERS, formatBytes } from '@/lib/providers/types'
 import { getProvider } from '@/lib/providers'
+import { transferFileBetweenProviders } from '@/lib/transfer/crossProvider'
 import { tokenManager } from '@/lib/tokenManager'
+import { useActionCenter } from '@/components/ActionCenterProvider'
+import TransferModal from '@/components/TransferModal'
+import RenameModal from '@/components/RenameModal'
 
 interface ConnectedProvider {
   providerId: ProviderId
   accountEmail: string
   displayName: string
+  accountKey?: string
 }
 
 interface UnifiedFileBrowserProps {
@@ -21,6 +26,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [loadingProviders, setLoadingProviders] = useState<ProviderId[]>([])
   const [connectedProviders, setConnectedProviders] = useState<ConnectedProvider[]>([])
   const [selectedProvider, setSelectedProvider] = useState<ProviderId | 'all'>('all')
+  const [activeAccountKey, setActiveAccountKey] = useState<string>('')
   const [currentPath, setCurrentPath] = useState('/')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date')
@@ -29,53 +35,99 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const actions = useActionCenter()
+  const [transferModal, setTransferModal] = useState<{ open: boolean; mode: 'copy' | 'move'; file: FileMetadata | null }>({ open: false, mode: 'copy', file: null })
+  const [renameModal, setRenameModal] = useState<{ open: boolean; file: FileMetadata | null }>({ open: false, file: null })
 
   // Load connected providers from tokenManager
   useEffect(() => {
+    setLoading(true)
+    setError(null)
     const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav']
     const connected: ConnectedProvider[] = []
     const loadingIds: ProviderId[] = []
 
-    // Load cloud providers from tokenManager
+    // Load cloud providers from tokenManager (multiple per provider)
     for (const pid of providerIds) {
-      const token = tokenManager.getToken(pid)
-      if (token && token.accessToken) {
-        connected.push({
-          providerId: pid,
-          accountEmail: token.accountEmail || '',
-          displayName: token.displayName || pid
-        })
+      const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
+      if (tokens.length) {
         loadingIds.push(pid)
       }
+      tokens.forEach((token, idx) => {
+        if (token && token.accessToken) {
+          connected.push({
+            providerId: pid,
+            accountEmail: token.accountEmail || '',
+            displayName: token.displayName || `${pid}-${idx + 1}`,
+            accountKey: token.accountKey,
+          })
+        }
+      })
     }
 
     setConnectedProviders(connected)
     setLoadingProviders(loadingIds)
 
-    // Load files from all connected providers
+    // Load files from connected providers
     async function loadAllFiles() {
+      setLoading(true)
+      setError(null)
       const allFiles: FileMetadata[] = []
       const errors: string[] = []
 
-      // Determine folderId based on currentPath
-      // For cloud providers, "/" means "root", otherwise use the path
-      const folderId = currentPath === '/' ? 'root' : currentPath
+      const providerIdsToLoad: ProviderId[] = (selectedProvider === 'all')
+        ? loadingIds
+        : ([selectedProvider] as ProviderId[])
 
-      // Load cloud provider files
-      for (const pid of loadingIds) {
+      for (const pid of providerIdsToLoad) {
         try {
           const provider = getProvider(pid)
-          if (provider) {
-            const result = await provider.listFiles({ folderId })
+          if (!provider) continue
+
+          // In "all" mode, we can only reliably show root across providers.
+          const folderIdForApi = (selectedProvider === 'all')
+            ? rootFolderId(pid)
+            : (currentPath === '/' ? rootFolderId(pid) : currentPath)
+
+          // If "all", list once per enabled account so we can tag results with source account.
+          if (selectedProvider === 'all') {
+            const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
+            for (const t of tokens) {
+              const key = t.accountKey || t.accountEmail || ''
+              if (key) tokenManager.setActiveToken(pid, key)
+              const result = await provider.listFiles({ folderId: folderIdForApi })
+              const providerConfig = PROVIDERS.find(p => p.id === pid)
+              const sourceLabel = (t.accountEmail ? t.accountEmail.split('@')[0] : (t.displayName || providerConfig?.name || pid))
+
+              const filesWithSource = result.files.map(file => ({
+                ...file,
+                provider: pid,
+                providerName: providerConfig?.name || pid,
+                accountKey: key,
+                accountEmail: t.accountEmail,
+                sourceLabel,
+              } as any))
+
+              allFiles.push(...filesWithSource)
+            }
+          } else {
+            // Provider-specific view: list only the active enabled account
+            const t = tokenManager.getToken(pid) as any
+            const key = t?.accountKey || t?.accountEmail || ''
+            const result = await provider.listFiles({ folderId: folderIdForApi })
             const providerConfig = PROVIDERS.find(p => p.id === pid)
-            
-            const filesWithProvider = result.files.map(file => ({
+            const sourceLabel = (t?.accountEmail ? t.accountEmail.split('@')[0] : (t?.displayName || providerConfig?.name || pid))
+
+            const filesWithSource = result.files.map(file => ({
               ...file,
               provider: pid,
-              providerName: providerConfig?.name || pid
-            }))
-            
-            allFiles.push(...filesWithProvider)
+              providerName: providerConfig?.name || pid,
+              accountKey: key,
+              accountEmail: t?.accountEmail,
+              sourceLabel,
+            } as any))
+
+            allFiles.push(...filesWithSource)
           }
         } catch (err: any) {
           console.error(`Error loading files from ${pid}:`, err)
@@ -88,11 +140,27 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       }
 
       setFiles(allFiles)
+      setSelectedFiles(new Set())
       setLoading(false)
     }
 
     loadAllFiles()
   }, [token, currentPath, selectedProvider, refreshKey])
+
+  // Update active account when provider selection changes
+  useEffect(() => {
+    if (selectedProvider === 'all') {
+      setCurrentPath('/')
+      return
+    }
+    const tokens = tokenManager.getTokens(selectedProvider).filter(t => !t.disabled)
+    if (tokens.length) {
+      const key = tokens[0].accountKey || tokens[0].accountEmail || ''
+      setActiveAccountKey(key)
+      tokenManager.setActiveToken(selectedProvider, key)
+      setRefreshKey((k) => k + 1)
+    }
+  }, [selectedProvider])
 
   // Filter files by provider
   const filteredFiles = files.filter(f => {
@@ -115,7 +183,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         comparison = a.name.localeCompare(b.name)
         break
       case 'date':
-        comparison = new Date(b.modifiedTime).getTime() - new Date(a.modifiedTime).getTime()
+        comparison = dateMsSafe(b.modifiedTime) - dateMsSafe(a.modifiedTime)
         break
       case 'size':
         comparison = b.size - a.size
@@ -123,6 +191,12 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     }
     return sortOrder === 'asc' ? comparison : -comparison
   })
+
+  const hasConnectedAccounts = connectedProviders.length > 0
+  const showLoadingState = loading
+  const showNoProvidersState = !loading && !hasConnectedAccounts
+  const showEmptyState = !loading && hasConnectedAccounts && sortedFiles.length === 0
+  const showLoadedState = !loading && sortedFiles.length > 0
 
   // Toggle file selection
   const toggleFileSelection = (fileId: string) => {
@@ -146,6 +220,13 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
   // Handle folder click - navigate into folder
   const handleFolderClick = (folderPath: string) => {
+    if (selectedProvider === 'all') {
+      // Find clicked folder and switch into its provider
+      const f = files.find(x => x.path === folderPath && x.isFolder)
+      if (f?.provider) {
+        setSelectedProvider(f.provider as any)
+      }
+    }
     setCurrentPath(folderPath)
   }
 
@@ -157,6 +238,8 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   // File action handlers
   const handleFileDownload = async (file: FileMetadata) => {
     try {
+      const task = actions.startTask({ title: 'Downloading', message: file.name, progress: null })
+      if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider)
       if (provider) {
         const blob = await provider.downloadFile(file.id)
@@ -168,64 +251,209 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
+        task.update({ title: 'Download started' })
+        task.succeed(`${file.name} (${providerLabel(file)})`)
       }
     } catch (err: any) {
       console.error('Download error:', err)
-      alert('Download failed: ' + err.message)
+      actions.notify({ kind: 'error', title: 'Download failed', message: err.message })
     }
   }
 
   const handleFileShare = async (file: FileMetadata) => {
     try {
+      const task = actions.startTask({ title: 'Getting share link', message: file.name, progress: null })
+      if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider)
       if (provider) {
         const shareLink = await provider.getShareLink(file.id)
         if (shareLink) {
           await navigator.clipboard.writeText(shareLink)
-          alert('Share link copied to clipboard!')
+          task.update({ title: 'Share link copied' })
+          task.succeed(`${file.name} (${providerLabel(file)})`)
         } else {
-          alert('Failed to get share link')
+          task.fail('No share link available')
         }
       }
     } catch (err: any) {
       console.error('Share error:', err)
-      alert('Share failed: ' + err.message)
+      actions.notify({ kind: 'error', title: 'Share failed', message: err.message })
     }
+  }
+
+  const handleFileOpen = async (file: FileMetadata) => {
+    try {
+      const task = actions.startTask({ title: 'Opening', message: file.name, progress: null })
+      if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
+      const provider = getProvider(file.provider)
+      if (!provider) return
+      const blob = await provider.downloadFile(file.id)
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 10000)
+      task.update({ title: 'Preview opened' })
+      task.succeed(`${file.name} (${providerLabel(file)})`)
+    } catch (err: any) {
+      console.error('Open error:', err)
+      actions.notify({ kind: 'error', title: 'Open failed', message: err.message })
+    }
+  }
+
+  const handleFileMove = async (file: FileMetadata) => {
+    setTransferModal({ open: true, mode: 'move', file })
+  }
+
+  const handleFileCopy = async (file: FileMetadata) => {
+    setTransferModal({ open: true, mode: 'copy', file })
   }
 
   const handleFileRename = async (file: FileMetadata) => {
-    const newName = prompt('Enter new name:', file.name)
-    if (!newName || newName === file.name) return
-    try {
-      const provider = getProvider(file.provider)
-      if (provider) {
-        await provider.renameFile(file.id, newName)
-        // Reload files
-        setRefreshKey(k => k + 1)
-      }
-    } catch (err: any) {
-      console.error('Rename error:', err)
-      alert('Rename failed: ' + err.message)
-    }
+    setRenameModal({ open: true, file })
   }
 
   const handleFileDelete = async (file: FileMetadata) => {
-    if (!confirm(`Delete "${file.name}"?`)) return
+    const ok = await actions.confirm({
+      title: 'Delete file?',
+      message: `Delete "${file.name}"?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    })
+    if (!ok) return
     try {
+      const task = actions.startTask({ title: 'Deleting', message: file.name, progress: null })
+      if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider)
       if (provider) {
         await provider.deleteFile(file.id)
         // Reload files
+        setSelectedFiles(new Set())
+        setLoading(true)
         setRefreshKey(k => k + 1)
+        task.update({ title: 'Deleted' })
+        task.succeed(`${file.name} (${providerLabel(file)})`)
       }
     } catch (err: any) {
       console.error('Delete error:', err)
-      alert('Delete failed: ' + err.message)
+      actions.notify({ kind: 'error', title: 'Delete failed', message: err.message })
+    }
+  }
+
+  const handleCreateFolder = async () => {
+    if (selectedProvider === 'all') {
+      actions.notify({ kind: 'info', title: 'Select a provider', message: 'Choose a provider to create a folder.' })
+      return
+    }
+
+    const providerId = selectedProvider as ProviderId
+    const name = await actions.prompt({
+      title: 'Create folder',
+      message: 'Folder name',
+      placeholder: 'New folder',
+      confirmText: 'Create',
+      cancelText: 'Cancel',
+    })
+    const trimmed = (name || '').trim()
+    if (!trimmed) return
+
+    const provider = getProvider(providerId)
+    if (!provider) {
+      actions.notify({ kind: 'error', title: 'Provider not available', message: providerId })
+      return
+    }
+
+    try {
+      const parentIdForApi = currentPath === '/' ? rootFolderId(providerId) : currentPath
+      if (activeAccountKey) tokenManager.setActiveToken(providerId, activeAccountKey)
+      const task = actions.startTask({ title: 'Creating folder', message: `${trimmed} (${PROVIDERS.find(p => p.id === providerId)?.name || providerId})`, progress: null })
+      const folder = await provider.createFolder(trimmed, parentIdForApi)
+      setSelectedFiles(new Set())
+      setLoading(true)
+      setRefreshKey((k) => k + 1)
+      task.update({ title: 'Folder created' })
+      task.succeed(`${folder.name} (${PROVIDERS.find(p => p.id === providerId)?.name || providerId})`)
+    } catch (e: any) {
+      actions.notify({ kind: 'error', title: 'Create folder failed', message: e?.message || 'Failed' })
     }
   }
 
   return (
     <div className="flex flex-col h-full">
+      <TransferModal
+        isOpen={transferModal.open}
+        mode={transferModal.mode}
+        file={transferModal.file}
+        connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))}
+        onClose={() => setTransferModal({ open: false, mode: 'copy', file: null })}
+        onSubmit={async ({ targetProviderId, targetAccountKey, targetFolderId }) => {
+          const file = transferModal.file
+          if (!file) return
+          const task = actions.startTask({
+            title: transferModal.mode === 'copy' ? 'Copying file' : 'Moving file',
+            message: `${file.name} -> ${targetProviderId}`,
+            progress: null,
+          })
+          try {
+            // Ensure source account is active (multi-account)
+            if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
+
+            // Ensure target account is active
+            if (targetAccountKey) tokenManager.setActiveToken(targetProviderId, targetAccountKey)
+
+            const source = getProvider(file.provider)
+            const target = getProvider(targetProviderId)
+            if (!source || !target) throw new Error('Provider not available')
+
+            await transferFileBetweenProviders({
+              source,
+              target,
+              file,
+              targetFolderId,
+              mode: transferModal.mode,
+            })
+
+            setTransferModal({ open: false, mode: 'copy', file: null })
+            setSelectedFiles(new Set())
+            setLoading(true)
+            setRefreshKey((k) => k + 1)
+            const targetName = PROVIDERS.find(p => p.id === targetProviderId)?.name || targetProviderId
+            const sourceName = PROVIDERS.find(p => p.id === (file.provider as any))?.name || (file.provider as any)
+            task.update({ title: transferModal.mode === 'copy' ? 'Copied' : 'Moved' })
+            task.succeed(`${file.name} (${sourceName} -> ${targetName})`)
+          } catch (e: any) {
+            task.fail(e?.message || 'Failed')
+          }
+        }}
+      />
+
+      <RenameModal
+        isOpen={renameModal.open}
+        title="Rename"
+        initialValue={renameModal.file?.name || ''}
+        onClose={() => setRenameModal({ open: false, file: null })}
+        onSubmit={async (newName) => {
+          const file = renameModal.file
+          if (!file || !newName || newName === file.name) {
+            setRenameModal({ open: false, file: null })
+            return
+          }
+          const task = actions.startTask({ title: 'Renaming', message: `${file.name} -> ${newName}`, progress: null })
+          try {
+            if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
+            const provider = getProvider(file.provider)
+            if (!provider) throw new Error('Provider not available')
+            await provider.renameFile(file.id, newName)
+            setRenameModal({ open: false, file: null })
+            setSelectedFiles(new Set())
+            setLoading(true)
+            setRefreshKey((k) => k + 1)
+            task.update({ title: 'Renamed' })
+            task.succeed(`${file.name} -> ${newName} (${providerLabel(file)})`)
+          } catch (e: any) {
+            task.fail(e?.message || 'Failed')
+          }
+        }}
+      />
+
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-4 mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
         {/* Search */}
@@ -241,20 +469,48 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
         {/* Provider Filter */}
         <select
+          aria-label="Provider filter"
+          data-testid="files-provider-filter"
           value={selectedProvider}
           onChange={(e) => setSelectedProvider(e.target.value as ProviderId | 'all')}
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         >
-          <option value="all">All Providers ({connectedProviders.length} connected)</option>
-          {connectedProviders.map(cp => (
-            <option key={cp.providerId} value={cp.providerId}>
-              {PROVIDERS.find(p => p.id === cp.providerId)?.name} ({cp.accountEmail})
+          <option value="all">All Providers ({connectedProviders.length} accounts connected)</option>
+          {Array.from(new Set(connectedProviders.map(cp => cp.providerId))).map(pid => (
+            <option key={pid} value={pid}>
+              {PROVIDERS.find(p => p.id === pid)?.name}
             </option>
           ))}
         </select>
 
+        {selectedProvider !== 'all' && (
+          <select
+            aria-label="Account filter"
+            data-testid="files-account-filter"
+            value={activeAccountKey}
+            onChange={(e) => {
+              const key = e.target.value
+              setActiveAccountKey(key)
+              tokenManager.setActiveToken(selectedProvider as ProviderId, key)
+              setRefreshKey((k) => k + 1)
+            }}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            {tokenManager.getTokens(selectedProvider as ProviderId).filter(t => !t.disabled).map((t, idx) => {
+              const key = t.accountKey || t.accountEmail || `${selectedProvider}-${idx}`
+              return (
+                <option key={key} value={key}>
+                  {t.displayName || t.accountEmail || `${selectedProvider}-${idx+1}`}
+                </option>
+              )
+            })}
+          </select>
+        )}
+
         {/* Sort */}
         <select
+          aria-label="Sort"
+          data-testid="files-sort"
           value={`${sortBy}-${sortOrder}`}
           onChange={(e) => {
             const [by, order] = e.target.value.split('-') as ['name' | 'date' | 'size', 'asc' | 'desc']
@@ -290,6 +546,24 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             </svg>
           </button>
         </div>
+
+        <button
+          onClick={() => setRefreshKey((k) => k + 1)}
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+          data-testid="files-refresh"
+        >
+          Refresh
+        </button>
+
+        {selectedProvider !== 'all' && (
+          <button
+            onClick={handleCreateFolder}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            data-testid="files-new-folder"
+          >
+            New folder
+          </button>
+        )}
       </div>
 
       {/* Error Banner */}
@@ -322,19 +596,23 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         </div>
       )}
 
-      {/* File Count */}
-      <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-        {sortedFiles.length} file{sortedFiles.length !== 1 ? 's' : ''}
-        {selectedProvider !== 'all' && ` on ${PROVIDERS.find(p => p.id === selectedProvider)?.name}`}
-        {searchQuery && ` matching "${searchQuery}"`}
-      </div>
-
-      {/* Loading State */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      {/* Strict list state handling */}
+      {showLoadingState ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+          <div className="p-6 flex items-center gap-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Loading files</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Fetching latest listings…</p>
+            </div>
+          </div>
+          <div className="px-6 pb-6 grid grid-cols-1 gap-3">
+            <div className="h-10 rounded bg-gray-100 dark:bg-gray-700/40 animate-pulse" />
+            <div className="h-10 rounded bg-gray-100 dark:bg-gray-700/40 animate-pulse" />
+            <div className="h-10 rounded bg-gray-100 dark:bg-gray-700/40 animate-pulse" />
+          </div>
         </div>
-      ) : connectedProviders.length === 0 ? (
+      ) : showNoProvidersState ? (
         <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
           <svg className="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -348,12 +626,32 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             Connect Provider
           </a>
         </div>
-      ) : sortedFiles.length === 0 ? (
+      ) : showEmptyState ? (
+        <>
+          <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            0 files{selectedProvider !== 'all' ? ` on ${PROVIDERS.find(p => p.id === selectedProvider)?.name}` : ''}
+            {searchQuery && ` matching "${searchQuery}"`}
+          </div>
         <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
           <svg className="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
-          <p>No files found</p>
+          <p className="text-lg">No files found</p>
+          <p className="text-sm mt-1 mb-4">Try a different provider/account or upload a new file.</p>
+          <div className="flex gap-2">
+            <a
+              href="/remotes"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Manage Drives
+            </a>
+            <button
+              onClick={() => setRefreshKey(k => k + 1)}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Refresh
+            </button>
+          </div>
           {selectedProvider !== 'all' && (
             <button
               onClick={() => setSelectedProvider('all')}
@@ -363,8 +661,15 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             </button>
           )}
         </div>
-      ) : viewMode === 'list' ? (
+        </>
+      ) : showLoadedState && viewMode === 'list' ? (
         /* List View */
+        <>
+          <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            {sortedFiles.length} file{sortedFiles.length !== 1 ? 's' : ''}
+            {selectedProvider !== 'all' && ` on ${PROVIDERS.find(p => p.id === selectedProvider)?.name}`}
+            {searchQuery && ` matching "${searchQuery}"`}
+          </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -402,32 +707,48 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                   selected={selectedFiles.has(file.id)}
                   onSelect={() => toggleFileSelection(file.id)}
                   onFolderClick={handleFolderClick}
+                  onOpen={handleFileOpen}
                   onDownload={handleFileDownload}
                   onShare={handleFileShare}
                   onRename={handleFileRename}
+                  onMove={handleFileMove}
+                  onCopy={handleFileCopy}
                   onDelete={handleFileDelete}
+                  showProviderBadge={selectedProvider === 'all'}
                 />
               ))}
             </tbody>
           </table>
         </div>
+        </>
       ) : (
         /* Grid View */
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {sortedFiles.map((file) => (
-            <FileCard
-              key={file.id}
-              file={file}
-              selected={selectedFiles.has(file.id)}
-              onSelect={() => toggleFileSelection(file.id)}
-              onFolderClick={handleFolderClick}
-              onDownload={handleFileDownload}
-              onShare={handleFileShare}
-              onRename={handleFileRename}
-              onDelete={handleFileDelete}
-            />
-          ))}
-        </div>
+        <>
+          <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            {sortedFiles.length} file{sortedFiles.length !== 1 ? 's' : ''}
+            {selectedProvider !== 'all' && ` on ${PROVIDERS.find(p => p.id === selectedProvider)?.name}`}
+            {searchQuery && ` matching "${searchQuery}"`}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {sortedFiles.map((file) => (
+              <FileCard
+                key={file.id}
+                file={file}
+                selected={selectedFiles.has(file.id)}
+                onSelect={() => toggleFileSelection(file.id)}
+                onFolderClick={handleFolderClick}
+                onOpen={handleFileOpen}
+                onDownload={handleFileDownload}
+                onShare={handleFileShare}
+                onRename={handleFileRename}
+                onMove={handleFileMove}
+                onCopy={handleFileCopy}
+                onDelete={handleFileDelete}
+                showProviderBadge={selectedProvider === 'all'}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   )
@@ -439,13 +760,17 @@ interface FileRowProps {
   selected: boolean
   onSelect: () => void
   onFolderClick: (path: string) => void
+  onOpen: (file: FileMetadata) => void
   onDownload: (file: FileMetadata) => void
   onShare: (file: FileMetadata) => void
   onRename: (file: FileMetadata) => void
+  onMove: (file: FileMetadata) => void
+  onCopy: (file: FileMetadata) => void
   onDelete: (file: FileMetadata) => void
+  showProviderBadge?: boolean
 }
 
-function FileRow({ file, selected, onSelect, onFolderClick, onDownload, onShare, onRename, onDelete }: FileRowProps) {
+function FileRow({ file, selected, onSelect, onFolderClick, onOpen, onDownload, onShare, onRename, onMove, onCopy, onDelete, showProviderBadge }: FileRowProps) {
   const provider = PROVIDERS.find(p => p.id === file.provider)
 
   const handleClick = () => {
@@ -489,8 +814,13 @@ function FileRow({ file, selected, onSelect, onFolderClick, onDownload, onShare,
             style={{ backgroundColor: provider?.color || '#888' }}
           />
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            {file.providerName}
+            {(file as any).sourceLabel || file.providerName}
           </span>
+          {showProviderBadge && (
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200">
+              {file.provider.toUpperCase()}
+            </span>
+          )}
         </div>
       </td>
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
@@ -502,9 +832,12 @@ function FileRow({ file, selected, onSelect, onFolderClick, onDownload, onShare,
       <td className="px-4 py-3 text-right">
         <FileActions
           file={file}
+          onOpen={onOpen}
           onDownload={onDownload}
           onShare={onShare}
           onRename={onRename}
+          onMove={onMove}
+          onCopy={onCopy}
           onDelete={onDelete}
         />
       </td>
@@ -513,7 +846,7 @@ function FileRow({ file, selected, onSelect, onFolderClick, onDownload, onShare,
 }
 
 // File Card Component (Grid View)
-function FileCard({ file, selected, onSelect, onFolderClick, onDownload, onShare, onRename, onDelete }: FileRowProps) {
+function FileCard({ file, selected, onSelect, onFolderClick, onOpen, onDownload, onShare, onRename, onMove, onCopy, onDelete, showProviderBadge }: FileRowProps) {
   const provider = PROVIDERS.find(p => p.id === file.provider)
 
   const handleClick = (e: React.MouseEvent) => {
@@ -550,21 +883,29 @@ function FileCard({ file, selected, onSelect, onFolderClick, onDownload, onShare
         {file.name}
       </p>
 
-      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-        <div className="flex items-center gap-1">
-          <span
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: provider?.color || '#888' }}
-          />
-          <span>{file.providerName}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span>{file.isFolder ? '—' : formatBytes(file.size)}</span>
-          <FileActions
+        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2">
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: provider?.color || '#888' }}
+            />
+            <span>{(file as any).sourceLabel || file.providerName}</span>
+            {showProviderBadge && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200">
+                {file.provider.toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span>{file.isFolder ? '—' : formatBytes(file.size)}</span>
+            <FileActions
             file={file}
+            onOpen={onOpen}
             onDownload={onDownload}
             onShare={onShare}
             onRename={onRename}
+            onMove={onMove}
+            onCopy={onCopy}
             onDelete={onDelete}
           />
         </div>
@@ -576,75 +917,95 @@ function FileCard({ file, selected, onSelect, onFolderClick, onDownload, onShare
 // File Actions Dropdown
 interface FileActionsProps {
   file: FileMetadata
+  onOpen: (file: FileMetadata) => void
   onDownload: (file: FileMetadata) => void
   onShare: (file: FileMetadata) => void
   onRename: (file: FileMetadata) => void
+  onMove: (file: FileMetadata) => void
+  onCopy: (file: FileMetadata) => void
   onDelete: (file: FileMetadata) => void
 }
 
-function FileActions({ file, onDownload, onShare, onRename, onDelete }: FileActionsProps) {
-  const [showMenu, setShowMenu] = useState(false)
-
-  const handleAction = (action: () => void) => {
-    action()
-    setShowMenu(false)
-  }
-
+function ActionIcon({ title, onClick, paths }: { title: string; onClick: () => void; paths: string[] }) {
   return (
-    <div className="relative">
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          setShowMenu(!showMenu)
-        }}
-        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
-      >
-        <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-        </svg>
-      </button>
+    <button
+      title={title}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
+      className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+    >
+      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {paths.map((d, i) => (
+          <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={d} />
+        ))}
+      </svg>
+    </button>
+  )
+}
 
-      {showMenu && (
-        <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
-          <button
-            onClick={() => handleAction(() => onDownload(file))}
-            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download
-          </button>
-          <button
-            onClick={() => handleAction(() => onShare(file))}
-            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-            </svg>
-            Share link
-          </button>
-          <button
-            onClick={() => handleAction(() => onRename(file))}
-            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Rename
-          </button>
-          <hr className="my-1 border-gray-200 dark:border-gray-700" />
-          <button
-            onClick={() => handleAction(() => onDelete(file))}
-            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Delete
-          </button>
-        </div>
-      )}
+function FileActions({ file, onOpen, onDownload, onShare, onRename, onMove, onCopy, onDelete }: FileActionsProps) {
+  return (
+    <div className="flex items-center justify-end gap-1">
+      {/* Fluent-ish, familiar Windows line icons */}
+      <ActionIcon
+        title="Open/Preview"
+        onClick={() => onOpen(file)}
+        paths={[
+          'M9 6h9a2 2 0 012 2v9',
+          'M9 15H7a2 2 0 01-2-2V6a2 2 0 012-2h7',
+          'M14 10l7-7',
+          'M15 3h6v6',
+        ]}
+      />
+      <ActionIcon
+        title="Download"
+        onClick={() => onDownload(file)}
+        paths={[
+          'M12 3v10',
+          'M8 9l4 4 4-4',
+          'M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2',
+        ]}
+      />
+      <ActionIcon
+        title="Rename"
+        onClick={() => onRename(file)}
+        paths={[
+          'M4 20h4',
+          'M14.5 6.5l3 3',
+          'M7 17l9.5-9.5a2.12 2.12 0 010 0l.5-.5a2.12 2.12 0 013 3l-.5.5L10 20H7v-3z',
+        ]}
+      />
+      <ActionIcon
+        title="Move"
+        onClick={() => onMove(file)}
+        paths={[
+          'M3 7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v2',
+          'M13 14h8',
+          'M18 11l3 3-3 3',
+          'M3 11v8a2 2 0 002 2h8',
+        ]}
+      />
+      <ActionIcon
+        title="Copy"
+        onClick={() => onCopy(file)}
+        paths={[
+          'M9 9h10v10H9z',
+          'M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1',
+        ]}
+      />
+      <ActionIcon
+        title="Delete"
+        onClick={() => onDelete(file)}
+        paths={[
+          'M6 7h12',
+          'M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2',
+          'M8 7l1 14h6l1-14',
+          'M10 11v6',
+          'M14 11v6',
+        ]}
+      />
     </div>
   )
 }
@@ -664,13 +1025,48 @@ function getFileIcon(mimeType: string): string {
 }
 
 function formatDate(dateString: string): string {
+  if (!dateString) return '—'
   const date = new Date(dateString)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
+  const ms = date.getTime()
+  if (!Number.isFinite(ms)) return '—'
+
+  const now = Date.now()
+  const diff = now - ms
+  if (!Number.isFinite(diff) || diff < 0) return date.toLocaleDateString()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
   if (days === 0) return 'Today'
   if (days === 1) return 'Yesterday'
   if (days < 7) return `${days} days ago`
   return date.toLocaleDateString()
+}
+
+function dateMsSafe(dateString?: string | null): number {
+  if (!dateString) return 0
+  const ms = Date.parse(dateString)
+  return Number.isFinite(ms) ? ms : 0
+}
+
+function providerLabel(file: FileMetadata): string {
+  return ((file as any).sourceLabel || file.providerName || file.provider) as string
+}
+
+function rootFolderId(providerId: ProviderId): string {
+  switch (providerId) {
+    case 'google':
+    case 'onedrive':
+      return 'root'
+    case 'box':
+    case 'pcloud':
+      return '0'
+    case 'dropbox':
+    case 'filen':
+      return ''
+    case 'webdav':
+    case 'vps':
+    case 'yandex':
+      return '/'
+    default:
+      return 'root'
+  }
 }

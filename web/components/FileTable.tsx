@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { retryFile, deleteFile, downloadFile, renameFile, createShareLink } from '@/lib/api'
 import StatusBadge from '@/components/StatusBadge'
 import ShareDialog from '@/components/ShareDialog'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 
 interface FileItem {
   id: string
@@ -42,6 +43,7 @@ function formatBytes(b: string | number) {
 }
 
 export default function FileTable({ files, token, onRefresh, viewMode, currentPath = '/', onMoveFile }: FileTableProps) {
+  const actions = useActionCenter()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const [renameLoading, setRenameLoading] = useState(false)
@@ -53,17 +55,36 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
 
   async function handleDownload(id: string, filepath: string) {
     const filename = cleanPath(filepath)
-    await downloadFile(id, filename, token).catch(e => alert('Download failed: ' + e.message))
+    const task = actions.startTask({ title: 'Downloading', message: filename, progress: null })
+    await downloadFile(id, filename, token)
+      .then(() => task.succeed('Started'))
+      .catch((e) => {
+        task.fail('Failed')
+        actions.notify({ kind: 'error', title: 'Download failed', message: e.message })
+      })
   }
 
   async function handleRetry(id: string) {
-    await retryFile(id, token).catch(e => alert('Retry failed: ' + e.message))
+    const task = actions.startTask({ title: 'Retrying', message: id, progress: null })
+    await retryFile(id, token)
+      .then(() => task.succeed('Queued'))
+      .catch((e) => {
+        task.fail('Failed')
+        actions.notify({ kind: 'error', title: 'Retry failed', message: e.message })
+      })
     onRefresh()
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this file?')) return
-    await deleteFile(id, token).catch(e => alert('Delete failed: ' + e.message))
+    const ok = await actions.confirm({ title: 'Delete file?', message: 'Delete this file?', confirmText: 'Delete', cancelText: 'Cancel' })
+    if (!ok) return
+    const task = actions.startTask({ title: 'Deleting', message: id, progress: null })
+    await deleteFile(id, token)
+      .then(() => task.succeed('Deleted'))
+      .catch((e) => {
+        task.fail('Failed')
+        actions.notify({ kind: 'error', title: 'Delete failed', message: e.message })
+      })
     onRefresh()
   }
 
@@ -104,7 +125,7 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
       setMovingId(null)
       setMovePath('')
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : 'Move failed')
+      actions.notify({ kind: 'error', title: 'Move failed', message: e instanceof Error ? e.message : 'Move failed' })
     } finally {
       setMoveLoading(false)
     }

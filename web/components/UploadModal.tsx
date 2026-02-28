@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { ProviderId, ProviderQuota, PROVIDERS, formatBytes } from '@/lib/providers/types'
 import { tokenManager } from '@/lib/tokenManager'
 import { getProvider } from '@/lib/providers'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 
 interface UploadModalProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface UploadModalProps {
 interface ConnectedProviderInfo {
   providerId: ProviderId
   quota?: ProviderQuota
+  accounts: number
 }
 
 export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
@@ -25,17 +27,18 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
   const [connectedProviders, setConnectedProviders] = useState<ConnectedProviderInfo[]>([])
   const [loadingQuotas, setLoadingQuotas] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const actions = useActionCenter()
 
   // Load connected providers and their quotas
   useEffect(() => {
     async function loadProviders() {
-      const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
+    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
       const connected: ConnectedProviderInfo[] = []
       setLoadingQuotas(true)
 
       for (const pid of providerIds) {
-        const token = tokenManager.getToken(pid)
-        if (token && token.accessToken) {
+        const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
+        if (tokens.length) {
           let quota: ProviderQuota | undefined
           try {
             const provider = getProvider(pid)
@@ -45,7 +48,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
           } catch (err) {
             console.error(`Failed to get quota for ${pid}:`, err)
           }
-          connected.push({ providerId: pid, quota })
+          connected.push({ providerId: pid, quota, accounts: tokens.length })
         }
       }
 
@@ -148,7 +151,11 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     // Show success after "upload"
     setTimeout(() => {
       setUploading(false)
-      alert(`Upload ${files.length} file(s) to ${PROVIDERS.find(p => p.id === provider)?.name}: Not yet implemented`)
+      actions.notify({
+        kind: 'info',
+        title: 'Upload not implemented',
+        message: `Tried uploading ${files.length} file(s) to ${PROVIDERS.find(p => p.id === provider)?.name}`,
+      })
       onClose()
       clearFiles()
     }, 3000)
@@ -340,6 +347,26 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                           <p className="text-xs text-gray-500 dark:text-gray-400">
                             {quota.freeDisplay} free ({quota.percentUsed.toFixed(0)}% used)
                           </p>
+                        )}
+                        {tokenManager.getTokens(cp.providerId).filter(t => !t.disabled).length > 1 && (
+                          <select
+                            className="mt-1 text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => {
+                              tokenManager.setActiveToken(cp.providerId, e.target.value)
+                              setTargetProvider(cp.providerId)
+                            }}
+                            defaultValue={tokenManager.getTokens(cp.providerId).find(t => !t.disabled)?.accountKey || ''}
+                          >
+                            {tokenManager.getTokens(cp.providerId).filter(t => !t.disabled).map((t, idx) => {
+                              const key = t.accountKey || t.accountEmail || `${cp.providerId}-${idx}`
+                              return (
+                                <option key={key} value={key}>
+                                  {t.displayName || t.accountEmail || `${cp.providerId}-${idx+1}`}
+                                </option>
+                              )
+                            })}
+                          </select>
                         )}
                       </div>
                     </div>

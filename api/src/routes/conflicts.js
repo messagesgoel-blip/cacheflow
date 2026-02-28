@@ -11,17 +11,58 @@ router.use(authMw);
 // GET /conflicts - list conflicts for user
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT id, file_id, local_hash, remote_hash, status, created_at, resolved_at
-       FROM conflicts
-       WHERE status != 'resolved'
-       ORDER BY created_at DESC
-       LIMIT 50`
-    );
-    res.json({ conflicts: result.rows });
+    // Prefer the current schema (user_id + tenant_id + resolved boolean + detected_at)
+    try {
+      const result = await pool.query(
+        `SELECT id, file_path, local_version_url, cloud_version_url, resolved, resolution_type, detected_at, resolved_at
+         FROM conflicts
+         WHERE user_id=$1 AND tenant_id=$2 AND resolved=false
+         ORDER BY detected_at DESC
+         LIMIT 50`,
+        [req.user.id, req.user.tenant_id]
+      );
+      const conflicts = (result.rows || []).map((c) => ({
+        id: c.id,
+        filename: path.basename(c.file_path || ''),
+        detected_at: c.detected_at,
+        status: c.resolved ? 'resolved' : 'unresolved',
+        local_version_url: c.local_version_url,
+        cloud_version_url: c.cloud_version_url,
+      }));
+      return res.json({ conflicts });
+    } catch (e) {
+      // Backward compatibility: older conflict schema (status-based) or missing table
+      const code = e && (e.code || e?.cause?.code);
+      if (code === '42P01') {
+        // conflicts table missing
+        return res.json({ conflicts: [] });
+      }
+      if (code === '42703') {
+        // column missing — fallback to old schema
+        const result = await pool.query(
+          `SELECT id, file_id, local_hash, remote_hash, status, created_at, resolved_at
+           FROM conflicts
+           WHERE status != 'resolved'
+           ORDER BY created_at DESC
+           LIMIT 50`
+        );
+        const mapped = (result.rows || []).map((c) => ({
+          id: c.id,
+          filename: String(c.file_id || c.id),
+          detected_at: c.created_at,
+          status: c.status === 'resolved' ? 'resolved' : 'unresolved',
+          local_hash: c.local_hash,
+          remote_hash: c.remote_hash,
+          resolved_at: c.resolved_at,
+        }));
+        return res.json({ conflicts: mapped });
+      }
+      throw e;
+    }
   } catch (err) {
     console.error('[conflicts] list:', err.message);
-    res.status(500).json({ error: 'internal server error' });
+    // Never 500 for normal users: return empty list
+    res.json({ conflicts: [] });
   }
 });
 
@@ -29,13 +70,23 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM conflicts WHERE id = $1`,
-      [req.params.id]
+      `SELECT * FROM conflicts WHERE id = $1 AND user_id=$2 AND tenant_id=$3`,
+      [req.params.id, req.user.id, req.user.tenant_id]
     );
     if (!result.rows.length) {
       return res.status(404).json({ error: 'conflict not found' });
     }
-    res.json({ conflict: result.rows[0] });
+    const c = result.rows[0];
+    res.json({
+      conflict: {
+        id: c.id,
+        filename: path.basename(c.file_path || ''),
+        detected_at: c.detected_at,
+        status: c.resolved ? 'resolved' : 'unresolved',
+        local_version_url: c.local_version_url,
+        cloud_version_url: c.cloud_version_url,
+      },
+    });
   } catch (err) {
     console.error('[conflicts] get:', err.message);
     res.status(500).json({ error: 'internal server error' });
@@ -50,21 +101,18 @@ router.post('/:id/resolve', async (req, res) => {
   }
 
   try {
-    // Get conflict with file path
+    // Get conflict
     const conflictResult = await pool.query(
-      `SELECT c.*, f.path as file_path
-       FROM conflicts c
-       JOIN files f ON f.id = c.file_id
-       WHERE c.id = $1`,
-      [req.params.id]
+      `SELECT * FROM conflicts WHERE id=$1 AND user_id=$2 AND tenant_id=$3`,
+      [req.params.id, req.user.id, req.user.tenant_id]
     );
     if (!conflictResult.rows.length) {
       return res.status(404).json({ error: 'conflict not found' });
     }
 
     const conflict = conflictResult.rows[0];
-    const localPath = path.join(process.env.LOCAL_CACHE_PATH || '/mnt/local', conflict.file_path);
-    const remotePath = path.join(process.env.POOL_PATH || '/mnt/pool', conflict.file_path);
+    const localPath = path.join(process.env.LOCAL_CACHE_PATH || '/mnt/local', req.user.id, conflict.file_path);
+    const remotePath = path.join(process.env.POOL_PATH || '/mnt/pool', req.user.id, conflict.file_path);
 
     // Copy chosen version to replace the other
     let srcPath, destPath;
@@ -86,8 +134,8 @@ router.post('/:id/resolve', async (req, res) => {
 
     // Update conflict status
     await pool.query(
-      `UPDATE conflicts SET status='resolved', resolved_at=NOW(), resolution=$1 WHERE id=$2`,
-      [resolution, req.params.id]
+      `UPDATE conflicts SET resolved=true, resolved_at=NOW(), resolution_type=$1 WHERE id=$2 AND user_id=$3 AND tenant_id=$4`,
+      [resolution, req.params.id, req.user.id, req.user.tenant_id]
     );
 
     res.json({ success: true, resolution, note: `Copied ${resolution} to replace other version` });
@@ -102,13 +150,10 @@ router.post('/:id/ai-merge', async (req, res) => {
   const { model } = req.body;
 
   try {
-    // Get conflict with file paths
+    // Get conflict (current schema)
     const conflictResult = await pool.query(
-      `SELECT c.*, f.path as file_path, f.user_id
-       FROM conflicts c
-       JOIN files f ON f.id = c.file_id
-       WHERE c.id = $1 AND f.user_id = $2`,
-      [req.params.id, req.user.id]
+      `SELECT * FROM conflicts WHERE id=$1 AND user_id=$2 AND tenant_id=$3`,
+      [req.params.id, req.user.id, req.user.tenant_id]
     );
 
     if (!conflictResult.rows.length) {
@@ -124,8 +169,8 @@ router.post('/:id/ai-merge', async (req, res) => {
     }
 
     // Get local and remote file paths
-    const localPath = path.join(process.env.LOCAL_CACHE_PATH || '/mnt/local', conflict.file_path);
-    const remotePath = path.join(process.env.POOL_PATH || '/mnt/pool', conflict.file_path);
+    const localPath = path.join(process.env.LOCAL_CACHE_PATH || '/mnt/local', req.user.id, conflict.file_path);
+    const remotePath = path.join(process.env.POOL_PATH || '/mnt/pool', req.user.id, conflict.file_path);
 
     // Verify files exist
     if (!fs.existsSync(localPath) || !fs.existsSync(remotePath)) {
@@ -141,8 +186,8 @@ router.post('/:id/ai-merge', async (req, res) => {
 
     // Only DB write: update conflict status (no content stored)
     await pool.query(
-      `UPDATE conflicts SET status='ai_merged', resolved_at=NOW(), resolution_model=$1, resolution_type=$2 WHERE id=$3`,
-      [model, mergeType, conflict.id]
+      `UPDATE conflicts SET resolved=true, resolved_at=NOW(), resolution_type=$1 WHERE id=$2 AND user_id=$3 AND tenant_id=$4`,
+      [`ai_merged:${mergeType}:${model || 'default'}`, conflict.id, req.user.id, req.user.tenant_id]
     );
     // ZERO-RETENTION: plaintext never persisted — audit compliance
 

@@ -60,11 +60,13 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     const locationsWithTokens: { pid: ProviderId; token: any; config: any }[] = []
 
     for (const pid of providerIds) {
-      const t = tokenManager.getToken(pid)
-      if (t && t.accessToken) {
-        const providerConfig = PROVIDERS.find(p => p.id === pid)
-        locationsWithTokens.push({ pid, token: t, config: providerConfig })
-      }
+      const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
+      tokens.forEach((t) => {
+        if (t && t.accessToken) {
+          const providerConfig = PROVIDERS.find(p => p.id === pid)
+          locationsWithTokens.push({ pid, token: t, config: providerConfig })
+        }
+      })
     }
 
     // Fetch quotas in parallel
@@ -90,7 +92,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
       }
       
       return {
-        id: `cloud-${pid}`,
+        id: `cloud-${pid}-${index}`,
         name: config?.name || pid,
         type: 'cloud',
         provider: pid,

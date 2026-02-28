@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
 
@@ -25,6 +26,7 @@ export default function UserManagementPage() {
   const [editingQuota, setEditingQuota] = useState<string | null>(null)
   const [newQuota, setNewQuota] = useState('')
   const [quotaLoading, setQuotaLoading] = useState<string | null>(null)
+  const actions = useActionCenter()
 
   useEffect(() => {
     const t = localStorage.getItem('cf_token')
@@ -93,7 +95,7 @@ export default function UserManagementPage() {
       })
 
       if (res.status === 404) {
-        alert('Quota adjustment coming soon')
+        actions.notify({ kind: 'info', title: 'Coming soon', message: 'Quota adjustment coming soon' })
         return
       }
 
@@ -108,16 +110,22 @@ export default function UserManagementPage() {
 
       setEditingQuota(null)
       setNewQuota('')
-      alert('Quota updated successfully')
+      actions.notify({ kind: 'success', title: 'Quota updated' })
     } catch (err: any) {
-      alert('Error: ' + err.message)
+      actions.notify({ kind: 'error', title: 'Error', message: err.message })
     } finally {
       setQuotaLoading(null)
     }
   }
 
   async function handleDeactivate(userId: string, userEmail: string) {
-    if (!confirm(`Deactivate user ${userEmail}?`)) return
+    const ok = await actions.confirm({
+      title: 'Deactivate user?',
+      message: `Deactivate user ${userEmail}?`,
+      confirmText: 'Deactivate',
+      cancelText: 'Cancel',
+    })
+    if (!ok) return
     if (!token) return
 
     try {
@@ -129,7 +137,7 @@ export default function UserManagementPage() {
       })
 
       if (res.status === 404) {
-        alert('User management coming soon')
+        actions.notify({ kind: 'info', title: 'Coming soon', message: 'User management coming soon' })
         return
       }
 
@@ -142,9 +150,9 @@ export default function UserManagementPage() {
         user.id === userId ? { ...user, status: 'suspended' } : user
       ))
 
-      alert('User deactivated')
+      actions.notify({ kind: 'success', title: 'User deactivated', message: userEmail })
     } catch (err: any) {
-      alert('Error: ' + err.message)
+      actions.notify({ kind: 'error', title: 'Error', message: err.message })
     }
   }
 

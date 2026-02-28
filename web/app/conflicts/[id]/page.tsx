@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import ConflictViewer from '@/components/ConflictViewer'
 import { resolveConflict } from '@/lib/api'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
 
@@ -35,6 +36,7 @@ export default function ConflictDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [resolving, setResolving] = useState<string | null>(null)
+  const actions = useActionCenter()
 
   useEffect(() => {
     const t = localStorage.getItem('cf_token')
@@ -91,6 +93,7 @@ export default function ConflictDetailPage() {
     setError(null)
 
     try {
+      const task = actions.startTask({ title: 'Resolving conflict', message: resolution, progress: null })
       await resolveConflict(conflict.id, resolution, token)
 
       // Update conflict status
@@ -98,12 +101,10 @@ export default function ConflictDetailPage() {
         ...conflict,
         status: 'resolved'
       })
-
-      // Show success message
-      alert('Conflict resolved ✓')
+      task.succeed('Resolved')
     } catch (err: any) {
       setError(err.message || 'Failed to resolve conflict')
-      alert('Error: ' + err.message)
+      actions.notify({ kind: 'error', title: 'Resolve failed', message: err.message })
     } finally {
       setResolving(null)
     }

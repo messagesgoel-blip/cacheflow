@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { PROVIDERS, ProviderId, ConnectedProvider, ProviderQuota, formatBytes } from '@/lib/providers/types'
 import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 
 interface ProviderHubProps {
 }
@@ -11,6 +12,12 @@ interface ProviderHubProps {
 export default function ProviderHub({}: ProviderHubProps) {
   const [connectedProviders, setConnectedProviders] = useState<ConnectedProvider[]>([])
   const [loading, setLoading] = useState(true)
+  const actions = useActionCenter()
+
+  const limits = {
+    perProvider: 3,
+    total: 15,
+  }
 
   // Load connected providers from localStorage
   useEffect(() => {
@@ -20,17 +27,19 @@ export default function ProviderHub({}: ProviderHubProps) {
         const connected: ConnectedProvider[] = []
         
         for (const pid of providerIds) {
-          const token = tokenManager.getToken(pid as ProviderId)
-          if (token && token.accessToken) {
-            connected.push({
-              providerId: pid as ProviderId,
-              status: 'connected' as const,
-              accountEmail: token.accountEmail || pid + '@connected.com',
-              displayName: token.displayName || token.accountEmail?.split('@')[0] || pid,
-              connectedAt: Date.now(),
-              quota: undefined,
-            })
-          }
+          const tokens = tokenManager.getTokens(pid as ProviderId).filter(t => !t.disabled)
+          tokens.forEach((token, idx) => {
+            if (token && token.accessToken) {
+              connected.push({
+                providerId: pid as ProviderId,
+                status: 'connected' as const,
+                accountEmail: token.accountEmail || pid + '@connected.com',
+                displayName: token.displayName || token.accountEmail?.split('@')[0] || `${pid}-${idx+1}`,
+                connectedAt: Date.now(),
+                quota: undefined,
+              })
+            }
+          })
         }
         
         setConnectedProviders(connected.length > 0 ? connected : [])
@@ -56,6 +65,10 @@ export default function ProviderHub({}: ProviderHubProps) {
 
   return (
     <div className="p-6">
+      <div className="mb-6 p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 text-sm text-blue-800 dark:text-blue-100">
+        <p className="font-semibold text-blue-900 dark:text-blue-50">Connection limits</p>
+        <p>You can connect up to {limits.perProvider} accounts per provider and up to {limits.total} cloud accounts total.</p>
+      </div>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -159,8 +172,10 @@ interface ProviderCardProps {
   accountEmail?: string
 }
 
-function ProviderCard({ provider, connected, quota, accountEmail }: ProviderCardProps) {
+function ProviderCard({ provider, connected, quota }: ProviderCardProps) {
   const [showConnectModal, setShowConnectModal] = useState(false)
+  const connectedTokens = tokenManager.getTokens(provider.id as ProviderId)
+  const actions = useActionCenter()
 
   return (
     <>
@@ -197,37 +212,91 @@ function ProviderCard({ provider, connected, quota, accountEmail }: ProviderCard
         </div>
 
         {/* Connected Account Info */}
-        {connected && quota && (
-          <div className="mb-4">
-            {accountEmail && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate">
-                {accountEmail}
-              </p>
-            )}
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-600 dark:text-gray-400">Used</span>
-                <span className="text-gray-900 dark:text-white font-medium">
-                  {quota.usedDisplay}
-                </span>
-              </div>
-              <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${
-                    quota.percentUsed >= 90
-                      ? 'bg-red-500'
-                      : quota.percentUsed >= 80
-                      ? 'bg-yellow-500'
-                      : 'bg-blue-500'
-                  }`}
-                  style={{ width: `${Math.min(quota.percentUsed, 100)}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400 dark:text-gray-500">{quota.freeDisplay} free</span>
-                <span className="text-gray-500 dark:text-gray-400">{quota.percentUsed.toFixed(0)}%</span>
-              </div>
+        {connected && (
+          <div className="mb-4 space-y-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+              <span>{connectedTokens.length} account{connectedTokens.length !== 1 ? 's' : ''}</span>
             </div>
+            {connectedTokens.map((t, idx) => (
+              <div key={t.accountKey || idx} className={`flex items-center justify-between text-xs px-3 py-2 rounded-lg border ${t.disabled ? 'bg-gray-50 dark:bg-gray-800/40 border-gray-300 dark:border-gray-700 opacity-60' : 'bg-gray-50 dark:bg-gray-700/40 border-gray-200 dark:border-gray-700'}`}>
+                <div className="flex flex-col">
+                  <span className="text-gray-900 dark:text-white font-medium">{t.displayName || t.accountEmail || `${provider.name} ${idx + 1}`}</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t.accountEmail || 'Unknown email'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                    <input
+                      type="checkbox"
+                      checked={!t.disabled}
+                      onChange={(e) => {
+                        tokenManager.setTokenEnabled(provider.id as ProviderId, t.accountKey || t.accountEmail || '', e.target.checked)
+                        actions.notify({ kind: 'success', title: e.target.checked ? 'Drive enabled' : 'Drive disabled', message: t.accountEmail || provider.name })
+                        window.location.reload()
+                      }}
+                    />
+                    Enabled
+                  </label>
+                  <button
+                    onClick={() => {
+                      tokenManager.setActiveToken(provider.id as ProviderId, t.accountKey || t.accountEmail || '')
+                      actions.notify({ kind: 'success', title: 'Active drive set', message: t.accountEmail || provider.name })
+                      window.location.reload()
+                    }}
+                    className="px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800/50"
+                  >
+                    Make active
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const ok = await actions.confirm({
+                        title: 'Remove drive?',
+                        message: `Remove ${t.accountEmail || 'this account'} from ${provider.name}?`,
+                        confirmText: 'Remove',
+                        cancelText: 'Cancel',
+                      })
+                      if (!ok) return
+                      const task = actions.startTask({ title: 'Removing drive', message: t.accountEmail || provider.name, progress: null })
+                      try {
+                        tokenManager.removeToken(provider.id as ProviderId, t.accountKey || t.accountEmail || '')
+                        task.succeed('Removed')
+                        window.location.reload()
+                      } catch (e: any) {
+                        task.fail(e?.message || 'Failed')
+                      }
+                    }}
+                    className="px-2 py-1 rounded bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-800/50"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+            {quota && (
+              <div className="space-y-1 mt-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600 dark:text-gray-400">Used</span>
+                  <span className="text-gray-900 dark:text-white font-medium">
+                    {quota.usedDisplay}
+                  </span>
+                </div>
+                <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      quota.percentUsed >= 90
+                        ? 'bg-red-500'
+                        : quota.percentUsed >= 80
+                        ? 'bg-yellow-500'
+                        : 'bg-blue-500'
+                    }`}
+                    style={{ width: `${Math.min(quota.percentUsed, 100)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400 dark:text-gray-500">{quota.freeDisplay} free</span>
+                  <span className="text-gray-500 dark:text-gray-400">{quota.percentUsed.toFixed(0)}%</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -265,13 +334,19 @@ interface ConnectModalProps {
 
 function ConnectModal({ provider, connected, onClose }: ConnectModalProps) {
   const [connecting, setConnecting] = useState(false)
+  const existingTokens = tokenManager.getTokens(provider.id as ProviderId)
+  const [error, setError] = useState<string | null>(null)
+  const actions = useActionCenter()
 
   const handleConnect = async () => {
     setConnecting(true)
+    setError(null)
+    const task = actions.startTask({ title: `Connecting ${provider.name}`, message: 'Waiting for authorization...', progress: null })
     try {
       const providerInstance = getProvider(provider.id)
       if (!providerInstance) {
-        alert(`Provider ${provider.name} is not available`)
+        task.fail('Provider not available')
+        actions.notify({ kind: 'error', title: 'Provider unavailable', message: provider.name })
         setConnecting(false)
         onClose()
         return
@@ -280,38 +355,58 @@ function ConnectModal({ provider, connected, onClose }: ConnectModalProps) {
       const providerToken = await providerInstance.connect()
 
       // Save to tokenManager
-      tokenManager.saveToken(provider.id, {
-        provider: provider.id,
+      tokenManager.saveToken(provider.id as ProviderId, {
+        provider: provider.id as ProviderId,
         accessToken: providerToken.accessToken,
         refreshToken: providerToken.refreshToken || undefined,
         expiresAt: providerToken.expiresAt || undefined,
         accountEmail: providerToken.accountEmail,
-        displayName: providerToken.displayName
+        displayName: providerToken.displayName,
+        accountId: providerToken.accountId,
       } as any)
 
-      alert(`Successfully connected to ${providerToken.accountEmail}!`)
+      task.update({ message: 'Saving connection...', progress: 85 })
+      task.succeed(`Connected: ${providerToken.accountEmail}`)
       onClose()
       // Refresh the list
       window.location.reload()
     } catch (err: any) {
       console.error("OAuth error:", err)
       let errorMessage = err.message || "Failed to connect."
+      if (err.message?.startsWith('MAX_PER_PROVIDER_REACHED')) {
+        errorMessage = `You can only add 3 accounts for ${provider.name}.`
+      } else if (err.message === 'MAX_TOTAL_REACHED') {
+        errorMessage = 'Maximum total of 15 cloud accounts reached.'
+      }
       if (err.message?.includes("popup") || err.message?.includes("cancelled") || err.message?.includes("closed")) {
         errorMessage = "Authentication was cancelled. Please try again."
       } else if (err.message?.includes("403") || err.message?.includes("access_denied")) {
         errorMessage = "Google OAuth not verified. Add your email as Test User in Google Cloud Console > OAuth Consent Screen, or publish the app."
       }
-      alert(errorMessage)
+      setError(errorMessage)
+      task.fail(errorMessage)
     } finally {
       setConnecting(false)
     }
   }
 
   const handleDisconnect = async () => {
-    if (confirm(`Are you sure you want to disconnect ${provider.name}?`)) {
-      // TODO: Implement disconnect
-      alert(`Disconnect ${provider.name}: Not yet implemented`)
+    if (!existingTokens.length) return
+    const ok = await actions.confirm({
+      title: `Disconnect ${provider.name}?`,
+      message: `Disconnect all ${provider.name} accounts?`,
+      confirmText: 'Disconnect',
+      cancelText: 'Cancel',
+    })
+    if (!ok) return
+    const task = actions.startTask({ title: `Disconnecting ${provider.name}`, message: 'Removing tokens...', progress: null })
+    try {
+      tokenManager.removeToken(provider.id as ProviderId)
+      task.succeed('Disconnected')
       onClose()
+      window.location.reload()
+    } catch (e: any) {
+      task.fail(e?.message || 'Failed')
     }
   }
 
@@ -346,6 +441,12 @@ function ConnectModal({ provider, connected, onClose }: ConnectModalProps) {
             <p className="text-sm text-blue-800 dark:text-blue-200">
               You will be redirected to {provider.name} to authorize access. Your credentials are never sent to our servers.
             </p>
+            {existingTokens.length >= 3 && (
+              <p className="text-xs text-red-600 mt-2">Limit reached: 3 accounts for {provider.name}. Disconnect one to add another.</p>
+            )}
+            {error && (
+              <p className="text-xs text-red-600 mt-2">{error}</p>
+            )}
           </div>
         )}
 

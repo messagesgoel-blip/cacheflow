@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
 
@@ -29,6 +30,7 @@ export default function SharePage() {
   const [password, setPassword] = useState('')
   const [passwordError, setPasswordError] = useState<string | null>(null)
   const [downloading, setDownloading] = useState(false)
+  const actions = useActionCenter()
   const [requiresPassword, setRequiresPassword] = useState(false)
 
   useEffect(() => {
@@ -111,7 +113,7 @@ export default function SharePage() {
       // Refresh share data to update download count
       await fetchShareData(requiresPassword ? password : undefined)
     } catch (err: any) {
-      alert('Download failed: ' + err.message)
+      actions.notify({ kind: 'error', title: 'Download failed', message: err.message })
     } finally {
       setDownloading(false)
     }

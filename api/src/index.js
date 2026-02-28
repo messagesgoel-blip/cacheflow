@@ -14,6 +14,35 @@ process.on('uncaughtException', (err) => {
 const app  = require('./app');
 const PORT = config.port;
 
+async function seedTestUser() {
+  const enabled = String(process.env.CACHEFLOW_TEST_USER_SEED || '').toLowerCase() === 'true';
+  const email = process.env.CACHEFLOW_TEST_USER_EMAIL;
+  const password = process.env.CACHEFLOW_TEST_USER_PASSWORD;
+  if (!enabled || !email || !password) return;
+
+  const pool = require('./db/client');
+  const bcrypt = require('bcryptjs');
+
+  try {
+    const exists = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
+    if (exists.rows.length) {
+      console.log('[seed] test user already exists:', email);
+      return;
+    }
+    if (password.length < 8) {
+      console.warn('[seed] test user password too short; skipping');
+      return;
+    }
+    const hash = await bcrypt.hash(password, 12);
+    await pool.query('INSERT INTO users (email, password_hash) VALUES ($1,$2)', [email, hash]);
+    console.log('[seed] created test user:', email);
+  } catch (err) {
+    console.error('[seed] failed creating test user:', err.message);
+  }
+}
+
+seedTestUser();
+
 app.listen(PORT, () => {
   console.log(`[cacheflow] API listening on port ${PORT}`);
 });

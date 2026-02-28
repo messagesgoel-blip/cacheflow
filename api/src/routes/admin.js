@@ -80,13 +80,20 @@ router.get('/stats', requireAdmin, async (req, res) => {
     const storageResult = await pool.query('SELECT COALESCE(SUM(size_bytes), 0) as total FROM files');
     const storageUsedBytes = parseInt(storageResult.rows[0]?.total || '0', 10);
 
-    // Get daily transfer (last 24 hours)
-    const transferResult = await pool.query(
-      `SELECT COALESCE(SUM(bytes_transferred), 0) as total 
-       FROM transfer_logs 
-       WHERE created_at > NOW() - INTERVAL '24 hours'`
-    );
-    const dailyTransferBytes = parseInt(transferResult.rows[0]?.total || '0', 10);
+    // Get daily transfer (last 24 hours) if table exists
+    let dailyTransferBytes = 0;
+    try {
+      const transferResult = await pool.query(
+        `SELECT COALESCE(SUM(bytes_transferred), 0) as total
+         FROM transfer_logs
+         WHERE created_at > NOW() - INTERVAL '24 hours'`
+      );
+      dailyTransferBytes = parseInt(transferResult.rows[0]?.total || '0', 10);
+    } catch (e) {
+      const code = e && (e.code || e?.cause?.code);
+      if (code !== '42P01' && code !== '42703') throw e;
+      dailyTransferBytes = 0;
+    }
 
     res.json({
       total_users: totalUsers,
@@ -97,6 +104,71 @@ router.get('/stats', requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('[admin] stats error:', err.message);
     res.status(500).json({ error: 'internal server error' });
+  }
+});
+
+// GET /admin/transfer-stats
+// Returns daily transfer (last 7 days) in GB
+router.get('/transfer-stats', requireAdmin, async (req, res) => {
+  try {
+    // If transfer_logs isn't present, return stable placeholder
+    let rows = [];
+    try {
+      const r = await pool.query(
+        `SELECT to_char(date_trunc('day', created_at), 'Mon DD') as date,
+                COALESCE(SUM(bytes_transferred), 0) as bytes
+         FROM transfer_logs
+         WHERE created_at > NOW() - INTERVAL '7 days'
+         GROUP BY 1
+         ORDER BY MIN(created_at) ASC`
+      );
+      rows = r.rows || [];
+    } catch (e) {
+      const code = e && (e.code || e?.cause?.code);
+      if (code !== '42P01' && code !== '42703') throw e;
+      rows = [];
+    }
+
+    const data = rows.map((x) => ({
+      date: x.date,
+      transfer_gb: Number((Number(x.bytes || 0) / (1024 * 1024 * 1024)).toFixed(1)),
+    }));
+
+    return res.json({ data });
+  } catch (err) {
+    console.error('[admin] transfer-stats error:', err.message);
+    res.json({ data: [] });
+  }
+});
+
+// GET /admin/storage-breakdown
+// Returns storage by status in GB
+router.get('/storage-breakdown', requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT status, COALESCE(SUM(size_bytes), 0) AS bytes
+       FROM files
+       WHERE status != 'deleted'
+       GROUP BY status`
+    );
+
+    const out = { synced: 0, pending: 0, error: 0 };
+    for (const row of (result.rows || [])) {
+      const status = String(row.status || '').toLowerCase();
+      const gb = Number((Number(row.bytes || 0) / (1024 * 1024 * 1024)).toFixed(1));
+      if (status === 'synced') out.synced += gb;
+      else if (status === 'pending') out.pending += gb;
+      else if (status === 'error') out.error += gb;
+    }
+
+    return res.json(out);
+  } catch (err) {
+    const code = err && (err.code || err?.cause?.code);
+    if (code === '42P01' || code === '42703') {
+      return res.json({ synced: 0, pending: 0, error: 0 });
+    }
+    console.error('[admin] storage-breakdown error:', err.message);
+    res.json({ synced: 0, pending: 0, error: 0 });
   }
 });
 

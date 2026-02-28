@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { getRemotes, addRemote, deleteRemote, browseRemote, copyFromRemote, setRemoteToken, connectGoogleDrive } from '@/lib/api'
 import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 import { PROVIDERS } from '@/lib/providers/types'
 
 // TODO: SECURITY — OAuth tokens currently stored in localStorage (XSS risk).
@@ -21,6 +22,7 @@ interface Remote {
   free?: number
   error?: string
   accountEmail?: string
+  accountKey?: string
 }
 
 interface RemoteBrowseResult {
@@ -193,6 +195,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
   const [oauthToken, setOauthToken] = useState('')
   const [oauthCredentials, setOauthCredentials] = useState('')
   const [oauthLoading, setOauthLoading] = useState(false)
+  const actions = useActionCenter()
 
   // Form state
   const [newRemoteName, setNewRemoteName] = useState('')
@@ -213,18 +216,21 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
     const connectedRemotes: Remote[] = []
     const allTokens = tokenManager.getAllTokens()
     
-    for (const [providerId, tokenData] of Array.from(allTokens.entries())) {
-      if (tokenData && tokenData.accessToken) {
-        const providerConfig = PROVIDERS.find(p => p.id === providerId)
-        connectedRemotes.push({
-          id: `cloud-${providerId}`,
-          name: providerConfig?.name || providerId,
-          type: 'cloud',
-          provider: providerId,
-          status: 'connected',
-          accountEmail: tokenData.accountEmail || ''
-        })
-      }
+    for (const [providerId, tokenList] of Array.from(allTokens.entries())) {
+      const providerConfig = PROVIDERS.find(p => p.id === providerId)
+      tokenList.filter(t => !t.disabled).forEach((tokenData, idx) => {
+        if (tokenData && tokenData.accessToken) {
+          connectedRemotes.push({
+            id: `cloud-${providerId}-${idx}`,
+            name: providerConfig?.name || providerId,
+            type: 'cloud',
+            provider: providerId,
+            status: 'connected',
+            accountEmail: tokenData.accountEmail || '',
+            accountKey: tokenData.accountKey,
+          })
+        }
+      })
     }
 
     // Also try to load from server (for VPS/WebDAV remotes)
@@ -257,13 +263,19 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
   }
 
   async function handleCopy(remoteName: string, filePath: string) {
-    if (!confirm(`Copy "${filePath}" to local storage?`)) return
+    const ok = await actions.confirm({
+      title: 'Copy to local?',
+      message: `Copy "${filePath}" to local storage?`,
+      confirmText: 'Copy',
+      cancelText: 'Cancel',
+    })
+    if (!ok) return
     try {
       setCopying(filePath)
       await copyFromRemote(remoteName, filePath, '', token)
-      alert('File copied to local storage!')
+      actions.notify({ kind: 'success', title: 'Copied to local', message: filePath })
     } catch (err: any) {
-      alert(`Copy failed: ${err.message}`)
+      actions.notify({ kind: 'error', title: 'Copy failed', message: err.message })
     } finally {
       setCopying(null)
     }
@@ -271,13 +283,13 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
 
   async function handleAddRemote() {
     if (!newRemoteName.trim()) {
-      alert('Please enter a name for this connection')
+      actions.notify({ kind: 'error', title: 'Missing name', message: 'Enter a name for this connection' })
       return
     }
 
     const provider = CLOUD_PROVIDERS.find(p => p.id === newRemoteType)
     if (!provider) {
-      alert('Please select a provider')
+      actions.notify({ kind: 'error', title: 'Missing provider', message: 'Select a provider' })
       return
     }
 
@@ -285,7 +297,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
     const requiredFields = provider.fields.filter(f => f.key !== 'endpoint' && f.key !== 'port')
     const missing = requiredFields.find(f => !formFields[f.key]?.trim())
     if (missing) {
-      alert(`Please fill in: ${missing.label}`)
+      actions.notify({ kind: 'error', title: 'Missing field', message: `Fill in: ${missing.label}` })
       return
     }
 
@@ -366,7 +378,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
 
   async function handleSubmitOauthToken() {
     if (!oauthToken.trim()) {
-      alert('Please paste the token')
+      actions.notify({ kind: 'error', title: 'Missing token', message: 'Paste the token to continue' })
       return
     }
 
@@ -390,7 +402,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
   async function handleOAuthConnect(providerId: string) {
     const provider = getProvider(providerId as any)
     if (!provider) {
-      alert("Provider not found. Please refresh the page.")
+      actions.notify({ kind: 'error', title: 'Provider not found', message: 'Refresh and try again' })
       return
     }
     
@@ -409,8 +421,8 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
         accountEmail: providerToken.accountEmail,
         displayName: providerToken.accountEmail
       } as any)
-      
-      alert("Successfully connected to " + providerToken.accountEmail + "!")
+
+      actions.notify({ kind: 'success', title: 'Connected', message: providerToken.accountEmail })
       setShowAddModal(false)
       resetForm()
       loadRemotes()
@@ -447,12 +459,41 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
   }
 
   async function handleDeleteRemote(name: string) {
-    if (!confirm(`Delete "${name}"?`)) return
+    const remote = remotes.find(r => r.name === name)
+    // Cloud remotes are browser-managed (tokenManager), not server-managed
+    if (remote?.type === 'cloud') {
+      const okCloud = await actions.confirm({
+        title: 'Remove cloud drive?',
+        message: `Remove ${remote.accountEmail || remote.name}?`,
+        confirmText: 'Remove',
+        cancelText: 'Cancel',
+      })
+      if (!okCloud) return
+      const task = actions.startTask({ title: 'Removing drive', message: remote.accountEmail || remote.name, progress: null })
+      try {
+        tokenManager.removeToken(remote.provider as any, remote.accountKey)
+        task.succeed('Removed')
+        loadRemotes()
+      } catch (e: any) {
+        task.fail(e?.message || 'Failed')
+      }
+      return
+    }
+
+    const ok = await actions.confirm({
+      title: 'Delete integration?',
+      message: `Delete "${name}"?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    })
+    if (!ok) return
     try {
+      const task = actions.startTask({ title: 'Deleting integration', message: name, progress: null })
       await deleteRemote(name, token)
       loadRemotes()
+      task.succeed('Deleted')
     } catch (err: any) {
-      alert(`Delete failed: ${err.message}`)
+      actions.notify({ kind: 'error', title: 'Delete failed', message: err.message })
     }
   }
 
@@ -585,15 +626,22 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
 
   // Main remotes list
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold dark:text-white">Integrations</h2>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          + Add Integration
-        </button>
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Integrations</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Connect cloud drives and infrastructure remotes. Enable/disable drives from the Providers page.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            + Add Integration
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -603,7 +651,9 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       )}
 
       {loading && remotes.length === 0 ? (
-        <div className="text-center py-8 text-gray-400">Loading...</div>
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center text-gray-500 dark:text-gray-400">
+          Loading integrations…
+        </div>
       ) : remotes.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg dark:border-gray-700">
           <div className="text-4xl mb-4">☁️</div>
@@ -617,15 +667,15 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {remotes.map(remote => (
-            <div key={remote.id} className="border rounded-lg p-4 hover:shadow-md dark:border-gray-600 dark:bg-gray-800">
+            <div key={remote.id} className="border rounded-xl p-5 hover:shadow-md dark:border-gray-700 bg-white dark:bg-gray-800">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{getTypeIcon(remote.type)}</span>
                   <div>
                     <div className="font-medium dark:text-white">{remote.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{remote.provider}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{remote.accountEmail || remote.provider}</div>
                   </div>
                 </div>
                 <span className={`text-xs px-2 py-1 rounded ${
@@ -663,7 +713,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                     <button
                       onClick={() => {
                         // For now, show info - user needs to delete and re-add
-                        alert('Please remove this integration and add it again to authorize.')
+                        actions.notify({ kind: 'info', title: 'Authorization required', message: 'Remove this integration and add it again to authorize.' })
                       }}
                       className="flex-1 px-3 py-1.5 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700"
                     >
@@ -701,16 +751,19 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       {/* Add Remote Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto" data-testid="add-integration-modal">
             <h3 className="text-lg font-semibold mb-4 dark:text-white">Add Integration</h3>
 
             <div className="space-y-4">
               {/* Connection Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="add-integration-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Connection Name
                 </label>
                 <input
+                  id="add-integration-name"
+                  aria-label="Connection Name"
+                  data-testid="add-integration-name"
                   type="text"
                   value={newRemoteName}
                   onChange={(e) => setNewRemoteName(e.target.value)}
@@ -729,6 +782,8 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                     <button
                       key={provider.id}
                       onClick={() => { setNewRemoteType(provider.id); setFormFields({}) }}
+                      data-testid={`add-integration-type-${provider.id}`}
+                      aria-pressed={newRemoteType === provider.id}
                       className={`p-3 border rounded-lg text-left transition-all ${
                         newRemoteType === provider.id
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
@@ -746,10 +801,13 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
               {/* Dynamic Fields */}
               {CLOUD_PROVIDERS.find(p => p.id === newRemoteType)?.fields.map(field => (
                 <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor={`add-integration-field-${field.key}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {field.label}
                   </label>
                   <input
+                    id={`add-integration-field-${field.key}`}
+                    aria-label={field.label}
+                    data-testid={`add-integration-field-${field.key}`}
                     type={field.type}
                     value={formFields[field.key] || ''}
                     onChange={(e) => setFormFields(prev => ({ ...prev, [field.key]: e.target.value }))}
@@ -800,6 +858,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => { setShowAddModal(false); resetForm() }}
+                data-testid="add-integration-cancel"
                 className="flex-1 px-4 py-2 border dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white"
               >
                 Cancel
@@ -814,6 +873,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                   }
                 }}
                 disabled={adding}
+                data-testid="add-integration-connect"
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
                 {adding ? 'Connecting...' : 'Connect'}
@@ -826,7 +886,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
       {/* OAuth Modal for Google Drive */}
       {showOauthModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg" data-testid="oauth-token-modal">
             <h3 className="text-lg font-semibold mb-4 dark:text-white">
               Authorize Google Drive
             </h3>
@@ -849,6 +909,8 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
                   Step 2: After authorizing, the command outputs a token (JSON). Copy the ENTIRE output and paste below:
                 </p>
                 <textarea
+                  aria-label="OAuth Token"
+                  data-testid="oauth-token"
                   value={oauthToken}
                   onChange={(e) => setOauthToken(e.target.value)}
                   placeholder='Paste the entire token here, for example: {"access_token":"ya29.a0...","refresh_token":"1//0g...","token_type":"Bearer",...}'
@@ -860,6 +922,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => { setShowOauthModal(false); setOauthToken('') }}
+                data-testid="oauth-cancel"
                 className="flex-1 px-4 py-2 border dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white"
               >
                 Cancel
@@ -867,6 +930,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
               <button
                 onClick={handleSubmitOauthToken}
                 disabled={oauthLoading || !oauthToken.trim()}
+                data-testid="oauth-complete"
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
                 {oauthLoading ? 'Connecting...' : 'Complete'}

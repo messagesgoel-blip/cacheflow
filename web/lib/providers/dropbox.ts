@@ -295,7 +295,8 @@ export class DropboxProvider extends StorageProvider {
       file
     )
 
-    return this.mapFile(response)
+    const data = await response.json()
+    return this.mapFile(data)
   }
 
   async downloadFile(fileId: string, options?: DownloadOptions): Promise<Blob> {

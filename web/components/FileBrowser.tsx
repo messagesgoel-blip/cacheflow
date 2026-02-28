@@ -7,6 +7,7 @@ import { ProviderId, PROVIDERS, FileMetadata } from '@/lib/providers/types'
 import FileTable from './FileTable'
 import Breadcrumb from './Breadcrumb'
 import { useContextMenu, contextMenuItems } from './ContextMenu'
+import { useActionCenter } from '@/components/ActionCenterProvider'
 
 interface FileBrowserProps {
   token: string
@@ -39,6 +40,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   const [creatingFolder, setCreatingFolder] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [unimplementedMsg, setUnimplementedMsg] = useState<string | null>(null)
+  const actions = useActionCenter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { contextMenu, showContextMenu, hideContextMenu, ContextMenuComponent } = useContextMenu()
 
@@ -180,9 +182,13 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   }
 
   async function handleDeleteFolder(folderPath: string) {
-    if (!token || !confirm(`Delete folder "${folderPath.split('/').pop()}"? This will only delete empty folders.`)) {
-      return
-    }
+    const ok = await actions.confirm({
+      title: 'Delete folder?',
+      message: `Delete folder "${folderPath.split('/').pop()}"? This will only delete empty folders.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    })
+    if (!ok) return
 
     try {
       await deleteFolder(folderPath, token)
@@ -348,7 +354,13 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   }
 
   async function handleRename(fileId: string, filePath: string) {
-    const newName = prompt('Enter new name:', filePath.split('/').pop())
+    const newName = await actions.prompt({
+      title: 'Rename file',
+      message: filePath.split('/').pop() || filePath,
+      initial: filePath.split('/').pop() || '',
+      placeholder: 'New name',
+      confirmText: 'Rename',
+    })
     if (!newName || newName === filePath.split('/').pop()) return
 
     try {
@@ -378,7 +390,13 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
   }
 
   async function handleMove(fileId: string, filePath: string) {
-    const newPath = prompt('Enter destination folder path:', '/')
+    const newPath = await actions.prompt({
+      title: 'Move file',
+      message: filePath.split('/').pop() || filePath,
+      initial: '/',
+      placeholder: '/Destination',
+      confirmText: 'Move',
+    })
     if (!newPath) return
 
     try {
@@ -415,7 +433,13 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
       return
     }
 
-    if (!confirm(`Delete "${file.name}"?`)) return
+    const ok = await actions.confirm({
+      title: 'Delete file?',
+      message: `Delete "${file.name}"?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    })
+    if (!ok) return
 
     try {
       if (isCloud && cloudProviderId) {

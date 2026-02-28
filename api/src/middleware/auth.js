@@ -22,8 +22,15 @@ module.exports = async (req, res, next) => {
     );
     if (!result.rows.length) return res.status(401).json({ error: 'User not found' });
     const user = result.rows[0];
-    // Check if user is admin based on ADMIN_EMAIL env variable
-    user.is_admin = user.email === process.env.ADMIN_EMAIL;
+    // Admin model: single ADMIN_EMAIL + optional QA allowlist (explicitly gated)
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const qaEnabled = String(process.env.CACHEFLOW_QA_ADMIN_ENABLED || '').toLowerCase() === 'true';
+    const qaEmails = String(process.env.CACHEFLOW_QA_ADMIN_EMAILS || '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    user.is_admin = (adminEmail && user.email === adminEmail) || (qaEnabled && qaEmails.includes(user.email));
     req.user = user;
     next();
   } catch (err) {

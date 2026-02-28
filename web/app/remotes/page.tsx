@@ -31,7 +31,7 @@ export default function RemotesPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar email={email} onLogout={handleLogout} />
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         <RemotesPanel token={token} />
       </main>
     </div>

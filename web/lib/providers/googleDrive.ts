@@ -13,8 +13,8 @@ const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '4161799784
 const GOOGLE_SCOPES = [
   'email',
   'profile',
-  'https://www.googleapis.com/auth/drive.readonly',
-  'https://www.googleapis.com/auth/drive.metadata.readonly',
+  // Full Drive access is required for rename/move/copy/delete and cross-provider transfers
+  'https://www.googleapis.com/auth/drive',
 ].join(' ')
 
 const DISCOVERY_DOCS = [
@@ -544,6 +544,10 @@ export class GoogleDriveProvider extends StorageProvider {
    * Make authenticated request
    */
   private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
+    // Always pull latest token (multi-account switching)
+    const tmToken = tokenManager.getToken('google')
+    if (tmToken?.accessToken) this.accessToken = tmToken.accessToken
+
     if (!this.accessToken) {
       const token = tokenManager.getToken('google')
       if (!token) {

@@ -9,7 +9,8 @@ import { tokenManager } from '../tokenManager'
 import { generateCodeVerifier, generateCodeChallenge } from './pkce'
 import { formatBytes, formatMimeType } from './utils'
 
-const PCLOUD_CLIENT_ID = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_PCLOUD_CLIENT_ID || 'YOUR_PCLOUD_CLIENT_ID') : ''
+const PCLOUD_CLIENT_ID = process.env.NEXT_PUBLIC_PCLOUD_CLIENT_ID || 'YOUR_PCLOUD_CLIENT_ID'
+const PCLOUD_AUTH_BASE = 'https://my.pcloud.com/oauth2'
 const PCLOUD_API_BASE = 'https://api.pcloud.com'
 
 export class PCloudProvider extends StorageProvider {
@@ -37,12 +38,12 @@ export class PCloudProvider extends StorageProvider {
     const codeChallenge = await generateCodeChallenge(codeVerifier)
     sessionStorage.setItem('pcloud_code_verifier', codeVerifier)
 
-    const authUrl = new URL('https://my.pcloud.com/oauth2/authorize')
+    const authUrl = new URL(`${PCLOUD_AUTH_BASE}/authorize`)
     authUrl.searchParams.set('client_id', PCLOUD_CLIENT_ID)
     authUrl.searchParams.set('response_type', 'code')
     authUrl.searchParams.set('code_challenge', codeChallenge)
     authUrl.searchParams.set('code_challenge_method', 'S256')
-    authUrl.searchParams.set('redirect_uri', window.location.origin + '/api/auth/pcloud/callback')
+    authUrl.searchParams.set('redirect_uri', this.getRedirectUri())
 
     return new Promise((resolve, reject) => {
       const popup = window.open(authUrl.toString(), 'pCloud Connect', 'width=600,height=700')
@@ -70,26 +71,33 @@ export class PCloudProvider extends StorageProvider {
   private async exchangeCode(code: string): Promise<ProviderToken> {
     const cv = sessionStorage.getItem('pcloud_code_verifier')
     sessionStorage.removeItem('pcloud_code_verifier')
-    
-    const res = await fetch('https://my.pcloud.com/oauth2/token', {
+
+    const res = await fetch(`${PCLOUD_AUTH_BASE}/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        code, grant_type: 'authorization_code', client_id: PCLOUD_CLIENT_ID,
-        redirect_uri: window.location.origin + '/api/auth/pcloud/callback', code_verifier: cv || ''
-      })
+        code,
+        grant_type: 'authorization_code',
+        client_id: PCLOUD_CLIENT_ID,
+        redirect_uri: this.getRedirectUri(),
+        code_verifier: cv || '',
+      }),
     })
     if (!res.ok) throw new Error('Token exchange failed')
     const data = await res.json()
-    
+
     const token: ProviderToken = {
-      provider: 'pcloud', accessToken: data.access_token, refreshToken: data.refresh_token,
+      provider: 'pcloud',
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
       expiresAt: data.expires_in ? Date.now() + data.expires_in * 1000 : null,
-      accountEmail: data.email || 'pCloud User', displayName: data.name || 'pCloud User'
+      accountEmail: data.email || 'pCloud User',
+      displayName: data.name || 'pCloud User',
     }
     tokenManager.saveToken('pcloud', token)
     this.accessToken = token.accessToken
-    tokenManager.onRefresh('pcloud', t => this.refreshToken(t))
+    tokenManager.onRefresh('pcloud', (t) => this.refreshToken(t))
+    tokenManager.startAutoRefresh('pcloud', token)
     return token
   }
 
@@ -97,7 +105,7 @@ export class PCloudProvider extends StorageProvider {
 
   async refreshToken(t: ProviderToken): Promise<ProviderToken> {
     if (!t.refreshToken) throw new Error('No refresh token')
-    const res = await fetch('https://my.pcloud.com/oauth2/token', {
+    const res = await fetch(`${PCLOUD_AUTH_BASE}/token`, {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refreshToken, client_id: PCLOUD_CLIENT_ID })
     })
@@ -106,6 +114,7 @@ export class PCloudProvider extends StorageProvider {
     const nt = { ...t, accessToken: data.access_token, refreshToken: data.refresh_token, expiresAt: data.expires_in ? Date.now() + data.expires_in * 1000 : null }
     this.accessToken = nt.accessToken
     tokenManager.saveToken('pcloud', nt)
+    tokenManager.startAutoRefresh('pcloud', nt)
     return nt
   }
 
@@ -113,65 +122,133 @@ export class PCloudProvider extends StorageProvider {
 
   async getQuota(): Promise<ProviderQuota> {
     const r = await this.req('/getuserquota')
-    const u = r.used, tot = r.quota
-    return { used: u, total: tot, free: tot - u, usedDisplay: formatBytes(u), totalDisplay: formatBytes(tot), freeDisplay: formatBytes(tot - u), percentUsed: tot > 0 ? (u/tot)*100 : 0 }
+    const used = r.usedquota ?? r.used ?? 0
+    const total = r.quota ?? r.totalquota ?? 0
+    const free = Math.max(total - used, 0)
+    return { used: used, total: total, free, usedDisplay: formatBytes(used), totalDisplay: formatBytes(total), freeDisplay: formatBytes(free), percentUsed: total > 0 ? (used/total)*100 : 0 }
   }
 
   async listFiles(o?: { folderId?: string }): Promise<ListFilesResult> {
     const r = await this.req('/listfolder', { folderid: o?.folderId || '0' })
-    return { files: (r.contents||[]).map((i:any)=>this.mf(i)), hasMore: false }
+    const contents = r.metadata?.contents || r.contents || []
+    return { files: (contents as any[]).map((i:any)=>this.mf(i)), hasMore: false }
   }
 
   async uploadFile(f: File, o?: UploadOptions): Promise<FileMetadata> {
     const fd = new FormData(); fd.append('file', f); fd.append('folderid', o?.folderId||'0'); fd.append('filename', o?.fileName||f.name)
+    const token = this.ensureAccessToken()
     const res = await fetch(PCLOUD_API_BASE+'/uploadfile', { 
       method: 'POST', 
       body: fd,
-      headers: { Authorization: `Bearer ${this.accessToken}` }
+      headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Upload failed')
-    return this.mf((await res.json()).metadata)
+    const data = await res.json()
+    const meta = Array.isArray(data.metadata) ? data.metadata[0] : data.metadata || data.file || data
+    return this.mf(meta)
   }
 
   async downloadFile(id: string): Promise<Blob> {
     const r = await this.req('/getfilelink', { fileid: id })
-    return (await fetch(r.getfilelink, { headers: { Authorization: `Bearer ${this.accessToken}` } })).blob()
+    const host = Array.isArray(r.hosts) ? r.hosts[0] : undefined
+    const link = r.getfilelink || r.link || r.downloadlink || (host && r.path ? `https://${host}${r.path}` : undefined)
+    if (!link) throw new Error('Download link unavailable')
+    const token = this.ensureAccessToken()
+    const res = await fetch(link, { headers: { Authorization: `Bearer ${token}` } })
+    if (!res.ok) throw new Error('Download failed')
+    return res.blob()
   }
 
   async deleteFile(id: string): Promise<void> { await this.req('/deletefile', { fileid: id }) }
   async createFolder(name: string, pid?: string): Promise<FileMetadata> {
     const r = await this.req('/createfolder', { folderid: pid || '0', name })
-    return this.mf(r.metadata)
+    return this.mf(r.metadata || r)
   }
   async getShareLink(id: string): Promise<string | null> {
-    try { const r = await this.req('/getsharename', { fileid: id }); return 'https://my.pcloud.com/#page=publink&code='+r.code } catch { return null }
+    try {
+      const r = await this.req('/getfilepublink', { fileid: id })
+      const link = r.link || r.shortlink || r.publiclink
+      return link ? String(link) : null
+    } catch {
+      return null
+    }
   }
   async searchFiles(o: { query: string }): Promise<SearchResult> {
     const r = await this.req('/search', { query: o.query })
-    return { files: (r.matches||[]).map((i:any)=>this.mf(i)), hasMore: false }
+    const matches = r.matches || r.metadata || []
+    return { files: (matches as any[]).map((i:any)=>this.mf(i)), hasMore: false }
   }
-  async getFile(id: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async moveFile(id: string, pid: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async copyFile(id: string, pid: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async renameFile(id: string, name: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async revokeShareLink(id: string): Promise<void> { throw new Error('Not implemented') }
+  async getFile(id: string): Promise<FileMetadata> {
+    const r = await this.req('/stat', { fileid: id })
+    const meta = Array.isArray(r.metadata) ? r.metadata[0] : r.metadata || r
+    return this.mf(meta)
+  }
+  async moveFile(id: string, pid: string): Promise<FileMetadata> {
+    const r = await this.req('/movefile', { fileid: id, tofolderid: pid })
+    return this.mf(r.metadata || r)
+  }
+  async copyFile(id: string, pid: string): Promise<FileMetadata> {
+    const r = await this.req('/copyfile', { fileid: id, tofolderid: pid })
+    return this.mf(r.metadata || r)
+  }
+  async renameFile(id: string, name: string): Promise<FileMetadata> {
+    const r = await this.req('/renamefile', { fileid: id, toname: name })
+    return this.mf(r.metadata || r)
+  }
+  async revokeShareLink(id: string): Promise<void> {
+    try {
+      await this.req('/deletepublink', { fileid: id })
+    } catch {}
+  }
 
-  private async req(ep: string, body?: any, retried = false): Promise<any> {
-    if (!this.accessToken) { const t = tokenManager.getToken('pcloud'); if (!t) throw new Error('Not auth'); this.accessToken = t.accessToken }
-    const u = new URL(PCLOUD_API_BASE+ep)
-    if (body) Object.entries(body).forEach(([k,v]) => u.searchParams.set(k, String(v)))
-    const res = await fetch(u.toString(), {
-      headers: { Authorization: `Bearer ${this.accessToken}` }
-    })
-    if (res.status===401 && !retried) { const nt = await tokenManager.refreshToken('pcloud'); if (nt) { this.accessToken = nt.accessToken; return this.req(ep,body,true) } }
+  private async req(ep: string, params?: Record<string, any>, method: 'GET' | 'POST' = 'GET', retried = false): Promise<any> {
+    const token = this.ensureAccessToken()
+    const url = new URL(PCLOUD_API_BASE + ep)
+    const isGet = method === 'GET'
+    const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
+
+    let body: BodyInit | undefined
+    if (params) {
+      if (isGet) {
+        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)))
+      } else {
+        body = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]))
+        headers['Content-Type'] = 'application/x-www-form-urlencoded'
+      }
+    }
+
+    const res = await fetch(url.toString(), { method, headers, body })
+    if (res.status === 401 && !retried) {
+      const nt = await tokenManager.refreshToken('pcloud')
+      if (nt) {
+        this.accessToken = nt.accessToken
+        return this.req(ep, params, method, true)
+      }
+      throw new Error('SESSION_EXPIRED')
+    }
+
     const d = await res.json()
-    if (d.result!==0) throw new Error('pCloud error')
+    if (d.result !== 0) throw new Error(d.error || 'pCloud error')
     return d
+  }
+
+  private ensureAccessToken(): string {
+    if (!this.accessToken) {
+      const token = tokenManager.getToken('pcloud')
+      if (!token) throw new Error('Not authenticated')
+      this.accessToken = token.accessToken
+    }
+    return this.accessToken
+  }
+
+  private getRedirectUri(): string {
+    if (typeof window === 'undefined') return ''
+    return `${window.location.origin}/api/auth/pcloud/callback`
   }
 
   private mf(i: any): FileMetadata {
     const f = !!i.isfolder
-    return { id: String(i.fileid||i.folderid), name: i.name, path: i.path||'/'+i.name, pathDisplay: i.path, size: i.size||0, mimeType: f?'application/vnd.folder':formatMimeType(i.name), isFolder: f, createdTime: i.created, modifiedTime: i.modified, provider: 'pcloud', providerName: 'pCloud' }
+    return { id: String(i.fileid||i.folderid), name: i.name, path: i.path||'/' + i.name, pathDisplay: i.path || i.pathDisplay || '/' + i.name, size: i.size||0, mimeType: f?'application/vnd.folder':formatMimeType(i.name), isFolder: f, createdTime: i.created, modifiedTime: i.modified, provider: 'pcloud', providerName: 'pCloud' }
   }
 }
 

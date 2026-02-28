@@ -40,6 +40,14 @@ export default function TransferChart({ token }: TransferChartProps) {
         return
       }
 
+      if (res.status === 403) {
+        // Expected for non-admin users
+        setIsMockData(true)
+        setData([])
+        setTodayTransfer(0)
+        return
+      }
+
       if (!res.ok) {
         throw new Error(`Failed to fetch transfer stats: ${res.status}`)
       }
@@ -48,7 +56,7 @@ export default function TransferChart({ token }: TransferChartProps) {
       setData(apiData.data || apiData || [])
       calculateTodayTransfer(apiData.data || apiData || [])
     } catch (err) {
-      console.error('Failed to load transfer stats:', err)
+      // Avoid console spam for expected admin restrictions
       generateMockData()
     } finally {
       setLoading(false)

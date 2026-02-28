@@ -6,7 +6,15 @@
 import { ProviderToken, ProviderId } from './providers/types'
 
 const TOKEN_PREFIX = 'cacheflow_token_'
+const TOKEN_MULTI_PREFIX = 'cacheflow_tokens_'
 const SETTINGS_KEY = 'cacheflow_settings'
+const MAX_TOKENS_PER_PROVIDER = 3
+const MAX_TOKENS_TOTAL = 15
+
+interface StoredToken extends ProviderToken {
+  accountKey: string
+  disabled?: boolean
+}
 
 interface TokenManagerSettings {
   autoRefresh: boolean
@@ -36,61 +44,102 @@ class TokenManager {
    */
   saveToken(provider: ProviderId, token: ProviderToken): void {
     if (typeof window === 'undefined') return
-    const key = this.getStorageKey(provider)
-    const tokenData = {
-      ...token,
-      provider, // Ensure provider ID is stored
+    const key = this.getMultiStorageKey(provider)
+    const legacyKey = this.getStorageKey(provider)
+
+    const accountKey = this.buildAccountKey(token)
+    const existing = this.getTokens(provider)
+
+    const totalCount = this.countAllTokens()
+    const existingIndex = existing.findIndex((t) => t.accountKey === accountKey || t.accountId === token.accountId || t.accountEmail === token.accountEmail)
+
+    if (existingIndex === -1) {
+      if (existing.length >= MAX_TOKENS_PER_PROVIDER) {
+        throw new Error(`MAX_PER_PROVIDER_REACHED:${provider}`)
+      }
+      if (totalCount >= MAX_TOKENS_TOTAL) {
+        throw new Error('MAX_TOTAL_REACHED')
+      }
     }
-    localStorage.setItem(key, JSON.stringify(tokenData))
+
+    const next: StoredToken[] = [...existing]
+    const stored: StoredToken = { ...token, provider, accountKey, disabled: existing[existingIndex]?.disabled ?? false }
+
+    if (existingIndex >= 0) {
+      next[existingIndex] = stored
+    } else {
+      next.push(stored)
+    }
+
+    localStorage.setItem(key, JSON.stringify(next))
+    localStorage.removeItem(legacyKey)
   }
 
   /**
    * Get token from localStorage
    */
-  getToken(provider: ProviderId): ProviderToken | null {
+  getToken(provider: ProviderId, accountKey?: string): ProviderToken | null {
     if (typeof window === 'undefined') return null
-    const key = this.getStorageKey(provider)
+    const tokens = this.getTokens(provider)
+    if (tokens.length === 0) return null
+    if (!accountKey) return tokens.find((t) => !t.disabled) || tokens[0]
+    return tokens.find((t) => t.accountKey === accountKey) || tokens.find((t) => !t.disabled) || tokens[0]
+  }
+
+  getTokens(provider: ProviderId): StoredToken[] {
+    if (typeof window === 'undefined') return []
+    this.migrateLegacyToken(provider)
+
+    const key = this.getMultiStorageKey(provider)
     const data = localStorage.getItem(key)
-    if (!data) return null
+    if (!data) return []
 
     try {
-      const token = JSON.parse(data) as ProviderToken
-      // Ensure provider ID is correct
-      if (token.provider !== provider) {
-        token.provider = provider
-      }
-      return token
+      const tokens = JSON.parse(data) as StoredToken[]
+      return tokens.map((t) => ({ ...t, provider, disabled: t.disabled ?? false }))
     } catch (e) {
-      console.error(`[TokenManager] Failed to parse token for ${provider}:`, e)
-      return null
+      console.error(`[TokenManager] Failed to parse tokens for ${provider}:`, e)
+      return []
     }
   }
 
   /**
    * Remove token from localStorage
    */
-  removeToken(provider: ProviderId): void {
+  removeToken(provider: ProviderId, accountKey?: string): void {
     if (typeof window === 'undefined') return
-    const key = this.getStorageKey(provider)
-    localStorage.removeItem(key)
+    const key = this.getMultiStorageKey(provider)
+    if (!accountKey) {
+      localStorage.removeItem(key)
+      localStorage.removeItem(this.getStorageKey(provider))
+      this.cancelRefresh(provider)
+      return
+    }
+
+    const remaining = this.getTokens(provider).filter((t) => t.accountKey !== accountKey)
+    if (remaining.length === 0) {
+      localStorage.removeItem(key)
+    } else {
+      localStorage.setItem(key, JSON.stringify(remaining))
+    }
     this.cancelRefresh(provider)
   }
 
   /**
    * Get all stored tokens
    */
-  getAllTokens(): Map<ProviderId, ProviderToken> {
+  getAllTokens(): Map<ProviderId, StoredToken[]> {
     if (typeof window === 'undefined') return new Map()
-    const tokens = new Map<ProviderId, ProviderToken>()
-    const prefix = TOKEN_PREFIX
+    const tokens = new Map<ProviderId, StoredToken[]>()
+    const prefix = TOKEN_MULTI_PREFIX
 
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
       if (key && key.startsWith(prefix)) {
         const provider = key.replace(prefix, '') as ProviderId
-        const token = this.getToken(provider)
-        if (token) {
-          tokens.set(provider, token)
+        const providerTokens = this.getTokens(provider)
+        if (providerTokens.length > 0) {
+          tokens.set(provider, providerTokens)
         }
       }
     }
@@ -104,11 +153,8 @@ class TokenManager {
   getConnectedProviders(): string[] {
     if (typeof window === 'undefined') return []
     const connected: string[] = []
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key && key.startsWith(TOKEN_PREFIX)) {
-        connected.push(key.replace(TOKEN_PREFIX, ''))
-      }
+    for (const provider of Array.from(this.getAllTokens().keys())) {
+      connected.push(provider)
     }
     return connected
   }
@@ -117,7 +163,30 @@ class TokenManager {
    * Check if token exists
    */
   hasToken(provider: ProviderId): boolean {
-    return this.getToken(provider) !== null
+    return this.getTokens(provider).some((t) => !t.disabled)
+  }
+
+  setTokenEnabled(provider: ProviderId, accountKey: string, enabled: boolean): void {
+    if (typeof window === 'undefined') return
+    const tokens = this.getTokens(provider)
+    const idx = tokens.findIndex((t) => t.accountKey === accountKey)
+    if (idx === -1) return
+    tokens[idx] = { ...tokens[idx], disabled: !enabled }
+    localStorage.setItem(this.getMultiStorageKey(provider), JSON.stringify(tokens))
+    if (!enabled) this.cancelRefresh(provider)
+  }
+
+  /**
+   * Mark a specific account as active (moves it to the front of the list)
+   */
+  setActiveToken(provider: ProviderId, accountKey: string): void {
+    if (typeof window === 'undefined') return
+    const tokens = this.getTokens(provider)
+    const idx = tokens.findIndex((t) => t.accountKey === accountKey)
+    if (idx <= 0) return
+    const [picked] = tokens.splice(idx, 1)
+    tokens.unshift(picked)
+    localStorage.setItem(this.getMultiStorageKey(provider), JSON.stringify(tokens))
   }
 
   // ===========================================================================
@@ -239,9 +308,12 @@ class TokenManager {
   async refreshAllTokens(): Promise<void> {
     const tokens = this.getAllTokens()
 
-    for (const [provider, token] of Array.from(tokens.entries())) {
-      if (this.needsRefresh(token)) {
-        await this.refreshToken(provider)
+    for (const [provider, providerTokens] of Array.from(tokens.entries())) {
+      for (const token of providerTokens) {
+        if (token.disabled) continue
+        if (this.needsRefresh(token)) {
+          await this.refreshToken(provider)
+        }
       }
     }
   }
@@ -311,6 +383,46 @@ class TokenManager {
    */
   private getStorageKey(provider: ProviderId): string {
     return `${TOKEN_PREFIX}${provider}`
+  }
+
+  private getMultiStorageKey(provider: ProviderId): string {
+    return `${TOKEN_MULTI_PREFIX}${provider}`
+  }
+
+  private migrateLegacyToken(provider: ProviderId): void {
+    if (typeof window === 'undefined') return
+    const legacyKey = this.getStorageKey(provider)
+    const legacyData = localStorage.getItem(legacyKey)
+    if (!legacyData) return
+    try {
+      const token = JSON.parse(legacyData) as ProviderToken
+      if (token && token.accessToken) {
+        this.saveToken(provider, token)
+      }
+      localStorage.removeItem(legacyKey)
+    } catch (e) {
+      console.error(`[TokenManager] Failed migrating legacy token for ${provider}:`, e)
+    }
+  }
+
+  private buildAccountKey(token: ProviderToken): string {
+    return token.accountId || token.accountEmail || token.displayName || `acct-${Date.now()}`
+  }
+
+  private countAllTokens(): number {
+    if (typeof window === 'undefined') return 0
+    let count = 0
+    const prefix = TOKEN_MULTI_PREFIX
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith(prefix)) {
+        try {
+          const tokens = JSON.parse(localStorage.getItem(key) || '[]') as StoredToken[]
+          count += tokens.length
+        } catch {}
+      }
+    }
+    return count
   }
 
   /**

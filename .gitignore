@@ -11,4 +11,6 @@ backups/*.sql.gz
 backups/*.sql
 worker/rclone
 web/tsconfig.tsbuildinfo
+web/test-results/
+web/playwright-report/
 webdav/webdav.htpasswd

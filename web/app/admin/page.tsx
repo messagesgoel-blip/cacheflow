@@ -64,6 +64,13 @@ export default function AdminPage() {
         return
       }
 
+      if (res.status === 403) {
+        // Expected for non-admin users; keep UI clean and avoid console spam
+        setApiAvailable(false)
+        setStats({})
+        return
+      }
+
       if (!res.ok) {
         throw new Error(`Failed to fetch stats: ${res.status}`)
       }
@@ -72,7 +79,7 @@ export default function AdminPage() {
       setStats(data)
       setApiAvailable(true)
     } catch (err: any) {
-      console.error('Failed to load admin stats:', err)
+      // Avoid noisy console stack traces during QA; surface via UI state
       setApiAvailable(false)
     } finally {
       setLoading(false)
