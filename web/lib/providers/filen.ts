@@ -154,11 +154,25 @@ export class FilenProvider extends StorageProvider {
     const r = await this.req('/v1/search', { query: o.query })
     return { files: (r.data||[]).map((i:any)=>this.mf(i)), hasMore: false }
   }
-  async getFile(id: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async moveFile(id: string, pid: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async copyFile(id: string, pid: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async renameFile(id: string, name: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async revokeShareLink(id: string): Promise<void> { throw new Error('Not implemented') }
+  async getFile(id: string): Promise<FileMetadata> {
+    const r = await this.req('/v1/file/info', { uuid: id })
+    return this.mf(r.data)
+  }
+  async moveFile(id: string, pid: string): Promise<FileMetadata> {
+    const r = await this.req('/v1/file/move', { uuid: id, destination: pid })
+    return this.mf(r.data)
+  }
+  async copyFile(id: string, pid: string): Promise<FileMetadata> {
+    const r = await this.req('/v1/file/copy', { uuid: id, destination: pid })
+    return this.mf(r.data)
+  }
+  async renameFile(id: string, name: string): Promise<FileMetadata> {
+    const r = await this.req('/v1/file/rename', { uuid: id, name })
+    return this.mf(r.data)
+  }
+  async revokeShareLink(id: string): Promise<void> {
+    await this.req('/v1/file/link/revoke', { uuid: id })
+  }
 
   private async req(ep: string, body?: any, retried = false, method = 'POST'): Promise<any> {
     if (!this.accessToken) { const t = tokenManager.getToken('filen'); if (!t) throw new Error('Not auth'); this.accessToken = t.accessToken }

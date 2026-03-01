@@ -16,6 +16,7 @@ import { VPSProvider } from './vps'
 import { PCloudProvider } from './pcloud'
 import { FilenProvider } from './filen'
 import { YandexProvider } from './yandex'
+import { LocalProvider } from './local'
 
 // Register all providers
 providerRegistry.register('google', () => new GoogleDriveProvider())
@@ -27,6 +28,7 @@ providerRegistry.register('vps', () => new VPSProvider())
 providerRegistry.register('pcloud', () => new PCloudProvider())
 providerRegistry.register('filen', () => new FilenProvider())
 providerRegistry.register('yandex', () => new YandexProvider())
+providerRegistry.register('local', () => new LocalProvider())
 
 export function getProvider(id: ProviderId): StorageProvider | undefined {
   return providerRegistry.get(id)

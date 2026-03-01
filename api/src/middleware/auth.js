@@ -11,6 +11,7 @@ const pool = new Pool({
 module.exports = async (req, res, next) => {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
+    if (res.fail) return res.fail('No token provided', 401);
     return res.status(401).json({ error: 'No token provided' });
   }
   try {
@@ -20,7 +21,10 @@ module.exports = async (req, res, next) => {
       'SELECT id, email, tenant_id, quota_bytes, used_bytes FROM users WHERE id=$1',
       [decoded.id]
     );
-    if (!result.rows.length) return res.status(401).json({ error: 'User not found' });
+    if (!result.rows.length) {
+      if (res.fail) return res.fail('User not found', 401);
+      return res.status(401).json({ error: 'User not found' });
+    }
     const user = result.rows[0];
     // Admin model: single ADMIN_EMAIL + optional QA allowlist (explicitly gated)
     const adminEmail = process.env.ADMIN_EMAIL;
@@ -34,6 +38,7 @@ module.exports = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
+    if (res.fail) return res.fail('Invalid or expired token', 401);
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };

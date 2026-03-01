@@ -276,3 +276,76 @@ export async function copyFromRemote(remoteName: string, remotePath: string, loc
   if (!res.ok) throw new Error(`Copy from remote failed: ${res.status}`)
   return res.json()
 }
+
+// Production-grade API helpers
+export async function apiRenameFile(id: string, newName: string, token: string, correlationId?: string) {
+  const headers: Record<string, string> = {}
+  if (correlationId) headers['X-Correlation-Id'] = correlationId
+  
+  const res = await apiFetch('/api/files/rename', {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ id, newName })
+  }, token)
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || `Rename failed: ${res.status}`)
+  return data
+}
+
+export async function apiMoveFile(id: string, newParentPath: string, token: string, correlationId?: string) {
+  const headers: Record<string, string> = {}
+  if (correlationId) headers['X-Correlation-Id'] = correlationId
+  
+  const res = await apiFetch('/api/files/move', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ id, newParentPath })
+  }, token)
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || `Move failed: ${res.status}`)
+  return data
+}
+
+export async function apiDownloadFile(id: string, filename: string, token: string, correlationId?: string) {
+  const headers: Record<string, string> = {}
+  if (correlationId) headers['X-Correlation-Id'] = correlationId
+  
+  const res = await apiFetch('/api/files/download', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ id })
+  }, token)
+  
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Download failed' }))
+    throw new Error(err.error || `Download failed: ${res.status}`)
+  }
+  
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+export async function apiCreateShareLink(id: string, token: string, options: { password?: string, expiryHours?: number, correlationId?: string } = {}) {
+  const headers: Record<string, string> = {}
+  if (options.correlationId) headers['X-Correlation-Id'] = options.correlationId
+  
+  const body: Record<string, unknown> = { id }
+  if (options.password) body.password = options.password
+  if (options.expiryHours) body.expires_in_hours = options.expiryHours
+  
+  const res = await apiFetch('/api/share', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body)
+  }, token)
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || `Share failed: ${res.status}`)
+  return data
+}

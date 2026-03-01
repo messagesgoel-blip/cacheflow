@@ -5,6 +5,8 @@ import { ProviderId, FileMetadata, PROVIDERS, formatBytes } from '@/lib/provider
 import { getProvider } from '@/lib/providers'
 import { transferFileBetweenProviders } from '@/lib/transfer/crossProvider'
 import { tokenManager } from '@/lib/tokenManager'
+import { metadataCache } from '@/lib/metadataCache'
+import { actionLogger } from '@/lib/logger'
 import { useActionCenter } from '@/components/ActionCenterProvider'
 import TransferModal from '@/components/TransferModal'
 import RenameModal from '@/components/RenameModal'
@@ -36,14 +38,39 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const actions = useActionCenter()
-  const [transferModal, setTransferModal] = useState<{ open: boolean; mode: 'copy' | 'move'; file: FileMetadata | null }>({ open: false, mode: 'copy', file: null })
-  const [renameModal, setRenameModal] = useState<{ open: boolean; file: FileMetadata | null }>({ open: false, file: null })
+  const [transferModal, setTransferModal] = useState<{ open: boolean; mode: 'copy' | 'move'; file: FileMetadata | null; correlationId?: string }>({ open: false, mode: 'copy', file: null })
+  const [renameModal, setRenameModal] = useState<{ open: boolean; file: FileMetadata | null; correlationId?: string }>({ open: false, file: null })
+  const [previewModal, setPreviewModal] = useState<{ open: boolean; file: FileMetadata | null; url: string | null; type: string | null; correlationId?: string }>({ open: false, file: null, url: null, type: null })
 
   // Load connected providers from tokenManager
   useEffect(() => {
+    // QA Seeding: Automatically connect a mock provider if none connected
+    if (typeof window !== 'undefined' && tokenManager.getConnectedProviders().length === 0) {
+      console.log('[QA] Seeding mock Filen token for testing');
+      tokenManager.saveToken('filen', {
+        provider: 'filen',
+        accessToken: 'mock-qa-token',
+        accountEmail: 'qa-tester@filen.io',
+        displayName: 'QA Mock Drive',
+        expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000
+      });
+    }
+
+    // Always connect 'local' provider if we have a main app token
+    if (token && !tokenManager.hasToken('local')) {
+      tokenManager.saveToken('local', {
+        provider: 'local',
+        accessToken: token,
+        accountEmail: 'local-storage',
+        displayName: 'Local Storage',
+        expiresAt: null
+      });
+    }
+
+    setRefreshKey(k => k + 1);
     setLoading(true)
     setError(null)
-    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav']
+    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav', 'local']
     const connected: ConnectedProvider[] = []
     const loadingIds: ProviderId[] = []
 
@@ -95,11 +122,21 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             for (const t of tokens) {
               const key = t.accountKey || t.accountEmail || ''
               if (key) tokenManager.setActiveToken(pid, key)
-              const result = await provider.listFiles({ folderId: folderIdForApi })
+              
+              let resultFiles = []
+              const cached = await metadataCache.getCachedFiles(pid, folderIdForApi)
+              if (cached) {
+                resultFiles = cached
+              } else {
+                const result = await provider.listFiles({ folderId: folderIdForApi })
+                resultFiles = result.files
+                await metadataCache.cacheFiles(pid, folderIdForApi, resultFiles)
+              }
+              
               const providerConfig = PROVIDERS.find(p => p.id === pid)
               const sourceLabel = (t.accountEmail ? t.accountEmail.split('@')[0] : (t.displayName || providerConfig?.name || pid))
 
-              const filesWithSource = result.files.map(file => ({
+              const filesWithSource = resultFiles.map(file => ({
                 ...file,
                 provider: pid,
                 providerName: providerConfig?.name || pid,
@@ -114,11 +151,21 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             // Provider-specific view: list only the active enabled account
             const t = tokenManager.getToken(pid) as any
             const key = t?.accountKey || t?.accountEmail || ''
-            const result = await provider.listFiles({ folderId: folderIdForApi })
+            
+            let resultFiles = []
+            const cached = await metadataCache.getCachedFiles(pid, folderIdForApi)
+            if (cached) {
+              resultFiles = cached
+            } else {
+              const result = await provider.listFiles({ folderId: folderIdForApi })
+              resultFiles = result.files
+              await metadataCache.cacheFiles(pid, folderIdForApi, resultFiles)
+            }
+            
             const providerConfig = PROVIDERS.find(p => p.id === pid)
             const sourceLabel = (t?.accountEmail ? t.accountEmail.split('@')[0] : (t?.displayName || providerConfig?.name || pid))
 
-            const filesWithSource = result.files.map(file => ({
+            const filesWithSource = resultFiles.map(file => ({
               ...file,
               provider: pid,
               providerName: providerConfig?.name || pid,
@@ -161,6 +208,36 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       setRefreshKey((k) => k + 1)
     }
   }, [selectedProvider])
+
+  // Close modals on path or provider change
+  useEffect(() => {
+    if (renameModal.open || transferModal.open || previewModal.open) {
+      console.log('[ModalManager] Closing modals due to path/provider change')
+      setRenameModal({ open: false, file: null })
+      setTransferModal({ open: false, mode: 'copy', file: null })
+      setPreviewModal(prev => {
+        if (prev.url) URL.revokeObjectURL(prev.url)
+        return { open: false, file: null, url: null, type: null }
+      })
+    }
+  }, [currentPath, selectedProvider])
+
+  // Cleanup effect to ensure no stale overlays linger when all modals are closed
+  useEffect(() => {
+    const isAnyModalOpen = renameModal.open || transferModal.open || previewModal.open
+    
+    if (!isAnyModalOpen) {
+      // Synchronous cleanup of potential stale DOM nodes
+      const overlays = document.querySelectorAll('[data-testid$="-modal-overlay"], .z-\\[1200\\], .z-\\[100\\]')
+      if (overlays.length > 0) {
+        console.warn('[ModalManager] Found stale overlays while state says closed. Cleaning up:', overlays.length)
+        overlays.forEach(el => {
+          if (el instanceof HTMLElement) el.remove()
+        })
+      }
+      document.body.style.overflow = ''
+    }
+  }, [renameModal.open, transferModal.open, previewModal.open])
 
   // Filter files by provider
   const filteredFiles = files.filter(f => {
@@ -282,33 +359,60 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   }
 
   const handleFileOpen = async (file: FileMetadata) => {
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({ event: 'modal_open', actionName: 'preview', fileId: file.id, providerId: file.provider, currentPath, correlationId })
     try {
       const task = actions.startTask({ title: 'Opening', message: file.name, progress: null })
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider)
       if (!provider) return
+      
+      actionLogger.log({ event: 'action_start', actionName: 'preview', fileId: file.id, providerId: file.provider, currentPath, correlationId })
       const blob = await provider.downloadFile(file.id)
       const url = URL.createObjectURL(blob)
-      window.open(url, '_blank')
-      setTimeout(() => URL.revokeObjectURL(url), 10000)
-      task.update({ title: 'Preview opened' })
-      task.succeed(`${file.name} (${providerLabel(file)})`)
+
+      const isText = file.mimeType.startsWith('text/') || file.name.match(/\.(txt|md|csv|json|js|ts|jsx|tsx|html|css|py|java|c|cpp|go|rs|rb)$/i)
+      const isImage = file.mimeType.startsWith('image/')
+      const isPdf = file.mimeType === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+
+      if (isText || isImage || isPdf) {
+        let type = 'text'
+        if (isImage) type = 'image'
+        if (isPdf) type = 'pdf'
+        setPreviewModal({ open: true, file, url, type, correlationId })
+        task.update({ title: 'Preview opened' })
+        task.succeed(`${file.name} (${providerLabel(file)})`)
+        actionLogger.log({ event: 'action_success', actionName: 'preview', fileId: file.id, providerId: file.provider, currentPath, correlationId })
+      } else {
+        window.open(url, '_blank')
+        setTimeout(() => URL.revokeObjectURL(url), 10000)
+        task.update({ title: 'Opened in new tab' })
+        task.succeed(`${file.name} (${providerLabel(file)})`)
+        actionLogger.log({ event: 'action_success', actionName: 'open_tab', fileId: file.id, providerId: file.provider, currentPath, correlationId })
+      }
     } catch (err: any) {
       console.error('Open error:', err)
+      actionLogger.log({ event: 'action_fail', actionName: 'preview', fileId: file.id, providerId: file.provider, currentPath, correlationId, error: err.message })
       actions.notify({ kind: 'error', title: 'Open failed', message: err.message })
     }
   }
 
   const handleFileMove = async (file: FileMetadata) => {
-    setTransferModal({ open: true, mode: 'move', file })
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({ event: 'modal_open', actionName: 'move', fileId: file.id, providerId: file.provider, currentPath, correlationId })
+    setTransferModal({ open: true, mode: 'move', file, correlationId })
   }
 
   const handleFileCopy = async (file: FileMetadata) => {
-    setTransferModal({ open: true, mode: 'copy', file })
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({ event: 'modal_open', actionName: 'copy', fileId: file.id, providerId: file.provider, currentPath, correlationId })
+    setTransferModal({ open: true, mode: 'copy', file, correlationId })
   }
 
   const handleFileRename = async (file: FileMetadata) => {
-    setRenameModal({ open: true, file })
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({ event: 'modal_open', actionName: 'rename', fileId: file.id, providerId: file.provider, currentPath, correlationId })
+    setRenameModal({ open: true, file, correlationId })
   }
 
   const handleFileDelete = async (file: FileMetadata) => {
@@ -325,6 +429,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       const provider = getProvider(file.provider)
       if (provider) {
         await provider.deleteFile(file.id)
+        await metadataCache.invalidateCache(file.provider as any)
         // Reload files
         setSelectedFiles(new Set())
         setLoading(true)
@@ -366,6 +471,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       if (activeAccountKey) tokenManager.setActiveToken(providerId, activeAccountKey)
       const task = actions.startTask({ title: 'Creating folder', message: `${trimmed} (${PROVIDERS.find(p => p.id === providerId)?.name || providerId})`, progress: null })
       const folder = await provider.createFolder(trimmed, parentIdForApi)
+      await metadataCache.invalidateCache(providerId)
       setSelectedFiles(new Set())
       setLoading(true)
       setRefreshKey((k) => k + 1)
@@ -378,81 +484,148 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <TransferModal
-        isOpen={transferModal.open}
-        mode={transferModal.mode}
-        file={transferModal.file}
-        connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))}
-        onClose={() => setTransferModal({ open: false, mode: 'copy', file: null })}
-        onSubmit={async ({ targetProviderId, targetAccountKey, targetFolderId }) => {
-          const file = transferModal.file
-          if (!file) return
-          const task = actions.startTask({
-            title: transferModal.mode === 'copy' ? 'Copying file' : 'Moving file',
-            message: `${file.name} -> ${targetProviderId}`,
-            progress: null,
-          })
-          try {
-            // Ensure source account is active (multi-account)
-            if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
+      {previewModal.open && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => {
+          actionLogger.log({ event: 'modal_close', actionName: 'preview', correlationId: previewModal.correlationId })
+          if (previewModal.url) URL.revokeObjectURL(previewModal.url)
+          setPreviewModal({ open: false, file: null, url: null, type: null })
+        }}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-5xl h-[85vh] flex flex-col shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="font-medium text-gray-900 dark:text-white truncate pr-4">{previewModal.file?.name}</h3>
+              <button
+                onClick={() => {
+                  actionLogger.log({ event: 'modal_close', actionName: 'preview', correlationId: previewModal.correlationId })
+                  if (previewModal.url) URL.revokeObjectURL(previewModal.url)
+                  setPreviewModal({ open: false, file: null, url: null, type: null })
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl font-bold px-2"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden p-4 flex justify-center items-center bg-gray-50 dark:bg-gray-900 rounded-b-lg">
+              {previewModal.type === 'image' && (
+                <img src={previewModal.url!} alt={previewModal.file?.name} className="max-w-full max-h-full object-contain" />
+              )}
+              {previewModal.type === 'pdf' && (
+                <iframe src={previewModal.url!} className="w-full h-full border-0 rounded bg-white" title={previewModal.file?.name} />
+              )}
+              {previewModal.type === 'text' && (
+                <iframe src={previewModal.url!} className="w-full h-full border border-gray-200 dark:border-gray-700 rounded bg-white" title={previewModal.file?.name} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-            // Ensure target account is active
-            if (targetAccountKey) tokenManager.setActiveToken(targetProviderId, targetAccountKey)
-
-            const source = getProvider(file.provider)
-            const target = getProvider(targetProviderId)
-            if (!source || !target) throw new Error('Provider not available')
-
-            await transferFileBetweenProviders({
-              source,
-              target,
-              file,
-              targetFolderId,
-              mode: transferModal.mode,
-            })
-
+      {transferModal.open && transferModal.file && (
+        <TransferModal
+          isOpen={transferModal.open}
+          mode={transferModal.mode}
+          file={transferModal.file}
+          connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))}
+          onClose={() => {
+            actionLogger.log({ event: 'modal_close', actionName: transferModal.mode, correlationId: transferModal.correlationId })
             setTransferModal({ open: false, mode: 'copy', file: null })
-            setSelectedFiles(new Set())
-            setLoading(true)
-            setRefreshKey((k) => k + 1)
-            const targetName = PROVIDERS.find(p => p.id === targetProviderId)?.name || targetProviderId
-            const sourceName = PROVIDERS.find(p => p.id === (file.provider as any))?.name || (file.provider as any)
-            task.update({ title: transferModal.mode === 'copy' ? 'Copied' : 'Moved' })
-            task.succeed(`${file.name} (${sourceName} -> ${targetName})`)
-          } catch (e: any) {
-            task.fail(e?.message || 'Failed')
-          }
-        }}
-      />
+          }}
+          onSubmit={async ({ targetProviderId, targetAccountKey, targetFolderId }) => {
+            const file = transferModal.file
+            if (!file) return
+            
+            const correlationId = transferModal.correlationId
+            actionLogger.log({ event: 'action_start', actionName: transferModal.mode, fileId: file.id, providerId: file.provider, currentPath, correlationId })
+            
+            const task = actions.startTask({
+              title: transferModal.mode === 'copy' ? 'Copying file' : 'Moving file',
+              message: `${file.name} -> ${targetProviderId}`,
+              progress: null,
+            })
+            try {
+              // Ensure source account is active (multi-account)
+              if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
 
-      <RenameModal
-        isOpen={renameModal.open}
-        title="Rename"
-        initialValue={renameModal.file?.name || ''}
-        onClose={() => setRenameModal({ open: false, file: null })}
-        onSubmit={async (newName) => {
-          const file = renameModal.file
-          if (!file || !newName || newName === file.name) {
+              // Ensure target account is active
+              if (targetAccountKey) tokenManager.setActiveToken(targetProviderId, targetAccountKey)
+
+              const source = getProvider(file.provider)
+              const target = getProvider(targetProviderId)
+              if (!source || !target) throw new Error('Provider not available')
+
+              await transferFileBetweenProviders({
+                source,
+                target,
+                file,
+                targetFolderId,
+                mode: transferModal.mode,
+              })
+
+              await metadataCache.invalidateCache(file.provider as any)
+              await metadataCache.invalidateCache(targetProviderId)
+
+              actionLogger.log({ event: 'modal_close', actionName: transferModal.mode, correlationId })
+              setTransferModal({ open: false, mode: 'copy', file: null })
+              setSelectedFiles(new Set())
+              setLoading(true)
+              setRefreshKey((k) => k + 1)
+              const targetName = PROVIDERS.find(p => p.id === targetProviderId)?.name || targetProviderId
+              const sourceName = PROVIDERS.find(p => p.id === (file.provider as any))?.name || (file.provider as any)
+              task.update({ title: transferModal.mode === 'copy' ? 'Copied' : 'Moved' })
+              task.succeed(`${file.name} (${sourceName} -> ${targetName})`)
+              actionLogger.log({ event: 'action_success', actionName: transferModal.mode, fileId: file.id, providerId: file.provider, currentPath, correlationId })
+            } catch (e: any) {
+              actionLogger.log({ event: 'action_fail', actionName: transferModal.mode, fileId: file?.id, providerId: file?.provider, currentPath, correlationId, error: e?.message })
+              task.fail(e?.message || 'Failed')
+              throw e
+            }
+          }}
+        />
+      )}
+
+      {renameModal.open && renameModal.file && (
+        <RenameModal
+          isOpen={renameModal.open}
+          title="Rename"
+          initialValue={renameModal.file?.name || ''}
+          onClose={() => {
+            actionLogger.log({ event: 'modal_close', actionName: 'rename', correlationId: renameModal.correlationId })
             setRenameModal({ open: false, file: null })
-            return
-          }
-          const task = actions.startTask({ title: 'Renaming', message: `${file.name} -> ${newName}`, progress: null })
-          try {
-            if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
-            const provider = getProvider(file.provider)
-            if (!provider) throw new Error('Provider not available')
-            await provider.renameFile(file.id, newName)
-            setRenameModal({ open: false, file: null })
-            setSelectedFiles(new Set())
-            setLoading(true)
-            setRefreshKey((k) => k + 1)
-            task.update({ title: 'Renamed' })
-            task.succeed(`${file.name} -> ${newName} (${providerLabel(file)})`)
-          } catch (e: any) {
-            task.fail(e?.message || 'Failed')
-          }
-        }}
-      />
+          }}
+          onSubmit={async (newName) => {
+            const file = renameModal.file
+            if (!file || !newName || newName === file.name) {
+              actionLogger.log({ event: 'modal_close', actionName: 'rename', correlationId: renameModal.correlationId })
+              setRenameModal({ open: false, file: null })
+              return
+            }
+            
+            const correlationId = renameModal.correlationId
+            actionLogger.log({ event: 'action_start', actionName: 'rename', fileId: file.id, providerId: file.provider, currentPath, correlationId })
+            
+            const task = actions.startTask({ title: 'Renaming', message: `${file.name} -> ${newName}`, progress: null })
+            try {
+              if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
+              const provider = getProvider(file.provider)
+              if (!provider) throw new Error('Provider not available')
+              await provider.renameFile(file.id, newName)
+              await metadataCache.invalidateCache(file.provider as any)
+              
+              actionLogger.log({ event: 'modal_close', actionName: 'rename', correlationId })
+              setRenameModal({ open: false, file: null })
+              setSelectedFiles(new Set())
+              setLoading(true)
+              setRefreshKey((k) => k + 1)
+              task.update({ title: 'Renamed' })
+              task.succeed(`${file.name} -> ${newName} (${providerLabel(file)})`)
+              actionLogger.log({ event: 'action_success', actionName: 'rename', fileId: file.id, providerId: file.provider, currentPath, correlationId })
+            } catch (e: any) {
+              actionLogger.log({ event: 'action_fail', actionName: 'rename', fileId: file?.id, providerId: file?.provider, currentPath, correlationId, error: e?.message })
+              task.fail(e?.message || 'Failed')
+              throw e
+            }
+          }}
+        />
+      )}
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-4 mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -548,7 +721,16 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         </div>
 
         <button
-          onClick={() => setRefreshKey((k) => k + 1)}
+          onClick={async () => {
+            if (selectedProvider === 'all') {
+              for (const pid of connectedProviders.map(p => p.providerId)) {
+                await metadataCache.invalidateCache(pid)
+              }
+            } else {
+              await metadataCache.invalidateCache(selectedProvider)
+            }
+            setRefreshKey((k) => k + 1)
+          }}
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
           data-testid="files-refresh"
         >

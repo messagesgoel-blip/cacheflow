@@ -486,6 +486,7 @@ function getProviderIcon(providerId: ProviderId): string {
     yandex: '📀',
     webdav: '🌐',
     vps: '🖥️',
+    local: '💻',
   }
   return icons[providerId] || '📁'
 }

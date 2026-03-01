@@ -12,6 +12,11 @@ const adminRoutes = require('./routes/admin');
 const storageRoutes = require('./routes/storage');
 const remotesRoutes = require('./routes/remotes');
 const tokensRoutes = require('./routes/tokens');
+const healthRoutes = require('./routes/health');
+const cacheRoutes = require('./routes/cache');
+const transferRoutes = require('./routes/transfer');
+const apiRoutes      = require('./routes/api');
+const requestTracker = require('./middleware/requestTracker');
 const { checkApiKey } = require('./services/embeddings');
 const config = require('./config');
 
@@ -21,6 +26,8 @@ app.disable('etag');
 
 // Check ANTHROPIC_API_KEY on startup
 checkApiKey();
+
+app.use(requestTracker);
 
 function isPrivateIp(ip = '') {
   const normalized = ip.replace(/^::ffff:/, '');
@@ -112,14 +119,16 @@ const corsMiddleware = cors({
     return cb(null, corsAllowedOrigins.has(origin));
   },
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Authorization', 'Content-Type', 'X-Share-Password'],
+  allowedHeaders: ['Authorization', 'Content-Type', 'X-Share-Password', 'X-Correlation-Id'],
   credentials: false,
   maxAge: 600,
 });
 
 app.use(corsMiddleware);
 // cors middleware automatically handles preflight OPTIONS
-app.use(morgan('combined'));
+morgan.token('requestId', (req) => req.requestId || '-');
+morgan.token('correlationId', (req) => req.correlationId || '-');
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms [req::requestId] [corr::correlationId]'));
 app.use(globalLimiter);
 app.use(express.json());
 
@@ -130,14 +139,7 @@ app.use((req, res, next) => {
 });
 
 // Health — checks DB connectivity
-app.get('/health', async (req, res) => {
-  try {
-    await pool.query('SELECT 1');
-    res.json({ status: 'ok', db: 'connected', ts: new Date().toISOString() });
-  } catch (err) {
-    res.status(503).json({ status: 'error', db: 'disconnected', error: err.message });
-  }
-});
+app.use('/health', healthRoutes);
 
 app.use('/auth', authLimiter, authRoutes);
 app.use('/files/upload', uploadLimiter);
@@ -149,5 +151,10 @@ app.use('/admin', adminRoutes);
 app.use('/storage', storageRoutes);
 app.use('/remotes', remotesRoutes);
 app.use('/tokens', tokensRoutes);
+app.use('/cache', cacheRoutes);
+app.use('/transfer', transferRoutes);
+
+// New production-grade API routes
+app.use('/api', apiRoutes);
 
 module.exports = app;

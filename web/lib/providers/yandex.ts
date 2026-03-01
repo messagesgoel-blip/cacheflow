@@ -157,11 +157,33 @@ export class YandexProvider extends StorageProvider {
     const r = await this.req('/disk/resources/search?query='+encodeURIComponent(o.query)+'&limit=100')
     return { files: (r.items||[]).map((i:any)=>this.mf(i)), hasMore: r._embedded?.has_more || false }
   }
-  async getFile(id: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async moveFile(id: string, pid: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async copyFile(id: string, pid: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async renameFile(id: string, name: string): Promise<FileMetadata> { throw new Error('Not implemented') }
-  async revokeShareLink(id: string): Promise<void> { throw new Error('Not implemented') }
+  async getFile(id: string): Promise<FileMetadata> {
+    const r = await this.req('/disk/resources?path=' + encodeURIComponent(id))
+    return this.mf(r)
+  }
+  async moveFile(id: string, pid: string): Promise<FileMetadata> {
+    const name = id.split('/').pop() || ''
+    const newPath = (pid === '/' ? '' : pid) + '/' + name
+    await this.req('/disk/resources/move?from=' + encodeURIComponent(id) + '&path=' + encodeURIComponent(newPath), 'POST')
+    return this.getFile(newPath)
+  }
+  async copyFile(id: string, pid: string): Promise<FileMetadata> {
+    const name = id.split('/').pop() || ''
+    const newPath = (pid === '/' ? '' : pid) + '/' + name
+    await this.req('/disk/resources/copy?from=' + encodeURIComponent(id) + '&path=' + encodeURIComponent(newPath), 'POST')
+    return this.getFile(newPath)
+  }
+  async renameFile(id: string, name: string): Promise<FileMetadata> {
+    const parts = id.split('/')
+    parts.pop()
+    const parentPath = parts.join('/') || '/'
+    const newPath = (parentPath === '/' ? '' : parentPath) + '/' + name
+    await this.req('/disk/resources/move?from=' + encodeURIComponent(id) + '&path=' + encodeURIComponent(newPath), 'POST')
+    return this.getFile(newPath)
+  }
+  async revokeShareLink(id: string): Promise<void> {
+    await this.req('/disk/resources/unpublish?path=' + encodeURIComponent(id), 'PUT')
+  }
 
   private async req(ep: string, method: string = 'GET'): Promise<any> {
     if (!this.accessToken) { const t = tokenManager.getToken('yandex'); if (!t) throw new Error('Not auth'); this.accessToken = t.accessToken }

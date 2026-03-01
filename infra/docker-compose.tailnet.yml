@@ -12,4 +12,11 @@ services:
       - PORT=3010
     depends_on:
       - api
+    networks:
+      - cacheflow
     mem_limit: 512m
+
+networks:
+  cacheflow:
+    external: true
+    name: infra_cacheflow

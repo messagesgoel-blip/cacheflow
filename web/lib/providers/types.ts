@@ -17,6 +17,7 @@ export type ProviderId =
   | 'yandex'
   | 'webdav'
   | 'vps'
+  | 'local'
 
 export interface ProviderConfig {
   id: ProviderId
@@ -122,6 +123,16 @@ export const PROVIDERS: ProviderConfig[] = [
     freeStorageGB: 0, // Varies by server (typically 50-200GB)
     description: 'Connect your own VPS or Linux server via SFTP',
     authType: 'basic', // SSH key or password
+    website: '',
+  },
+  {
+    id: 'local',
+    name: 'Local Storage',
+    icon: '💻',
+    color: '#6B7280',
+    freeStorageGB: 0,
+    description: 'Internal server storage',
+    authType: 'token',
     website: '',
   },
 ]

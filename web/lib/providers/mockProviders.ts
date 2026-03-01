@@ -89,9 +89,18 @@ const mockQuotas: Record<ProviderId, ProviderQuota> = {
     usedDisplay: '25 GB',
     totalDisplay: '100 GB',
     freeDisplay: '75 GB',
-    percentUsed: 25,
-  },
-}
+    percentUsed: 42.5,
+    },
+    local: {
+    used: 0,
+    total: 0,
+    free: 0,
+    usedDisplay: '0 B',
+    totalDisplay: '0 B',
+    freeDisplay: '0 B',
+    percentUsed: 0
+    }
+    }
 
 // ============================================================================
 // MOCK FILE DATA
@@ -380,6 +389,7 @@ const mockFiles: Record<ProviderId, FileMetadata[]> = {
       providerName: 'VPS / SFTP',
     },
   ],
+  local: [],
 }
 
 // ============================================================================

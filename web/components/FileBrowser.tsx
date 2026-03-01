@@ -1,13 +1,23 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { browseFiles, uploadFile, createFolder, deleteFolder, moveFile } from '@/lib/api'
+import { 
+  browseFiles, 
+  uploadFile, 
+  createFolder, 
+  deleteFolder, 
+  apiRenameFile,
+  apiMoveFile,
+  apiDownloadFile,
+  apiCreateShareLink
+} from '@/lib/api'
 import { getProvider } from '@/lib/providers'
 import { ProviderId, PROVIDERS, FileMetadata } from '@/lib/providers/types'
 import FileTable from './FileTable'
 import Breadcrumb from './Breadcrumb'
 import { useContextMenu, contextMenuItems } from './ContextMenu'
 import { useActionCenter } from '@/components/ActionCenterProvider'
+import { actionLogger } from '@/lib/logger'
 
 interface FileBrowserProps {
   token: string
@@ -203,7 +213,7 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
     if (!token) return
 
     try {
-      await moveFile(fileId, newPath, token)
+      await apiMoveFile(fileId, newPath, token)
       await loadCurrentPath()
       onRefresh?.()
     } catch (err: any) {
@@ -282,6 +292,8 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
 
   // Helper functions for context menu actions
   async function handleDownload(fileId: string, filePath: string) {
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({ event: 'action_start', actionName: 'download', fileId, currentPath, correlationId })
     try {
       if (isCloud && cloudProviderId) {
         const provider = getProvider(cloudProviderId)
@@ -296,30 +308,23 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
           a.click()
           document.body.removeChild(a)
           URL.revokeObjectURL(url)
+          actionLogger.log({ event: 'action_success', actionName: 'download', fileId, correlationId })
           return
         }
       }
-      // For local/VPS, use API
-      const response = await fetch(`/api/files/download?path=${encodeURIComponent(filePath)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (!response.ok) throw new Error('Download failed')
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filePath.split('/').pop() || 'download'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      // For local/VPS, use production-grade API
+      await apiDownloadFile(fileId, filePath.split('/').pop() || 'download', token, correlationId)
+      actionLogger.log({ event: 'action_success', actionName: 'download', fileId, correlationId })
     } catch (err: any) {
       console.error('Download error:', err)
+      actionLogger.log({ event: 'action_fail', actionName: 'download', fileId, correlationId, error: err.message })
       setError(err.message || 'Download failed')
     }
   }
 
   async function handleShare(fileId: string, filePath: string) {
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({ event: 'action_start', actionName: 'share', fileId, currentPath, correlationId })
     try {
       let shareLink = ''
       if (isCloud && cloudProviderId) {
@@ -331,24 +336,18 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
       if (shareLink) {
         await navigator.clipboard.writeText(shareLink)
         setUnimplementedMsg('Share link copied to clipboard!')
+        actionLogger.log({ event: 'action_success', actionName: 'share', fileId, correlationId })
       } else {
-        // For local/VPS, create a share token via API
-        const response = await fetch('/api/share', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ filePath })
-        })
-        if (!response.ok) throw new Error('Failed to create share link')
-        const data = await response.json()
-        const link = `${window.location.origin}/share/${data.token}`
+        // For local/VPS, create a share token via production-grade API
+        const data = await apiCreateShareLink(fileId, token, { correlationId })
+        const link = `${window.location.origin}/share/${data.data.token}`
         await navigator.clipboard.writeText(link)
         setUnimplementedMsg('Share link copied to clipboard!')
+        actionLogger.log({ event: 'action_success', actionName: 'share', fileId, correlationId })
       }
     } catch (err: any) {
       console.error('Share error:', err)
+      actionLogger.log({ event: 'action_fail', actionName: 'share', fileId, correlationId, error: err.message })
       setError(err.message || 'Failed to create share link')
     }
   }
@@ -363,28 +362,25 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
     })
     if (!newName || newName === filePath.split('/').pop()) return
 
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({ event: 'action_start', actionName: 'rename', fileId, currentPath, correlationId })
     try {
       if (isCloud && cloudProviderId) {
         const provider = getProvider(cloudProviderId)
         if (provider) {
           await provider.renameFile(fileId, newName)
           await loadCurrentPath()
+          actionLogger.log({ event: 'action_success', actionName: 'rename', fileId, correlationId })
           return
         }
       }
-      // For local/VPS, use API
-      const response = await fetch('/api/files/rename', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ path: filePath, newName })
-      })
-      if (!response.ok) throw new Error('Rename failed')
+      // For local/VPS, use production-grade API
+      await apiRenameFile(fileId, newName, token, correlationId)
+      actionLogger.log({ event: 'action_success', actionName: 'rename', fileId, correlationId })
       await loadCurrentPath()
     } catch (err: any) {
       console.error('Rename error:', err)
+      actionLogger.log({ event: 'action_fail', actionName: 'rename', fileId, correlationId, error: err.message })
       setError(err.message || 'Rename failed')
     }
   }
@@ -399,28 +395,25 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
     })
     if (!newPath) return
 
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({ event: 'action_start', actionName: 'move', fileId, currentPath, correlationId })
     try {
       if (isCloud && cloudProviderId) {
         const provider = getProvider(cloudProviderId)
         if (provider) {
           await provider.moveFile(fileId, newPath)
           await loadCurrentPath()
+          actionLogger.log({ event: 'action_success', actionName: 'move', fileId, correlationId })
           return
         }
       }
-      // For local/VPS, use API
-      const response = await fetch('/api/files/move', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ path: filePath, newPath })
-      })
-      if (!response.ok) throw new Error('Move failed')
+      // For local/VPS, use production-grade API
+      await apiMoveFile(fileId, newPath, token, correlationId)
+      actionLogger.log({ event: 'action_success', actionName: 'move', fileId, correlationId })
       await loadCurrentPath()
     } catch (err: any) {
       console.error('Move error:', err)
+      actionLogger.log({ event: 'action_fail', actionName: 'move', fileId, correlationId, error: err.message })
       setError(err.message || 'Move failed')
     }
   }
