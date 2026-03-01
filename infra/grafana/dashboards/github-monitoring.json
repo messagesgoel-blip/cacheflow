@@ -1,7 +1,5 @@
 {
-  "annotations": {
-    "list": []
-  },
+  "annotations": {"list": []},
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -24,11 +22,11 @@
           "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]},
-          "unit": "none"
+          "unit": "decmbytes"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 3, "x": 0, "y": 1},
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 1},
       "id": 1,
       "options": {
         "colorMode": "value",
@@ -39,138 +37,8 @@
         "textMode": "auto"
       },
       "pluginVersion": "10.0.0",
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(github_repo_stars)", "refId": "A"}],
-      "title": "Total Stars",
-      "type": "stat"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 4, "w": 3, "x": 3, "y": 1},
-      "id": 2,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(github_repo_forks)", "refId": "A"}],
-      "title": "Total Forks",
-      "type": "stat"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 10}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 4, "w": 3, "x": 6, "y": 1},
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(github_repo_open_issues)", "refId": "A"}],
-      "title": "Open Issues",
-      "type": "stat"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 10}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 4, "w": 3, "x": 9, "y": 1},
-      "id": 4,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(github_repo_pull_request_count)", "refId": "A"}],
-      "title": "Open PRs",
-      "type": "stat"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]},
-          "unit": "decmbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 4, "w": 3, "x": 12, "y": 1},
-      "id": 5,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
       "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(github_repo_size_kb)", "refId": "A"}],
-      "title": "Repo Size",
-      "type": "stat"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1000}, {"color": "red", "value": 500}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 4, "w": 3, "x": 15, "y": 1},
-      "id": 6,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_rate_remaining{api=\"core\"}", "refId": "A"}],
-      "title": "API Rate Remaining",
+      "title": "Total Repo Size",
       "type": "stat"
     },
     {
@@ -184,8 +52,8 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 3, "x": 18, "y": 1},
-      "id": 7,
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 1},
+      "id": 2,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -195,8 +63,60 @@
         "textMode": "auto"
       },
       "pluginVersion": "10.0.0",
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(github_repo_watchers)", "refId": "A"}],
-      "title": "Watchers",
+      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "sum(git_total_commits)", "refId": "A"}],
+      "title": "Total Commits",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1000}, {"color": "red", "value": 500}]},
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 5, "x": 8, "y": 1},
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_rate_remaining{api=\"core\"}", "refId": "A"}],
+      "title": "Core API Rate Remaining",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 10}, {"color": "red", "value": 5}]},
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 5, "x": 13, "y": 1},
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_rate_remaining{api=\"search\"}", "refId": "A"}],
+      "title": "Search API Rate Remaining",
       "type": "stat"
     },
     {
@@ -213,8 +133,8 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 3, "x": 21, "y": 1},
-      "id": 8,
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+      "id": 5,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -225,284 +145,13 @@
       },
       "pluginVersion": "10.0.0",
       "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "up{job=\"github\"}", "refId": "A"}],
-      "title": "Exporter Health",
+      "title": "GitHub Exporter Health",
       "type": "stat"
     },
     {
       "collapsed": false,
       "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
       "id": 101,
-      "panels": [],
-      "title": "📊 Commit Activity",
-      "type": "row"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {
-            "axisCenteredZero": false,
-            "axisLabel": "Size (KB)",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {"type": "linear"},
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {"group": "A", "mode": "none"},
-            "thresholdsStyle": {"mode": "off"}
-          },
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
-      "id": 9,
-      "options": {
-        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "single", "sort": "none"}
-      },
-      "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_size_kb{repo=\"cacheflow\"}", "legendFormat": "CacheFlow", "refId": "A"},
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_size_kb{repo=\"Mathkit\"}", "legendFormat": "Mathkit", "refId": "B"}
-      ],
-      "title": "Repo Size Growth Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {
-            "axisCenteredZero": false,
-            "axisLabel": "Count",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {"type": "linear"},
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {"group": "A", "mode": "none"},
-            "thresholdsStyle": {"mode": "off"}
-          },
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
-      "id": 10,
-      "options": {
-        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "single", "sort": "none"}
-      },
-      "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_stars{repo=\"cacheflow\"}", "legendFormat": "CacheFlow Stars", "refId": "A"},
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_stars{repo=\"Mathkit\"}", "legendFormat": "Mathkit Stars", "refId": "B"}
-      ],
-      "title": "Stars Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {
-            "axisCenteredZero": false,
-            "axisLabel": "Count",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {"type": "linear"},
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {"group": "A", "mode": "none"},
-            "thresholdsStyle": {"mode": "off"}
-          },
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 14},
-      "id": 11,
-      "options": {
-        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "single", "sort": "none"}
-      },
-      "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_open_issues{repo=\"cacheflow\"}", "legendFormat": "CacheFlow Issues", "refId": "A"},
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_open_issues{repo=\"Mathkit\"}", "legendFormat": "Mathkit Issues", "refId": "B"}
-      ],
-      "title": "Open Issues Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {
-            "axisCenteredZero": false,
-            "axisLabel": "Count",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {"type": "linear"},
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {"group": "A", "mode": "none"},
-            "thresholdsStyle": {"mode": "off"}
-          },
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 14},
-      "id": 12,
-      "options": {
-        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "single", "sort": "none"}
-      },
-      "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_pull_request_count{repo=\"cacheflow\"}", "legendFormat": "CacheFlow PRs", "refId": "A"},
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_pull_request_count{repo=\"Mathkit\"}", "legendFormat": "Mathkit PRs", "refId": "B"}
-      ],
-      "title": "Open PRs Trend",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 20},
-      "id": 102,
-      "panels": [],
-      "title": "🗺️ Roadmap",
-      "type": "row"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 21},
-      "id": 13,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "textMode": "value_and_name"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_open_issues", "legendFormat": "{{repo}} Issues", "refId": "A"},
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_pull_request_count", "legendFormat": "{{repo}} PRs", "refId": "B"}
-      ],
-      "title": "Live Issue/PR Stats",
-      "type": "stat"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {
-            "axisCenteredZero": false,
-            "axisLabel": "Count",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {"type": "linear"},
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {"group": "A", "mode": "none"},
-            "thresholdsStyle": {"mode": "off"}
-          },
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 21},
-      "id": 14,
-      "options": {
-        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "single", "sort": "none"}
-      },
-      "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_repo_open_issues", "legendFormat": "{{repo}} Open Issues", "refId": "A"}
-      ],
-      "title": "Issues Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {"type": "text"},
-      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 21},
-      "id": 15,
-      "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "# 90-Day Delivery Roadmap\n\n| Phase | Day | Commit | Target | Status |\n|-------|-----|--------|--------|--------|\n| Phase 1 | Day 34 | f2c953e | May 21 | ✅ Complete |\n| Phase 2 | Day 45 | - | Jun 01 | 🔄 In Progress |\n| Phase 3 | Day 60 | - | Jun 15 | ⏳ Pending |\n| Phase 4 | Day 75 | - | Jun 30 | ⏳ Pending |\n| Phase 5 | Day 90 | - | Jul 15 | ⏳ Pending |\n\n---\n**Last Updated:** 2026-03-01",
-        "mode": "markdown"
-      },
-      "pluginVersion": "10.0.0",
-      "title": "Delivery Phases",
-      "type": "text"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 29},
-      "id": 103,
       "panels": [],
       "title": "💻 Git Activity (Pushgateway)",
       "type": "row"
@@ -513,13 +162,13 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 10}, {"color": "red", "value": 25}]},
           "unit": "none"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 30},
-      "id": 20,
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 6},
+      "id": 6,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -530,9 +179,38 @@
       },
       "pluginVersion": "10.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_total_commits", "legendFormat": "{{project}} Total", "refId": "A"}
+        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_total_commits", "legendFormat": "{{project}}", "refId": "A"}
       ],
-      "title": "Total Commits",
+      "title": "Commits by Repo",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 15}]},
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 6},
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_worktree_changed_files", "legendFormat": "{{project}} Changed", "refId": "A"},
+        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_worktree_untracked_files", "legendFormat": "{{project}} Untracked", "refId": "B"}
+      ],
+      "title": "Working Tree Status",
       "type": "stat"
     },
     {
@@ -546,8 +224,8 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 30},
-      "id": 21,
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 6},
+      "id": 8,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -570,42 +248,13 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 5}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 30},
-      "id": 22,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "textMode": "value_and_name"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_worktree_changed_files", "legendFormat": "{{project}} Changed", "refId": "A"},
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_worktree_untracked_files", "legendFormat": "{{project}} Untracked", "refId": "B"}
-      ],
-      "title": "Working Tree Changes",
-      "type": "stat"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 24}, {"color": "red", "value": 48}]},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 86400}, {"color": "red", "value": 172800}]},
           "unit": "dtdurations"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 30},
-      "id": 23,
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 6},
+      "id": 9,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -650,8 +299,8 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 34},
-      "id": 24,
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 10},
+      "id": 10,
       "options": {
         "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
         "tooltip": {"mode": "single", "sort": "none"}
@@ -669,7 +318,7 @@
           "color": {"mode": "palette-classic"},
           "custom": {
             "axisCenteredZero": false,
-            "axisLabel": "",
+            "axisLabel": "Files",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
@@ -691,17 +340,17 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 34},
-      "id": 25,
+      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 10},
+      "id": 11,
       "options": {
         "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
         "tooltip": {"mode": "single", "sort": "none"}
       },
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_commits_ahead", "legendFormat": "{{project}} Ahead", "refId": "A"},
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_commits_behind", "legendFormat": "{{project}} Behind", "refId": "B"}
+        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_worktree_changed_files", "legendFormat": "{{project}} Changed", "refId": "A"},
+        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "git_worktree_untracked_files", "legendFormat": "{{project}} Untracked", "refId": "B"}
       ],
-      "title": "Ahead/Behind Origin Trend",
+      "title": "Working Tree Changes Trend",
       "type": "timeseries"
     },
     {
@@ -719,10 +368,10 @@
         },
         "overrides": [
           {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "displayName", "value": "Timestamp"}, {"id": "unit", "value": "time:YYYY-MM-DD HH:mm"}, {"id": "custom.width", "value": 150}]},
-          {"matcher": {"id": "byName", "options": "agent"}, "properties": [{"id": "displayName", "value": "Agent"}, {"id": "custom.width", "value": 100}]},
+          {"matcher": {"id": "byName", "options": "agent"}, "properties": [{"id": "displayName", "value": "Agent"}, {"id": "custom.width", "value": 90}]},
           {"matcher": {"id": "byName", "options": "changes"}, "properties": [{"id": "displayName", "value": "Subject"}]},
-          {"matcher": {"id": "byName", "options": "files_changed"}, "properties": [{"id": "displayName", "value": "Files"}, {"id": "custom.width", "value": 80}]},
-          {"matcher": {"id": "byName", "options": "project"}, "properties": [{"id": "displayName", "value": "Project"}, {"id": "custom.width", "value": 120}]},
+          {"matcher": {"id": "byName", "options": "files_changed"}, "properties": [{"id": "displayName", "value": "Files"}, {"id": "custom.width", "value": 70}]},
+          {"matcher": {"id": "byName", "options": "project"}, "properties": [{"id": "displayName", "value": "Project"}, {"id": "custom.width", "value": 100}]},
           {"matcher": {"id": "byName", "options": "author"}, "properties": [{"id": "custom.hidden", "value": true}]},
           {"matcher": {"id": "byName", "options": "email"}, "properties": [{"id": "custom.hidden", "value": true}]},
           {"matcher": {"id": "byName", "options": "sha"}, "properties": [{"id": "custom.hidden", "value": true}]},
@@ -731,8 +380,8 @@
           {"matcher": {"id": "byName", "options": "rank"}, "properties": [{"id": "custom.hidden", "value": true}]}
         ]
       },
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 42},
-      "id": 26,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 17},
+      "id": 12,
       "options": {
         "cellHeight": "sm",
         "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
@@ -747,8 +396,28 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 50},
-      "id": 104,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 25},
+      "id": 102,
+      "panels": [],
+      "title": "🗺️ Roadmap",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "text"},
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 26},
+      "id": 13,
+      "options": {
+        "code": {"language": "plaintext", "showLineNumbers": false, "showMiniMap": false},
+        "content": "# 90-Day Delivery Roadmap\n\n| Phase | Day | Commit | Target | Status |\n|-------|-----|--------|--------|--------|\n| Phase 1 | Day 34 | f2c953e | May 21 | ✅ Complete |\n| Phase 2 | Day 45 | - | Jun 01 | 🔄 In Progress |\n| Phase 3 | Day 60 | - | Jun 15 | ⏳ Pending |\n| Phase 4 | Day 75 | - | Jun 30 | ⏳ Pending |\n| Phase 5 | Day 90 | - | Jul 15 | ⏳ Pending |\n\n---\n**Last Updated:** 2026-03-01"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "Delivery Phases",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 32},
+      "id": 103,
       "panels": [],
       "title": "🔍 API Health",
       "type": "row"
@@ -782,8 +451,8 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30},
-      "id": 16,
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 33},
+      "id": 14,
       "options": {
         "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
         "tooltip": {"mode": "single", "sort": "none"}
@@ -793,7 +462,7 @@
         {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_rate_remaining{api=\"graphql\"}", "legendFormat": "GraphQL API", "refId": "B"},
         {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_rate_remaining{api=\"search\"}", "legendFormat": "Search API", "refId": "C"}
       ],
-      "title": "Rate Limit Remaining Over Time",
+      "title": "API Rate Limits Over Time",
       "type": "timeseries"
     },
     {
@@ -807,8 +476,8 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 30},
-      "id": 17,
+      "gridPos": {"h": 7, "w": 6, "x": 12, "y": 33},
+      "id": 15,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -835,8 +504,8 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 30},
-      "id": 18,
+      "gridPos": {"h": 7, "w": 6, "x": 18, "y": 33},
+      "id": 16,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -851,35 +520,6 @@
       ],
       "title": "Search API Capacity",
       "type": "stat"
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {"h": 4, "w": 12, "x": 12, "y": 34},
-      "id": 19,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "textMode": "value_and_name"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_rate_limit", "legendFormat": "{{api}} Limit", "refId": "A"},
-        {"datasource": {"type": "prometheus", "uid": "prometheus"}, "expr": "github_rate_remaining", "legendFormat": "{{api}} Remaining", "refId": "B"}
-      ],
-      "title": "API Rate Limits",
-      "type": "stat"
     }
   ],
   "refresh": "5m",
@@ -892,6 +532,6 @@
   "timezone": "browser",
   "title": "CacheFlow · GitHub Dev Dashboard",
   "uid": "cacheflow-github-dev",
-  "version": 2,
+  "version": 6,
   "weekStart": ""
 }
