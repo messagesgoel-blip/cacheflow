@@ -718,12 +718,17 @@
           "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
         },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "displayName", "value": "Timestamp"}, {"id": "unit", "value": "time:YYYY-MM-DD HH:mm"}]},
-          {"matcher": {"id": "byName", "options": "author"}, "properties": [{"id": "displayName", "value": "Author"}]},
-          {"matcher": {"id": "byName", "options": "agent"}, "properties": [{"id": "displayName", "value": "Agent"}]},
+          {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "displayName", "value": "Timestamp"}, {"id": "unit", "value": "time:YYYY-MM-DD HH:mm"}, {"id": "custom.width", "value": 150}]},
+          {"matcher": {"id": "byName", "options": "agent"}, "properties": [{"id": "displayName", "value": "Agent"}, {"id": "custom.width", "value": 100}]},
           {"matcher": {"id": "byName", "options": "changes"}, "properties": [{"id": "displayName", "value": "Subject"}]},
-          {"matcher": {"id": "byName", "options": "files_changed"}, "properties": [{"id": "displayName", "value": "Files"}]},
-          {"matcher": {"id": "byName", "options": "project"}, "properties": [{"id": "displayName", "value": "Project"}]}
+          {"matcher": {"id": "byName", "options": "files_changed"}, "properties": [{"id": "displayName", "value": "Files"}, {"id": "custom.width", "value": 80}]},
+          {"matcher": {"id": "byName", "options": "project"}, "properties": [{"id": "displayName", "value": "Project"}, {"id": "custom.width", "value": 120}]},
+          {"matcher": {"id": "byName", "options": "author"}, "properties": [{"id": "custom.hidden", "value": true}]},
+          {"matcher": {"id": "byName", "options": "email"}, "properties": [{"id": "custom.hidden", "value": true}]},
+          {"matcher": {"id": "byName", "options": "sha"}, "properties": [{"id": "custom.hidden", "value": true}]},
+          {"matcher": {"id": "byName", "options": "branch"}, "properties": [{"id": "custom.hidden", "value": true}]},
+          {"matcher": {"id": "byName", "options": "upstream"}, "properties": [{"id": "custom.hidden", "value": true}]},
+          {"matcher": {"id": "byName", "options": "rank"}, "properties": [{"id": "custom.hidden", "value": true}]}
         ]
       },
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 42},
