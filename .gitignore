@@ -14,3 +14,12 @@ web/tsconfig.tsbuildinfo
 web/test-results/
 web/playwright-report/
 webdav/webdav.htpasswd
+
+# Roadmap docs
+*Roadmap*.docx
+*roadmap*.docx
+
+# Deferred/out-of-scope (Turbo v1 cleanup)
+web/lib/providers/filen.ts
+api/src/routes/search.js
+api/src/services/embeddings.js

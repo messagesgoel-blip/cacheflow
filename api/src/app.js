@@ -7,7 +7,6 @@ const authRoutes     = require('./routes/auth');
 const filesRoutes    = require('./routes/files');
 const sharesRoutes   = require('./routes/shares');
 const conflictsRoutes = require('./routes/conflicts');
-const searchRoutes = require('./routes/search');
 const adminRoutes = require('./routes/admin');
 const storageRoutes = require('./routes/storage');
 const remotesRoutes = require('./routes/remotes');
@@ -16,16 +15,17 @@ const healthRoutes = require('./routes/health');
 const cacheRoutes = require('./routes/cache');
 const transferRoutes = require('./routes/transfer');
 const apiRoutes      = require('./routes/api');
+const userRemotesRoutes = require('./routes/userRemotes');
+const favoritesRoutes = require('./routes/favorites');
+const activityRoutes = require('./routes/activity');
 const requestTracker = require('./middleware/requestTracker');
-const { checkApiKey } = require('./services/embeddings');
+const { auditMiddleware } = require('./middleware/audit');
 const config = require('./config');
 
 const rateLimit = require('express-rate-limit');
 const app = express();
 app.disable('etag');
 
-// Check ANTHROPIC_API_KEY on startup
-checkApiKey();
 
 app.use(requestTracker);
 
@@ -130,6 +130,7 @@ morgan.token('requestId', (req) => req.requestId || '-');
 morgan.token('correlationId', (req) => req.correlationId || '-');
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms [req::requestId] [corr::correlationId]'));
 app.use(globalLimiter);
+app.use(auditMiddleware);
 app.use(express.json());
 
 // API responses are user-specific and should never be cache-revalidated as 304.
@@ -146,7 +147,6 @@ app.use('/files/upload', uploadLimiter);
 app.use('/files',  filesRoutes);
 app.use('/share',  sharesRoutes);   // public share-link downloads + creation
 app.use('/conflicts', conflictsRoutes);
-app.use('/search', searchRoutes);
 app.use('/admin', adminRoutes);
 app.use('/storage', storageRoutes);
 app.use('/remotes', remotesRoutes);
@@ -156,5 +156,8 @@ app.use('/transfer', transferRoutes);
 
 // New production-grade API routes
 app.use('/api', apiRoutes);
+app.use('/api/remotes', userRemotesRoutes);
+app.use('/api/favorites', favoritesRoutes);
+app.use('/api/activity', activityRoutes);
 
 module.exports = app;

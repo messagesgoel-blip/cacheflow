@@ -14,7 +14,6 @@ import { BoxProvider } from './box'
 import { WebDAVProvider } from './webdav'
 import { VPSProvider } from './vps'
 import { PCloudProvider } from './pcloud'
-import { FilenProvider } from './filen'
 import { YandexProvider } from './yandex'
 import { LocalProvider } from './local'
 
@@ -26,7 +25,6 @@ providerRegistry.register('box', () => new BoxProvider())
 providerRegistry.register('webdav', () => new WebDAVProvider())
 providerRegistry.register('vps', () => new VPSProvider())
 providerRegistry.register('pcloud', () => new PCloudProvider())
-providerRegistry.register('filen', () => new FilenProvider())
 providerRegistry.register('yandex', () => new YandexProvider())
 providerRegistry.register('local', () => new LocalProvider())
 

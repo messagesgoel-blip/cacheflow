@@ -6,7 +6,6 @@ const crypto   = require('crypto');
 const bcrypt   = require('bcryptjs');
 const pool     = require('../db/client');
 const authMw   = require('../middleware/auth');
-const { generateEmbeddingForFile } = require('../services/embeddings');
 const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
@@ -99,11 +98,6 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
     // Audit log upload (fire-and-forget, non-blocking)
     auditLog(req.user.id, 'upload', 'file', fileId, req, { size_bytes: req.file.size, path: relativePath }).catch(() => {});
-
-    // Fire-and-forget: generate embedding in background
-    generateEmbeddingForFile(fileId, diskPath, req.file.mimetype).catch(err => {
-      console.error('[files] Background embedding failed:', err.message);
-    });
   } catch (err) {
     console.error('[files] upload:', err.message);
     res.status(500).json({ error: 'internal server error' });
