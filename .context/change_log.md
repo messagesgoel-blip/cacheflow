@@ -15,3 +15,6 @@
 | 2026-03-02T21:27:09Z | sanjay | prisma/migrations/002_multi_account/migration.sql | 1.5@AUTH-1: updated migration to target oauth_tokens table and added multi-account constraints |
 | 2026-03-02T21:27:09Z | sanjay | api/src/routes/tokens.js | 1.5@AUTH-1: updated tokens API to support multi-account storage and decryption |
 | 2026-03-02T21:27:09Z | sanjay | web/app/api/connections/route.ts | 1.5@AUTH-1: updated connections proxy to map multi-account tokens to provider connections |
+| 2026-03-02T23:57:11Z | sanjay | OPS-E2E-READY@QA-1 | web/e2e/fixtures/global-setup.ts |
+| 2026-03-02T23:57:12Z | sanjay | OPS-E2E-READY@QA-1 | web/e2e/fixtures/global-teardown.ts |
+| 2026-03-02T23:57:13Z | sanjay | OPS-E2E-READY@QA-1 | web/playwright.config.ts |
