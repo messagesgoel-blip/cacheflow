@@ -105,10 +105,9 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     return files.filter(f => selectedFiles.has(f.id))
   }, [files, selectedFiles])
 
-  // Sync remotes and favorites
+  // Load favorites
   useEffect(() => {
     if (token) {
-      tokenManager.syncRemotesFromServer().then(() => setRefreshKey(k => k + 1))
       fetch('/api/favorites', { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.json())
         .then(body => { if (body.ok) setFavorites(new Set(body.data.favorites.map((f: any) => f.file_id))) })

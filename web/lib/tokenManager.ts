@@ -37,34 +37,6 @@ class TokenManager {
   }
 
   /**
-   * Sync remotes from server
-   */
-  async syncRemotesFromServer(): Promise<void> {
-    const mainToken = localStorage.getItem('cf_token')
-    if (!mainToken) return
-
-    try {
-      const res = await fetch('/api/remotes', {
-        headers: { Authorization: `Bearer ${mainToken}` }
-      })
-      const body = await res.json()
-      if (!body.ok) throw new Error(body.error)
-
-      const remotes = body.data.remotes
-      for (const r of remotes) {
-        const token: ProviderToken = {
-          provider: r.provider as ProviderId,
-          accessToken: '', // NEVER stored locally for server remotes
-          accountEmail: r.account_email,
-          displayName: r.display_name,
-          expiresAt: r.expires_at ? new Date(r.expires_at).getTime() : null,
-          accountId: r.account_id,
-          accountKey: r.account_key
-        }
-        
-        this.saveToken(r.provider, token, r.id)
-      }
-    } catch (err) {
       console.error('[TokenManager] Failed to sync remotes:', err)
     }
   }
@@ -110,36 +82,6 @@ class TokenManager {
 
     localStorage.setItem(key, JSON.stringify(next))
     localStorage.removeItem(legacyKey)
-
-    // Sync to server if it's a new local token and we aren't already in sync mode
-    if (!remoteId && token.accessToken) {
-      this.syncTokenToServer(provider, stored).catch(err => {
-        console.error('[TokenManager] Failed to sync new token to server:', err)
-      })
-    }
-  }
-
-  private async syncTokenToServer(provider: ProviderId, token: StoredToken): Promise<void> {
-    const mainToken = localStorage.getItem('cf_token')
-    if (!mainToken) return
-
-    await fetch('/api/remotes', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${mainToken}`
-      },
-      body: JSON.stringify({
-        provider,
-        accountKey: token.accountKey,
-        accessToken: token.accessToken,
-        refreshToken: token.refreshToken,
-        expiresAt: token.expiresAt,
-        accountId: token.accountId,
-        accountEmail: token.accountEmail,
-        displayName: token.displayName
-      })
-    })
   }
 
   /**
