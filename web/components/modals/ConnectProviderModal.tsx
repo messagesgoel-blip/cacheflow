@@ -15,6 +15,9 @@ export default function ConnectProviderModal() {
   if (!modalState.isOpen || modalState.modalType !== 'connect') return null
   if (!modalState.providerId) return null
 
+  // WebDAV and VPS have separate modals
+  if (modalState.providerId === 'webdav' || modalState.providerId === 'vps') return null
+
   const provider = PROVIDERS.find(p => p.id === modalState.providerId)
   if (!provider) return null
 

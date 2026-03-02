@@ -5,6 +5,8 @@ import ProviderHub from '@/components/ProviderHub'
 import Navbar from '@/components/Navbar'
 import { IntegrationProvider } from '@/context/IntegrationContext'
 import ConnectProviderModal from '@/components/modals/ConnectProviderModal'
+import WebDAVModal from '@/components/modals/WebDAVModal'
+import VPSModal from '@/components/modals/VPSModal'
 
 export default function ProvidersPage() {
   const [token, setToken] = useState<string | null>(null)
@@ -45,6 +47,8 @@ export default function ProvidersPage() {
         }} />
         <ProviderHub />
         <ConnectProviderModal />
+        <WebDAVModal />
+        <VPSModal />
       </div>
     </IntegrationProvider>
   )
