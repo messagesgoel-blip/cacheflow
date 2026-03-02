@@ -280,3 +280,28 @@
   - 1.14@UUID-1
   done_tasks:
   - '1.14'
+- timestamp: '2026-03-02T21:13:46+00:00'
+  commit: b6b0f5b84ee09717163b4db222d224e6f9d9f5c5
+  message: 'feat(UUID-1): fix upload name preservation and run path migration'
+  changed:
+  - task_key: 1.1@AUTH-1
+    id: '1.1'
+    gate: AUTH-1
+    from: running
+    to: planned
+  - task_key: 1.12@UUID-1
+    id: '1.12'
+    gate: UUID-1
+    from: running
+    to: done
+  - task_key: 1.15@UUID-1
+    id: '1.15'
+    gate: UUID-1
+    from: running
+    to: done
+  done_task_keys:
+  - 1.12@UUID-1
+  - 1.15@UUID-1
+  done_tasks:
+  - '1.12'
+  - '1.15'

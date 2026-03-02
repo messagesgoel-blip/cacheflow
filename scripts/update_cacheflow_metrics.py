@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 from collections import defaultdict
@@ -16,6 +17,7 @@ SPRINT_TASKS_FILE = BASE / "monitoring" / "cacheflow_sprint_tasks.yaml"
 METRICS_FILE = BASE / "monitoring" / "cacheflow_metrics.yaml"
 STATE_FILE = BASE / "monitoring" / "cacheflow_task_state.yaml"
 HISTORY_FILE = BASE / "monitoring" / "task_history.yaml"
+LOCK_DIR = BASE / ".context" / "task_locks"
 
 DONE_STATES = {"done", "complete", "closed", "pass"}
 VALID_STATES = {"planned", "pending", "running", "done"}
@@ -88,6 +90,27 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def load_active_locks() -> set[str]:
+    active: set[str] = set()
+    if not LOCK_DIR.exists():
+        return active
+
+    for lock_dir in LOCK_DIR.glob("*.lock"):
+        meta_file = lock_dir / "meta.json"
+        if not meta_file.exists():
+            continue
+        try:
+            payload = json.loads(meta_file.read_text())
+        except Exception:
+            continue
+
+        task_key = str(payload.get("task_id") or "").strip()
+        if task_key:
+            active.add(task_key)
+
+    return active
+
+
 def load_state() -> dict:
     if not STATE_FILE.exists():
         return {}
@@ -127,6 +150,7 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
     timestamp = now_iso()
     selectors = _status_map(args)
     old_id_state = {k: v for k, v in existing_state.items() if isinstance(v, str)}
+    active_locks = load_active_locks()
 
     for task in tasks:
         key = task["task_key"]
@@ -151,6 +175,9 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
                     break
             if target_status:
                 break
+
+        if not target_status and key in active_locks and str(record.get("status", "")).lower() not in DONE_STATES:
+            target_status = "running"
 
         if target_status:
             if target_status == "done":
@@ -220,7 +247,8 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict) -> dict:
 
     sprint_rows = []
     current_sprint = 0
-    open_sprint_seen = False
+    first_open_sprint = None
+    running_sprints = []
     total_done = 0
     total_running = 0
 
@@ -247,11 +275,16 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict) -> dict:
         )
         total_done += done
         total_running += running
-        if not open_sprint_seen and done < total:
-            current_sprint = sprint
-            open_sprint_seen = True
+        if done < total and first_open_sprint is None:
+            first_open_sprint = sprint
+        if running > 0:
+            running_sprints.append(sprint)
 
-    if not open_sprint_seen and sprint_rows:
+    if running_sprints:
+        current_sprint = min(running_sprints)
+    elif first_open_sprint is not None:
+        current_sprint = first_open_sprint
+    elif sprint_rows:
         current_sprint = sprint_rows[-1]["sprint"]
 
     current_progress = 0.0

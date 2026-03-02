@@ -1,18 +1,18 @@
-generated_at: '2026-03-02T21:06:40+00:00'
-current_sprint: 1
-sprint_progress: 54.55
+generated_at: '2026-03-02T21:14:13+00:00'
+current_sprint: 0
+sprint_progress: 0.0
 sprint_start: 1700000000
-running_tasks: 3
-tasks_completed_total: 12
+running_tasks: 0
+tasks_completed_total: 14
 total_tasks: 110
 total_sprints: 7
 gate_status:
-  AUTH-1: running
+  AUTH-1: open
   AUTH-2: open
   AUTH-3: open
   AUTH-4: open
   MODAL-1: done
-  UUID-1: running
+  UUID-1: done
   SYNC-1: open
   UPLOAD-1: open
   PREVIEW-1: open
@@ -40,12 +40,12 @@ sprints:
   commits_total: 0
 - sprint: 1
   total_tasks: 22
-  done_tasks: 12
-  running_tasks: 3
+  done_tasks: 14
+  running_tasks: 0
   pending_tasks: 0
-  planned_tasks: 7
-  progress: 54.55
-  commits_total: 5
+  planned_tasks: 8
+  progress: 63.64
+  commits_total: 6
 - sprint: 2
   total_tasks: 17
   done_tasks: 0
@@ -117,7 +117,7 @@ tasks:
   files: /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
-  status: running
+  status: planned
   commit: ''
   done_at: ''
   changelog: ''
@@ -346,10 +346,11 @@ tasks:
   files: /api/remotes/**, /lib/providers/**, /lib/uploads/**
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b6b0f5b84ee0
+  done_at: '2026-03-02T21:13:46+00:00'
+  changelog: 'Codex compliance closeout: UUID audit complete; migration dry-run reports
+    0 pending'
 - id: '1.13'
   task_key: 1.13@UUID-1
   description: Fix upload pipeline to preserve original File.name
@@ -382,10 +383,11 @@ tasks:
   files: /scripts/migrate-files-no-uuid.js --env=production
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b6b0f5b84ee0
+  done_at: '2026-03-02T21:13:46+00:00'
+  changelog: 'Codex compliance closeout: UUID audit complete; migration dry-run reports
+    0 pending'
 - id: '1.16'
   task_key: 1.16@SYNC-1
   description: Connections page and sidebar read from single server state store

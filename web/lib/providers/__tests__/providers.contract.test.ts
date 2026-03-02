@@ -21,7 +21,9 @@ const requiredMethods: Array<keyof any> = [
   'searchFiles',
 ]
 
-const providerIds = PROVIDERS.map((p) => p.id)
+// Filen is intentionally deferred for Turbo v1 and not shipped in provider index.
+const deferredProviders: ProviderId[] = ['filen']
+const providerIds = PROVIDERS.map((p) => p.id).filter((id) => !deferredProviders.includes(id as ProviderId))
 
 describe('provider registry contract', () => {
   beforeEach(() => {

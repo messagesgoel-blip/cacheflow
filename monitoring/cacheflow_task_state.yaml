@@ -24,7 +24,7 @@
   gate: AUTH-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: running
+  status: planned
   commit: ''
   done_at: ''
   changelog: ''
@@ -230,10 +230,11 @@
   gate: UUID-1
   sprint: 1
   agent: "\u2605 CODEX (Master)"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b6b0f5b84ee0
+  done_at: '2026-03-02T21:13:46+00:00'
+  changelog: 'Codex compliance closeout: UUID audit complete; migration dry-run reports
+    0 pending'
 1.13@UUID-1:
   id: '1.13'
   task_key: 1.13@UUID-1
@@ -262,10 +263,11 @@
   gate: UUID-1
   sprint: 1
   agent: "\u2605 CODEX (Master)"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b6b0f5b84ee0
+  done_at: '2026-03-02T21:13:46+00:00'
+  changelog: 'Codex compliance closeout: UUID audit complete; migration dry-run reports
+    0 pending'
 1.16@SYNC-1:
   id: '1.16'
   task_key: 1.16@SYNC-1

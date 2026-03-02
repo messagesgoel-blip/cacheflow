@@ -22,7 +22,7 @@ def main():
         raise SystemExit('history missing')
     data = yaml.safe_load(HISTORY_FILE.read_text()) or []
     lines = []
-    for entry in data[-100:]:
+    for idx, entry in enumerate(data[-100:], start=1):
         commit = entry.get('commit')
         if not commit:
             continue
@@ -32,10 +32,10 @@ def main():
         ts = entry.get('timestamp', '')
         msg = esc(entry.get('message', ''), 160)
         lines.append(
-            f'cacheflow_history_entry{{commit="{esc(commit,64)}",tasks="{esc(tasks,200)}",task_keys="{esc(task_keys,200)}",ts="{esc(ts,48)}",message="{msg}"}} 1'
+            f'cacheflow_history_entry{{idx="{idx}",commit="{esc(commit,64)}",tasks="{esc(tasks,200)}",task_keys="{esc(task_keys,200)}",ts="{esc(ts,48)}",message="{msg}"}} 1'
         )
         lines.append(
-            f'cacheflow_history_changed_total{{commit="{esc(commit,64)}",ts="{esc(ts,48)}"}} {changed_count}'
+            f'cacheflow_history_changed_total{{idx="{idx}",commit="{esc(commit,64)}",ts="{esc(ts,48)}"}} {changed_count}'
         )
     payload = '\n'.join(lines) + '\n'
     resp = requests.put(f"{PUSHGATEWAY}/metrics/job/{JOB}", data=payload)
