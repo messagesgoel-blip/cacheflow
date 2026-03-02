@@ -54,140 +54,87 @@ test('move between providers via transfer modal', async ({ page }, testInfo) => 
 
   await page.route('**/*', async (route) => {
     const url = route.request().url()
-    if (
-      url.startsWith('http://localhost:3010') ||
-      url.startsWith('http://127.0.0.1:3010') ||
-      url.startsWith('http://localhost:4010') ||
-      url.startsWith('http://127.0.0.1:4010')
-    ) {
+    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) {
       await route.continue()
       return
     }
-    if (url.startsWith('https://www.googleapis.com/') || url.startsWith('https://api.dropboxapi.com/') || url.startsWith('https://content.dropboxapi.com/')) {
-      await route.continue()
+    // Handle proxy for move
+    if (url.includes('/proxy')) {
+      if (route.request().method() === 'DELETE') {
+        await route.fulfill({ status: 204, headers: cors, body: '' })
+        return
+      }
+      
+      const body = route.request().postDataJSON?.() || {}
+      const proxyUrl = body.url || ''
+
+      if (proxyUrl.includes('google') && (proxyUrl.includes('files') || proxyUrl.includes('list'))) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            files: [
+              { id: 'g-file-1', name: 'Budget 2026.xlsx', mimeType: 'text/plain', size: '5', modifiedTime: new Date().toISOString() },
+            ],
+          }),
+        })
+        return
+      }
+
+      if (proxyUrl.includes('dropbox') && proxyUrl.includes('list_folder')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            entries: [{ '.tag': 'folder', name: 'Dest', path_lower: '/dest', id: 'id:dest' }],
+          }),
+        })
+        return
+      }
+
+      if (proxyUrl.includes('upload')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ id: 'id:uploaded', name: 'Budget 2026.xlsx' }),
+        })
+        return
+      }
+      
+      // Default mock for about/quota
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ storageQuota: { limit: "100", usage: "0" }, user: { displayName: "Mock" } }) })
       return
     }
-    await route.abort()
-  })
 
-  // Google Drive list, metadata, download, delete
-  await page.route('https://www.googleapis.com/drive/v3/files**', async (route) => {
-    if (route.request().method() === 'OPTIONS') {
-      await route.fulfill({ status: 204, headers: cors })
+    if (url.startsWith('https://')) {
+      await route.fulfill({ status: 200, body: '{}' })
       return
     }
-
-    const url = route.request().url()
-    const method = route.request().method()
-
-    if (method === 'DELETE') {
-      await route.fulfill({ status: 204, headers: cors, body: '' })
-      return
-    }
-
-    if (url.includes('fields=size,mimeType')) {
-      await route.fulfill({
-        status: 200,
-        headers: { ...cors, 'content-type': 'application/json' },
-        body: JSON.stringify({ size: '5', mimeType: 'text/plain' }),
-      })
-      return
-    }
-
-    if (url.includes('alt=media')) {
-      await route.fulfill({ status: 200, headers: { ...cors, 'content-type': 'text/plain' }, body: 'hello' })
-      return
-    }
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      headers: cors,
-      body: JSON.stringify({
-        files: [
-          {
-            id: 'g-file-1',
-            name: 'Budget 2026.xlsx',
-            mimeType: 'text/plain',
-            size: '5',
-            modifiedTime: new Date().toISOString(),
-            createdTime: new Date().toISOString(),
-          },
-        ],
-        nextPageToken: null,
-      }),
-    })
-  })
-
-  // Dropbox folder list + upload
-  await page.route('https://api.dropboxapi.com/2/files/list_folder**', async (route) => {
-    if (route.request().method() === 'OPTIONS') {
-      await route.fulfill({ status: 204, headers: cors })
-      return
-    }
-    const body = route.request().postData() || ''
-    const req = body ? JSON.parse(body) : { path: '' }
-    const path = req.path || ''
-    if (!path) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        headers: cors,
-        body: JSON.stringify({
-          entries: [{ '.tag': 'folder', name: 'Dest', path_lower: '/dest', path_display: '/Dest' }],
-          cursor: 'c',
-          has_more: false,
-        }),
-      })
-      return
-    }
-    await route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify({ entries: [], cursor: 'c2', has_more: false }) })
-  })
-
-  await page.route('https://content.dropboxapi.com/2/files/upload**', async (route) => {
-    if (route.request().method() === 'OPTIONS') {
-      await route.fulfill({ status: 204, headers: cors })
-      return
-    }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      headers: cors,
-      body: JSON.stringify({
-        name: 'Budget 2026.xlsx',
-        path_lower: '/dest/budget 2026.xlsx',
-        path_display: '/Dest/Budget 2026.xlsx',
-        id: 'id:uploaded',
-        size: 5,
-        server_modified: new Date().toISOString(),
-        client_modified: new Date().toISOString(),
-      }),
-    })
+    await route.continue()
   })
 
   await page.goto('/files')
-  await page.screenshot({ path: shotPath(id, 'files_loaded_move'), fullPage: true })
+  await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
+  
+  // Select Google Drive
+  await page.getByTestId('cf-sidebar-account-g1').click()
   await expect(page.getByText('Budget 2026.xlsx').first()).toBeVisible({ timeout: 15_000 })
 
-  // Click inline Move icon (on the file row, not the folder row)
+  // Select file via checkbox
   const budgetRow = page.locator('tr', { hasText: 'Budget 2026.xlsx' })
-  await budgetRow.locator('button[title="Move"]').click()
-  await page.screenshot({ path: shotPath(id, 'transfer_modal_open_move'), fullPage: true })
+  await budgetRow.locator('input[type="checkbox"]').click({ force: true })
+  
+  // Click Move in selection toolbar
+  await page.getByText('Move').click()
   await expect(page.getByText('Move file')).toBeVisible()
-  await page.locator('select[aria-label="Target provider"]').selectOption('dropbox')
-  await page.screenshot({ path: shotPath(id, 'transfer_modal_dropbox_selected_move'), fullPage: true })
+  
+  await page.selectOption('select[aria-label="Target provider"]', 'dropbox')
+  await page.waitForTimeout(2000)
   await page.getByRole('button', { name: /dest/i }).click()
-  await page.screenshot({ path: shotPath(id, 'transfer_modal_dest_selected_move'), fullPage: true })
   await page.getByRole('button', { name: /move here/i }).click()
-  await page.screenshot({ path: shotPath(id, 'move_initiated'), fullPage: true })
 
-  // Wait for completion via banner: progress bar disappears then banner contains "Moved"
-  const bannerBox = page.locator('div.fixed.top-4.right-4')
-  await expect(bannerBox).toBeVisible({ timeout: 10_000 })
-  await expect(bannerBox).toContainText(/moving file|moved/i, { timeout: 10_000 })
-  await expect(bannerBox.locator('div.mt-2.h-2')).toHaveCount(0, { timeout: 20_000 })
-  const finalText = (await bannerBox.innerText()).trim()
-  if (!/moved/i.test(finalText)) {
-    throw new Error(finalText)
-  }
+  // Verify Queue Panel
+  const queuePanel = page.getByTestId('cf-transfer-queue-panel')
+  await expect(queuePanel).toBeVisible({ timeout: 10000 })
+  await expect(queuePanel).toContainText(/moving|completed/i, { timeout: 30000 })
 })

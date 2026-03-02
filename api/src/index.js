@@ -1,5 +1,12 @@
 require('dotenv').config();
 const config = require('./config');
+const encryption = require('./services/encryption');
+
+// Ensure encryption key is valid before starting
+if (!encryption.isValidHexKey(process.env.TOKEN_ENCRYPTION_KEY)) {
+  console.error('[FATAL] TOKEN_ENCRYPTION_KEY must be a 64-character hex string.');
+  process.exit(1);
+}
 
 // Global safety net to prevent crashes from unhandled rejections
 process.on('unhandledRejection', (reason, promise) => {
@@ -13,6 +20,7 @@ process.on('uncaughtException', (err) => {
 
 const app  = require('./app');
 const PORT = config.port;
+const { seedQARemotes } = require('./services/qaSeed');
 
 async function seedTestUser() {
   const enabled = String(process.env.CACHEFLOW_TEST_USER_SEED || '').toLowerCase() === 'true';
@@ -41,7 +49,7 @@ async function seedTestUser() {
   }
 }
 
-seedTestUser();
+seedTestUser().then(() => seedQARemotes());
 
 app.listen(PORT, () => {
   console.log(`[cacheflow] API listening on port ${PORT}`);

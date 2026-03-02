@@ -1,7 +1,7 @@
-# CacheFlow Agent Protocol
+# AGENTS (Repo Local)
 
-This repository follows the master protocol defined in `/home/sanjay/AGENTS.md`.
+Canonical policy file:
+- `/home/sanjay/AGENTS.md`
 
-Notes:
-- Docker Compose lives in `infra/docker-compose.yml`.
-- Web runs on :3010, API on :8100 (see `README.md`).
+This local file exists for portability in fresh clones. On this machine,
+it may be replaced by a symlink to the canonical file if desired.

@@ -53,27 +53,20 @@ export default function Home() {
   useEffect(() => {
     const t = localStorage.getItem('cf_token')
     const e = localStorage.getItem('cf_email')
-    if (t && e) { setToken(t); setEmail(e); refresh(t) }
-  }, [refresh])
+    if (t && e) { 
+      window.location.href = '/files'
+    }
+  }, [])
 
   useEffect(() => {
     const mode = new URLSearchParams(window.location.search).get('mode')
     setLoginMode(mode === 'register' ? 'register' : 'login')
   }, [])
 
-  // Auto-poll every 5s while any file is pending or syncing
-  useEffect(() => {
-    if (!token) return
-    const hasActive = files.some(f => f.status === 'pending' || f.status === 'syncing')
-    if (!hasActive) return
-    const id = setInterval(() => refresh(token), 5000)
-    return () => clearInterval(id)
-  }, [token, files, refresh])
-
   function handleLogin(t: string, e: string) {
     localStorage.setItem('cf_token', t)
     localStorage.setItem('cf_email', e)
-    setToken(t); setEmail(e); refresh(t)
+    window.location.href = '/files'
   }
 
   function handleLogout() {

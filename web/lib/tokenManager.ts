@@ -14,6 +14,7 @@ const MAX_TOKENS_TOTAL = 15
 interface StoredToken extends ProviderToken {
   accountKey: string
   disabled?: boolean
+  remoteId?: string
 }
 
 interface TokenManagerSettings {
@@ -35,6 +36,39 @@ class TokenManager {
     this.settings = this.loadSettings()
   }
 
+  /**
+   * Sync remotes from server
+   */
+  async syncRemotesFromServer(): Promise<void> {
+    const mainToken = localStorage.getItem('cf_token')
+    if (!mainToken) return
+
+    try {
+      const res = await fetch('/api/remotes', {
+        headers: { Authorization: `Bearer ${mainToken}` }
+      })
+      const body = await res.json()
+      if (!body.ok) throw new Error(body.error)
+
+      const remotes = body.data.remotes
+      for (const r of remotes) {
+        const token: ProviderToken = {
+          provider: r.provider as ProviderId,
+          accessToken: '', // NEVER stored locally for server remotes
+          accountEmail: r.account_email,
+          displayName: r.display_name,
+          expiresAt: r.expires_at ? new Date(r.expires_at).getTime() : null,
+          accountId: r.account_id,
+          accountKey: r.account_key
+        }
+        
+        this.saveToken(r.provider, token, r.id)
+      }
+    } catch (err) {
+      console.error('[TokenManager] Failed to sync remotes:', err)
+    }
+  }
+
   // ===========================================================================
   // Storage Methods
   // ===========================================================================
@@ -42,37 +76,70 @@ class TokenManager {
   /**
    * Save token to localStorage
    */
-  saveToken(provider: ProviderId, token: ProviderToken): void {
+  saveToken(provider: ProviderId, token: ProviderToken, remoteId?: string): void {
     if (typeof window === 'undefined') return
     const key = this.getMultiStorageKey(provider)
     const legacyKey = this.getStorageKey(provider)
 
-    const accountKey = this.buildAccountKey(token)
+    const accountKey = token.accountKey || this.buildAccountKey(token)
     const existing = this.getTokens(provider)
 
-    const totalCount = this.countAllTokens()
-    const existingIndex = existing.findIndex((t) => t.accountKey === accountKey || t.accountId === token.accountId || t.accountEmail === token.accountEmail)
+    const next: StoredToken[] = [...existing]
+    const stored: StoredToken = { 
+      ...token, 
+      provider, 
+      accountKey, 
+      remoteId: remoteId || existing.find(t => t.accountKey === accountKey)?.remoteId,
+      disabled: existing.find(t => t.accountKey === accountKey)?.disabled ?? false 
+    }
 
-    if (existingIndex === -1) {
+    const existingIndex = existing.findIndex((t) => t.accountKey === accountKey)
+
+    if (existingIndex >= 0) {
+      next[existingIndex] = stored
+    } else {
+      const totalCount = this.countAllTokens()
       if (existing.length >= MAX_TOKENS_PER_PROVIDER) {
         throw new Error(`MAX_PER_PROVIDER_REACHED:${provider}`)
       }
       if (totalCount >= MAX_TOKENS_TOTAL) {
         throw new Error('MAX_TOTAL_REACHED')
       }
-    }
-
-    const next: StoredToken[] = [...existing]
-    const stored: StoredToken = { ...token, provider, accountKey, disabled: existing[existingIndex]?.disabled ?? false }
-
-    if (existingIndex >= 0) {
-      next[existingIndex] = stored
-    } else {
       next.push(stored)
     }
 
     localStorage.setItem(key, JSON.stringify(next))
     localStorage.removeItem(legacyKey)
+
+    // Sync to server if it's a new local token and we aren't already in sync mode
+    if (!remoteId && token.accessToken) {
+      this.syncTokenToServer(provider, stored).catch(err => {
+        console.error('[TokenManager] Failed to sync new token to server:', err)
+      })
+    }
+  }
+
+  private async syncTokenToServer(provider: ProviderId, token: StoredToken): Promise<void> {
+    const mainToken = localStorage.getItem('cf_token')
+    if (!mainToken) return
+
+    await fetch('/api/remotes', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mainToken}`
+      },
+      body: JSON.stringify({
+        provider,
+        accountKey: token.accountKey,
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        expiresAt: token.expiresAt,
+        accountId: token.accountId,
+        accountEmail: token.accountEmail,
+        displayName: token.displayName
+      })
+    })
   }
 
   /**

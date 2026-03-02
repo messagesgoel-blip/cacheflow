@@ -42,6 +42,13 @@ export class GoogleDriveProvider extends StorageProvider {
    * Load token from token manager
    */
   private loadToken(): void {
+    this.ensureActiveToken()
+  }
+
+  /**
+   * Ensure active token is loaded from token manager (for multi-account support)
+   */
+  private ensureActiveToken(): void {
     const token = tokenManager.getToken('google')
     if (token) {
       this.accessToken = token.accessToken
@@ -144,7 +151,7 @@ export class GoogleDriveProvider extends StorageProvider {
    * Get user info from Google API
    */
   private async getUserInfo(accessToken: string): Promise<{ id: string; email: string; name: string }> {
-    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    const response = await this.proxyFetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
 
@@ -163,7 +170,7 @@ export class GoogleDriveProvider extends StorageProvider {
     // Revoke the access token
     if (this.accessToken) {
       try {
-        await fetch(`https://oauth2.googleapis.com/revoke?token=${this.accessToken}`, {
+        await this.proxyFetch(`https://oauth2.googleapis.com/revoke?token=${this.accessToken}`, {
           method: 'POST',
         })
       } catch (e) {
@@ -298,6 +305,7 @@ export class GoogleDriveProvider extends StorageProvider {
    * Upload a file
    */
   async uploadFile(file: File, options?: UploadOptions): Promise<FileMetadata> {
+    this.ensureActiveToken()
     const folderId = options?.folderId || 'root'
     const fileName = options?.fileName || file.name
 
@@ -311,7 +319,7 @@ export class GoogleDriveProvider extends StorageProvider {
     form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }))
     form.append('file', file)
 
-    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    const response = await this.proxyFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -332,7 +340,8 @@ export class GoogleDriveProvider extends StorageProvider {
    * Download a file
    */
   async downloadFile(fileId: string, options?: DownloadOptions): Promise<Blob> {
-    const response = await fetch(
+    this.ensureActiveToken()
+    const response = await this.proxyFetch(
       `https://www.googleapis.com/drive/v3/files/${fileId}?fields=size,mimeType`,
       {
         headers: { Authorization: `Bearer ${this.accessToken}` },
@@ -362,7 +371,7 @@ export class GoogleDriveProvider extends StorageProvider {
     // Check if it's a Google Doc that needs export
     if (googleDocsTypes.includes(metadata.mimeType)) {
       // Export as PDF
-      const exportResponse = await fetch(
+      const exportResponse = await this.proxyFetch(
         `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=application/pdf`,
         {
           headers: { Authorization: `Bearer ${this.accessToken}` },
@@ -373,7 +382,7 @@ export class GoogleDriveProvider extends StorageProvider {
     }
 
     // Download directly
-    const downloadResponse = await fetch(
+    const downloadResponse = await this.proxyFetch(
       `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
       {
         headers: { Authorization: `Bearer ${this.accessToken}` },
@@ -414,8 +423,9 @@ export class GoogleDriveProvider extends StorageProvider {
    * Move a file
    */
   async moveFile(fileId: string, newParentId: string): Promise<FileMetadata> {
+    this.ensureActiveToken()
     // Fetch current parents directly from API
-    const fileResponse = await fetch(
+    const fileResponse = await this.proxyFetch(
       `https://www.googleapis.com/drive/v3/files/${fileId}?fields=parents`,
       {
         headers: { Authorization: `Bearer ${this.accessToken}` },
@@ -545,21 +555,16 @@ export class GoogleDriveProvider extends StorageProvider {
    */
   private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
     // Always pull latest token (multi-account switching)
-    const tmToken = tokenManager.getToken('google')
-    if (tmToken?.accessToken) this.accessToken = tmToken.accessToken
+    this.ensureActiveToken()
 
-    if (!this.accessToken) {
-      const token = tokenManager.getToken('google')
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-      this.accessToken = token.accessToken
+    if (!this.accessToken && !this.remoteId) {
+      throw new Error('Not authenticated')
     }
 
-    const response = await fetch(url, {
+    const response = await this.proxyFetch(url, {
       ...options,
       headers: {
-        Authorization: `Bearer ${this.accessToken}`,
+        ...(this.accessToken && !this.remoteId ? { Authorization: `Bearer ${this.accessToken}` } : {}),
         ...options.headers,
       },
     })

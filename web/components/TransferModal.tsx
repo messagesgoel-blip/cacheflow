@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ProviderId, FileMetadata, PROVIDERS } from '@/lib/providers/types'
 import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
+import { normalizePath } from '@/lib/utils/path'
 
 type Mode = 'copy' | 'move'
 
@@ -28,13 +29,19 @@ export default function TransferModal({
 
   const [targetProviderId, setTargetProviderId] = useState<ProviderId>('google')
   const [targetAccountKey, setTargetAccountKey] = useState<string>('')
-  const [stack, setStack] = useState<Array<{ id: string; label: string }>>([{ id: '', label: '/' }])
+  const [stack, setStack] = useState<Array<{ id: string; label: string }>>([{ id: 'root', label: '/' }])
   const [folders, setFolders] = useState<FileMetadata[]>([])
   const [loading, setLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const currentFolderId = stack[stack.length - 1]?.id || ''
+
+  const destinationPath = useMemo(() => {
+    const labels = stack.map(s => s.label)
+    // Avoid double slash if root is already /
+    return normalizePath(...labels)
+  }, [stack])
 
   useEffect(() => {
     if (isOpen) {
@@ -104,12 +111,18 @@ export default function TransferModal({
       }
       const provider = getProvider(targetProviderId)
       if (!provider) throw new Error('Provider not available')
+      
+      // Ensure provider instance has the correct remoteId for this specific account
+      const currentToken = tokenManager.getToken(targetProviderId, targetAccountKey)
+      provider.remoteId = (currentToken as any)?.remoteId
+
       const folderIdForApi = currentFolderId || rootFolderId(targetProviderId)
       const res = await provider.listFiles({ folderId: folderIdForApi })
       const onlyFolders = res.files.filter((f) => f.isFolder)
       onlyFolders.sort((a, b) => a.name.localeCompare(b.name))
       setFolders(onlyFolders)
     } catch (e: any) {
+      console.error('[TransferModal] Failed to load folders:', e)
       setError(e?.message || 'Failed to load folders')
       setFolders([])
     } finally {
@@ -206,39 +219,54 @@ export default function TransferModal({
             </select>
 
             <label className="mt-4 block text-xs font-semibold text-gray-700 dark:text-gray-300">Destination folder</label>
-            <div className="mt-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 text-sm text-gray-900 dark:text-gray-100">
+            <div data-testid="transfer-dest-path" className="mt-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 text-sm text-gray-900 dark:text-gray-100 font-mono truncate">
+              {destinationPath}
+            </div>
+            
+            <div className="mt-2 flex flex-wrap gap-1">
               {stack.map((s, i) => (
                 <button
                   key={`${s.id}-${i}`}
                   onClick={() => !isSubmitting && setStack((prev) => prev.slice(0, i + 1))}
                   disabled={isSubmitting}
-                  className="hover:underline disabled:opacity-50 disabled:no-underline"
+                  className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
                 >
                   {i === 0 ? '/' : s.label}
-                  {i < stack.length - 1 ? ' / ' : ''}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col h-full">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col h-[300px]">
             <div className="px-4 py-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
               <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">Folders</div>
-              {loading && <div className="text-xs text-gray-500">Loading…</div>}
+              {loading && <div className="text-xs text-gray-500 animate-pulse">Loading…</div>}
             </div>
-            {error && <div className="px-4 py-3 text-sm text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-900/20">{error}</div>}
-            <div className="flex-1 overflow-auto max-h-[260px]">
-              {folders.length === 0 && !loading ? (
-                <div className="px-4 py-6 text-sm text-gray-500">No folders</div>
+            
+            {error && (
+              <div className="px-4 py-3 text-sm text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-900/20 flex flex-col gap-2">
+                <p>{error}</p>
+                <button 
+                  onClick={() => loadFolders()}
+                  className="text-xs font-semibold underline text-left"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+            
+            <div className="flex-1 overflow-auto">
+              {folders.length === 0 && !loading && !error ? (
+                <div className="px-4 py-6 text-sm text-gray-500 text-center italic">No folders found</div>
               ) : (
                 folders.map((f) => (
                   <button
                     key={f.id}
                     onClick={() => !isSubmitting && setStack((prev) => [...prev, { id: f.id, label: f.name }])}
                     disabled={isSubmitting}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2 disabled:opacity-50"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2 disabled:opacity-50 group"
                   >
-                    <span>📁</span>
+                    <span className="group-hover:scale-110 transition-transform">📁</span>
                     <span className="truncate">{f.name}</span>
                   </button>
                 ))
@@ -257,7 +285,7 @@ export default function TransferModal({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || loading}
             className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
           >
             {isSubmitting ? (

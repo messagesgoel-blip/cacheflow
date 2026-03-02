@@ -26,6 +26,10 @@ export class YandexProvider extends StorageProvider {
   }
 
   private loadToken(): void {
+    this.ensureActiveToken()
+  }
+
+  private ensureActiveToken(): void {
     const token = tokenManager.getToken('yandex')
     if (token) this.accessToken = token.accessToken
   }
@@ -72,7 +76,7 @@ export class YandexProvider extends StorageProvider {
     const cv = sessionStorage.getItem('yandex_code_verifier')
     sessionStorage.removeItem('yandex_code_verifier')
     
-    const res = await fetch('https://oauth.yandex.com/token', {
+    const res = await this.proxyFetch('https://oauth.yandex.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -97,7 +101,7 @@ export class YandexProvider extends StorageProvider {
   }
 
   private async getUserInfo(at: string): Promise<{ email: string; displayName?: string }> {
-    const res = await fetch(YANDEX_API_BASE+'/disk', { headers: { Authorization: 'Bearer '+at } })
+    const res = await this.proxyFetch(YANDEX_API_BASE+'/disk', { headers: { Authorization: 'Bearer '+at } })
     if (!res.ok) throw new Error('Failed to get user info')
     const d = await res.json()
     return { email: d.user.email, displayName: d.user.displayName }
@@ -107,7 +111,7 @@ export class YandexProvider extends StorageProvider {
 
   async refreshToken(t: ProviderToken): Promise<ProviderToken> {
     if (!t.refreshToken) throw new Error('No refresh token')
-    const res = await fetch('https://oauth.yandex.com/token', {
+    const res = await this.proxyFetch('https://oauth.yandex.com/token', {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refreshToken, client_id: YANDEX_CLIENT_ID })
     })
@@ -135,13 +139,13 @@ export class YandexProvider extends StorageProvider {
   async uploadFile(f: File, o?: UploadOptions): Promise<FileMetadata> {
     const path = (o?.folderId||'/') + '/' + (o?.fileName||f.name)
     const uRes = await this.req('/disk/resources/upload?path='+encodeURIComponent(path))
-    await fetch(uRes.href, { method: 'PUT', body: f })
+    await this.proxyFetch(uRes.href, { method: 'PUT', body: f })
     return this.mf({ name: o?.fileName||f.name, path, size: f.size, created: new Date().toISOString(), modified: new Date().toISOString() })
   }
 
   async downloadFile(id: string): Promise<Blob> {
     const r = await this.req('/disk/resources/download?path='+encodeURIComponent(id))
-    return (await fetch(r.href)).blob()
+    return (await this.proxyFetch(r.href)).blob()
   }
 
   async deleteFile(id: string): Promise<void> { await this.req('/disk/resources?path='+encodeURIComponent(id), 'DELETE') }
@@ -186,8 +190,14 @@ export class YandexProvider extends StorageProvider {
   }
 
   private async req(ep: string, method: string = 'GET'): Promise<any> {
-    if (!this.accessToken) { const t = tokenManager.getToken('yandex'); if (!t) throw new Error('Not auth'); this.accessToken = t.accessToken }
-    const res = await fetch(YANDEX_API_BASE+ep, { method, headers: { Authorization: 'Bearer '+this.accessToken } })
+    this.ensureActiveToken()
+    if (!this.accessToken && !this.remoteId) { const t = tokenManager.getToken('yandex'); if (!t) throw new Error('Not auth'); this.accessToken = t.accessToken }
+    const res = await this.proxyFetch(YANDEX_API_BASE+ep, { 
+      method, 
+      headers: { 
+        ...(this.accessToken && !this.remoteId ? { Authorization: 'Bearer '+this.accessToken } : {})
+      } 
+    })
     if (res.status===401) { const nt = await tokenManager.refreshToken('yandex'); if (nt) { this.accessToken = nt.accessToken; return this.req(ep,method) } }
     if (!res.ok) throw new Error('Yandex API error')
     return res.json()

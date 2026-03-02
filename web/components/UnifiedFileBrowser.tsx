@@ -52,10 +52,48 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [clipboard, setClipboard] = useState<{ mode: 'copy' | 'move', file: FileMetadata } | null>(null)
   const [draggedFile, setDraggedFile] = useState<FileMetadata | null>(null)
 
-  // Aggregated mode state
-  const [isAggregatedView, setIsAggregatedView] = useState(false)
-  const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false)
+  // Aggregated mode state with persistence
+  const [isAggregatedView, setIsAggregatedView] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cacheflow:aggregatedView') === 'true'
+    }
+    return false
+  })
+  const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cacheflow:duplicatesOnly') === 'true'
+    }
+    return false
+  })
+  const [aggregatedProviderFilter, setAggregatedProviderFilter] = useState<ProviderId | 'all' | null>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('cacheflow:aggregatedProviderFilter')
+      return stored ? stored as ProviderId | 'all' | null : null
+    }
+    return null
+  })
   const [aggregatedFiles, setAggregatedFiles] = useState<AggregatedFileItem[]>([])
+
+  // Persist aggregated view state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cacheflow:aggregatedView', isAggregatedView.toString())
+    }
+  }, [isAggregatedView])
+
+  // Persist duplicates only state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cacheflow:duplicatesOnly', showDuplicatesOnly.toString())
+    }
+  }, [showDuplicatesOnly])
+
+  // Persist aggregated provider filter state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cacheflow:aggregatedProviderFilter', aggregatedProviderFilter || '')
+    }
+  }, [aggregatedProviderFilter])
   
   const actions = useActionCenter()
   const { addTransfer } = useTransferQueue()
@@ -229,16 +267,22 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
           // Call aggregator
           const folderId = currentPath === '/' ? undefined : currentPath
-          const aggregated = await aggregateFiles(providerInstances, folderId, {
+          const { files: aggregated, errors } = await aggregateFiles(providerInstances, folderId, {
             detectDuplicates: true
           })
 
           if (isStale) return
 
-          // Filter by provider if a specific provider is selected
+          // Report any provider errors to the user
+          if (errors.length > 0) {
+            const errorMessages = errors.map(err => `${err.providerId}: ${err.error}`).join(', ')
+            setError(`Partial success: ${errorMessages}`)
+          }
+
+          // Apply aggregated provider filter if in aggregated mode
           let filtered = aggregated
-          if (selectedProvider !== 'all') {
-            filtered = filterByProvider(aggregated, selectedProvider as ProviderId)
+          if (aggregatedProviderFilter && aggregatedProviderFilter !== 'all') {
+            filtered = filterByProvider(aggregated, aggregatedProviderFilter)
           }
 
           // Show duplicates only if toggled
@@ -296,7 +340,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     }
     const timer = setTimeout(() => { if (searchQuery.trim()) performSearch(); else loadAllFiles() }, searchQuery.trim() ? 500 : 0)
     return () => { isStale = true; clearTimeout(timer) }
-  }, [selectedProvider, activeAccountKey, currentPath, refreshKey, loadingProviders, searchQuery, connectedProviders, isAggregatedView, showDuplicatesOnly])
+  }, [selectedProvider, activeAccountKey, currentPath, refreshKey, loadingProviders, searchQuery, connectedProviders, isAggregatedView, showDuplicatesOnly, aggregatedProviderFilter])
 
   // Handlers
   const handleSidebarNavigate = (pid: any, key?: string) => { setSelectedProvider(pid); if (key) { setActiveAccountKey(key); tokenManager.setActiveToken(pid, key) } else setActiveAccountKey(''); setCurrentPath('/'); setBreadcrumbStack([]); setRefreshKey(k => k + 1) }
@@ -396,18 +440,78 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           <div className="flex items-center gap-3">
             {selectedProvider === 'all' && !searchQuery && (
               <>
-                <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 mr-2">
-                  <button data-testid="cf-allproviders-view-toggle-grouped" onClick={() => !isGroupedView && toggleGroupedView()} className={`px-3 py-1.5 text-xs font-bold transition-colors ${isGroupedView ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Grouped</button>
-                  <button data-testid="cf-allproviders-view-toggle-flat" onClick={() => isGroupedView && toggleGroupedView()} className={`px-3 py-1.5 text-xs font-bold transition-colors ${!isGroupedView ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Flat</button>
-                </div>
-                <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 mr-2">
-                  <button data-testid="cf-aggregated-view-toggle" onClick={() => setIsAggregatedView(!isAggregatedView)} className={`px-3 py-1.5 text-xs font-bold transition-colors ${isAggregatedView ? 'bg-green-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>🔀 Aggregated</button>
-                </div>
-                {isAggregatedView && (
-                  <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 mr-2">
-                    <button data-testid="cf-duplicates-filter-toggle" onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)} className={`px-3 py-1.5 text-xs font-bold transition-colors ${showDuplicatesOnly ? 'bg-purple-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>📋 Duplicates Only</button>
+                <div className="flex flex-wrap gap-2">
+                  {/* View Toggles */}
+                  <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                    <button
+                      data-testid="cf-allproviders-view-toggle-grouped"
+                      onClick={() => !isGroupedView && !isAggregatedView && toggleGroupedView()}
+                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${isGroupedView && !isAggregatedView ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                      aria-pressed={isGroupedView && !isAggregatedView}
+                      disabled={isAggregatedView}
+                    >
+                      Grouped
+                    </button>
+                    <button
+                      data-testid="cf-allproviders-view-toggle-flat"
+                      onClick={() => isGroupedView && !isAggregatedView && toggleGroupedView()}
+                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${!isGroupedView && !isAggregatedView ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                      aria-pressed={!isGroupedView && !isAggregatedView}
+                      disabled={isAggregatedView}
+                    >
+                      Flat
+                    </button>
+                    <button
+                      data-testid="cf-aggregated-view-toggle"
+                      onClick={() => {
+                        setIsAggregatedView(!isAggregatedView);
+                        if (!isAggregatedView) {
+                          // When turning on aggregated view, make sure we're in flat view
+                          if (isGroupedView) toggleGroupedView();
+                        }
+                      }}
+                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${isAggregatedView ? 'bg-green-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                      aria-pressed={isAggregatedView}
+                    >
+                      Aggregated
+                    </button>
                   </div>
-                )}
+
+                  {/* Aggregated Mode Controls - Only show when aggregated is active */}
+                  {isAggregatedView && (
+                    <>
+                      {/* Provider Filter Dropdown */}
+                      <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                        <select
+                          value={aggregatedProviderFilter || 'all'}
+                          onChange={(e) => setAggregatedProviderFilter(e.target.value as ProviderId | 'all' | null)}
+                          className="px-3 py-1.5 text-xs font-bold bg-transparent border-none focus:outline-none"
+                          aria-label="Filter providers"
+                        >
+                          <option value="all">All Providers</option>
+                          {/* Deduplicate providers by ID to avoid multiple entries for multi-account connections */}
+                          {Array.from(new Set(connectedProviders.map(cp => cp.providerId))).map(providerId => (
+                            <option key={providerId} value={providerId}>
+                              {PROVIDERS.find(p => p.id === providerId)?.name || providerId}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Duplicates Only Toggle */}
+                      <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                        <button
+                          data-testid="cf-duplicates-filter-toggle"
+                          onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)}
+                          className={`px-3 py-1.5 text-xs font-bold transition-colors ${showDuplicatesOnly ? 'bg-purple-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                          aria-pressed={showDuplicatesOnly}
+                        >
+                          Duplicates Only
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </>
             )}
             <div className="relative">
@@ -432,7 +536,12 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             : loading && files.length === 0 ? <div className="py-12 flex justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>
             : (
               <div className="space-y-10">
-                {groupedFiles ? groupedFiles.map(group => (
+                {/* When aggregated mode is on, force flat list regardless of grouped/flat toggle */}
+                {isAggregatedView ? (
+                  <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={true} showDuplicateBadge={isAggregatedView} />
+                  </div>
+                ) : groupedFiles ? groupedFiles.map(group => (
                   <section key={group.label} data-testid={`cf-allproviders-group-section-${group.accountKey}`} className="space-y-4">
                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><span>{PROVIDERS.find(p => p.id === group.providerId)?.icon}</span> {group.label} • {group.files.length} ITEMS</h3>
                     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">

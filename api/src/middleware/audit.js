@@ -12,6 +12,9 @@ async function auditLog(userId, action, resource, resourceId, req, metadata = {}
               || 'unknown';
     const userAgent = (req.headers['user-agent'] || '').slice(0, 255);
 
+    // Emit console log for observability in docker logs
+    console.log(`[audit] action=${action} resource=${resource} resourceId=${resourceId} userId=${userId}`);
+
     await pool.query(
       `INSERT INTO audit_logs
          (user_id, action, resource, resource_id, ip_address, user_agent, metadata)

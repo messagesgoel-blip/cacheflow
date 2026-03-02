@@ -5,7 +5,7 @@
 
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult, ListFilesOptions, SearchOptions } from './StorageProvider'
 import { FileMetadata, ProviderToken, ProviderQuota } from './types'
-import { browseFiles, apiRenameFile, apiMoveFile, apiDownloadFile } from '../api'
+import { browseFiles, apiRenameFile, apiMoveFile, apiDownloadFile, uploadFile as apiUploadFile } from '../api'
 
 export class LocalProvider extends StorageProvider {
   id = 'local' as const
@@ -52,41 +52,48 @@ export class LocalProvider extends StorageProvider {
   }
 
   async listFiles(options?: ListFilesOptions): Promise<ListFilesResult> {
-    const token = localStorage.getItem('cf_token') || ''
-    const res = await browseFiles(options?.folderId || '/', token)
-    
-    const files: FileMetadata[] = [
-      ...(res.folders || []).map((f: any) => ({
-        id: f.path,
-        name: f.name,
-        path: f.path,
-        pathDisplay: f.path,
-        size: 0,
-        mimeType: 'application/vnd.folder',
-        isFolder: true,
-        modifiedTime: new Date().toISOString(),
-        provider: 'local' as const,
-        providerName: 'Local Storage'
-      })),
-      ...(res.files || []).map((f: any) => ({
-        id: f.id,
-        name: f.path.split('/').pop() || f.path,
-        path: f.path,
-        pathDisplay: f.path,
-        size: parseInt(f.size_bytes) || 0,
-        mimeType: 'application/octet-stream',
-        isFolder: false,
-        createdTime: f.created_at,
-        modifiedTime: f.updated_at,
-        provider: 'local' as const,
-        providerName: 'Local Storage'
-      }))
-    ]
+    try {
+      const token = localStorage.getItem('cf_token') || ''
+      if (!token) return { files: [], hasMore: false }
+      
+      const res = await browseFiles(options?.folderId || '/', token)
+      
+      const files: FileMetadata[] = [
+        ...(res.folders || []).map((f: any) => ({
+          id: f.path,
+          name: f.name,
+          path: f.path,
+          pathDisplay: f.path,
+          size: 0,
+          mimeType: 'application/vnd.folder',
+          isFolder: true,
+          modifiedTime: new Date().toISOString(),
+          provider: 'local' as const,
+          providerName: 'Local Storage'
+        })),
+        ...(res.files || []).map((f: any) => ({
+          id: f.id,
+          name: (f.path || '').split('/').pop() || f.path || f.name || 'Unknown',
+          path: f.path || '',
+          pathDisplay: f.path || '',
+          size: parseInt(f.size_bytes) || 0,
+          mimeType: 'application/octet-stream',
+          isFolder: false,
+          createdTime: f.created_at,
+          modifiedTime: f.updated_at,
+          provider: 'local' as const,
+          providerName: 'Local Storage'
+        }))
+      ]
 
-    return {
-      files,
-      nextPageToken: undefined,
-      hasMore: false
+      return {
+        files,
+        nextPageToken: undefined,
+        hasMore: false
+      }
+    } catch (e: any) {
+      console.warn('[LocalProvider] Failed to list files:', e.message)
+      return { files: [], hasMore: false }
     }
   }
 
@@ -95,12 +102,27 @@ export class LocalProvider extends StorageProvider {
   }
 
   async uploadFile(file: File, options?: UploadOptions): Promise<FileMetadata> {
-    throw new Error('Use main upload component')
+    const token = localStorage.getItem('cf_token') || ''
+    const res = await apiUploadFile(file, token, options?.folderId)
+    
+    // Convert to FileMetadata
+    return {
+      id: res.id,
+      name: res.name || file.name,
+      path: res.path || '',
+      pathDisplay: res.path || '',
+      size: file.size,
+      mimeType: file.type,
+      isFolder: false,
+      modifiedTime: new Date().toISOString(),
+      provider: 'local',
+      providerName: 'Local Storage'
+    }
   }
 
   async downloadFile(id: string, options?: DownloadOptions): Promise<Blob> {
     const token = localStorage.getItem('cf_token') || ''
-    const response = await fetch(`/api/files/download`, {
+    const response = await this.proxyFetch(`/api/files/download`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -114,7 +136,7 @@ export class LocalProvider extends StorageProvider {
 
   async deleteFile(id: string): Promise<void> {
     const token = localStorage.getItem('cf_token') || ''
-    const res = await fetch(`/api/files/${id}`, {
+    const res = await this.proxyFetch(`/api/files/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -123,7 +145,7 @@ export class LocalProvider extends StorageProvider {
 
   async createFolder(name: string, parentId?: string): Promise<FileMetadata> {
     const token = localStorage.getItem('cf_token') || ''
-    const res = await fetch('/api/files/folders', {
+    const res = await this.proxyFetch('/api/files/folders', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -189,7 +211,7 @@ export class LocalProvider extends StorageProvider {
 
   async getShareLink(id: string): Promise<string | null> {
     const token = localStorage.getItem('cf_token') || ''
-    const data = await fetch('/api/api/share', {
+    const data = await this.proxyFetch('/api/share', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

@@ -25,6 +25,10 @@ export class BoxProvider extends StorageProvider {
   }
 
   private loadToken(): void {
+    this.ensureActiveToken()
+  }
+
+  private ensureActiveToken(): void {
     const token = tokenManager.getToken('box')
     if (token) {
       this.accessToken = token.accessToken
@@ -93,7 +97,7 @@ export class BoxProvider extends StorageProvider {
     sessionStorage.removeItem('box_code_verifier')
 
     // PKCE flow - no client_secret needed
-    const response = await fetch('https://api.box.com/oauth2/token', {
+    const response = await this.proxyFetch('https://api.box.com/oauth2/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -133,7 +137,7 @@ export class BoxProvider extends StorageProvider {
   }
 
   private async getUserInfo(accessToken: string): Promise<any> {
-    const response = await fetch(`${BOX_API_BASE}/users/me`, {
+    const response = await this.proxyFetch(`${BOX_API_BASE}/users/me`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
 
@@ -150,7 +154,7 @@ export class BoxProvider extends StorageProvider {
     if (!token.refreshToken) throw new Error('No refresh token')
 
     // PKCE flow - no client_secret needed
-    const response = await fetch('https://api.box.com/oauth2/token', {
+    const response = await this.proxyFetch('https://api.box.com/oauth2/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -230,6 +234,7 @@ export class BoxProvider extends StorageProvider {
   }
 
   async uploadFile(file: File, options?: UploadOptions): Promise<FileMetadata> {
+    this.ensureActiveToken()
     const folderId = options?.folderId || '0'
     const fileName = options?.fileName || file.name
 
@@ -240,7 +245,7 @@ export class BoxProvider extends StorageProvider {
     }))
     formData.append('file', file)
 
-    const response = await fetch('https://upload.box.com/api/2.0/files/content', {
+    const response = await this.proxyFetch('https://upload.box.com/api/2.0/files/content', {
       method: 'POST',
       headers: { Authorization: `Bearer ${this.accessToken}` },
       body: formData,
@@ -253,7 +258,8 @@ export class BoxProvider extends StorageProvider {
   }
 
   async downloadFile(fileId: string, options?: DownloadOptions): Promise<Blob> {
-    const response = await fetch(`${BOX_API_BASE}/files/${fileId}/content`, {
+    this.ensureActiveToken()
+    const response = await this.proxyFetch(`${BOX_API_BASE}/files/${fileId}/content`, {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     })
 
@@ -369,13 +375,12 @@ export class BoxProvider extends StorageProvider {
   }
 
   private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
-    if (!this.accessToken) {
-      const token = tokenManager.getToken('box')
-      if (!token) throw new Error('Not authenticated')
-      this.accessToken = token.accessToken
+    this.ensureActiveToken()
+    if (!this.accessToken && !this.remoteId) {
+      throw new Error('Not authenticated')
     }
 
-    const response = await fetch(url, {
+    const response = await this.proxyFetch(url, {
       ...options,
       headers: {
         Authorization: `Bearer ${this.accessToken}`,

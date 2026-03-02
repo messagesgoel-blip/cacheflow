@@ -38,70 +38,65 @@ test('files page loading/empty/loaded screenshots', async ({ page }, testInfo) =
 
   await page.route('**/*', async (route) => {
     const url = route.request().url()
-    if (
-      url.startsWith('http://localhost:3010') ||
-      url.startsWith('http://127.0.0.1:3010') ||
-      url.startsWith('http://localhost:4010') ||
-      url.startsWith('http://127.0.0.1:4010')
-    ) {
+    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) {
       await route.continue()
       return
     }
+    // Handle Google Drive proxy
+    if (url.includes('/proxy')) {
+      if (mode === 'delayed-empty') {
+        await new Promise((r) => setTimeout(r, 2000))
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ files: [], nextPageToken: null }),
+        })
+        mode = 'loaded'
+        return
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          files: [
+            {
+              id: 'g-file-1',
+              name: 'Hello.txt',
+              mimeType: 'text/plain',
+              size: '5',
+              modifiedTime: new Date().toISOString(),
+              createdTime: new Date().toISOString(),
+            },
+          ],
+          nextPageToken: null,
+        }),
+      })
+      return
+    }
+    
     if (url.startsWith('https://www.googleapis.com/')) {
-      await route.fallback()
+      await route.fulfill({ status: 200, body: '{}' })
       return
     }
     await route.abort()
   })
 
-  await page.route('https://www.googleapis.com/drive/v3/files**', async (route) => {
-    // List endpoint: return empty first (after delay), then return 1 file
-    const url = route.request().url()
-    if (!url.includes('/drive/v3/files?')) {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({}) })
-      return
-    }
-
-    if (mode === 'delayed-empty') {
-      await new Promise((r) => setTimeout(r, 3500))
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ files: [], nextPageToken: null }),
-      })
-      mode = 'loaded'
-      return
-    }
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        files: [
-          {
-            id: 'g-file-1',
-            name: 'Hello.txt',
-            mimeType: 'text/plain',
-            size: '5',
-            modifiedTime: new Date().toISOString(),
-            createdTime: new Date().toISOString(),
-          },
-        ],
-        nextPageToken: null,
-      }),
-    })
-  })
-
-  // Loading state screenshot (while delayed request in-flight)
-  await page.goto('/files', { waitUntil: 'domcontentloaded' })
+  // 1. Loading state screenshot
+  await page.goto('/files')
+  await page.waitForSelector('[data-testid="cf-sidebar-root"]')
+  
+  // Navigate to Google Drive A to trigger the proxied request
+  await page.getByTestId('cf-sidebar-account-g1').click()
+  
   await page.waitForTimeout(500)
   await page.screenshot({ path: shotPath(id, 'files_loading_state'), fullPage: true })
 
-  // Empty state screenshot (after delayed-empty response)
-  await expect(page.getByText('No files found')).toBeVisible({ timeout: 10_000 })
+  // 2. Empty state screenshot
+  await expect(page.getByText('This folder is empty')).toBeVisible({ timeout: 10_000 })
   await page.screenshot({ path: shotPath(id, 'files_empty_state'), fullPage: true })
 
-  // Loaded state screenshot (after refresh)
+  // 3. Loaded state screenshot (after refresh)
   await page.getByTestId('files-refresh').click()
   await expect(page.getByText('Hello.txt').first()).toBeVisible({ timeout: 10_000 })
   await page.screenshot({ path: shotPath(id, 'files_loaded_state'), fullPage: true })

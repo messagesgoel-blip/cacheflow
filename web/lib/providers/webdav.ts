@@ -42,6 +42,10 @@ export class WebDAVProvider extends StorageProvider {
     localStorage.setItem('cacheflow_webdav_config', JSON.stringify(config))
   }
 
+  private loadToken(): void {
+    this.ensureActiveToken()
+  }
+
   private loadConfig(): void {
     if (typeof window === 'undefined') return
     const stored = localStorage.getItem('cacheflow_webdav_config')
@@ -53,6 +57,24 @@ export class WebDAVProvider extends StorageProvider {
       }
     }
   }
+
+  private ensureActiveToken(): void {
+    const token = tokenManager.getToken('webdav')
+    if (token && token.accessToken) {
+      // For WebDAV, accessToken IS the b64 credentials
+      // displayName IS the url
+      if (!this.config) {
+        this.config = {
+          url: token.displayName,
+          username: token.accountEmail || '',
+          password: '', // Password not stored separately in token
+        }
+      }
+      this.accessToken = token.accessToken
+    }
+  }
+
+  private accessToken: string | null = null
 
   private getConfig(): WebDAVConfig {
     if (!this.config) {
@@ -424,6 +446,7 @@ export class WebDAVProvider extends StorageProvider {
       [key: string]: any
     } = {}
   ): Promise<Response> {
+    this.ensureActiveToken()
     const config = this.getConfig()
     const url = this.getFullUrl(path)
 
@@ -437,8 +460,7 @@ export class WebDAVProvider extends StorageProvider {
     }
 
     // Add basic auth
-    const credentials = btoa(`${config.username}:${config.password}`)
-    headers['Authorization'] = `Basic ${credentials}`
+    headers['Authorization'] = `Basic ${this.accessToken}`
 
     return fetch(url, {
       method: options.method || method,

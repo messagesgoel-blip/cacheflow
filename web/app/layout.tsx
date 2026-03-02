@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import SessionHandler from '@/components/SessionHandler'
 import ActionCenterProvider from '@/components/ActionCenterProvider'
+import { TransferQueueProvider } from '@/components/TransferQueueProvider'
 
 export const metadata: Metadata = {
   title: 'CacheFlow',
@@ -56,7 +57,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <SessionHandler />
         <ActionCenterProvider>
-          {children}
+          <TransferQueueProvider>
+            {children}
+          </TransferQueueProvider>
         </ActionCenterProvider>
       </body>
     </html>

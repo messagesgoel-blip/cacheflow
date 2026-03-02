@@ -296,14 +296,20 @@ export default function SettingsPanel({}: SettingsPanelProps) {
                 CacheFlow
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Version 2.0 • Client-Side OAuth Architecture
+                Version 2.5 • Secure Server-Side Remote Architecture
               </p>
             </div>
           </div>
-          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-            CacheFlow unifies multiple cloud storage providers into a single dashboard.
-            Your files never leave your devices — all transfers happen directly between providers in your browser.
-          </p>
+          <div className="mt-4 space-y-3 text-sm text-gray-600 dark:text-gray-400">
+            <p>
+              CacheFlow unifies multiple cloud storage providers into a single secure dashboard.
+            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Secure Persistence:</strong> Your cloud tokens are stored with AES-256-GCM encryption on our server.</li>
+              <li><strong>Privacy First:</strong> All provider requests are proxied through our backend; your raw credentials never touch the browser local storage.</li>
+              <li><strong>Zero Permanent Storage:</strong> File blobs are never stored by CacheFlow. We only cache metadata to provide a fast, unified browsing experience.</li>
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -319,7 +325,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Connect your cloud storage accounts to access them from CacheFlow. 
-            Your credentials are stored securely in your browser.
+            Your account metadata is synced automatically across devices.
           </p>
           <a
             href="/providers"

@@ -1,0 +1,718 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "cacheflow-sprints",
+    "title": "CacheFlow Sprint & Gate Tracker",
+    "tags": [
+      "cacheflow",
+      "sprint",
+      "gate"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 41,
+    "version": 2,
+    "refresh": "30s",
+    "time": {
+      "from": "now-30d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "text",
+        "title": "Total Roadmap",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 24,
+          "h": 3
+        },
+        "options": {
+          "mode": "markdown",
+          "content": "# Total Roadmap\nSprint panels below track progress, commits, and task-level execution state with commit/date/changelog labels."
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Active Sprint",
+        "gridPos": {
+          "x": 0,
+          "y": 3,
+          "w": 4,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_current_sprint",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "gauge",
+        "title": "Roadmap Progress %",
+        "gridPos": {
+          "x": 4,
+          "y": 3,
+          "w": 5,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "100 * cacheflow_tasks_completed_total / clamp_min(cacheflow_total_tasks, 1)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Running Tasks",
+        "gridPos": {
+          "x": 9,
+          "y": 3,
+          "w": 5,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_tasks_running_total",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "Completed Tasks",
+        "gridPos": {
+          "x": 14,
+          "y": 3,
+          "w": 5,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_tasks_completed_total",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "type": "stat",
+        "title": "Total Commits",
+        "gridPos": {
+          "x": 19,
+          "y": 3,
+          "w": 5,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "sum(cacheflow_sprint_commits_total)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "type": "gauge",
+        "title": "Sprint 0 Progress",
+        "gridPos": {
+          "x": 0,
+          "y": 6,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_progress_percent{sprint=\"0\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 11,
+        "type": "stat",
+        "title": "Sprint 0 Total Commits",
+        "gridPos": {
+          "x": 6,
+          "y": 6,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_commits_total{sprint=\"0\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "type": "stat",
+        "title": "Sprint 0 Done / Total",
+        "gridPos": {
+          "x": 12,
+          "y": 6,
+          "w": 12,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_done_tasks{sprint=\"0\"}",
+            "refId": "A"
+          }
+        ],
+        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"0\"} for denominator"
+      },
+      {
+        "id": 13,
+        "type": "table",
+        "title": "Sprint 0 Tasks",
+        "gridPos": {
+          "x": 0,
+          "y": 9,
+          "w": 24,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_task_status{sprint=\"0\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      },
+      {
+        "id": 14,
+        "type": "gauge",
+        "title": "Sprint 1 Progress",
+        "gridPos": {
+          "x": 0,
+          "y": 14,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_progress_percent{sprint=\"1\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 15,
+        "type": "stat",
+        "title": "Sprint 1 Total Commits",
+        "gridPos": {
+          "x": 6,
+          "y": 14,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_commits_total{sprint=\"1\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "type": "stat",
+        "title": "Sprint 1 Done / Total",
+        "gridPos": {
+          "x": 12,
+          "y": 14,
+          "w": 12,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_done_tasks{sprint=\"1\"}",
+            "refId": "A"
+          }
+        ],
+        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"1\"} for denominator"
+      },
+      {
+        "id": 17,
+        "type": "table",
+        "title": "Sprint 1 Tasks",
+        "gridPos": {
+          "x": 0,
+          "y": 17,
+          "w": 24,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_task_status{sprint=\"1\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      },
+      {
+        "id": 18,
+        "type": "gauge",
+        "title": "Sprint 2 Progress",
+        "gridPos": {
+          "x": 0,
+          "y": 22,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_progress_percent{sprint=\"2\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 19,
+        "type": "stat",
+        "title": "Sprint 2 Total Commits",
+        "gridPos": {
+          "x": 6,
+          "y": 22,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_commits_total{sprint=\"2\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "type": "stat",
+        "title": "Sprint 2 Done / Total",
+        "gridPos": {
+          "x": 12,
+          "y": 22,
+          "w": 12,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_done_tasks{sprint=\"2\"}",
+            "refId": "A"
+          }
+        ],
+        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"2\"} for denominator"
+      },
+      {
+        "id": 21,
+        "type": "table",
+        "title": "Sprint 2 Tasks",
+        "gridPos": {
+          "x": 0,
+          "y": 25,
+          "w": 24,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_task_status{sprint=\"2\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      },
+      {
+        "id": 22,
+        "type": "gauge",
+        "title": "Sprint 3 Progress",
+        "gridPos": {
+          "x": 0,
+          "y": 30,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_progress_percent{sprint=\"3\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 23,
+        "type": "stat",
+        "title": "Sprint 3 Total Commits",
+        "gridPos": {
+          "x": 6,
+          "y": 30,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_commits_total{sprint=\"3\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 24,
+        "type": "stat",
+        "title": "Sprint 3 Done / Total",
+        "gridPos": {
+          "x": 12,
+          "y": 30,
+          "w": 12,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_done_tasks{sprint=\"3\"}",
+            "refId": "A"
+          }
+        ],
+        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"3\"} for denominator"
+      },
+      {
+        "id": 25,
+        "type": "table",
+        "title": "Sprint 3 Tasks",
+        "gridPos": {
+          "x": 0,
+          "y": 33,
+          "w": 24,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_task_status{sprint=\"3\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      },
+      {
+        "id": 26,
+        "type": "gauge",
+        "title": "Sprint 4 Progress",
+        "gridPos": {
+          "x": 0,
+          "y": 38,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_progress_percent{sprint=\"4\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 27,
+        "type": "stat",
+        "title": "Sprint 4 Total Commits",
+        "gridPos": {
+          "x": 6,
+          "y": 38,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_commits_total{sprint=\"4\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 28,
+        "type": "stat",
+        "title": "Sprint 4 Done / Total",
+        "gridPos": {
+          "x": 12,
+          "y": 38,
+          "w": 12,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_done_tasks{sprint=\"4\"}",
+            "refId": "A"
+          }
+        ],
+        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"4\"} for denominator"
+      },
+      {
+        "id": 29,
+        "type": "table",
+        "title": "Sprint 4 Tasks",
+        "gridPos": {
+          "x": 0,
+          "y": 41,
+          "w": 24,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_task_status{sprint=\"4\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      },
+      {
+        "id": 30,
+        "type": "gauge",
+        "title": "Sprint 5 Progress",
+        "gridPos": {
+          "x": 0,
+          "y": 46,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_progress_percent{sprint=\"5\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 31,
+        "type": "stat",
+        "title": "Sprint 5 Total Commits",
+        "gridPos": {
+          "x": 6,
+          "y": 46,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_commits_total{sprint=\"5\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 32,
+        "type": "stat",
+        "title": "Sprint 5 Done / Total",
+        "gridPos": {
+          "x": 12,
+          "y": 46,
+          "w": 12,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_done_tasks{sprint=\"5\"}",
+            "refId": "A"
+          }
+        ],
+        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"5\"} for denominator"
+      },
+      {
+        "id": 33,
+        "type": "table",
+        "title": "Sprint 5 Tasks",
+        "gridPos": {
+          "x": 0,
+          "y": 49,
+          "w": 24,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_task_status{sprint=\"5\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      },
+      {
+        "id": 34,
+        "type": "gauge",
+        "title": "Sprint 6 Progress",
+        "gridPos": {
+          "x": 0,
+          "y": 54,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_progress_percent{sprint=\"6\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 35,
+        "type": "stat",
+        "title": "Sprint 6 Total Commits",
+        "gridPos": {
+          "x": 6,
+          "y": 54,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_commits_total{sprint=\"6\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 36,
+        "type": "stat",
+        "title": "Sprint 6 Done / Total",
+        "gridPos": {
+          "x": 12,
+          "y": 54,
+          "w": 12,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_sprint_done_tasks{sprint=\"6\"}",
+            "refId": "A"
+          }
+        ],
+        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"6\"} for denominator"
+      },
+      {
+        "id": 37,
+        "type": "table",
+        "title": "Sprint 6 Tasks",
+        "gridPos": {
+          "x": 0,
+          "y": 57,
+          "w": 24,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_task_status{sprint=\"6\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      },
+      {
+        "id": 38,
+        "type": "table",
+        "title": "Task History (Recent)",
+        "gridPos": {
+          "x": 0,
+          "y": 62,
+          "w": 24,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_history_entry",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}

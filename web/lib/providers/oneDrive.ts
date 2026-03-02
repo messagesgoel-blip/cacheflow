@@ -32,6 +32,10 @@ export class OneDriveProvider extends StorageProvider {
   // ===========================================================================
 
   private loadToken(): void {
+    this.ensureActiveToken()
+  }
+
+  private ensureActiveToken(): void {
     const token = tokenManager.getToken('onedrive')
     if (token) {
       this.accessToken = token.accessToken
@@ -126,7 +130,7 @@ export class OneDriveProvider extends StorageProvider {
    * Get user info from Microsoft Graph
    */
   private async getUserInfo(accessToken: string): Promise<any> {
-    const response = await fetch(`${GRAPH_API_BASE}/me`, {
+    const response = await this.proxyFetch(`${GRAPH_API_BASE}/me`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
 
@@ -292,7 +296,7 @@ export class OneDriveProvider extends StorageProvider {
       throw new Error('Download URL not available')
     }
 
-    const response = await fetch(downloadUrl)
+    const response = await this.proxyFetch(downloadUrl)
 
     if (!response.ok) {
       throw new Error(`Download failed: ${response.status}`)
@@ -462,15 +466,12 @@ export class OneDriveProvider extends StorageProvider {
    * Make authenticated request to Microsoft Graph
    */
   private async makeRequest(url: string, options: RequestInit = {}, retried = false): Promise<any> {
-    if (!this.accessToken) {
-      const token = tokenManager.getToken('onedrive')
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-      this.accessToken = token.accessToken
+    this.ensureActiveToken()
+    if (!this.accessToken && !this.remoteId) {
+      throw new Error('Not authenticated')
     }
 
-    const response = await fetch(url, {
+    const response = await this.proxyFetch(url, {
       ...options,
       headers: {
         Authorization: `Bearer ${this.accessToken}`,

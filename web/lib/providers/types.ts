@@ -149,6 +149,7 @@ export interface ProviderToken {
   accountEmail: string
   displayName: string
   accountId?: string // Provider's internal account ID
+  accountKey?: string // Unique key for the account within the provider
 }
 
 // ============================================================================
@@ -201,7 +202,7 @@ export interface ProviderQuota {
 // PROVIDER STATUS
 // ============================================================================
 
-export type ProviderStatus = 'connected' | 'disconnected' | 'error' | 'refreshing' | 'pending_oauth'
+export type ProviderStatus = 'connected' | 'disconnected' | 'error' | 'refreshing' | 'pending_oauth' | 'degraded' | 'needs_reauth'
 
 export interface ProviderState {
   provider: ProviderId
@@ -220,9 +221,10 @@ export interface ProviderState {
 
 export interface ConnectedProvider {
   providerId: ProviderId
-  status: 'connected' | 'error'
+  status: 'connected' | 'error' | 'degraded' | 'needs_reauth'
   accountEmail: string
   displayName: string
+  accountKey?: string
   connectedAt: number // Unix timestamp
   lastSyncedAt?: number
   quota?: ProviderQuota

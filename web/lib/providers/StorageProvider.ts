@@ -56,6 +56,38 @@ export abstract class StorageProvider {
   abstract readonly id: ProviderId
   abstract readonly name: string
 
+  // Server-side remote ID (if using server persistence)
+  public remoteId?: string
+
+  /**
+   * Protected fetch helper that handles proxying to the server
+   * if a remoteId is present.
+   */
+  protected async proxyFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    if (this.remoteId) {
+      const token = localStorage.getItem('cf_token')
+      
+      // We use the same production-grade API envelope
+      const proxyBody = {
+        method: options.method || 'GET',
+        url,
+        headers: options.headers,
+        body: options.body
+      }
+
+      return fetch(`/api/remotes/${this.remoteId}/proxy`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(proxyBody)
+      })
+    }
+    
+    return fetch(url, options)
+  }
+
   // Authentication
   /**
    * Initiate OAuth flow - opens popup for user to authorize

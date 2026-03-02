@@ -27,6 +27,10 @@ export class PCloudProvider extends StorageProvider {
   }
 
   private loadToken(): void {
+    this.ensureActiveToken()
+  }
+
+  private ensureActiveToken(): void {
     const token = tokenManager.getToken('pcloud')
     if (token) this.accessToken = token.accessToken
   }
@@ -72,7 +76,7 @@ export class PCloudProvider extends StorageProvider {
     const cv = sessionStorage.getItem('pcloud_code_verifier')
     sessionStorage.removeItem('pcloud_code_verifier')
 
-    const res = await fetch(`${PCLOUD_AUTH_BASE}/token`, {
+    const res = await this.proxyFetch(`${PCLOUD_AUTH_BASE}/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -105,7 +109,7 @@ export class PCloudProvider extends StorageProvider {
 
   async refreshToken(t: ProviderToken): Promise<ProviderToken> {
     if (!t.refreshToken) throw new Error('No refresh token')
-    const res = await fetch(`${PCLOUD_AUTH_BASE}/token`, {
+    const res = await this.proxyFetch(`${PCLOUD_AUTH_BASE}/token`, {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refreshToken, client_id: PCLOUD_CLIENT_ID })
     })
@@ -137,7 +141,7 @@ export class PCloudProvider extends StorageProvider {
   async uploadFile(f: File, o?: UploadOptions): Promise<FileMetadata> {
     const fd = new FormData(); fd.append('file', f); fd.append('folderid', o?.folderId||'0'); fd.append('filename', o?.fileName||f.name)
     const token = this.ensureAccessToken()
-    const res = await fetch(PCLOUD_API_BASE+'/uploadfile', { 
+    const res = await this.proxyFetch(PCLOUD_API_BASE+'/uploadfile', { 
       method: 'POST', 
       body: fd,
       headers: { Authorization: `Bearer ${token}` }
@@ -154,7 +158,7 @@ export class PCloudProvider extends StorageProvider {
     const link = r.getfilelink || r.link || r.downloadlink || (host && r.path ? `https://${host}${r.path}` : undefined)
     if (!link) throw new Error('Download link unavailable')
     const token = this.ensureAccessToken()
-    const res = await fetch(link, { headers: { Authorization: `Bearer ${token}` } })
+    const res = await this.proxyFetch(link, { headers: { Authorization: `Bearer ${token}` } })
     if (!res.ok) throw new Error('Download failed')
     return res.blob()
   }
@@ -202,6 +206,7 @@ export class PCloudProvider extends StorageProvider {
   }
 
   private async req(ep: string, params?: Record<string, any>, method: 'GET' | 'POST' = 'GET', retried = false): Promise<any> {
+    this.ensureActiveToken()
     const token = this.ensureAccessToken()
     const url = new URL(PCLOUD_API_BASE + ep)
     const isGet = method === 'GET'
@@ -217,7 +222,7 @@ export class PCloudProvider extends StorageProvider {
       }
     }
 
-    const res = await fetch(url.toString(), { method, headers, body })
+    const res = await this.proxyFetch(url.toString(), { method, headers, body })
     if (res.status === 401 && !retried) {
       const nt = await tokenManager.refreshToken('pcloud')
       if (nt) {
@@ -233,12 +238,11 @@ export class PCloudProvider extends StorageProvider {
   }
 
   private ensureAccessToken(): string {
-    if (!this.accessToken) {
-      const token = tokenManager.getToken('pcloud')
-      if (!token) throw new Error('Not authenticated')
-      this.accessToken = token.accessToken
+    this.ensureActiveToken()
+    if (!this.accessToken && !this.remoteId) {
+      throw new Error('Not authenticated')
     }
-    return this.accessToken
+    return this.accessToken || ''
   }
 
   private getRedirectUri(): string {

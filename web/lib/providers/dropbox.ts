@@ -26,6 +26,10 @@ export class DropboxProvider extends StorageProvider {
   }
 
   private loadToken(): void {
+    this.ensureActiveToken()
+  }
+
+  private ensureActiveToken(): void {
     const token = tokenManager.getToken('dropbox')
     if (token) {
       this.accessToken = token.accessToken
@@ -102,7 +106,7 @@ export class DropboxProvider extends StorageProvider {
     const codeVerifier = sessionStorage.getItem('dropbox_code_verifier')
     sessionStorage.removeItem('dropbox_code_verifier')
 
-    const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
+    const response = await this.proxyFetch('https://api.dropboxapi.com/oauth2/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -149,7 +153,7 @@ export class DropboxProvider extends StorageProvider {
    * Get user info
    */
   private async getUserInfo(accessToken: string): Promise<any> {
-    const response = await fetch(`${DROPBOX_API_BASE}/users/get_current_account`, {
+    const response = await this.proxyFetch(`${DROPBOX_API_BASE}/users/get_current_account`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -175,7 +179,7 @@ export class DropboxProvider extends StorageProvider {
     // Optionally revoke token
     if (this.accessToken) {
       try {
-        await fetch('https://api.dropboxapi.com/2/auth/token/revoke', {
+        await this.proxyFetch('https://api.dropboxapi.com/2/auth/token/revoke', {
           method: 'POST',
           headers: { Authorization: `Bearer ${this.accessToken}` },
         })
@@ -196,7 +200,7 @@ export class DropboxProvider extends StorageProvider {
       throw new Error('No refresh token available')
     }
 
-    const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
+    const response = await this.proxyFetch('https://api.dropboxapi.com/oauth2/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -443,16 +447,15 @@ export class DropboxProvider extends StorageProvider {
   // ===========================================================================
 
   private async makeRequest(endpoint: string, body?: any, retried = false): Promise<any> {
-    if (!this.accessToken) {
-      const token = tokenManager.getToken('dropbox')
-      if (!token) throw new Error('Not authenticated')
-      this.accessToken = token.accessToken
+    this.ensureActiveToken()
+    if (!this.accessToken && !this.remoteId) {
+      throw new Error('Not authenticated')
     }
 
-    const response = await fetch(endpoint, {
+    const response = await this.proxyFetch(endpoint, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.accessToken}`,
+        ...(this.accessToken && !this.remoteId ? { Authorization: `Bearer ${this.accessToken}` } : {}),
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -474,14 +477,13 @@ export class DropboxProvider extends StorageProvider {
   }
 
   private async makeContentRequest(endpoint: string, metadata?: any, body?: Blob | File): Promise<Response> {
-    if (!this.accessToken) {
-      const token = tokenManager.getToken('dropbox')
-      if (!token) throw new Error('Not authenticated')
-      this.accessToken = token.accessToken
+    this.ensureActiveToken()
+    if (!this.accessToken && !this.remoteId) {
+      throw new Error('Not authenticated')
     }
 
     const headers: Record<string, string> = {
-      Authorization: `Bearer ${this.accessToken}`,
+      ...(this.accessToken && !this.remoteId ? { Authorization: `Bearer ${this.accessToken}` } : {}),
     }
 
     if (metadata) {
@@ -492,7 +494,7 @@ export class DropboxProvider extends StorageProvider {
       headers['Content-Type'] = 'application/octet-stream'
     }
 
-    const response = await fetch(endpoint, {
+    const response = await this.proxyFetch(endpoint, {
       method: 'POST',
       headers,
       body,

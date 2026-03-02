@@ -18,95 +18,6 @@
 | Document preview | Not mentioned | Added to Phase 6 — Google Docs viewer + Monaco Editor |
 | OAuth registration | Not mentioned | Added as prerequisite checklist before Week 2 |
 
-
----
-
-
-## 2026 UI Improvement Cycle (5 Phases)
-
-Source: `/srv/storage/screenshots/cacheflow_archive/cacheflow-ui-roadmap.docx` (March 2026 QA/Product review).
-
-This cycle converts the doc's 4-phase proposal into 5 delivery phases so structural risk is isolated from bug/security trust fixes and rollout can be gated with QA at each stage.
-
-### Phase 1: Critical Stabilization & Trust Corrections
-Priority: Critical | Backend: Minor
-
-Scope:
-1. Fix Google Drive folder browser in Copy/Move modal (no false "No folders" state).
-2. Fix transfer destination path rendering (`/ /Dest` double slash issue).
-3. Correct Settings About architecture copy to reflect server-side proxy + encrypted token storage.
-4. Add user-visible provider error surfacing consistency for degraded providers.
-5. Verify live activity logging freshness (not stale/frozen windows).
-
-Exit criteria:
-1. Transfer modal folder browsing works for Google + Dropbox in prod-like runs.
-2. No incorrect architecture claims in UI copy.
-3. QA can reproduce provider error signals without ambiguous "connected" state.
-
-### Phase 2: Structural Navigation Rebuild
-Priority: Critical | Backend: No
-
-Scope:
-1. Replace toolbar dropdown navigation with persistent left sidebar tree.
-2. Add sidebar hierarchy: All Files, Recent, Starred, Provider -> Account nodes.
-3. Add collapsible sidebar rail behavior and persisted state.
-4. Add main-pane breadcrumbs with click-up navigation.
-5. Replace per-row icon wall with contextual selection/action toolbar and overflow menu.
-
-Exit criteria:
-1. Sidebar is the single source of navigation context.
-2. Breadcrumb path always matches current folder context.
-3. File list readability improves by removing dense always-visible action icons.
-
-### Phase 3: Interaction Reliability & System Feedback
-Priority: High | Backend: Yes
-
-Scope:
-1. Add drag-and-drop transfers across providers/folders (modal as fallback).
-2. Add provider health checks with states: Connected / Degraded / Needs Re-auth.
-3. Surface health indicators in Integrations and sidebar.
-4. Add persistent transfer queue/progress panel with queued/in-progress/complete/failed states.
-
-Exit criteria:
-1. Users can start transfers via drag/drop or modal with identical outcomes.
-2. Provider health reflects real status (no false "connected").
-3. Long-running transfers remain visible and recoverable (retry path for failures).
-
-### Phase 4: Information Architecture & Discoverability
-Priority: High | Backend: Yes
-
-Scope:
-1. Add grouped default view for All Providers (with account/provider section headers).
-2. Keep Flat view as optional mode and persist user preference.
-3. Add global cross-provider search fan-out + merged ranked results.
-4. Add per-account and aggregate quota visualization in sidebar.
-
-Exit criteria:
-1. Duplicate folder names are no longer interpreted as UI bugs in unified listing.
-2. Global search returns merged results even if one provider fails.
-3. Storage visibility reinforces core multi-cloud value proposition.
-
-### Phase 5: Power-User Enhancements & Product Differentiation
-Priority: Medium | Backend: Yes (partial)
-
-Scope:
-1. Add inline preview panel (image/text/pdf/xlsx metadata-aware preview).
-2. Add full keyboard navigation + shortcuts for file manager workflows.
-3. Add cross-provider Starred/Favorites metadata layer.
-4. Add user-facing activity feed (per-user filtered operations timeline).
-5. Complete visual language unification across File Browser, Integrations, and Admin surfaces.
-
-Exit criteria:
-1. Keyboard-only flow covers core file operations.
-2. Preview, favorites, and activity history work cross-provider without context loss.
-3. Shared design system tokens are consistently applied across major screens.
-
-### QA Gate for Each Phase
-1. Add phase-specific Playwright specs before merge.
-2. Record screenshots + JSON report per phase run in `/srv/storage/screenshots/cacheflow`.
-3. Require zero console/page errors for sign-off.
-
-
 ---
 
 ## Architecture Overview
@@ -1131,6 +1042,51 @@ worker/                       # Keep for background sync
 ---
 
 ## Notes
+
+## UI Stabilization Hold Plan (Production-First)
+
+### Development Hold Marker
+- **HOLD-UI-2026-03-02**: Pause feature development on non-UI roadmap items.
+- Effective immediately: do not start new provider/features until UI stabilization phases below are completed.
+- Existing work may continue only if it directly fixes items in this plan.
+
+### Restart Marker
+- **RESTART-AFTER-UI-2026-03-02**: Resume standard roadmap execution only after all Phase 1/2/3 UI tasks are marked done.
+- Resume point after completion: continue from next pending non-UI item in main roadmap sequence.
+
+### Phase 1: Blocking Reliability (P0)
+
+- **UI-P1-T01**: Fix Cloud Drives page empty/unclear connected state.
+- **UI-P1-T02**: Fix `401` proxy failures for connected remotes on production (`/api/remotes/:id/proxy`).
+- **UI-P1-T03**: Fix preview panel open reliability from file rows and overflow `Open`.
+- **UI-P1-T04**: Restore core file actions path (rename/move/download/delete) in real connected drives.
+- **UI-P1-T05**: Add explicit user-facing error surfaces for failed sync/proxy/favorites requests.
+- **UI-P1-T06**: Add clear loading/empty/error state cards in file pane (avoid silent spinner-only state).
+
+### Phase 2: Operation Completeness (P1)
+
+- **UI-P2-T01**: Ensure upload/create actions are always discoverable in main file view.
+- **UI-P2-T02**: Validate end-to-end file lifecycle on two real drives: upload(2 files), rename, move, copy, preview, download, delete.
+- **UI-P2-T03**: Ensure transfer queue provides persistent status with retry/dismiss for failed operations.
+- **UI-P2-T04**: Normalize operation entry points across row overflow, preview panel, and selection toolbar.
+- **UI-P2-T05**: Improve Cloud Drives account visibility (provider + account + health + last sync summary).
+- **UI-P2-T06**: Add regression tests for production auth/session drift and remotes sync/favorites fetch failures.
+
+### Phase 3: UX Alignment (P2)
+
+- **UI-P3-T01**: Improve sidebar readability (small/low-contrast quota and metadata text).
+- **UI-P3-T02**: Clarify grouped/flat/all-providers information hierarchy and account context labels.
+- **UI-P3-T03**: Add consistent, human-readable feedback copy for success/failure actions.
+- **UI-P3-T04**: Improve affordances for preview and file operations (clear `Open Preview` behavior).
+- **UI-P3-T05**: Define and enforce UI consistency checklist (action placement, labels, states, recovery paths).
+- **UI-P3-T06**: Run final production UX signoff pass with evidence screenshots + closure report.
+
+### Phase Completion Rule
+- Track each task by ID and complete them one-by-one.
+- Do not parallelize unrelated feature work while this hold is active.
+- UI phase is complete only when all `UI-P1-*`, `UI-P2-*`, and `UI-P3-*` items are explicitly marked done.
+
+---
 
 - All OAuth happens in browser popup — no server redirects lose app state
 - Cross-provider transfers are browser-mediated — file content never persists on server disk
