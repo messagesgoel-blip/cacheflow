@@ -116,20 +116,20 @@
   gate: AUTH-2
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b1142283731b
+  done_at: '2026-03-02T20:59:02+00:00'
+  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
 1.18@AUTH-2:
   id: '1.18'
   task_key: 1.18@AUTH-2
   gate: AUTH-2
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b1142283731b
+  done_at: '2026-03-02T20:59:02+00:00'
+  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
 1.19@AUTH-2:
   id: '1.19'
   task_key: 1.19@AUTH-2
@@ -157,10 +157,10 @@
   gate: AUTH-3
   sprint: 1
   agent: "\u25C6 ClaudeCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b1142283731b
+  done_at: '2026-03-02T20:59:05+00:00'
+  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
 0.6@AUTH-4:
   id: '0.6'
   task_key: 0.6@AUTH-4
@@ -198,20 +198,21 @@
   gate: MODAL-1
   sprint: 1
   agent: "\u25C6 ClaudeCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 63dad6f36533
+  done_at: '2026-03-02T21:02:16+00:00'
+  changelog: 'feat(1.9@MODAL-1): implement correct forms for WebDAV and VPS modals'
 1.10@MODAL-1:
   id: '1.10'
   task_key: 1.10@MODAL-1
   gate: MODAL-1
   sprint: 1
   agent: "\u25C6 ClaudeCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 0e06e1fcf81d
+  done_at: '2026-03-02T21:03:26+00:00'
+  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
+    implemented via IntegrationContext)'
 1.11@MODAL-1:
   id: '1.11'
   task_key: 1.11@MODAL-1
@@ -239,20 +240,22 @@
   gate: UUID-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 0e06e1fcf81d
+  done_at: '2026-03-02T21:06:39+00:00'
+  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
+    implemented via IntegrationContext)'
 1.14@UUID-1:
   id: '1.14'
   task_key: 1.14@UUID-1
   gate: UUID-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 0e06e1fcf81d
+  done_at: '2026-03-02T21:06:39+00:00'
+  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
+    implemented via IntegrationContext)'
 1.15@UUID-1:
   id: '1.15'
   task_key: 1.15@UUID-1

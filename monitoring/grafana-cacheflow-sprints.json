@@ -10,7 +10,7 @@
     ],
     "timezone": "browser",
     "schemaVersion": 41,
-    "version": 2,
+    "version": 3,
     "refresh": "30s",
     "time": {
       "from": "now-30d",
@@ -35,7 +35,7 @@
       {
         "id": 2,
         "type": "stat",
-        "title": "Active Sprint",
+        "title": "📍 Active Sprint",
         "gridPos": {
           "x": 0,
           "y": 3,
@@ -59,11 +59,11 @@
       {
         "id": 3,
         "type": "gauge",
-        "title": "Roadmap Progress %",
+        "title": "📈 Roadmap Progress %",
         "gridPos": {
           "x": 4,
           "y": 3,
-          "w": 5,
+          "w": 4,
           "h": 3
         },
         "targets": [
@@ -82,16 +82,16 @@
       {
         "id": 4,
         "type": "stat",
-        "title": "Running Tasks",
+        "title": "🟡 Under Execution Tasks",
         "gridPos": {
-          "x": 9,
+          "x": 8,
           "y": 3,
-          "w": 5,
+          "w": 4,
           "h": 3
         },
         "targets": [
           {
-            "expr": "cacheflow_tasks_running_total",
+            "expr": "count(cacheflow_task_status{status=\"running\"})",
             "refId": "A"
           }
         ]
@@ -99,16 +99,16 @@
       {
         "id": 5,
         "type": "stat",
-        "title": "Completed Tasks",
+        "title": "✅ Completed Tasks",
         "gridPos": {
-          "x": 14,
+          "x": 12,
           "y": 3,
-          "w": 5,
+          "w": 4,
           "h": 3
         },
         "targets": [
           {
-            "expr": "cacheflow_tasks_completed_total",
+            "expr": "count(cacheflow_task_status{status=\"done\"})",
             "refId": "A"
           }
         ]
@@ -116,11 +116,11 @@
       {
         "id": 6,
         "type": "stat",
-        "title": "Total Commits",
+        "title": "📦 Total Commits",
         "gridPos": {
-          "x": 19,
+          "x": 20,
           "y": 3,
-          "w": 5,
+          "w": 4,
           "h": 3
         },
         "targets": [
@@ -136,7 +136,7 @@
         "title": "Sprint 0 Progress",
         "gridPos": {
           "x": 0,
-          "y": 6,
+          "y": 14,
           "w": 6,
           "h": 3
         },
@@ -159,7 +159,7 @@
         "title": "Sprint 0 Total Commits",
         "gridPos": {
           "x": 6,
-          "y": 6,
+          "y": 14,
           "w": 6,
           "h": 3
         },
@@ -173,10 +173,10 @@
       {
         "id": 12,
         "type": "stat",
-        "title": "Sprint 0 Done / Total",
+        "title": "Sprint 0 Done Tasks",
         "gridPos": {
           "x": 12,
-          "y": 6,
+          "y": 14,
           "w": 12,
           "h": 3
         },
@@ -194,7 +194,7 @@
         "title": "Sprint 0 Tasks",
         "gridPos": {
           "x": 0,
-          "y": 9,
+          "y": 17,
           "w": 24,
           "h": 5
         },
@@ -216,7 +216,7 @@
         "title": "Sprint 1 Progress",
         "gridPos": {
           "x": 0,
-          "y": 14,
+          "y": 22,
           "w": 6,
           "h": 3
         },
@@ -239,7 +239,7 @@
         "title": "Sprint 1 Total Commits",
         "gridPos": {
           "x": 6,
-          "y": 14,
+          "y": 22,
           "w": 6,
           "h": 3
         },
@@ -253,10 +253,10 @@
       {
         "id": 16,
         "type": "stat",
-        "title": "Sprint 1 Done / Total",
+        "title": "Sprint 1 Done Tasks",
         "gridPos": {
           "x": 12,
-          "y": 14,
+          "y": 22,
           "w": 12,
           "h": 3
         },
@@ -274,7 +274,7 @@
         "title": "Sprint 1 Tasks",
         "gridPos": {
           "x": 0,
-          "y": 17,
+          "y": 25,
           "w": 24,
           "h": 5
         },
@@ -296,7 +296,7 @@
         "title": "Sprint 2 Progress",
         "gridPos": {
           "x": 0,
-          "y": 22,
+          "y": 30,
           "w": 6,
           "h": 3
         },
@@ -319,7 +319,7 @@
         "title": "Sprint 2 Total Commits",
         "gridPos": {
           "x": 6,
-          "y": 22,
+          "y": 30,
           "w": 6,
           "h": 3
         },
@@ -333,10 +333,10 @@
       {
         "id": 20,
         "type": "stat",
-        "title": "Sprint 2 Done / Total",
+        "title": "Sprint 2 Done Tasks",
         "gridPos": {
           "x": 12,
-          "y": 22,
+          "y": 30,
           "w": 12,
           "h": 3
         },
@@ -354,7 +354,7 @@
         "title": "Sprint 2 Tasks",
         "gridPos": {
           "x": 0,
-          "y": 25,
+          "y": 33,
           "w": 24,
           "h": 5
         },
@@ -376,7 +376,7 @@
         "title": "Sprint 3 Progress",
         "gridPos": {
           "x": 0,
-          "y": 30,
+          "y": 38,
           "w": 6,
           "h": 3
         },
@@ -399,7 +399,7 @@
         "title": "Sprint 3 Total Commits",
         "gridPos": {
           "x": 6,
-          "y": 30,
+          "y": 38,
           "w": 6,
           "h": 3
         },
@@ -413,10 +413,10 @@
       {
         "id": 24,
         "type": "stat",
-        "title": "Sprint 3 Done / Total",
+        "title": "Sprint 3 Done Tasks",
         "gridPos": {
           "x": 12,
-          "y": 30,
+          "y": 38,
           "w": 12,
           "h": 3
         },
@@ -434,7 +434,7 @@
         "title": "Sprint 3 Tasks",
         "gridPos": {
           "x": 0,
-          "y": 33,
+          "y": 41,
           "w": 24,
           "h": 5
         },
@@ -456,7 +456,7 @@
         "title": "Sprint 4 Progress",
         "gridPos": {
           "x": 0,
-          "y": 38,
+          "y": 46,
           "w": 6,
           "h": 3
         },
@@ -479,7 +479,7 @@
         "title": "Sprint 4 Total Commits",
         "gridPos": {
           "x": 6,
-          "y": 38,
+          "y": 46,
           "w": 6,
           "h": 3
         },
@@ -493,10 +493,10 @@
       {
         "id": 28,
         "type": "stat",
-        "title": "Sprint 4 Done / Total",
+        "title": "Sprint 4 Done Tasks",
         "gridPos": {
           "x": 12,
-          "y": 38,
+          "y": 46,
           "w": 12,
           "h": 3
         },
@@ -514,7 +514,7 @@
         "title": "Sprint 4 Tasks",
         "gridPos": {
           "x": 0,
-          "y": 41,
+          "y": 49,
           "w": 24,
           "h": 5
         },
@@ -536,7 +536,7 @@
         "title": "Sprint 5 Progress",
         "gridPos": {
           "x": 0,
-          "y": 46,
+          "y": 54,
           "w": 6,
           "h": 3
         },
@@ -559,7 +559,7 @@
         "title": "Sprint 5 Total Commits",
         "gridPos": {
           "x": 6,
-          "y": 46,
+          "y": 54,
           "w": 6,
           "h": 3
         },
@@ -573,10 +573,10 @@
       {
         "id": 32,
         "type": "stat",
-        "title": "Sprint 5 Done / Total",
+        "title": "Sprint 5 Done Tasks",
         "gridPos": {
           "x": 12,
-          "y": 46,
+          "y": 54,
           "w": 12,
           "h": 3
         },
@@ -594,7 +594,7 @@
         "title": "Sprint 5 Tasks",
         "gridPos": {
           "x": 0,
-          "y": 49,
+          "y": 57,
           "w": 24,
           "h": 5
         },
@@ -616,7 +616,7 @@
         "title": "Sprint 6 Progress",
         "gridPos": {
           "x": 0,
-          "y": 54,
+          "y": 62,
           "w": 6,
           "h": 3
         },
@@ -639,7 +639,7 @@
         "title": "Sprint 6 Total Commits",
         "gridPos": {
           "x": 6,
-          "y": 54,
+          "y": 62,
           "w": 6,
           "h": 3
         },
@@ -653,10 +653,10 @@
       {
         "id": 36,
         "type": "stat",
-        "title": "Sprint 6 Done / Total",
+        "title": "Sprint 6 Done Tasks",
         "gridPos": {
           "x": 12,
-          "y": 54,
+          "y": 62,
           "w": 12,
           "h": 3
         },
@@ -674,7 +674,7 @@
         "title": "Sprint 6 Tasks",
         "gridPos": {
           "x": 0,
-          "y": 57,
+          "y": 65,
           "w": 24,
           "h": 5
         },
@@ -696,13 +696,13 @@
         "title": "Task History (Recent)",
         "gridPos": {
           "x": 0,
-          "y": 62,
+          "y": 70,
           "w": 24,
           "h": 8
         },
         "targets": [
           {
-            "expr": "cacheflow_history_entry",
+            "expr": "cacheflow_history_entry{ts!=\"\"}",
             "refId": "A",
             "format": "table",
             "instant": true
@@ -711,6 +711,74 @@
         "options": {
           "showHeader": true
         }
+      },
+      {
+        "id": 39,
+        "type": "stat",
+        "title": "🚦 Done Gates",
+        "gridPos": {
+          "x": 16,
+          "y": 3,
+          "w": 4,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "sum(cacheflow_gate_is_done)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 40,
+        "type": "piechart",
+        "title": "Tasks by Status",
+        "gridPos": {
+          "x": 0,
+          "y": 6,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "count by (status) (cacheflow_task_status)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 41,
+        "type": "bargauge",
+        "title": "Tasks by Agent",
+        "gridPos": {
+          "x": 8,
+          "y": 6,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "count by (agent) (cacheflow_task_status)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 42,
+        "type": "bargauge",
+        "title": "Tasks by Gate",
+        "gridPos": {
+          "x": 16,
+          "y": 6,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "count by (gate) (cacheflow_task_status)",
+            "refId": "A"
+          }
+        ]
       }
     ]
   },

@@ -53,9 +53,16 @@ router.get('/', async (req, res) => {
 // POST /files/upload
 router.post('/upload', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'file required' });
-  const relativePath = req.query.path
+  
+  let relativePath = req.query.path
     ? path.normalize(req.query.path).replace(/^(\.\.(\/|\\|$))+/, '')
     : req.file.originalname;
+
+  // Preserve original File.name if req.query.path is just a directory
+  if (req.query.path && !relativePath.endsWith(req.file.originalname)) {
+    relativePath = path.join(relativePath, req.file.originalname);
+  }
+
   const diskPath = path.join(LOCAL_PATH, req.user.id, relativePath);
   if (relativePath !== req.file.originalname) {
     fs.mkdirSync(path.dirname(diskPath), { recursive: true });

@@ -1,0 +1,128 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "cacheflow-history",
+    "title": "CacheFlow Task History",
+    "tags": [
+      "cacheflow",
+      "history"
+    ],
+    "schemaVersion": 41,
+    "version": 2,
+    "timezone": "browser",
+    "refresh": "1m",
+    "time": {
+      "from": "now-30d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Completed Tasks",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_tasks_completed_total",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Running Tasks",
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_tasks_running_total",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Done Gates",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "sum(cacheflow_gate_is_done)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Total Commits",
+        "gridPos": {
+          "x": 18,
+          "y": 0,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "expr": "sum(cacheflow_sprint_commits_total)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "type": "table",
+        "title": "History Entries",
+        "gridPos": {
+          "x": 0,
+          "y": 3,
+          "w": 24,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_history_entry",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "type": "table",
+        "title": "Task Rows (All Sprints)",
+        "gridPos": {
+          "x": 0,
+          "y": 11,
+          "w": 24,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_task_status",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ]
+      }
+    ]
+  },
+  "overwrite": true
+}

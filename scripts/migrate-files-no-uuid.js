@@ -29,7 +29,7 @@ async function migrateFiles() {
 
     // Get all files from database
     const result = await client.query(`
-      SELECT id, user_id, path, status
+      SELECT id, user_id, path, status, hash
       FROM files
       WHERE status != 'deleted'
       ORDER BY user_id, path
@@ -57,18 +57,47 @@ async function migrateFiles() {
         const newPoolPath = path.join(POOL_PATH, file.user_id, newPath);
 
         try {
-          // Move file if it exists in local path
-          if (fs.existsSync(oldLocalPath)) {
-            fs.mkdirSync(path.dirname(newLocalPath), { recursive: true });
-            fs.renameSync(oldLocalPath, newLocalPath);
-            console.log(`Moved local: ${oldPath} -> ${newPath}`);
-          }
+          // Check for duplicate in database
+          const duplicate = await client.query(
+            'SELECT id, hash FROM files WHERE user_id = $1 AND path = $2 AND status != \'deleted\'',
+            [file.user_id, newPath]
+          );
 
-          // Move file if it exists in pool path
-          if (fs.existsSync(oldPoolPath)) {
-            fs.mkdirSync(path.dirname(newPoolPath), { recursive: true });
-            fs.renameSync(oldPoolPath, newPoolPath);
-            console.log(`Moved pool: ${oldPath} -> ${newPath}`);
+          if (duplicate.rows.length > 0) {
+            if (duplicate.rows[0].hash === file.hash) {
+              console.log(`Same hash for duplicate ${newPath}. Deleting redundant UUID-prefixed entry ${file.id}`);
+              await client.query('UPDATE files SET status = \'deleted\' WHERE id = $1', [file.id]);
+              // Also try to remove the file from disk if it's different from the clean path one
+              if (fs.existsSync(oldLocalPath) && oldLocalPath !== newLocalPath) {
+                fs.unlinkSync(oldLocalPath);
+              }
+              if (fs.existsSync(oldPoolPath) && oldPoolPath !== newPoolPath) {
+                fs.unlinkSync(oldPoolPath);
+              }
+              migratedCount++;
+            } else {
+              console.warn(`Different hash for duplicate ${newPath}. Skipping for manual resolution.`);
+              errorCount++;
+              continue;
+            }
+          } else {
+            // Move file if it exists in local path
+            if (fs.existsSync(oldLocalPath)) {
+              fs.mkdirSync(path.dirname(newLocalPath), { recursive: true });
+              fs.renameSync(oldLocalPath, newLocalPath);
+              console.log(`Moved local: ${oldPath} -> ${newPath}`);
+            }
+
+            // Move file if it exists in pool path
+            if (fs.existsSync(oldPoolPath)) {
+              fs.mkdirSync(path.dirname(newPoolPath), { recursive: true });
+              fs.renameSync(oldPoolPath, newPoolPath);
+              console.log(`Moved pool: ${oldPath} -> ${newPath}`);
+            }
+
+            // Update database
+            await client.query('UPDATE files SET path = $1 WHERE id = $2', [newPath, file.id]);
+            console.log(`Updated DB: ${file.id} path set to ${newPath}`);
           }
 
           // Remove empty UUID directories

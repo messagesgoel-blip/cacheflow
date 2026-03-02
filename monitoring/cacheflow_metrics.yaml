@@ -1,17 +1,17 @@
-generated_at: '2026-03-02T20:44:59+00:00'
+generated_at: '2026-03-02T21:06:40+00:00'
 current_sprint: 1
-sprint_progress: 22.73
+sprint_progress: 54.55
 sprint_start: 1700000000
-running_tasks: 6
-tasks_completed_total: 5
+running_tasks: 3
+tasks_completed_total: 12
 total_tasks: 110
 total_sprints: 7
 gate_status:
   AUTH-1: running
   AUTH-2: open
-  AUTH-3: running
+  AUTH-3: open
   AUTH-4: open
-  MODAL-1: running
+  MODAL-1: done
   UUID-1: running
   SYNC-1: open
   UPLOAD-1: open
@@ -40,12 +40,12 @@ sprints:
   commits_total: 0
 - sprint: 1
   total_tasks: 22
-  done_tasks: 5
-  running_tasks: 6
+  done_tasks: 12
+  running_tasks: 3
   pending_tasks: 0
-  planned_tasks: 11
-  progress: 22.73
-  commits_total: 2
+  planned_tasks: 7
+  progress: 54.55
+  commits_total: 5
 - sprint: 2
   total_tasks: 17
   done_tasks: 0
@@ -220,10 +220,10 @@ tasks:
   files: /lib/vault/tokenVault.ts, /prisma/migrations/001_token_vault/
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b1142283731b
+  done_at: '2026-03-02T20:59:02+00:00'
+  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
 - id: '1.18'
   task_key: 1.18@AUTH-2
   description: "Security baseline \u2014 remove defaults, harden secrets"
@@ -231,10 +231,10 @@ tasks:
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b1142283731b
+  done_at: '2026-03-02T20:59:02+00:00'
+  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
 - id: '1.19'
   task_key: 1.19@AUTH-2
   description: "Security audit test \u2014 verify no secrets in API responses"
@@ -265,10 +265,10 @@ tasks:
   files: /app/api/auth/sync-token/ (delete), /components/providers/** (audit)
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-3
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: b1142283731b
+  done_at: '2026-03-02T20:59:05+00:00'
+  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
 - id: '0.6'
   task_key: 0.6@AUTH-4
   description: "Define singleton refresh promise pattern \u2014 prevent concurrent\
@@ -311,10 +311,10 @@ tasks:
   files: /components/modals/WebDAVModal.tsx, /components/modals/VPSModal.tsx
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 63dad6f36533
+  done_at: '2026-03-02T21:02:16+00:00'
+  changelog: 'feat(1.9@MODAL-1): implement correct forms for WebDAV and VPS modals'
 - id: '1.10'
   task_key: 1.10@MODAL-1
   description: Clear modal state on close and provider switch
@@ -322,10 +322,11 @@ tasks:
   files: /context/IntegrationContext.tsx, /components/modals/ConnectProviderModal.tsx
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 0e06e1fcf81d
+  done_at: '2026-03-02T21:03:26+00:00'
+  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
+    implemented via IntegrationContext)'
 - id: '1.11'
   task_key: 1.11@MODAL-1
   description: "Write Playwright modal test \u2014 all 9 provider Connect buttons"
@@ -357,10 +358,11 @@ tasks:
     /lib/uploads/uploadManager.ts
   agent: "\u25C8 OpenCode"
   gate: UUID-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 0e06e1fcf81d
+  done_at: '2026-03-02T21:06:39+00:00'
+  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
+    implemented via IntegrationContext)'
 - id: '1.14'
   task_key: 1.14@UUID-1
   description: Write and run migration script in staging
@@ -368,10 +370,11 @@ tasks:
   files: /scripts/migrate-files-no-uuid.js
   agent: "\u25C8 OpenCode"
   gate: UUID-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 0e06e1fcf81d
+  done_at: '2026-03-02T21:06:39+00:00'
+  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
+    implemented via IntegrationContext)'
 - id: '1.15'
   task_key: 1.15@UUID-1
   description: Validate and apply migration to production
