@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import ProviderHub from '@/components/ProviderHub'
 import Navbar from '@/components/Navbar'
+import { IntegrationProvider } from '@/context/IntegrationContext'
+import ConnectProviderModal from '@/components/modals/ConnectProviderModal'
 
 export default function ProvidersPage() {
   const [token, setToken] = useState<string | null>(null)
@@ -34,13 +36,16 @@ export default function ProvidersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar email={email} onLogout={() => {
-        localStorage.removeItem('cf_token')
-        localStorage.removeItem('cf_email')
-        window.location.href = '/login'
-      }} />
-      <ProviderHub />
-    </div>
+    <IntegrationProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navbar email={email} onLogout={() => {
+          localStorage.removeItem('cf_token')
+          localStorage.removeItem('cf_email')
+          window.location.href = '/login'
+        }} />
+        <ProviderHub />
+        <ConnectProviderModal />
+      </div>
+    </IntegrationProvider>
   )
 }

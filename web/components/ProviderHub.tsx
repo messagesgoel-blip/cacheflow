@@ -5,6 +5,7 @@ import { PROVIDERS, ProviderId, ConnectedProvider, ProviderQuota, formatBytes } 
 import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
 import { useActionCenter } from '@/components/ActionCenterProvider'
+import { useIntegration } from '@/context/IntegrationContext'
 
 export default function ProviderHub() {
   const [connectedProviders, setConnectedProviders] = useState<ConnectedProvider[]>([])
@@ -119,7 +120,7 @@ export default function ProviderHub() {
 }
 
 function ProviderCard({ provider, connected, accounts, healthStates }: any) {
-  const [showConnectModal, setShowConnectModal] = useState(false)
+  const { openConnectModal, openManageModal } = useIntegration()
   const actions = useActionCenter()
 
   const getStatusDisplay = (status: string) => {
@@ -166,9 +167,9 @@ function ProviderCard({ provider, connected, accounts, healthStates }: any) {
                     </div>
                   </div>
                   {health.status === 'needs_reauth' && (
-                    <button 
+                    <button
                       data-testid={`cf-provider-reconnect-${account.accountKey}`}
-                      onClick={() => setShowConnectModal(true)}
+                      onClick={() => openConnectModal(provider.id as ProviderId)}
                       className="w-full py-1.5 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 transition-colors"
                     >
                       Reconnect Account
@@ -181,14 +182,10 @@ function ProviderCard({ provider, connected, accounts, healthStates }: any) {
           </div>
         )}
 
-        <button onClick={() => setShowConnectModal(true)} className={`w-full py-2 px-4 rounded-lg font-medium text-sm transition-colors ${connected ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' : 'bg-blue-500 text-white hover:bg-blue-600'}`}>
+        <button onClick={() => connected ? openManageModal(provider.id as ProviderId) : openConnectModal(provider.id as ProviderId)} className={`w-full py-2 px-4 rounded-lg font-medium text-sm transition-colors ${connected ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' : 'bg-blue-500 text-white hover:bg-blue-600'}`}>
           {connected ? 'Manage' : 'Connect'}
         </button>
       </div>
-
-      {showConnectModal && (
-        <ConnectModal provider={provider} connected={connected} onClose={() => setShowConnectModal(false)} />
-      )}
     </>
   )
 }
