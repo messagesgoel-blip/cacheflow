@@ -1,4 +1,4 @@
-generated_at: '2026-03-02T21:27:53+00:00'
+generated_at: '2026-03-02T21:32:03+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -308,10 +308,10 @@ tasks:
   files: /app/api/connections/route.ts, /components/Sidebar.tsx, /app/connections/page.tsx
   agent: "\u25C8 OpenCode"
   gate: SYNC-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: a0832192b9e9
+  done_at: '2026-03-02T21:32:03+00:00'
+  changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
 - id: '3.14'
   task_key: 3.14@SYNC-1
   description: "Provider health indicators \u2014 green means it actually works"
@@ -1090,10 +1090,10 @@ tasks:
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
   agent: "\u25C8 OpenCode"
   gate: SEC-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: a0832192b9e9
+  done_at: '2026-03-02T21:32:03+00:00'
+  changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
 - id: '4.4'
   task_key: 4.4@SEC-1
   description: SSH2 connection manager with LRU session reuse

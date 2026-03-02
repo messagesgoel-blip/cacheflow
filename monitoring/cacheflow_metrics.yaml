@@ -1,9 +1,9 @@
-generated_at: '2026-03-02T21:27:53+00:00'
-current_sprint: 1
-sprint_progress: 90.91
+generated_at: '2026-03-02T21:32:03+00:00'
+current_sprint: 0
+sprint_progress: 0.0
 sprint_start: 1700000000
-running_tasks: 2
-tasks_completed_total: 20
+running_tasks: 0
+tasks_completed_total: 22
 total_tasks: 110
 total_sprints: 7
 gate_status:
@@ -13,7 +13,7 @@ gate_status:
   AUTH-4: open
   MODAL-1: done
   UUID-1: done
-  SYNC-1: running
+  SYNC-1: open
   UPLOAD-1: open
   PREVIEW-1: open
   ACTIONS-1: open
@@ -27,7 +27,7 @@ gate_status:
   VAULT-1: open
   SCHED-1: open
   SEARCH-1: open
-  SEC-1: running
+  SEC-1: open
   LAUNCH-1: open
 sprints:
 - sprint: 0
@@ -40,12 +40,12 @@ sprints:
   commits_total: 0
 - sprint: 1
   total_tasks: 22
-  done_tasks: 20
-  running_tasks: 2
+  done_tasks: 22
+  running_tasks: 0
   pending_tasks: 0
   planned_tasks: 0
-  progress: 90.91
-  commits_total: 7
+  progress: 100.0
+  commits_total: 8
 - sprint: 2
   total_tasks: 17
   done_tasks: 0
@@ -395,10 +395,10 @@ tasks:
   files: /app/api/connections/route.ts, /components/Sidebar.tsx, /app/connections/page.tsx
   agent: "\u25C8 OpenCode"
   gate: SYNC-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: a0832192b9e9
+  done_at: '2026-03-02T21:32:03+00:00'
+  changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
 - id: '3.14'
   task_key: 3.14@SYNC-1
   description: "Provider health indicators \u2014 green means it actually works"
@@ -1177,10 +1177,10 @@ tasks:
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
   agent: "\u25C8 OpenCode"
   gate: SEC-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: a0832192b9e9
+  done_at: '2026-03-02T21:32:03+00:00'
+  changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
 - id: '4.4'
   task_key: 4.4@SEC-1
   description: SSH2 connection manager with LRU session reuse
