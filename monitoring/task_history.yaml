@@ -55,3 +55,74 @@
   - '1.11'
   - '1.19'
   - '1.7'
+- timestamp: '2026-03-02T20:37:26+00:00'
+  commit: 7594bae822f49a82a8e8c7dddefe843f94ed3ead
+  message: 'feat(Sprint 1): implement E2E coverage for MODAL-1, AUTH-2, and AUTH-1
+    baseline'
+  changed:
+  - task_key: 1.1@AUTH-1
+    id: '1.1'
+    gate: AUTH-1
+    from: planned
+    to: running
+  - task_key: 1.6@AUTH-3
+    id: '1.6'
+    gate: AUTH-3
+    from: planned
+    to: running
+  - task_key: 1.8@MODAL-1
+    id: '1.8'
+    gate: MODAL-1
+    from: planned
+    to: running
+  - task_key: 1.9@MODAL-1
+    id: '1.9'
+    gate: MODAL-1
+    from: planned
+    to: running
+  - task_key: 1.10@MODAL-1
+    id: '1.10'
+    gate: MODAL-1
+    from: planned
+    to: running
+  - task_key: 1.12@UUID-1
+    id: '1.12'
+    gate: UUID-1
+    from: planned
+    to: running
+  - task_key: 1.15@UUID-1
+    id: '1.15'
+    gate: UUID-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []
+- timestamp: '2026-03-02T20:39:05+00:00'
+  commit: a24bcfb5ac1a804e6abba89f442cd4d9b063394f
+  message: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator enum'
+  changed:
+  - task_key: 1.8@MODAL-1
+    id: '1.8'
+    gate: MODAL-1
+    from: running
+    to: done
+  done_task_keys:
+  - 1.8@MODAL-1
+  done_tasks:
+  - '1.8'
+- timestamp: '2026-03-02T20:44:18+00:00'
+  commit: a24bcfb5ac1a804e6abba89f442cd4d9b063394f
+  message: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator enum'
+  changed:
+  - task_key: 1.1@AUTH-1
+    id: '1.1'
+    gate: AUTH-1
+    from: running
+    to: planned
+  - task_key: 1.6@AUTH-3
+    id: '1.6'
+    gate: AUTH-3
+    from: running
+    to: planned
+  done_task_keys: []
+  done_tasks: []

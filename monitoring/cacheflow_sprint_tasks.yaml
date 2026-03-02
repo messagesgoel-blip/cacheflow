@@ -1,4 +1,4 @@
-generated_at: '2026-03-02T20:30:27+00:00'
+generated_at: '2026-03-02T20:44:59+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -30,7 +30,7 @@ tasks:
   files: /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -53,9 +53,10 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: AUTH-1
   status: done
-  commit: 917e73e250c7
-  done_at: '2026-03-02T20:30:27+00:00'
-  changelog: 'docs: add claude alias for ClaudeCode agent name'
+  commit: a24bcfb5ac1a
+  done_at: '2026-03-02T20:44:59+00:00'
+  changelog: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator
+    enum'
 - id: '1.17'
   task_key: 1.17@AUTH-1
   description: Replace SESSION_EXPIRED raw text with actionable component
@@ -155,9 +156,10 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: AUTH-2
   status: done
-  commit: 917e73e250c7
-  done_at: '2026-03-02T20:30:27+00:00'
-  changelog: 'docs: add claude alias for ClaudeCode agent name'
+  commit: a24bcfb5ac1a
+  done_at: '2026-03-02T20:44:59+00:00'
+  changelog: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator
+    enum'
 - id: '1.3'
   task_key: 1.3@AUTH-3
   description: Migrate from localStorage TokenManager to HttpOnly cookies
@@ -176,7 +178,7 @@ tasks:
   files: /app/api/auth/sync-token/ (delete), /components/providers/** (audit)
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-3
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -210,10 +212,11 @@ tasks:
   files: /context/IntegrationContext.tsx, /components/modals/ConnectProviderModal.tsx
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: a24bcfb5ac1a
+  done_at: '2026-03-02T20:39:05+00:00'
+  changelog: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator
+    enum'
 - id: '1.9'
   task_key: 1.9@MODAL-1
   description: Implement correct forms for WebDAV and VPS/SFTP modals
@@ -221,7 +224,7 @@ tasks:
   files: /components/modals/WebDAVModal.tsx, /components/modals/VPSModal.tsx
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -232,7 +235,7 @@ tasks:
   files: /context/IntegrationContext.tsx, /components/modals/ConnectProviderModal.tsx
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -244,9 +247,10 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: MODAL-1
   status: done
-  commit: 917e73e250c7
-  done_at: '2026-03-02T20:30:27+00:00'
-  changelog: 'docs: add claude alias for ClaudeCode agent name'
+  commit: a24bcfb5ac1a
+  done_at: '2026-03-02T20:44:59+00:00'
+  changelog: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator
+    enum'
 - id: '1.12'
   task_key: 1.12@UUID-1
   description: "Audit upload pipeline \u2014 locate all UUID injection points"
@@ -254,7 +258,7 @@ tasks:
   files: /api/remotes/**, /lib/providers/**, /lib/uploads/**
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -288,7 +292,7 @@ tasks:
   files: /scripts/migrate-files-no-uuid.js --env=production
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

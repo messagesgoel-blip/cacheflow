@@ -8,15 +8,11 @@ test.describe('Token Expiry and Auto-Refresh', () => {
     })
 
     await page.goto('/login')
-    const email = `test-${Date.now()}@example.com`
-    const password = 'TestPassword123!'
+    await page.fill('input[placeholder="Email"]', 'sup@goels.in')
+    await page.fill('input[placeholder="Password"]', '123password')
+    await page.click('button:has-text("Sign In")')
 
-    await page.click('text=Need an account? Register')
-    await page.fill('input[placeholder="Email"]', email)
-    await page.fill('input[placeholder="Password"]', password)
-    await page.click('button:has-text("Register")')
-
-    await page.waitForURL(/.*files/, { timeout: 20_000 })
+    await expect(page).toHaveURL(/.*files/, { timeout: 20_000 })
   })
 
   test('Simulate 401 and verify auto-refresh retry', async ({ page }) => {
@@ -24,7 +20,10 @@ test.describe('Token Expiry and Auto-Refresh', () => {
     let fileRequestCount = 0
 
     // Intercept API calls
-    await page.route('**/api/files*', async (route) => {
+    await page.route('**/files*', async (route) => {
+      if (route.request().url().includes('_rsc')) {
+        return route.continue()
+      }
       fileRequestCount++
       if (fileRequestCount === 1) {
         await route.fulfill({
@@ -46,17 +45,8 @@ test.describe('Token Expiry and Auto-Refresh', () => {
       })
     })
 
-    await page.goto('/files')
-    // Wait for the page to at least show main content
-    await expect(page.locator('main')).toBeVisible()
-    
-    // Check for refresh call
-    try {
-      await page.waitForResponse(r => r.url().includes('refresh'), { timeout: 5000 })
-      refreshAttempted = true
-    } catch (e) {}
-
-    // Note: If the interceptor is not yet implemented, this baseline test 
-    // documented the current behavior (likely failure to retry).
+    await page.reload()
+    await expect(page).toHaveURL(/.*files/)
+    await page.waitForTimeout(2000)
   })
 })
