@@ -23,3 +23,11 @@
 - files: agent-coord.sh, .context/task_locks/*
 - commit: a24bcfb5ac1a
 - agent: sanjay
+
+## 2026-03-02 — Security baseline: remove defaults, harden secrets (SEC-1)
+- decision: Require DB_PASSWORD and CREDENTIAL_ENCRYPTION_KEY environment variables; remove hardcoded defaults.
+- rationale: Hardcoded default passwords and encryption keys are a critical security vulnerability. Production must explicitly configure secrets.
+- alternatives rejected: Keep defaults with warnings - insufficient; defaults often remain in place in production.
+- files: api/src/middleware/auth.js, api/src/routes/tokens.js
+- commit: a083219
+- agent: ClaudeCode
