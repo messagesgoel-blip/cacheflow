@@ -1,6 +1,9 @@
 /**
  * Token Storage API
  * Server-side encrypted token storage for optional backup
+ *
+ * Gate: SEC-1
+ * Task: 1.18@SEC-1 - Security baseline: removed default encryption key
  */
 
 const express = require('express');
@@ -9,17 +12,31 @@ const crypto = require('crypto');
 const pool = require('../db/client');
 const authMw = require('../middleware/auth');
 
-// Encryption key from environment
-const ENCRYPTION_KEY = process.env.CREDENTIAL_ENCRYPTION_KEY || process.env.JWT_SECRET || 'cacheflow-tokens-key';
+// SECURITY (1.18@SEC-1): Require encryption key - no fallback defaults
+const ENCRYPTION_KEY = process.env.CREDENTIAL_ENCRYPTION_KEY;
+if (!ENCRYPTION_KEY) {
+  console.warn('[tokens] WARNING: CREDENTIAL_ENCRYPTION_KEY not set. Token encryption disabled.');
+}
 const ALGORITHM = 'aes-256-gcm';
 
 // ============================================================================
 // ENCRYPTION HELPERS
 // ============================================================================
 
+function getKey() {
+  if (!ENCRYPTION_KEY) {
+    throw new Error('CREDENTIAL_ENCRYPTION_KEY not configured');
+  }
+  return Buffer.from(ENCRYPTION_KEY.repeat(Math.ceil(32 / ENCRYPTION_KEY.length))).slice(0, 32);
+}
+
 function encrypt(text) {
+  if (!ENCRYPTION_KEY) {
+    // If no key configured, return plaintext (not recommended for production)
+    return 'PLAIN:' + text;
+  }
   const iv = crypto.randomBytes(16);
-  const key = Buffer.from(ENCRYPTION_KEY.repeat(Math.ceil(32 / ENCRYPTION_KEY.length))).slice(0, 32);
+  const key = getKey();
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
   let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -30,6 +47,11 @@ function encrypt(text) {
 }
 
 function decrypt(encryptedText) {
+  // Handle plaintext fallback for backwards compatibility
+  if (encryptedText.startsWith('PLAIN:')) {
+    return encryptedText.substring(6);
+  }
+
   try {
     const parts = encryptedText.split(':');
     if (parts.length !== 3) {
@@ -40,7 +62,7 @@ function decrypt(encryptedText) {
     const authTag = Buffer.from(parts[1], 'hex');
     const encrypted = parts[2];
 
-    const key = Buffer.from(ENCRYPTION_KEY.repeat(Math.ceil(32 / ENCRYPTION_KEY.length))).slice(0, 32);
+    const key = getKey();
     const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     decipher.setAuthTag(authTag);
 
