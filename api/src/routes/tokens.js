@@ -64,16 +64,21 @@ router.get('/', authMw, async (req, res) => {
     const userId = req.user.id;
 
     const result = await pool.query(
-      `SELECT provider, account_email, access_token, refresh_token, expires_at, scope, updated_at
+      `SELECT provider, provider_account_id, account_email, account_label, account_order, is_default, access_token, refresh_token, expires_at, scope, updated_at
        FROM oauth_tokens
-       WHERE user_id = $1`,
+       WHERE user_id = $1
+       ORDER BY provider, account_order`,
       [userId]
     );
 
     // Decrypt tokens before sending
     const tokens = result.rows.map(row => ({
       provider: row.provider,
+      accountId: row.provider_account_id,
       accountEmail: row.account_email,
+      accountLabel: row.account_label,
+      accountOrder: row.account_order,
+      isDefault: row.is_default,
       accessToken: row.access_token ? decrypt(row.access_token) : null,
       refreshToken: row.refresh_token ? decrypt(row.refresh_token) : null,
       expiresAt: row.expires_at ? row.expires_at.getTime() : null,
@@ -92,43 +97,81 @@ router.get('/', authMw, async (req, res) => {
 router.post('/', authMw, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { provider, accessToken, refreshToken, expiresAt, scope, accountEmail, accountId } = req.body;
+    const { 
+      provider, 
+      accessToken, 
+      refreshToken, 
+      expiresAt, 
+      scope, 
+      accountEmail, 
+      accountId,
+      accountLabel,
+      isDefault
+    } = req.body;
 
-    if (!provider || !accessToken) {
-      return res.status(400).json({ error: 'Provider and accessToken required' });
+    if (!provider || !accessToken || !accountId) {
+      return res.status(400).json({ error: 'Provider, accessToken, and accountId required' });
     }
 
     // Encrypt tokens
     const encryptedAccess = encrypt(accessToken);
     const encryptedRefresh = refreshToken ? encrypt(refreshToken) : null;
 
-    // Upsert token
+    // If this is the first account for this provider, make it default
+    let defaultFlag = isDefault;
+    if (defaultFlag === undefined) {
+      const countResult = await pool.query(
+        'SELECT count(*) FROM oauth_tokens WHERE user_id = $1 AND provider = $2',
+        [userId, provider]
+      );
+      defaultFlag = parseInt(countResult.rows[0].count) === 0;
+    }
+
+    // If setting as default, unset other defaults for this provider
+    if (defaultFlag) {
+      await pool.query(
+        'UPDATE oauth_tokens SET is_default = false WHERE user_id = $1 AND provider = $2',
+        [userId, provider]
+      );
+    }
+
+    // Upsert token using user_id + provider + provider_account_id as uniqueness key
     await pool.query(
-      `INSERT INTO oauth_tokens (user_id, provider, provider_account_id, access_token, refresh_token, expires_at, scope, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-       ON CONFLICT (user_id, provider)
+      `INSERT INTO oauth_tokens (
+         user_id, provider, provider_account_id, account_email, account_label, is_default, 
+         access_token, refresh_token, expires_at, scope, created_at, updated_at
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+       ON CONFLICT (user_id, provider, provider_account_id)
        DO UPDATE SET
+         account_email = EXCLUDED.account_email,
+         account_label = EXCLUDED.account_label,
+         is_default = EXCLUDED.is_default,
          access_token = EXCLUDED.access_token,
          refresh_token = EXCLUDED.refresh_token,
          expires_at = EXCLUDED.expires_at,
          scope = EXCLUDED.scope,
          updated_at = NOW()`,
-      [userId, provider, accountId, encryptedAccess, encryptedRefresh, expiresAt ? new Date(expiresAt) : null, scope]
+      [
+        userId, provider, accountId, accountEmail, 
+        accountLabel || 'Primary', defaultFlag,
+        encryptedAccess, encryptedRefresh, expiresAt ? new Date(expiresAt) : null, scope
+      ]
     );
 
-    res.json({ success: true, provider });
+    res.json({ success: true, provider, accountId });
   } catch (err) {
     console.error('[tokens] POST error:', err.message);
     res.status(500).json({ error: 'Failed to save token' });
   }
 });
 
-// PATCH /api/tokens/:provider - Update specific token
-router.patch('/:provider', authMw, async (req, res) => {
+// PATCH /api/tokens/:provider/:accountId - Update specific token
+router.patch('/:provider/:accountId', authMw, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { provider } = req.params;
-    const { accessToken, refreshToken, expiresAt } = req.body;
+    const { provider, accountId } = req.params;
+    const { accessToken, refreshToken, expiresAt, accountLabel, isDefault } = req.body;
 
     const updates = [];
     const values = [];
@@ -149,17 +192,32 @@ router.patch('/:provider', authMw, async (req, res) => {
       values.push(new Date(expiresAt));
     }
 
+    if (accountLabel) {
+      updates.push(`account_label = $${paramCount++}`);
+      values.push(accountLabel);
+    }
+
+    if (isDefault === true) {
+      // Unset other defaults first
+      await pool.query(
+        'UPDATE oauth_tokens SET is_default = false WHERE user_id = $1 AND provider = $2',
+        [userId, provider]
+      );
+      updates.push(`is_default = $${paramCount++}`);
+      values.push(true);
+    }
+
     if (updates.length === 0) {
       return res.status(400).json({ error: 'No updates provided' });
     }
 
     updates.push(`updated_at = NOW()`);
-    values.push(userId, provider);
+    values.push(userId, provider, accountId);
 
     const result = await pool.query(
       `UPDATE oauth_tokens
        SET ${updates.join(', ')}
-       WHERE user_id = $${paramCount++} AND provider = $${paramCount}
+       WHERE user_id = $${paramCount++} AND provider = $${paramCount++} AND provider_account_id = $${paramCount}
        RETURNING provider`,
       values
     );
@@ -168,31 +226,31 @@ router.patch('/:provider', authMw, async (req, res) => {
       return res.status(404).json({ error: 'Token not found' });
     }
 
-    res.json({ success: true, provider });
+    res.json({ success: true, provider, accountId });
   } catch (err) {
     console.error('[tokens] PATCH error:', err.message);
     res.status(500).json({ error: 'Failed to update token' });
   }
 });
 
-// DELETE /api/tokens/:provider - Remove token
-router.delete('/:provider', authMw, async (req, res) => {
+// DELETE /api/tokens/:provider/:accountId - Remove token
+router.delete('/:provider/:accountId', authMw, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { provider } = req.params;
+    const { provider, accountId } = req.params;
 
     const result = await pool.query(
       `DELETE FROM oauth_tokens
-       WHERE user_id = $1 AND provider = $2
+       WHERE user_id = $1 AND provider = $2 AND provider_account_id = $3
        RETURNING provider`,
-      [userId, provider]
+      [userId, provider, accountId]
     );
 
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Token not found' });
     }
 
-    res.json({ success: true, provider });
+    res.json({ success: true, provider, accountId });
   } catch (err) {
     console.error('[tokens] DELETE error:', err.message);
     res.status(500).json({ error: 'Failed to delete token' });

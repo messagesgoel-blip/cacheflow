@@ -24,20 +24,20 @@
   gate: AUTH-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:27:52+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 1.5@AUTH-1:
   id: '1.5'
   task_key: 1.5@AUTH-1
   gate: AUTH-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:27:52+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 1.7@AUTH-1:
   id: '1.7'
   task_key: 1.7@AUTH-1
@@ -106,10 +106,10 @@
   gate: AUTH-2
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:20:30+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 1.4@AUTH-2:
   id: '1.4'
   task_key: 1.4@AUTH-2
@@ -127,9 +127,9 @@
   sprint: 1
   agent: "\u25C8 OpenCode"
   status: done
-  commit: b1142283731b
-  done_at: '2026-03-02T20:59:02+00:00'
-  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:20:30+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 1.19@AUTH-2:
   id: '1.19'
   task_key: 1.19@AUTH-2
@@ -147,10 +147,10 @@
   gate: AUTH-3
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:20:30+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 1.6@AUTH-3:
   id: '1.6'
   task_key: 1.6@AUTH-3
@@ -177,10 +177,10 @@
   gate: AUTH-4
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:27:52+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 1.8@MODAL-1:
   id: '1.8'
   task_key: 1.8@MODAL-1
@@ -274,7 +274,7 @@
   gate: SYNC-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -964,17 +964,17 @@
   gate: SEC-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:20:30+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 1.18@SEC-1:
   id: '1.18'
   task_key: 1.18@SEC-1
   gate: SEC-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

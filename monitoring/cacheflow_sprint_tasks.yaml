@@ -1,4 +1,4 @@
-generated_at: '2026-03-02T21:14:13+00:00'
+generated_at: '2026-03-02T21:27:53+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -30,10 +30,10 @@ tasks:
   files: /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:27:52+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.5'
   task_key: 1.5@AUTH-1
   description: "Multi-account schema \u2014 up to 3 accounts per provider"
@@ -41,10 +41,10 @@ tasks:
   files: /prisma/migrations/002_multi_account/, /lib/vault/tokenVault.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:27:52+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.7'
   task_key: 1.7@AUTH-1
   description: Write Playwright token expiry test
@@ -122,10 +122,10 @@ tasks:
   files: /app/api/auth/refresh/route.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:20:30+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.4'
   task_key: 1.4@AUTH-2
   description: "Token Vault v1 \u2014 encrypted at-rest provider credentials"
@@ -145,9 +145,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
   status: done
-  commit: b1142283731b
-  done_at: '2026-03-02T20:59:02+00:00'
-  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:20:30+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.19'
   task_key: 1.19@AUTH-2
   description: "Security audit test \u2014 verify no secrets in API responses"
@@ -167,10 +167,10 @@ tasks:
   files: /lib/tokenManager.ts (deprecated), /lib/auth/cookieAuth.ts (new)
   agent: "\u25C8 OpenCode"
   gate: AUTH-3
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:20:30+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.6'
   task_key: 1.6@AUTH-3
   description: Remove client-side token sync pattern entirely
@@ -201,10 +201,10 @@ tasks:
   files: /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-4
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:27:52+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.8'
   task_key: 1.8@MODAL-1
   description: Replace shared modal boolean with provider discriminator enum
@@ -308,7 +308,7 @@ tasks:
   files: /app/api/connections/route.ts, /components/Sidebar.tsx, /app/connections/page.tsx
   agent: "\u25C8 OpenCode"
   gate: SYNC-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -1079,10 +1079,10 @@ tasks:
   files: /lib/vault/tokenVault.ts, /prisma/migrations/001_token_vault/
   agent: "\u25C8 OpenCode"
   gate: SEC-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9fe35b97ff93
+  done_at: '2026-03-02T21:20:30+00:00'
+  changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.18'
   task_key: 1.18@SEC-1
   description: "Security baseline \u2014 remove defaults, harden secrets"
@@ -1090,7 +1090,7 @@ tasks:
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
   agent: "\u25C8 OpenCode"
   gate: SEC-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

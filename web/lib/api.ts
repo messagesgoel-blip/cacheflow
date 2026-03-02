@@ -1,4 +1,5 @@
 import { getPublicApiUrl } from './config'
+import { authInterceptor } from './interceptors/authInterceptor'
 
 const API = getPublicApiUrl()
 
@@ -10,7 +11,7 @@ export async function apiFetch(path: string, opts: RequestInit = {}, token?: str
   const timeout = controller ? setTimeout(() => controller.abort(), timeoutMs) : null
 
   try {
-    const res = await fetch(`${API}${path}`, {
+    const res = await authInterceptor(`${API}${path}`, {
       ...opts,
       headers,
       signal: externalSignal || controller?.signal
@@ -61,7 +62,7 @@ export async function uploadFile(file: File, token: string, path?: string) {
   formData.append('file', file)
 
   const url = path ? `/files/upload?path=${encodeURIComponent(path)}` : '/files/upload'
-  const res = await fetch(`${API}${url}`, {
+  const res = await authInterceptor(`${API}${url}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`

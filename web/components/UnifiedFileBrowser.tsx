@@ -20,6 +20,7 @@ import PreviewPanel from '@/components/PreviewPanel'
 import StarredView from '@/components/StarredView'
 import ActivityFeed from '@/components/ActivityFeed'
 import ShortcutHelp from '@/components/ShortcutHelp'
+import apiClient, { type ProviderConnection } from '@/lib/apiClient'
 
 interface UnifiedFileBrowserProps {
   token: string
@@ -126,28 +127,65 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     setIsGroupedView(newState); localStorage.setItem('cacheflow:ui:allProvidersView', newState ? 'grouped' : 'flat')
   }
 
-  // Load connected providers
+  // Load connected providers - SYNC-1: fetch from server state API
   useEffect(() => {
     let tokensChanged = false;
     if (token && !tokenManager.hasToken('local')) {
       tokenManager.saveToken('local', { provider: 'local', accessToken: token, accountEmail: 'local-storage', displayName: 'Local Storage', expiresAt: null }); tokensChanged = true
     }
     if (tokensChanged) { setRefreshKey(k => k + 1); return }
-    
-    const connected: ConnectedProvider[] = []
-    const loadingIds: ProviderId[] = []
-    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav', 'local']
 
-    for (const pid of providerIds) {
-      const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
-      tokens.forEach((t, idx) => {
-        if (t && (t.accessToken || (t as any).remoteId)) {
-          connected.push({ providerId: pid, status: 'connected', accountEmail: t.accountEmail || '', displayName: t.displayName || `${pid}-${idx + 1}`, accountKey: t.accountKey, connectedAt: Date.now() })
-          if (!loadingIds.includes(pid)) loadingIds.push(pid)
+    const loadConnections = async () => {
+      // Fetch server-state connections for canonical metadata
+      let serverConnections: ProviderConnection[] = [];
+      try {
+        const result = await apiClient.getConnections();
+        if (result.success && result.data) {
+          serverConnections = result.data;
         }
-      })
-    }
-    setConnectedProviders(connected); setLoadingProviders(loadingIds)
+      } catch (err) {
+        console.warn('[UnifiedFileBrowser] Failed to fetch server connections, using localStorage only:', err);
+      }
+
+      // Build ConnectedProvider list: merge server metadata with localStorage tokens
+      const connected: ConnectedProvider[] = [];
+      const loadingIds: ProviderId[] = [];
+      const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav', 'local'];
+
+      for (const pid of providerIds) {
+        const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled);
+        tokens.forEach((t, idx) => {
+          if (t && (t.accessToken || (t as any).remoteId)) {
+            // Find matching server connection for status metadata
+            // Match by provider and account name (accountEmail may not be available on ProviderConnection)
+            const serverConn = serverConnections.find(
+              sc => sc.provider === pid && sc.accountName === (t.accountEmail || t.displayName)
+            );
+
+            // Map server status to local status (server uses 'disconnected', local uses 'needs_reauth')
+            let status: 'connected' | 'error' | 'degraded' | 'needs_reauth' = 'connected';
+            if (serverConn) {
+              if (serverConn.status === 'error') status = 'error';
+              else if (serverConn.status === 'disconnected') status = 'needs_reauth';
+            }
+
+            connected.push({
+              providerId: pid,
+              status,
+              accountEmail: t.accountEmail || '',
+              displayName: t.displayName || serverConn?.accountName || `${pid}-${idx + 1}`,
+              accountKey: t.accountKey,
+              connectedAt: serverConn?.lastSyncAt ? new Date(serverConn.lastSyncAt).getTime() : Date.now()
+            });
+            if (!loadingIds.includes(pid)) loadingIds.push(pid);
+          }
+        });
+      }
+      setConnectedProviders(connected);
+      setLoadingProviders(loadingIds);
+    };
+
+    loadConnections();
   }, [token, refreshKey])
 
   const filteredFiles = useMemo(() => {
