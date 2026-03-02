@@ -1,9 +1,9 @@
-generated_at: '2026-03-02T19:08:47+00:00'
+generated_at: '2026-03-02T20:30:27+00:00'
 current_sprint: 0
 sprint_progress: 0.0
 sprint_start: 1700000000
 running_tasks: 0
-tasks_completed_total: 0
+tasks_completed_total: 4
 total_tasks: 110
 total_sprints: 7
 gate_status:
@@ -40,12 +40,12 @@ sprints:
   commits_total: 0
 - sprint: 1
   total_tasks: 22
-  done_tasks: 0
+  done_tasks: 4
   running_tasks: 0
   pending_tasks: 0
-  planned_tasks: 22
-  progress: 0.0
-  commits_total: 0
+  planned_tasks: 18
+  progress: 18.18
+  commits_total: 2
 - sprint: 2
   total_tasks: 17
   done_tasks: 0
@@ -139,10 +139,10 @@ tasks:
   files: /e2e/tests/tokenExpiry.spec.ts
   agent: "\u25C9 Gemini"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 917e73e250c7
+  done_at: '2026-03-02T20:30:27+00:00'
+  changelog: 'docs: add claude alias for ClaudeCode agent name'
 - id: '1.17'
   task_key: 1.17@AUTH-1
   description: Replace SESSION_EXPIRED raw text with actionable component
@@ -150,10 +150,11 @@ tasks:
   files: /components/SessionExpiredBanner.tsx, /components/Sidebar/AccountRow.tsx
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 9f3f322328c5
+  done_at: '2026-03-02T20:08:15+00:00'
+  changelog: 'feat(1.17@AUTH-1): improve session expired banner with actionable reconnect
+    button'
 - id: '4.1'
   task_key: 4.1@AUTH-1
   description: "Define provider parity checklist \u2014 every provider must pass all\
@@ -240,10 +241,10 @@ tasks:
   files: /e2e/tests/securityAudit.spec.ts
   agent: "\u25C9 Gemini"
   gate: AUTH-2
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 917e73e250c7
+  done_at: '2026-03-02T20:30:27+00:00'
+  changelog: 'docs: add claude alias for ClaudeCode agent name'
 - id: '1.3'
   task_key: 1.3@AUTH-3
   description: Migrate from localStorage TokenManager to HttpOnly cookies
@@ -329,10 +330,10 @@ tasks:
   files: /e2e/tests/providerModals.spec.ts
   agent: "\u25C9 Gemini"
   gate: MODAL-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 917e73e250c7
+  done_at: '2026-03-02T20:30:27+00:00'
+  changelog: 'docs: add claude alias for ClaudeCode agent name'
 - id: '1.12'
   task_key: 1.12@UUID-1
   description: "Audit upload pipeline \u2014 locate all UUID injection points"

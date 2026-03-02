@@ -14,3 +14,44 @@
   done_tasks: []
   message: Remove deferred Filen and embedding/search pipeline for Turbo v1
   timestamp: '2026-03-02T13:45:07-05:00'
+- timestamp: '2026-03-02T20:08:16+00:00'
+  commit: 9f3f322328c517c5efdfdd0763cc063eb1144bda
+  message: 'feat(1.17@AUTH-1): improve session expired banner with actionable reconnect
+    button'
+  changed:
+  - task_key: 1.17@AUTH-1
+    id: '1.17'
+    gate: AUTH-1
+    from: planned
+    to: done
+  done_task_keys:
+  - 1.17@AUTH-1
+  done_tasks:
+  - '1.17'
+- timestamp: '2026-03-02T20:30:27+00:00'
+  commit: 917e73e250c7224ffde2f60792a9f46933a12544
+  message: 'docs: add claude alias for ClaudeCode agent name'
+  changed:
+  - task_key: 1.7@AUTH-1
+    id: '1.7'
+    gate: AUTH-1
+    from: planned
+    to: done
+  - task_key: 1.19@AUTH-2
+    id: '1.19'
+    gate: AUTH-2
+    from: planned
+    to: done
+  - task_key: 1.11@MODAL-1
+    id: '1.11'
+    gate: MODAL-1
+    from: planned
+    to: done
+  done_task_keys:
+  - 1.7@AUTH-1
+  - 1.19@AUTH-2
+  - 1.11@MODAL-1
+  done_tasks:
+  - '1.11'
+  - '1.19'
+  - '1.7'
