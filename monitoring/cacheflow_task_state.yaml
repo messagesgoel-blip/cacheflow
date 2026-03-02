@@ -274,10 +274,10 @@
   gate: SYNC-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: a0832192b9e9
+  done_at: '2026-03-02T21:32:03+00:00'
+  changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
 3.14@SYNC-1:
   id: '3.14'
   task_key: 3.14@SYNC-1
@@ -974,10 +974,10 @@
   gate: SEC-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: a0832192b9e9
+  done_at: '2026-03-02T21:32:03+00:00'
+  changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
 4.4@SEC-1:
   id: '4.4'
   task_key: 4.4@SEC-1
