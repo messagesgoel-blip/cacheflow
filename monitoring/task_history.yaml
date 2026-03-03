@@ -580,3 +580,19 @@
     to: planned
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-03T02:39:32+00:00'
+  commit: 909c56f91d32987dde197fdeb1bc1e72ac8d1cfd
+  message: 'chore(2FA-1): reopen 2.13/2.14 task state and clear stale locks'
+  changed:
+  - task_key: 2.13@2FA-1
+    id: '2.13'
+    gate: 2FA-1
+    from: planned
+    to: running
+  - task_key: 2.14@2FA-1
+    id: '2.14'
+    gate: 2FA-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []

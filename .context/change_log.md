@@ -26,3 +26,8 @@
 | 2026-03-03T01:24:39Z | sanjay | web/components/UnifiedFileBrowser.tsx | Hydrate tokenManager from server remotes for seeded QA accounts |
 | 2026-03-03T01:24:39Z | sanjay | web/lib/providers/StorageProvider.ts | Route remote proxy through backend with bearer token to avoid session-expired loop |
 | 2026-03-03T01:24:39Z | sanjay | web/lib/apiClient.ts | Normalize /api/connections payload and send bearer token |
+| 2026-03-03T02:42:02Z | sanjay | 2.13@2FA-1 | web/lib/auth/totp.ts |
+| 2026-03-03T02:42:03Z | sanjay | 2.13@2FA-1 | web/app/api/auth/2fa/ |
+| 2026-03-03T02:42:04Z | sanjay | 2.13@2FA-1 | prisma/migrations/003_2fa/migration.sql |
+| 2026-03-03T02:42:04Z | sanjay | 2.14@2FA-1 | web/app/auth/2fa-challenge/page.tsx |
+| 2026-03-03T02:42:05Z | sanjay | 2.14@2FA-1 | web/components/auth/TOTPInput.tsx |

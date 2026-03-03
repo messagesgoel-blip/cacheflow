@@ -528,7 +528,7 @@ OPS-QA-WATCH@QA-1:
   gate: 2FA-1
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -538,7 +538,7 @@ OPS-QA-WATCH@QA-1:
   gate: 2FA-1
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
