@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T00:05:16+00:00'
+generated_at: '2026-03-03T00:20:41+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -485,10 +485,11 @@ tasks:
   files: /components/Sidebar.tsx, /components/UnifiedFileBrowser.tsx, /app/connections/page.tsx
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: c80bd24c88d9
+  done_at: '2026-03-03T00:15:33+00:00'
+  changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
+    file pane'
 - id: UI-P1-T02
   task_key: UI-P1-T02@HOLD-UI-2026-03-02
   description: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
@@ -541,10 +542,11 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /components/Sidebar.tsx
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: c80bd24c88d9
+  done_at: '2026-03-03T00:15:33+00:00'
+  changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
+    file pane'
 - id: OPS-E2E-READY
   task_key: OPS-E2E-READY@QA-1
   description: Add Playwright preflight wait-for-api on 127.0.0.1:8100
@@ -557,6 +559,18 @@ tasks:
   commit: 25b691aaa88d
   done_at: '2026-03-03T00:05:16+00:00'
   changelog: 'feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100'
+- id: OPS-QA-WATCH
+  task_key: OPS-QA-WATCH@QA-1
+  description: 'Run QA watcher loop: detect dependency unlocks, claim ready Gemini
+    E2E tasks, and emit blocker reports'
+  sprint: 2
+  files: /web/e2e/**, /monitoring/task_history.yaml, /docs/prompts/**, /BLOCKER_QA_SEED.md
+  agent: "\u25C9 Gemini"
+  gate: QA-1
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
 - id: '2.13'
   task_key: 2.13@2FA-1
   description: "TOTP setup flow \u2014 QR generation, verification, backup codes"

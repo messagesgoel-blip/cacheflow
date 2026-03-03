@@ -33,6 +33,11 @@ Error: element(s) not found
 ## Likely Owner
 **OpenCode**, as this relates to the API's startup and seeding logic.
 
+## Watcher Note (2026-03-03)
+- Gemini report: Assigned tasks remain blocked by unmerged dependencies.
+- Completed one QA watcher cycle and confirmed this seed-data issue is the critical blocker.
+- Current mode: waiting for dependency resolution while continuing monitor checks.
+
 ## Minimal Reproduction
 1. Ensure the API and web containers are running.
 2. Execute the phase 1 verification test: `npx playwright test e2e/phase1-verification.spec.ts --config=playwright.sprint1.config.ts`

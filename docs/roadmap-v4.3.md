@@ -18,7 +18,7 @@
 | NAV-1 | Exactly 6 nav items; Connections is sole source of truth; no orphaned routes | 2 · 2.9 | ☐ OPEN |
 | RESP-1 | All core views render at 375px — no horizontal scroll | 2 · 2.12 | ☐ OPEN |
 | HOLD-UI-2026-03-02 | Phase 1 UI stabilization tasks block non-UI feature work until complete | 2 · UI-P1-T01-UI-P1-T06 | ☐ OPEN |
-| QA-1 | E2E preflight validates API readiness before Playwright execution | 2 · OPS-E2E-READY | ☐ OPEN |
+| QA-1 | E2E preflight validates API readiness and watcher-driven unblock flow for Playwright execution | 2 · OPS-E2E-READY, OPS-QA-WATCH | ☐ OPEN |
 | 2FA-1 | 2FA enable/use/disable full cycle passes; backup codes work; share links blocked without 2FA | 2 · 2.13–2.16 | ☐ OPEN |
 | TRANSFER-1 | 1GB transfer with mid-transfer network drop resumes from last chunk, not from 0 | 3 · 3.5–3.6 | ☐ OPEN |
 | ZERODISK-1 | No file bytes written to server disk during cross-provider transfer (instrumented) | 3 · 3.9 | ☐ OPEN |
@@ -148,6 +148,7 @@
 | ID | Description | Sprint | Files | Agent |
 | --- | --- | --- | --- | --- |
 | OPS-E2E-READY | Add Playwright preflight wait-for-api on 127.0.0.1:8100 | 2 | /web/playwright.config.ts, /web/e2e/fixtures/global-setup.ts, /web/e2e/fixtures/global-teardown.ts, /web/e2e/fixtures/README.md | ◈ OpenCode |
+| OPS-QA-WATCH | Run QA watcher loop: detect dependency unlocks, claim ready Gemini E2E tasks, and emit blocker reports | 2 | /web/e2e/**, /monitoring/task_history.yaml, /docs/prompts/**, /BLOCKER_QA_SEED.md | ◉ Gemini |
 
 ## Gate 2FA-1
 

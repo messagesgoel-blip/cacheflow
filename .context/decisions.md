@@ -31,3 +31,11 @@
 - files: api/src/middleware/auth.js, api/src/routes/tokens.js
 - commit: a083219
 - agent: ClaudeCode
+
+## 2026-03-03 — Add `OPS-QA-WATCH@QA-1` to keep Gemini productive during dependency blocks
+- decision: Track a dedicated QA watcher task under gate `QA-1` for dependency-unblock monitoring, blocker triage, and immediate E2E pickup when prerequisites merge.
+- rationale: Prevent idle agent time and keep continuous QA feedback while feature dependencies are unmerged.
+- alternatives rejected: Passive wait-only mode for Gemini; this delays blocker visibility and slows handoff timing.
+- files: docs/roadmap-v4.3.md, docs/sprints-task-dashboard.md, monitoring/cacheflow_task_state.yaml, monitoring/cacheflow_metrics.yaml
+- commit: pending
+- agent: codex

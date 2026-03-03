@@ -434,10 +434,11 @@ UI-P1-T01@HOLD-UI-2026-03-02:
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: c80bd24c88d9
+  done_at: '2026-03-03T00:15:33+00:00'
+  changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
+    file pane'
 UI-P1-T02@HOLD-UI-2026-03-02:
   id: UI-P1-T02
   task_key: UI-P1-T02@HOLD-UI-2026-03-02
@@ -484,10 +485,11 @@ UI-P1-T06@HOLD-UI-2026-03-02:
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: c80bd24c88d9
+  done_at: '2026-03-03T00:15:33+00:00'
+  changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
+    file pane'
 OPS-E2E-READY@QA-1:
   id: OPS-E2E-READY
   task_key: OPS-E2E-READY@QA-1
@@ -498,6 +500,16 @@ OPS-E2E-READY@QA-1:
   commit: 25b691aaa88d
   done_at: '2026-03-03T00:05:16+00:00'
   changelog: 'feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100'
+OPS-QA-WATCH@QA-1:
+  id: OPS-QA-WATCH
+  task_key: OPS-QA-WATCH@QA-1
+  gate: QA-1
+  sprint: 2
+  agent: "\u25C9 Gemini"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
 2.13@2FA-1:
   id: '2.13'
   task_key: 2.13@2FA-1

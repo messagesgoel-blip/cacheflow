@@ -54,7 +54,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 1.18 | Security baseline — remove defaults, harden secrets (Gate SEC-1) | ◈ OpenCode | Planned | — | — | — |
 
 ## Sprint 2
-- Progress: `[░░░░░░░░░░] 0%` (0 / 24 completed)
+- Progress: `[░░░░░░░░░░] 0%` (0 / 25 completed)
 - Total commits: `0` (update after commit + update script)
 - Current tasks:
 
@@ -84,6 +84,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 2.15 | Settings: manage 2FA, backup codes, last-used timestamp (Gate 2FA-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.16 | E2E 2FA tests — full enable/use/disable cycle (Gate 2FA-1) | ◉ Gemini | Planned | — | — | — |
 | OPS-E2E-READY | Playwright preflight wait-for-api on 127.0.0.1:8100 (Gate QA-1) | ◈ OpenCode | Done | 25b691a | 2026-03-02T23:57:14Z | feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100 |
+| OPS-QA-WATCH | QA watcher loop for dependency unlock detection, blocker triage, and auto-claim on readiness (Gate QA-1) | ◉ Gemini | Planned | — | — | — |
 
 ## Sprint 3
 - Progress: `[░░░░░░░░░░] 0%` (0 / 17 completed)
