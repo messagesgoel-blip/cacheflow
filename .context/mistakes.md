@@ -47,3 +47,9 @@
 - why it failed: Relative paths from `app/api/auth/2fa/*` did not resolve consistently, and `withSecurityScan` flagged the raw secret and threw in non-production, causing setup `500` and no QR render.
 - do not attempt: Do not use brittle deep relative imports in API routes (`../../../../...`); prefer `@/` aliases. Do not include raw TOTP secrets in scanned JSON responses.
 - agent: codex
+
+## 2026-03-03 — Context Lint workflow assumed `rg` exists on runner
+- what was tried: Running `lint-context.sh` in GitHub Actions without an explicit `ripgrep` install step.
+- why it failed: The script shells out to `rg` for every validation rule; on runners missing `rg`, the job fails before checks run.
+- do not attempt: Do not rely on preinstalled runner tooling for required shell dependencies; install `ripgrep` explicitly in workflow.
+- agent: codex

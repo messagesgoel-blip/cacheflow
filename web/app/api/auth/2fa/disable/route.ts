@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { withSecurityScan } from '@/lib/auth/securityAudit';
+import { resolveAccessToken } from '@/lib/auth/requestAuth';
 
 export interface DisableRequest {
   password: string;
@@ -29,7 +30,7 @@ export interface DisableResponse {
 export async function POST(request: NextRequest): Promise<NextResponse<DisableResponse>> {
   try {
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get('accessToken')?.value;
+    const accessToken = resolveAccessToken(request, cookieStore);
     
     if (!accessToken) {
       return NextResponse.json(
@@ -54,8 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<DisableRe
     // 3. Invalidate backup codes
     // 4. Log security event
 
-    // Placeholder: accept any non-empty password for dev
-    if (password.length < 1) {
+    if (typeof password !== 'string' || password.trim().length === 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid password' },
         { status: 401 }
@@ -65,8 +65,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<DisableRe
     const response = withSecurityScan({
       success: true,
     }, '/api/auth/2fa/disable');
-
-    return NextResponse.json(response);
+    const nextResponse = NextResponse.json(response);
+    nextResponse.cookies.delete('totpSecret');
+    nextResponse.cookies.delete('totpBackupHashes');
+    nextResponse.cookies.delete('totpEnabled');
+    nextResponse.cookies.delete('totpLastUsed');
+    return nextResponse;
   } catch (error) {
     console.error('2FA disable error:', error);
     return NextResponse.json(

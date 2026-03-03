@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { resolveAccessToken } from '@/lib/auth/requestAuth';
 
 export interface TwoFAStatusResponse {
   enabled: boolean;
@@ -22,9 +23,7 @@ export interface TwoFAStatusResponse {
 export async function GET(request: NextRequest): Promise<NextResponse<TwoFAStatusResponse>> {
   try {
     const cookieStore = await cookies();
-    const authHeader = request.headers.get('authorization');
-    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-    const accessToken = cookieStore.get('accessToken')?.value || bearerToken;
+    const accessToken = resolveAccessToken(request, cookieStore);
 
     if (!accessToken) {
       return NextResponse.json(
@@ -33,8 +32,21 @@ export async function GET(request: NextRequest): Promise<NextResponse<TwoFAStatu
       );
     }
 
-    // Placeholder until DB persistence lands for 2FA state.
-    return NextResponse.json({ enabled: false, backupCodesRemaining: 0 });
+    let backupCodesRemaining = 0;
+    try {
+      const raw = cookieStore.get('totpBackupHashes')?.value;
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) {
+        backupCodesRemaining = parsed.length;
+      }
+    } catch {
+      backupCodesRemaining = 0;
+    }
+
+    return NextResponse.json({
+      enabled: cookieStore.get('totpEnabled')?.value === '1',
+      backupCodesRemaining,
+    });
   } catch (error) {
     return NextResponse.json(
       {

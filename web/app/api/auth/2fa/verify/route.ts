@@ -9,8 +9,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyTOTP, generate2FASessionToken, hashBackupCode } from '@/lib/auth/totp';
-import { withSecurityScan } from '@/lib/auth/securityAudit';
+import { verifyTOTP, generate2FASessionToken, verify2FASessionToken, verifyBackupCode } from '@/lib/auth/totp';
+import { decodeAuthPayload, resolveAccessToken } from '@/lib/auth/requestAuth';
 
 export interface VerifyRequest {
   code: string;
@@ -43,11 +43,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyRes
     }
 
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get('accessToken')?.value;
+    const accessToken = resolveAccessToken(request, cookieStore);
     
-    // For backup code login, user won't have access token yet
-    // They'll have a 2FA session token from initial login
     const totpSecret = secret || cookieStore.get('totpSecret')?.value;
+    const backupHashesRaw = cookieStore.get('totpBackupHashes')?.value;
+    let backupHashes: string[] = [];
+    if (backupHashesRaw) {
+      try {
+        const parsed = JSON.parse(backupHashesRaw);
+        backupHashes = Array.isArray(parsed) ? parsed.filter((h): h is string => typeof h === 'string') : [];
+      } catch {
+        backupHashes = [];
+      }
+    }
+
+    if (!accessToken && secret) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
 
     if (!totpSecret && !backupCode) {
       return NextResponse.json(
@@ -60,16 +75,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyRes
 
     // Verify backup code if provided
     if (backupCode) {
-      // In production, fetch hashed backup codes from database
-      // For now, this is a placeholder
-      const hashedBackup = await hashBackupCode(backupCode);
-      
-      // Check against stored hashed codes (placeholder - would come from DB)
-      // const storedHashedCodes = await getStoredHashedBackupCodes(userId);
-      // isValid = storedHashedCodes.includes(hashedBackup);
-      
-      // Placeholder: accept any valid format for dev
-      isValid = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(backupCode.toUpperCase());
+      isValid = backupHashes.length > 0
+        ? await verifyBackupCode(backupCode, backupHashes)
+        : false;
     } 
     // Verify TOTP code
     else if (totpSecret) {
@@ -87,16 +95,67 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyRes
       );
     }
 
-    // Generate 2FA session token (upgrades to full session)
-    // In production, would fetch user info from DB
-    const sessionToken = generate2FASessionToken('user-id', 'user@example.com');
+    const authPayload = accessToken ? await decodeAuthPayload(accessToken) : null;
+    if (accessToken && secret && !authPayload) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
 
-    const response = withSecurityScan({
-      success: true,
-      sessionToken,
-    }, '/api/auth/2fa/verify');
+    const pendingToken = cookieStore.get('sessionToken')?.value;
+    const pendingPayload = pendingToken ? verify2FASessionToken(pendingToken) : null;
+    const userId = authPayload?.id ?? pendingPayload?.userId;
+    const email = authPayload?.email ?? pendingPayload?.email;
+    const responsePayload: VerifyResponse = { success: true };
+    if (userId && email) {
+      responsePayload.sessionToken = generate2FASessionToken(String(userId), email);
+    }
 
-    return NextResponse.json(response);
+    const response = NextResponse.json(responsePayload);
+    if (backupCode && backupHashes.length > 0) {
+      const updatedHashes: string[] = [];
+      let consumed = false;
+      for (const hash of backupHashes) {
+        const isMatch = await verifyBackupCode(backupCode, [hash]);
+        if (isMatch && !consumed) {
+          consumed = true;
+        } else {
+          updatedHashes.push(hash);
+        }
+      }
+      response.cookies.set('totpBackupHashes', JSON.stringify(updatedHashes), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60,
+        path: '/',
+      });
+    }
+    response.cookies.set('totpEnabled', '1', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60,
+      path: '/',
+    });
+    response.cookies.set('totpLastUsed', new Date().toISOString(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60,
+      path: '/',
+    });
+    if (totpSecret) {
+      response.cookies.set('totpSecret', totpSecret, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60,
+        path: '/',
+      });
+    }
+    return response;
   } catch (error) {
     console.error('2FA verify error:', error);
     return NextResponse.json(

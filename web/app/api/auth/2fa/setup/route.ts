@@ -10,8 +10,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { generateSecret, generateQRCodeDataURI, generateBackupCodes } from '@/lib/auth/totp';
+import { generateSecret, generateQRCodeDataURI, generateBackupCodes, hashBackupCode } from '@/lib/auth/totp';
 import { withSecurityScan } from '@/lib/auth/securityAudit';
+import { decodeAuthPayload, resolveAccessToken } from '@/lib/auth/requestAuth';
 
 export interface SetupResponse {
   success: boolean;
@@ -28,9 +29,7 @@ export interface SetupResponse {
 export async function POST(request: NextRequest): Promise<NextResponse<SetupResponse>> {
   try {
     const cookieStore = await cookies();
-    const authHeader = request.headers.get('authorization');
-    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-    const accessToken = cookieStore.get('accessToken')?.value || bearerToken;
+    const accessToken = resolveAccessToken(request, cookieStore);
     
     if (!accessToken) {
       return NextResponse.json(
@@ -39,23 +38,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<SetupResp
       );
     }
 
-    // Decode user info from token
-    const { verify, decode } = await import('jsonwebtoken');
-    const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
-    
-    let payload: any;
-    try {
-      payload = verify(accessToken, JWT_SECRET);
-    } catch {
-      payload = decode(accessToken);
-      if (!payload || typeof payload !== 'object') {
-        return NextResponse.json(
-          { success: false, error: 'Invalid token' },
-          { status: 401 }
-        );
-      }
+    const payload = await decodeAuthPayload(accessToken);
+    if (!payload) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid token' },
+        { status: 401 }
+      );
     }
-    const email = typeof payload.email === 'string' && payload.email ? payload.email : 'user@example.com';
+    const email = payload.email || 'user@example.com';
 
     // Generate TOTP secret
     const secret = generateSecret();
@@ -67,8 +57,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<SetupResp
       secret
     );
 
-    // Generate backup codes (client saves these; DB persistence is pending)
+    // Generate backup codes and keep only hashes server-side.
     const backupCodes = generateBackupCodes(8);
+    const backupCodeHashes = await Promise.all(backupCodes.map(code => hashBackupCode(code)));
     
     const responsePayload = withSecurityScan({
       success: true,
@@ -77,6 +68,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<SetupResp
     }, '/api/auth/2fa/setup');
     const response = NextResponse.json(responsePayload);
     response.cookies.set('totpSecret', secret, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 10 * 60,
+      path: '/',
+    });
+    response.cookies.set('totpBackupHashes', JSON.stringify(backupCodeHashes), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
