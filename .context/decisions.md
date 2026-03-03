@@ -87,3 +87,11 @@
 - files: scripts/done_task.sh, scripts/start_sprint.sh, scripts/sync_status_running_sprint.py, scripts/agent-prompts/*, docs/prompts/sprint-1-startup-all-agents.md
 - commit: pending
 - agent: codex
+
+## 2026-03-03 — Introduce file-based sprint orchestrator state machine
+- decision: Add a TypeScript orchestrator (`scripts/orchestrate.ts`) driven by `docs/orchestration/task-manifest.json`, with resumable state in `logs/orchestrator-state.json` and append-only audit in `logs/codex-audit.jsonl`.
+- rationale: Multi-agent execution needs deterministic sequencing, contract gates, and restart-safe progress tracking without relying on database state.
+- alternatives rejected: In-memory orchestration only; ad-hoc shell orchestration without persisted state transitions.
+- files: docs/orchestration/task-manifest.json, scripts/orchestrate.ts, scripts/lib/buildAgentPrompt.ts, scripts/recover.ts, .github/workflows/orchestrate.yml
+- commit: pending
+- agent: codex

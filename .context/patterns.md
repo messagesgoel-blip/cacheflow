@@ -19,3 +19,8 @@
 - use when: Agent completed implementation and wants one finish command after staging files.
 - example: `done-task --test "npm run test -- transfer" --commit "feat(transfer): add retries"` (auto-detects lock when unique).
 - do not deviate because: removes inconsistent manual handoff steps while still enforcing hook/commit/push/release order.
+
+## Orchestrator Prompt Contract
+- use when: Dispatching work to OpenCode/ClaudeCode/Gemini/Codex from the master orchestrator.
+- example: `buildAgentPrompt(task)` in `scripts/lib/buildAgentPrompt.ts` with the fixed five sections (ROLE, ACCEPTANCE CRITERIA, TARGET FILES, CONTRACT OBLIGATION, FORBIDDEN SIDE EFFECTS).
+- do not deviate because: consistent scoped prompts are required for deterministic agent behavior and contract-gated handoffs.
