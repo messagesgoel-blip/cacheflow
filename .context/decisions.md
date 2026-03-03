@@ -71,3 +71,11 @@
 - files: web/app/api/transfers/route.ts, web/app/api/rate-limits/route.ts, web/lib/transfer/jobQueue.ts, web/lib/transfer/rateLimitQueue.ts
 - commit: pending
 - agent: codex
+
+## 2026-03-03 — Worker completion protocol enforced via hook + finish script
+- decision: Enforce Codex-owned dashboard/metrics files with a repo pre-commit hook for non-Codex agents, and standardize worker completion on `scripts/finish_task.sh`.
+- rationale: Agents were applying completion steps inconsistently (commit/push/release/metrics updates), creating lock/status drift and duplicate dashboard edits.
+- alternatives rejected: Prompt-only instructions without local guardrails; letting each agent update monitoring files directly.
+- files: .githooks/pre-commit, scripts/finish_task.sh, scripts/start_sprint.sh, scripts/sync_status_running_sprint.py, scripts/agent-prompts/*
+- commit: pending
+- agent: codex

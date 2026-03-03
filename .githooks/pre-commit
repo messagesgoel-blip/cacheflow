@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$repo_root"
+
+detect_agent_from_tty() {
+  local map_dir="${CACHEFLOW_AGENT_TTY_MAP_DIR:-/tmp/cacheflow_agent_tty_map}"
+  local tty_name tty_key map_file
+  tty_name="$(tty 2>/dev/null || true)"
+  [[ "$tty_name" == /dev/* ]] || return 1
+  tty_key="$(printf '%s' "$tty_name" | sed 's#[^A-Za-z0-9._-]#_#g')"
+  map_file="$map_dir/$tty_key"
+  [ -f "$map_file" ] || return 1
+  tr -d ' \t\r\n' < "$map_file"
+}
+
+normalize_agent() {
+  local raw="${1,,}"
+  case "$raw" in
+    codex|codexa|codexb|master)
+      echo "Codex"
+      ;;
+    claude|claudecode|ccli)
+      echo "ClaudeCode"
+      ;;
+    open|opencode|oc)
+      echo "OpenCode"
+      ;;
+    gemini|gcli)
+      echo "Gemini"
+      ;;
+    *)
+      echo "$1"
+      ;;
+  esac
+}
+
+agent="${CACHEFLOW_AGENT:-}"
+if [ -z "$agent" ]; then
+  agent="$(detect_agent_from_tty 2>/dev/null || true)"
+fi
+agent="$(normalize_agent "${agent:-unknown}")"
+
+if [ "$agent" = "Codex" ]; then
+  exit 0
+fi
+
+mapfile -t staged < <(git diff --cached --name-only)
+if [ "${#staged[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+forbidden=(
+  "monitoring/cacheflow_metrics.yaml"
+  "monitoring/cacheflow_task_state.yaml"
+  "monitoring/cacheflow_sprint_tasks.yaml"
+  "monitoring/task_history.yaml"
+  "docs/sprints-task-dashboard.md"
+)
+
+violations=()
+for file in "${staged[@]}"; do
+  for blocked in "${forbidden[@]}"; do
+    if [ "$file" = "$blocked" ]; then
+      violations+=("$file")
+      break
+    fi
+  done
+done
+
+if [ "${#violations[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+echo "pre-commit blocked for non-Codex agent ($agent)." >&2
+echo "Shared dashboard/metrics files are Codex-owned." >&2
+printf '%s\n' "${violations[@]}" | sort -u | sed 's/^/ - /' >&2
+echo "Use './scripts/finish_task.sh <task_key> --commit \"...\"' and let Codex finalize metrics." >&2
+exit 1

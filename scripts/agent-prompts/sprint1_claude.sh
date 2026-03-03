@@ -6,17 +6,19 @@ You are starting Sprint 1 for CacheFlow.
 
 Agent: ClaudeCode
 Sprint: 1
-Repo: /opt/docker/apps/cacheflow
+Repo: /home/sanjay/cacheflow_work
 
-Before coding:
+Fast session start (compact):
 1) git pull --rebase
-2) Read AGENTS.md and STATUS.md fully
-3) Read .context/decisions.md, .context/patterns.md, .context/mistakes.md, .context/dependencies.md
-4) Read docs/roadmap-v4.3.md and work only Sprint 1 task keys assigned below
-5) Claim each task key before touching files:
+2) Run `agent-preflight`
+3) Read STATUS.md fully
+4) Check `git log --oneline -10`
+5) Read AGENTS.md; load `.context/decisions.md`, `.context/patterns.md`, `.context/mistakes.md`, `.context/dependencies.md` lazily only when relevant to files being touched
+6) Read `docs/sprints/sprint-1.md` and work only assigned task keys below
+7) Claim each task key before touching files:
    - ./agent-coord.sh claim_task <task_key> ClaudeCode "$(hostname)"
    - ./agent-coord.sh get_active_tasks
-6) For unplanned file touches:
+8) For unplanned file touches:
    - ./agent-coord.sh log_change <file> <reason>
 
 Assigned task keys:
@@ -31,12 +33,13 @@ Execution rules:
 - No scope creep outside assigned task keys.
 - Read contracts from OpenCode before dependent implementation.
 - Keep action/state behavior consistent across all modal entry points.
+- If interface/architecture changes are needed, read relevant `.context/*` entries first, then append updates.
 
 On completion of each task key:
-- Run relevant tests
-- python3 scripts/update_cacheflow_metrics.py --complete <task_key>
-- ./scripts/refresh_cacheflow_metrics.sh
-- ./agent-coord.sh release_task <task_key>
+- Stage only task-related files (`git add <files>`)
+- Run:
+  ./scripts/finish_task.sh <task_key> --test "<targeted test command>" --commit "<commit message>"
+- Codex finalizes shared status/dashboard/metrics updates after release.
 
 Session end:
 1) Move Active -> Last Session in STATUS.md

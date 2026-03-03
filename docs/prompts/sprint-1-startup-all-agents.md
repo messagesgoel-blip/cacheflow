@@ -30,9 +30,10 @@ Execution rules:
 - Keep commits scoped per task key when possible.
 - On completion of each task key:
   - run tests relevant to changed files
-  - run scripts/update_cacheflow_metrics.py --complete <task_key>
-  - run scripts/refresh_cacheflow_metrics.sh
-  - release_task <task_key>
+  - stage task files (`git add <files>`)
+  - run `./scripts/finish_task.sh <task_key> --test "<targeted test>" --commit "<message>"`
+  - do not update shared metrics/dashboard files directly
+  - Codex finalizes task state + dashboard + metrics refresh after lock release
 
 Session end:
 1) Move Active -> Last Session in STATUS.md
@@ -109,7 +110,7 @@ Assigned task keys:
 Deliverables:
 - E2E coverage for assigned keys
 - Failure artifacts for any regression (screenshots/logs)
-- Update metrics and release task locks after each passing task
+- Release task locks after each passing task; Codex handles shared metrics/dashboard sync
 ```
 
 ## Prompt: Codex (Master)
