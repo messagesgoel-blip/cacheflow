@@ -685,3 +685,37 @@
     to: running
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-03T16:51:31+00:00'
+  commit: 52f30a404dddcc892904adfbc9b45d692a3d2513
+  message: 'chore(metrics): sync sprint 2 2FA task statuses to done'
+  changed:
+  - task_key: 2.13@2FA-1
+    id: '2.13'
+    gate: 2FA-1
+    from: running
+    to: done
+  - task_key: 2.14@2FA-1
+    id: '2.14'
+    gate: 2FA-1
+    from: running
+    to: done
+  - task_key: 2.15@2FA-1
+    id: '2.15'
+    gate: 2FA-1
+    from: running
+    to: done
+  - task_key: 2.16@2FA-1
+    id: '2.16'
+    gate: 2FA-1
+    from: running
+    to: done
+  done_task_keys:
+  - 2.13@2FA-1
+  - 2.14@2FA-1
+  - 2.15@2FA-1
+  - 2.16@2FA-1
+  done_tasks:
+  - '2.13'
+  - '2.14'
+  - '2.15'
+  - '2.16'
