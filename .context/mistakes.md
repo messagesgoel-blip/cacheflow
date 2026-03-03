@@ -35,3 +35,9 @@
 - why it failed: Task completion metadata was recorded without corresponding implementation completion commits for those task keys.
 - do not attempt: Do not close unrelated running tasks during bulk metrics/roadmap refresh; explicitly pass `--planned/--running` for protected in-flight tasks.
 - agent: codex
+
+## 2026-03-03 — claim_task used free-text agent field instead of canonical agent name
+- what was tried: Claiming tasks with descriptive text in the `<agent>` position (for example `BullMQ background job queue for async transfers`) instead of canonical agent IDs.
+- why it failed: Lock metadata no longer maps cleanly to agent dashboards/ownership attribution and complicates compliance reporting.
+- do not attempt: Always pass canonical agent names (`OpenCode`, `ClaudeCode`, `Gemini`, `Codex`) in `claim_task`; put descriptions in commit/note text instead.
+- agent: codex
