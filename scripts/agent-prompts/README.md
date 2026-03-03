@@ -17,5 +17,6 @@ Each script now uses a compact startup flow:
 - `STATUS.md` and recent git log are mandatory
 - `.context/*` files are loaded lazily when relevant to touched scope
 - lock + session-close workflow remains explicit
-- worker agents finish with `./scripts/finish_task.sh <task_key> --test ... --commit ...`
+- worker agents finish with `done-task <task_key> --test ... --commit ...`
+- `done-task --test ... --commit ...` auto-detects task key when one lock is active
 - Codex owns shared dashboard/metrics/status sync after lock release

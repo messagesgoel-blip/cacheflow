@@ -31,7 +31,8 @@ Execution rules:
 - On completion of each task key:
   - run tests relevant to changed files
   - stage task files (`git add <files>`)
-  - run `./scripts/finish_task.sh <task_key> --test "<targeted test>" --commit "<message>"`
+  - run `done-task <task_key> --test "<targeted test>" --commit "<message>"`
+  - if only one active lock exists, task key can be omitted: `done-task --test "<targeted test>" --commit "<message>"`
   - do not update shared metrics/dashboard files directly
   - Codex finalizes task state + dashboard + metrics refresh after lock release
 

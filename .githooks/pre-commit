@@ -76,5 +76,5 @@ fi
 echo "pre-commit blocked for non-Codex agent ($agent)." >&2
 echo "Shared dashboard/metrics files are Codex-owned." >&2
 printf '%s\n' "${violations[@]}" | sort -u | sed 's/^/ - /' >&2
-echo "Use './scripts/finish_task.sh <task_key> --commit \"...\"' and let Codex finalize metrics." >&2
+echo "Use 'done-task <task_key> --commit \"...\"' (or finish_task.sh) and let Codex finalize metrics." >&2
 exit 1

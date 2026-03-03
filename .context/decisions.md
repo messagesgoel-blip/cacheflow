@@ -79,3 +79,11 @@
 - files: .githooks/pre-commit, scripts/finish_task.sh, scripts/start_sprint.sh, scripts/sync_status_running_sprint.py, scripts/agent-prompts/*
 - commit: pending
 - agent: codex
+
+## 2026-03-03 — Add `done-task` shortcut as canonical worker finish entrypoint
+- decision: Provide `done-task`/`dt` wrapper for worker completion, with optional task auto-detection from active lock metadata.
+- rationale: `finish_task.sh` is reliable but still verbose; reducing it to one command increases protocol compliance without relaxing safeguards.
+- alternatives rejected: Keep only `finish_task.sh` and rely on manual task-key entry every time.
+- files: scripts/done_task.sh, scripts/start_sprint.sh, scripts/sync_status_running_sprint.py, scripts/agent-prompts/*, docs/prompts/sprint-1-startup-all-agents.md
+- commit: pending
+- agent: codex

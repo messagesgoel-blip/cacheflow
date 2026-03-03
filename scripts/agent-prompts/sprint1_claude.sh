@@ -38,7 +38,9 @@ Execution rules:
 On completion of each task key:
 - Stage only task-related files (`git add <files>`)
 - Run:
-  ./scripts/finish_task.sh <task_key> --test "<targeted test command>" --commit "<commit message>"
+  done-task <task_key> --test "<targeted test command>" --commit "<commit message>"
+- If only one active lock exists, task key may be omitted:
+  done-task --test "<targeted test command>" --commit "<commit message>"
 - Codex finalizes shared status/dashboard/metrics updates after release.
 
 Session end:

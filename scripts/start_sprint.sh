@@ -35,6 +35,14 @@ USAGE
 
 enable_protocol_guards
 
+print_finish_instructions() {
+  echo "done-task command:"
+  echo "  done-task <task_key> --test \"<targeted test>\" --commit \"<message>\""
+  echo "auto-task mode:"
+  echo "  done-task --test \"<targeted test>\" --commit \"<message>\""
+  echo "note: worker agents should not update dashboard/metrics files directly."
+}
+
 normalize_agent() {
   local raw="${1,,}"
   case "$raw" in
@@ -212,6 +220,7 @@ for task in "${tasks[@]}"; do
 done
 
 if [ "$claim_mode" = "none" ]; then
+  print_finish_instructions
   exit 0
 fi
 
@@ -245,8 +254,6 @@ done
 python3 "$repo_root/scripts/sync_status_running_sprint.py" --sprint "$sprint" >/dev/null 2>&1 || true
 
 echo "summary: claimed=${claimed} busy=${busy} failed=${failed}"
-echo "finish-task command:"
-echo "  ./scripts/finish_task.sh <task_key> --test \"<targeted test>\" --commit \"<message>\""
-echo "note: worker agents should not update dashboard/metrics files directly."
+print_finish_instructions
 echo "active locks:"
 ./agent-coord.sh get_active_tasks || true
