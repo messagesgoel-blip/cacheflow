@@ -558,7 +558,7 @@ OPS-QA-WATCH@QA-1:
   gate: 2FA-1
   sprint: 2
   agent: "\u25C9 Gemini"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -668,10 +668,10 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: e28b1584db82
+  done_at: '2026-03-03T03:10:11+00:00'
+  changelog: BullMQ queue + worker, transfer tray with toast
 3.4@TRANSFER-1:
   id: '3.4'
   task_key: 3.4@TRANSFER-1
@@ -688,7 +688,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -728,10 +728,10 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C8 OpenCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: e28b1584db82
+  done_at: '2026-03-03T03:10:11+00:00'
+  changelog: BullMQ queue + worker, transfer tray with toast
 3.11@TRANSFER-1:
   id: '3.11'
   task_key: 3.11@TRANSFER-1

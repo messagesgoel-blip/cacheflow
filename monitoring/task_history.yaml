@@ -618,3 +618,39 @@
     to: running
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-03T03:10:11+00:00'
+  commit: e28b1584db82b56291e8da7e3a87251edeb2feb4
+  message: 'feat(3.10@TRANSFER-1): BullMQ queue + worker for async transfers'
+  changed:
+  - task_key: 2.16@2FA-1
+    id: '2.16'
+    gate: 2FA-1
+    from: planned
+    to: running
+  - task_key: 3.3@TRANSFER-1
+    id: '3.3'
+    gate: TRANSFER-1
+    from: planned
+    to: done
+  - task_key: 3.10@TRANSFER-1
+    id: '3.10'
+    gate: TRANSFER-1
+    from: running
+    to: done
+  done_task_keys:
+  - 3.3@TRANSFER-1
+  - 3.10@TRANSFER-1
+  done_tasks:
+  - '3.10'
+  - '3.3'
+- timestamp: '2026-03-03T03:10:34+00:00'
+  commit: e28b1584db82b56291e8da7e3a87251edeb2feb4
+  message: 'feat(3.10@TRANSFER-1): BullMQ queue + worker for async transfers'
+  changed:
+  - task_key: 3.5@TRANSFER-1
+    id: '3.5'
+    gate: TRANSFER-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []

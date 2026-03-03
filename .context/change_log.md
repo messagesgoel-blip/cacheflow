@@ -36,3 +36,5 @@
 | 2026-03-03T03:09:58Z | sanjay | 3.10@TRANSFER-1 | web/app/api/transfers/route.ts |
 | 2026-03-03T03:09:59Z | sanjay | 3.3@TRANSFER-1 | web/components/transfers/TransferTray.tsx |
 | 2026-03-03T03:10:00Z | sanjay | 3.3@TRANSFER-1 | web/lib/hooks/useTransfer.ts |
+| 2026-03-03T03:11:34Z | sanjay | 3.5@TRANSFER-1 | web/app/api/transfers/chunk/route.ts |
+| 2026-03-03T03:11:35Z | sanjay | 3.6@TRANSFER-1 | web/lib/hooks/useChunkedUpload.ts |

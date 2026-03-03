@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T03:07:11+00:00'
+generated_at: '2026-03-03T03:10:34+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -627,7 +627,7 @@ tasks:
   files: /e2e/tests/twoFA.spec.ts
   agent: "\u25C9 Gemini"
   gate: 2FA-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -756,10 +756,10 @@ tasks:
   files: /lib/transfers/transferRegistry.ts, /app/api/remotes/[uuid]/**/route.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: e28b1584db82
+  done_at: '2026-03-03T03:10:11+00:00'
+  changelog: BullMQ queue + worker, transfer tray with toast
 - id: '3.4'
   task_key: 3.4@TRANSFER-1
   description: "Tray E2E \u2014 entry survives navigation, retry works on failure"
@@ -779,7 +779,7 @@ tasks:
     /lib/providers/dropbox/chunkedUpload.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -824,10 +824,10 @@ tasks:
   files: /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: e28b1584db82
+  done_at: '2026-03-03T03:10:11+00:00'
+  changelog: BullMQ queue + worker, transfer tray with toast
 - id: '3.11'
   task_key: 3.11@TRANSFER-1
   description: "Conflict resolution modal \u2014 shared component used everywhere"
