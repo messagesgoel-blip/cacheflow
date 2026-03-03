@@ -11,8 +11,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TOTPInput } from '../../components/auth/TOTPInput';
-import { useToast } from '../../lib/hooks/useToast';
+import { TOTPInput } from '@/components/auth/TOTPInput';
+import { useToast } from '@/lib/hooks/useToast';
 
 export default function TwoFactorChallengePage() {
   const router = useRouter();
@@ -30,8 +30,6 @@ export default function TwoFactorChallengePage() {
     setError('');
 
     try {
-      const verifyCode = mode === 'totp' ? code : backupCode;
-      
       const response = await fetch('/api/auth/2fa/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
