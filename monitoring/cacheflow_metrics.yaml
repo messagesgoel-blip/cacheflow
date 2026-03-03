@@ -1,9 +1,9 @@
-generated_at: '2026-03-03T03:10:34+00:00'
+generated_at: '2026-03-03T03:11:46+00:00'
 current_sprint: 2
 sprint_progress: 24.0
 sprint_start: 1700000000
 running_tasks: 5
-tasks_completed_total: 30
+tasks_completed_total: 32
 total_tasks: 122
 total_sprints: 7
 gate_status:
@@ -58,12 +58,12 @@ sprints:
   commits_total: 5
 - sprint: 3
   total_tasks: 17
-  done_tasks: 2
+  done_tasks: 4
   running_tasks: 1
   pending_tasks: 0
-  planned_tasks: 14
-  progress: 11.76
-  commits_total: 1
+  planned_tasks: 12
+  progress: 23.53
+  commits_total: 2
 - sprint: 4
   total_tasks: 17
   done_tasks: 0
@@ -868,10 +868,10 @@ tasks:
     /lib/providers/dropbox/chunkedUpload.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 389271cac8e3
+  done_at: '2026-03-03T03:11:40+00:00'
+  changelog: Chunked upload + auto-resume
 - id: '3.6'
   task_key: 3.6@TRANSFER-1
   description: 'Auto-resume: resume interrupted upload from last successful chunk'
@@ -879,10 +879,10 @@ tasks:
   files: /app/api/transfers/[id]/chunks/route.ts, /lib/transfers/chunkStateManager.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 389271cac8e3
+  done_at: '2026-03-03T03:11:40+00:00'
+  changelog: Chunked upload + auto-resume
 - id: '3.7'
   task_key: 3.7@TRANSFER-1
   description: 'Tray: chunk-level progress for large files'
@@ -935,7 +935,7 @@ tasks:
   files: /lib/providers/rateLimitQueue.ts, /lib/apiClient.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

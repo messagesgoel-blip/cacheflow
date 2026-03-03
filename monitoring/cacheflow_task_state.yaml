@@ -688,20 +688,20 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C8 OpenCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 389271cac8e3
+  done_at: '2026-03-03T03:11:40+00:00'
+  changelog: Chunked upload + auto-resume
 3.6@TRANSFER-1:
   id: '3.6'
   task_key: 3.6@TRANSFER-1
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 389271cac8e3
+  done_at: '2026-03-03T03:11:40+00:00'
+  changelog: Chunked upload + auto-resume
 3.7@TRANSFER-1:
   id: '3.7'
   task_key: 3.7@TRANSFER-1
@@ -748,7 +748,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

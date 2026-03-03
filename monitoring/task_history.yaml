@@ -654,3 +654,34 @@
     to: running
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-03T03:11:41+00:00'
+  commit: 389271cac8e379f0b1af87036cdc7ebb863e76e7
+  message: 'feat(3.5@TRANSFER-1): chunked upload endpoint for files >50MB'
+  changed:
+  - task_key: 3.5@TRANSFER-1
+    id: '3.5'
+    gate: TRANSFER-1
+    from: running
+    to: done
+  - task_key: 3.6@TRANSFER-1
+    id: '3.6'
+    gate: TRANSFER-1
+    from: planned
+    to: done
+  done_task_keys:
+  - 3.5@TRANSFER-1
+  - 3.6@TRANSFER-1
+  done_tasks:
+  - '3.5'
+  - '3.6'
+- timestamp: '2026-03-03T03:11:46+00:00'
+  commit: 389271cac8e379f0b1af87036cdc7ebb863e76e7
+  message: 'feat(3.5@TRANSFER-1): chunked upload endpoint for files >50MB'
+  changed:
+  - task_key: 3.15@TRANSFER-1
+    id: '3.15'
+    gate: TRANSFER-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []
