@@ -18,3 +18,7 @@
 | 2026-03-02T23:57:11Z | sanjay | OPS-E2E-READY@QA-1 | web/e2e/fixtures/global-setup.ts |
 | 2026-03-02T23:57:12Z | sanjay | OPS-E2E-READY@QA-1 | web/e2e/fixtures/global-teardown.ts |
 | 2026-03-02T23:57:13Z | sanjay | OPS-E2E-READY@QA-1 | web/playwright.config.ts |
+| 2026-03-03T00:27:24Z | sanjay | UI-P1-T02@HOLD-UI-2026-03-02 | web/app/api/remotes/[uuid]/proxy/route.ts |
+| 2026-03-03T00:27:25Z | sanjay | UI-P1-T02@HOLD-UI-2026-03-02 | web/lib/providers/StorageProvider.ts |
+| 2026-03-03T00:27:25Z | sanjay | UI-P1-T05@HOLD-UI-2026-03-02 | web/components/errors/ |
+| 2026-03-03T00:27:26Z | sanjay | UI-P1-T05@HOLD-UI-2026-03-02 | web/lib/hooks/useOperationError.ts |

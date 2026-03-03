@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T00:20:41+00:00'
+generated_at: '2026-03-03T00:26:15+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -497,7 +497,7 @@ tasks:
   files: /app/api/remotes/[uuid]/proxy/route.ts, /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -531,7 +531,7 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /lib/ui/toast.ts, /app/api/connections/route.ts
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

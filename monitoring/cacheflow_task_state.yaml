@@ -445,7 +445,7 @@ UI-P1-T02@HOLD-UI-2026-03-02:
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -475,7 +475,7 @@ UI-P1-T05@HOLD-UI-2026-03-02:
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

@@ -1,8 +1,8 @@
-generated_at: '2026-03-03T00:20:41+00:00'
-current_sprint: 0
-sprint_progress: 0.0
+generated_at: '2026-03-03T00:26:15+00:00'
+current_sprint: 2
+sprint_progress: 12.0
 sprint_start: 1700000000
-running_tasks: 0
+running_tasks: 2
 tasks_completed_total: 25
 total_tasks: 118
 total_sprints: 7
@@ -19,7 +19,7 @@ gate_status:
   ACTIONS-1: open
   NAV-1: open
   RESP-1: open
-  HOLD-UI-2026-03-02: open
+  HOLD-UI-2026-03-02: running
   QA-1: open
   2FA-1: open
   TRANSFER-1: open
@@ -51,9 +51,9 @@ sprints:
 - sprint: 2
   total_tasks: 25
   done_tasks: 3
-  running_tasks: 0
+  running_tasks: 2
   pending_tasks: 0
-  planned_tasks: 22
+  planned_tasks: 20
   progress: 12.0
   commits_total: 2
 - sprint: 3
@@ -586,7 +586,7 @@ tasks:
   files: /app/api/remotes/[uuid]/proxy/route.ts, /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -620,7 +620,7 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /lib/ui/toast.ts, /app/api/connections/route.ts
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

@@ -437,3 +437,19 @@
   done_tasks:
   - UI-P1-T01
   - UI-P1-T06
+- timestamp: '2026-03-03T00:26:16+00:00'
+  commit: 069b940207e5c2be6bd1250cba194f9df4154e25
+  message: 'chore(QA-1): restore OPS-QA-WATCH and sync agent notes'
+  changed:
+  - task_key: UI-P1-T02@HOLD-UI-2026-03-02
+    id: UI-P1-T02
+    gate: HOLD-UI-2026-03-02
+    from: planned
+    to: running
+  - task_key: UI-P1-T05@HOLD-UI-2026-03-02
+    id: UI-P1-T05
+    gate: HOLD-UI-2026-03-02
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []

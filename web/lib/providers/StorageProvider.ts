@@ -60,20 +60,43 @@ export abstract class StorageProvider {
   public remoteId?: string
 
   /**
-   * Protected fetch helper that handles proxying to the server
-   * if a remoteId is present.
+   * Proxy fetch through server-side API to avoid CORS issues
+   * Uses production /api/remotes/[uuid]/proxy endpoint
+   * 
+   * Updated UI-P1-T02@HOLD-UI-2026-03-02:
+   * - Uses HttpOnly cookies instead of localStorage
+   * - Returns detailed error info for UI surfaces
    */
   protected async proxyFetch(url: string, options: RequestInit = {}): Promise<Response> {
     if (this.remoteId) {
-      const token = localStorage.getItem('cf_token')
-      
-      // We use the same production-grade API envelope
       const proxyBody = {
         method: options.method || 'GET',
         url,
         headers: options.headers,
         body: options.body
       }
+
+      const response = await fetch(`/api/remotes/${this.remoteId}/proxy`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Use HttpOnly cookies
+        body: JSON.stringify(proxyBody)
+      })
+
+      // Parse error response for UI to handle
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        // Attach error metadata to response for UI to consume
+        (response as any).__errorData = errorData;
+      }
+
+      return response;
+    }
+    
+    return fetch(url, options)
+  }
 
       return fetch(`/api/remotes/${this.remoteId}/proxy`, {
         method: 'POST',
