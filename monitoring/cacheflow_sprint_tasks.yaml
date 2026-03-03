@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T02:39:33+00:00'
+generated_at: '2026-03-03T03:07:11+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -583,10 +583,10 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: QA-1
   status: done
-  commit: f8746650efee
-  done_at: '2026-03-03T01:47:53+00:00'
-  changelog: QA watcher unblock verified on latest main; one minor failure remains
-    in security-verification-real
+  commit: 8d604fdb5bbb
+  done_at: '2026-03-03T03:07:10+00:00'
+  changelog: QA watcher unblock validated after 2FA completion; mock provider issues
+    remain
 - id: '2.13'
   task_key: 2.13@2FA-1
   description: "TOTP setup flow \u2014 QR generation, verification, backup codes"
@@ -616,7 +616,7 @@ tasks:
   files: /app/settings/security/page.tsx, /components/settings/TwoFAPanel.tsx
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -824,7 +824,7 @@ tasks:
   files: /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

@@ -518,10 +518,10 @@ OPS-QA-WATCH@QA-1:
   sprint: 2
   agent: "\u25C9 Gemini"
   status: done
-  commit: f8746650efee
-  done_at: '2026-03-03T01:47:53+00:00'
-  changelog: QA watcher unblock verified on latest main; one minor failure remains
-    in security-verification-real
+  commit: 8d604fdb5bbb
+  done_at: '2026-03-03T03:07:10+00:00'
+  changelog: QA watcher unblock validated after 2FA completion; mock provider issues
+    remain
 2.13@2FA-1:
   id: '2.13'
   task_key: 2.13@2FA-1
@@ -548,7 +548,7 @@ OPS-QA-WATCH@QA-1:
   gate: 2FA-1
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -728,7 +728,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

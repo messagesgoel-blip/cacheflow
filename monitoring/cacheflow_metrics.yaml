@@ -1,8 +1,8 @@
-generated_at: '2026-03-03T02:39:33+00:00'
+generated_at: '2026-03-03T03:07:11+00:00'
 current_sprint: 2
 sprint_progress: 24.0
 sprint_start: 1700000000
-running_tasks: 2
+running_tasks: 4
 tasks_completed_total: 28
 total_tasks: 122
 total_sprints: 7
@@ -22,7 +22,7 @@ gate_status:
   HOLD-UI-2026-03-02: open
   QA-1: done
   2FA-1: running
-  TRANSFER-1: open
+  TRANSFER-1: running
   ZERODISK-1: open
   SSE-1: open
   SHARE-1: open
@@ -51,17 +51,17 @@ sprints:
 - sprint: 2
   total_tasks: 25
   done_tasks: 6
-  running_tasks: 2
+  running_tasks: 3
   pending_tasks: 0
-  planned_tasks: 17
+  planned_tasks: 16
   progress: 24.0
   commits_total: 5
 - sprint: 3
   total_tasks: 17
   done_tasks: 0
-  running_tasks: 0
+  running_tasks: 1
   pending_tasks: 0
-  planned_tasks: 17
+  planned_tasks: 16
   progress: 0.0
   commits_total: 0
 - sprint: 4
@@ -672,10 +672,10 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: QA-1
   status: done
-  commit: f8746650efee
-  done_at: '2026-03-03T01:47:53+00:00'
-  changelog: QA watcher unblock verified on latest main; one minor failure remains
-    in security-verification-real
+  commit: 8d604fdb5bbb
+  done_at: '2026-03-03T03:07:10+00:00'
+  changelog: QA watcher unblock validated after 2FA completion; mock provider issues
+    remain
 - id: '2.13'
   task_key: 2.13@2FA-1
   description: "TOTP setup flow \u2014 QR generation, verification, backup codes"
@@ -705,7 +705,7 @@ tasks:
   files: /app/settings/security/page.tsx, /components/settings/TwoFAPanel.tsx
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -913,7 +913,7 @@ tasks:
   files: /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

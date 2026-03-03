@@ -1,0 +1,49 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import TwoFAPanel from '@/components/settings/TwoFAPanel'
+import Navbar from '@/components/Navbar'
+
+export default function SecuritySettingsPage() {
+  const [token, setToken] = useState<string | null>(null)
+  const [email, setEmail] = useState('')
+
+  useEffect(() => {
+    const t = localStorage.getItem('cf_token')
+    const e = localStorage.getItem('cf_email')
+    if (t && e) {
+      setToken(t)
+      setEmail(e)
+    }
+  }, [])
+
+  if (!token) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Please log in to manage security settings</p>
+          <a href="/login" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+            Log In
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navbar email={email} onLogout={() => {
+        localStorage.removeItem('cf_token')
+        localStorage.removeItem('cf_email')
+        window.location.href = '/login'
+      }} />
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Security Settings</h1>
+
+        <div className="space-y-6">
+          <TwoFAPanel />
+        </div>
+      </div>
+    </div>
+  )
+}

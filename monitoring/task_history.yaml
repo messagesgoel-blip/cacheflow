@@ -596,3 +596,25 @@
     to: running
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-03T03:05:55+00:00'
+  commit: f8ed06dba42206a2d87e1c28358a0990b94366b8
+  message: 'feat(2.13@2FA-1): TOTP backend - setup, verify, disable endpoints'
+  changed:
+  - task_key: 3.10@TRANSFER-1
+    id: '3.10'
+    gate: TRANSFER-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []
+- timestamp: '2026-03-03T03:07:11+00:00'
+  commit: 8d604fdb5bbbfd24526ff525a209baf92da45158
+  message: 'docs(QA): update blocker note to reflect mock provider issues'
+  changed:
+  - task_key: 2.15@2FA-1
+    id: '2.15'
+    gate: 2FA-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []
