@@ -59,3 +59,9 @@
 - why it failed: The web image builds with Docker context `../web`, so sibling `worker/` files and worker-only deps (`bullmq`) are not available during `next build`.
 - do not attempt: Do not import `../worker` runtime modules from web routes; keep web route dependencies inside `web/` (or proxy to API service).
 - agent: codex
+
+## 2026-03-03 — Playwright preflight assumed `/api/health` must return 2xx
+- what was tried: Global setup only checked `${API_BASE_URL}/api/health` and required `response.ok`.
+- why it failed: Current API auth behavior returns `401` for `/api/health` without credentials even when API is healthy, causing false startup failures.
+- do not attempt: Do not gate API readiness on 2xx from auth-protected health endpoints; probe `/health` first and treat `/api/health` 401 as reachability.
+- agent: codex

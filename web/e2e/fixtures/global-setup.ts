@@ -14,6 +14,7 @@ import { FullConfig } from '@playwright/test';
 const API_BASE_URL = process.env.PLAYWRIGHT_API_URL || 'http://127.0.0.1:8100';
 const MAX_RETRIES = 30;
 const RETRY_DELAY_MS = 1000;
+const HEALTH_ENDPOINTS = ['/health', '/api/health'] as const;
 
 /**
  * Sleep for specified milliseconds
@@ -26,15 +27,27 @@ function sleep(ms: number): Promise<void> {
  * Check if API is ready by making a health check request
  */
 async function checkApiReady(): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/health`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-    });
-    return response.ok;
-  } catch {
-    return false;
+  for (const endpoint of HEALTH_ENDPOINTS) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (response.ok) {
+        return true;
+      }
+
+      // `/api/health` is auth-gated in current API behavior; 401 still proves API reachability.
+      if (endpoint === '/api/health' && response.status === 401) {
+        return true;
+      }
+    } catch {
+      // Keep probing next endpoint/retry.
+    }
   }
+
+  return false;
 }
 
 /**
