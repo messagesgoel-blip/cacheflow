@@ -27,6 +27,10 @@ lock_dir=".context/task_locks"
 contracts_dir=".context/contracts"
 change_log=".context/change_log.md"
 
+ensure_dirs() {
+  mkdir -p "$lock_dir" "$contracts_dir"
+}
+
 mcp_token() {
   if [ -n "${MCP_AUTH_TOKEN:-}" ]; then
     echo "$MCP_AUTH_TOKEN"
@@ -72,10 +76,11 @@ NODE
 
 case "$cmd" in
   claim_task)
+    ensure_dirs
     task_id="${1:-}"; agent="${2:-${USER:-unknown}}"; machine="${3:-$(hostname)}"
     [ -n "$task_id" ] || { echo "claim_task requires <task_id>"; exit 1; }
     lock_path="$lock_dir/$task_id.lock"
-    if mkdir "$lock_path" 2>/dev/null; then
+    if mkdir "$lock_path" 2>/tmp/agent_coord_claim.err; then
       meta=$(cat <<META
 {"task_id":"$task_id","agent":"$agent","machine":"$machine","repo":"$(repo_name)","branch":"$(branch_name)","claimed_at":"$(now_utc)","status":"claimed"}
 META
@@ -84,13 +89,20 @@ META
       mcp_set "task:claim:${task_id}:$(namespace)" "$meta" "task-lock,system-prompt,repo:$(repo_name),branch:$(branch_name)"
       echo "claimed: $task_id"
     else
-      echo "already claimed: $task_id"
-      [ -f "$lock_path/meta.json" ] && cat "$lock_path/meta.json"
-      exit 2
+      if [ -d "$lock_path" ]; then
+        echo "already claimed: $task_id"
+        [ -f "$lock_path/meta.json" ] && cat "$lock_path/meta.json"
+        exit 2
+      fi
+      err_msg="$(cat /tmp/agent_coord_claim.err 2>/dev/null || true)"
+      echo "claim failed: $task_id"
+      [ -n "$err_msg" ] && echo "$err_msg"
+      exit 1
     fi
     ;;
 
   release_task)
+    ensure_dirs
     task_id="${1:-}"
     [ -n "$task_id" ] || { echo "release_task requires <task_id>"; exit 1; }
     lock_path="$lock_dir/$task_id.lock"
@@ -108,6 +120,7 @@ META
     ;;
 
   get_active_tasks)
+    ensure_dirs
     found=false
     for d in "$lock_dir"/*.lock; do
       [ -d "$d" ] || continue
@@ -143,6 +156,7 @@ EV
     ;;
 
   write_contract)
+    ensure_dirs
     name="${1:-}"; producer="${2:-${USER:-unknown}}"; summary="${3:-}"
     [ -n "$name" ] && [ -n "$summary" ] || { echo "write_contract requires <contract_name> <producer> <interface_summary>"; exit 1; }
     path="$contracts_dir/$name.md"

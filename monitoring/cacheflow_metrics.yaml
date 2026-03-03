@@ -1,10 +1,10 @@
-generated_at: '2026-03-02T23:55:38+00:00'
+generated_at: '2026-03-03T00:05:16+00:00'
 current_sprint: 0
 sprint_progress: 0.0
 sprint_start: 1700000000
 running_tasks: 0
-tasks_completed_total: 22
-total_tasks: 110
+tasks_completed_total: 23
+total_tasks: 117
 total_sprints: 7
 gate_status:
   AUTH-1: open
@@ -19,6 +19,8 @@ gate_status:
   ACTIONS-1: open
   NAV-1: open
   RESP-1: open
+  HOLD-UI-2026-03-02: open
+  QA-1: done
   2FA-1: open
   TRANSFER-1: open
   ZERODISK-1: open
@@ -47,13 +49,13 @@ sprints:
   progress: 100.0
   commits_total: 8
 - sprint: 2
-  total_tasks: 17
-  done_tasks: 0
+  total_tasks: 24
+  done_tasks: 1
   running_tasks: 0
   pending_tasks: 0
-  planned_tasks: 17
-  progress: 0.0
-  commits_total: 0
+  planned_tasks: 23
+  progress: 4.17
+  commits_total: 1
 - sprint: 3
   total_tasks: 17
   done_tasks: 0
@@ -565,6 +567,85 @@ tasks:
   commit: ''
   done_at: ''
   changelog: ''
+- id: UI-P1-T01
+  task_key: UI-P1-T01@HOLD-UI-2026-03-02
+  description: Fix Cloud Drives page empty or unclear connected state
+  sprint: 2
+  files: /components/Sidebar.tsx, /components/UnifiedFileBrowser.tsx, /app/connections/page.tsx
+  agent: "\u25C6 ClaudeCode"
+  gate: HOLD-UI-2026-03-02
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+- id: UI-P1-T02
+  task_key: UI-P1-T02@HOLD-UI-2026-03-02
+  description: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
+  sprint: 2
+  files: /app/api/remotes/[uuid]/proxy/route.ts, /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
+  agent: "\u25C8 OpenCode"
+  gate: HOLD-UI-2026-03-02
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+- id: UI-P1-T03
+  task_key: UI-P1-T03@HOLD-UI-2026-03-02
+  description: Fix preview panel open reliability from file rows and overflow Open
+  sprint: 2
+  files: /components/PreviewPanel.tsx, /components/UnifiedFileBrowser.tsx
+  agent: "\u25C6 ClaudeCode"
+  gate: HOLD-UI-2026-03-02
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+- id: UI-P1-T04
+  task_key: UI-P1-T04@HOLD-UI-2026-03-02
+  description: Restore file actions path (rename/move/download/delete) for connected
+    drives
+  sprint: 2
+  files: /components/UnifiedFileBrowser.tsx, /app/api/remotes/[uuid]/**
+  agent: "\u25C8 OpenCode"
+  gate: HOLD-UI-2026-03-02
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+- id: UI-P1-T05
+  task_key: UI-P1-T05@HOLD-UI-2026-03-02
+  description: Add explicit UI error surfaces for failed sync/proxy/favorites requests
+  sprint: 2
+  files: /components/UnifiedFileBrowser.tsx, /lib/ui/toast.ts, /app/api/connections/route.ts
+  agent: "\u25C8 OpenCode"
+  gate: HOLD-UI-2026-03-02
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+- id: UI-P1-T06
+  task_key: UI-P1-T06@HOLD-UI-2026-03-02
+  description: Add clear loading, empty, and error state cards in file pane
+  sprint: 2
+  files: /components/UnifiedFileBrowser.tsx, /components/Sidebar.tsx
+  agent: "\u25C6 ClaudeCode"
+  gate: HOLD-UI-2026-03-02
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+- id: OPS-E2E-READY
+  task_key: OPS-E2E-READY@QA-1
+  description: Add Playwright preflight wait-for-api on 127.0.0.1:8100
+  sprint: 2
+  files: /web/playwright.config.ts, /web/e2e/fixtures/global-setup.ts, /web/e2e/fixtures/global-teardown.ts,
+    /web/e2e/fixtures/README.md
+  agent: "\u25C8 OpenCode"
+  gate: QA-1
+  status: done
+  commit: 25b691aaa88d
+  done_at: '2026-03-03T00:05:16+00:00'
+  changelog: 'feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100'
 - id: '2.13'
   task_key: 2.13@2FA-1
   description: "TOTP setup flow \u2014 QR generation, verification, backup codes"

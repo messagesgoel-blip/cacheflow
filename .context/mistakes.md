@@ -11,3 +11,9 @@
 - why it failed: IDs are reused in multiple gates, causing collisions and incorrect status/commit attribution.
 - do not attempt: Do not key state/history by numeric ID alone; always use `id@gate`.
 - agent: codex
+
+## 2026-03-03 — Missing `.context/task_locks` reported as "already claimed"
+- what was tried: Running `./agent-coord.sh claim_task <id@gate>` before `.context/task_locks` existed.
+- why it failed: `mkdir` failed on missing parent path, but script mapped all failures to "already claimed", causing false lock conflicts.
+- do not attempt: Do not assume claim failures are real conflicts unless lock directory and `meta.json` exist; initialize lock directories first.
+- agent: codex

@@ -428,6 +428,76 @@
   commit: ''
   done_at: ''
   changelog: ''
+UI-P1-T01@HOLD-UI-2026-03-02:
+  id: UI-P1-T01
+  task_key: UI-P1-T01@HOLD-UI-2026-03-02
+  gate: HOLD-UI-2026-03-02
+  sprint: 2
+  agent: "\u25C6 ClaudeCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+UI-P1-T02@HOLD-UI-2026-03-02:
+  id: UI-P1-T02
+  task_key: UI-P1-T02@HOLD-UI-2026-03-02
+  gate: HOLD-UI-2026-03-02
+  sprint: 2
+  agent: "\u25C8 OpenCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+UI-P1-T03@HOLD-UI-2026-03-02:
+  id: UI-P1-T03
+  task_key: UI-P1-T03@HOLD-UI-2026-03-02
+  gate: HOLD-UI-2026-03-02
+  sprint: 2
+  agent: "\u25C6 ClaudeCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+UI-P1-T04@HOLD-UI-2026-03-02:
+  id: UI-P1-T04
+  task_key: UI-P1-T04@HOLD-UI-2026-03-02
+  gate: HOLD-UI-2026-03-02
+  sprint: 2
+  agent: "\u25C8 OpenCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+UI-P1-T05@HOLD-UI-2026-03-02:
+  id: UI-P1-T05
+  task_key: UI-P1-T05@HOLD-UI-2026-03-02
+  gate: HOLD-UI-2026-03-02
+  sprint: 2
+  agent: "\u25C8 OpenCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+UI-P1-T06@HOLD-UI-2026-03-02:
+  id: UI-P1-T06
+  task_key: UI-P1-T06@HOLD-UI-2026-03-02
+  gate: HOLD-UI-2026-03-02
+  sprint: 2
+  agent: "\u25C6 ClaudeCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+OPS-E2E-READY@QA-1:
+  id: OPS-E2E-READY
+  task_key: OPS-E2E-READY@QA-1
+  gate: QA-1
+  sprint: 2
+  agent: "\u25C8 OpenCode"
+  status: done
+  commit: 25b691aaa88d
+  done_at: '2026-03-03T00:05:16+00:00'
+  changelog: 'feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100'
 2.13@2FA-1:
   id: '2.13'
   task_key: 2.13@2FA-1

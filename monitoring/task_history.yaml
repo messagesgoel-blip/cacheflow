@@ -403,3 +403,16 @@
   done_tasks:
   - '1.16'
   - '1.18'
+- timestamp: '2026-03-03T00:05:16+00:00'
+  commit: 25b691aaa88d86d1e29b546cc402a68f4b237473
+  message: 'feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100'
+  changed:
+  - task_key: OPS-E2E-READY@QA-1
+    id: OPS-E2E-READY
+    gate: QA-1
+    from: planned
+    to: done
+  done_task_keys:
+  - OPS-E2E-READY@QA-1
+  done_tasks:
+  - OPS-E2E-READY

@@ -17,6 +17,8 @@
 | ACTIONS-1 | Right-click menu = three-dot menu exactly; multi-select toolbar on ≥2 selections only | 2 · 2.4 | ☐ OPEN |
 | NAV-1 | Exactly 6 nav items; Connections is sole source of truth; no orphaned routes | 2 · 2.9 | ☐ OPEN |
 | RESP-1 | All core views render at 375px — no horizontal scroll | 2 · 2.12 | ☐ OPEN |
+| HOLD-UI-2026-03-02 | Phase 1 UI stabilization tasks block non-UI feature work until complete | 2 · UI-P1-T01-UI-P1-T06 | ☐ OPEN |
+| QA-1 | E2E preflight validates API readiness before Playwright execution | 2 · OPS-E2E-READY | ☐ OPEN |
 | 2FA-1 | 2FA enable/use/disable full cycle passes; backup codes work; share links blocked without 2FA | 2 · 2.13–2.16 | ☐ OPEN |
 | TRANSFER-1 | 1GB transfer with mid-transfer network drop resumes from last chunk, not from 0 | 3 · 3.5–3.6 | ☐ OPEN |
 | ZERODISK-1 | No file bytes written to server disk during cross-provider transfer (instrumented) | 3 · 3.9 | ☐ OPEN |
@@ -129,6 +131,23 @@
 | 2.10 | File table visual polish — skeleton loaders, hover, separators | 2 | /components/files/FileTable.tsx, /components/Sidebar/AccountRow.tsx, /styles/files.css | ◆ ClaudeCode |
 | 2.11 | Sidebar collapsible accordion per provider group | 2 | /components/Sidebar/ProviderGroup.tsx | ◆ ClaudeCode |
 | 2.12 | Responsive layout pass — 375px viewport minimum | 2 | /components/Sidebar/**, /app/files/page.tsx, /app/connections/page.tsx, /styles/layout.css | ◆ ClaudeCode |
+
+## Gate HOLD-UI-2026-03-02
+
+| ID | Description | Sprint | Files | Agent |
+| --- | --- | --- | --- | --- |
+| UI-P1-T01 | Fix Cloud Drives page empty or unclear connected state | 2 | /components/Sidebar.tsx, /components/UnifiedFileBrowser.tsx, /app/connections/page.tsx | ◆ ClaudeCode |
+| UI-P1-T02 | Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy) | 2 | /app/api/remotes/[uuid]/proxy/route.ts, /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts | ◈ OpenCode |
+| UI-P1-T03 | Fix preview panel open reliability from file rows and overflow Open | 2 | /components/PreviewPanel.tsx, /components/UnifiedFileBrowser.tsx | ◆ ClaudeCode |
+| UI-P1-T04 | Restore file actions path (rename/move/download/delete) for connected drives | 2 | /components/UnifiedFileBrowser.tsx, /app/api/remotes/[uuid]/** | ◈ OpenCode |
+| UI-P1-T05 | Add explicit UI error surfaces for failed sync/proxy/favorites requests | 2 | /components/UnifiedFileBrowser.tsx, /lib/ui/toast.ts, /app/api/connections/route.ts | ◈ OpenCode |
+| UI-P1-T06 | Add clear loading, empty, and error state cards in file pane | 2 | /components/UnifiedFileBrowser.tsx, /components/Sidebar.tsx | ◆ ClaudeCode |
+
+## Gate QA-1
+
+| ID | Description | Sprint | Files | Agent |
+| --- | --- | --- | --- | --- |
+| OPS-E2E-READY | Add Playwright preflight wait-for-api on 127.0.0.1:8100 | 2 | /web/playwright.config.ts, /web/e2e/fixtures/global-setup.ts, /web/e2e/fixtures/global-teardown.ts, /web/e2e/fixtures/README.md | ◈ OpenCode |
 
 ## Gate 2FA-1
 

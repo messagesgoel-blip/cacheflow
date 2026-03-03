@@ -54,7 +54,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 1.18 | Security baseline — remove defaults, harden secrets (Gate SEC-1) | ◈ OpenCode | Planned | — | — | — |
 
 ## Sprint 2
-- Progress: `[░░░░░░░░░░] 0%` (0 / 17 completed)
+- Progress: `[░░░░░░░░░░] 0%` (0 / 24 completed)
 - Total commits: `0` (update after commit + update script)
 - Current tasks:
 
@@ -73,10 +73,17 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 2.10 | File table visual polish — skeleton loaders, hover, separators (Gate RESP-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.11 | Sidebar collapsible accordion per provider group (Gate RESP-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.12 | Responsive layout pass — 375px viewport minimum (Gate RESP-1) | ◆ ClaudeCode | Planned | — | — | — |
+| UI-P1-T01 | Fix Cloud Drives page empty or unclear connected state (Gate HOLD-UI-2026-03-02) | ◆ ClaudeCode | Planned | — | — | — |
+| UI-P1-T02 | Fix 401 proxy failures for connected remotes (Gate HOLD-UI-2026-03-02) | ◈ OpenCode | Planned | — | — | — |
+| UI-P1-T03 | Fix preview panel open reliability from file rows and overflow Open (Gate HOLD-UI-2026-03-02) | ◆ ClaudeCode | Planned | — | — | — |
+| UI-P1-T04 | Restore file actions path (rename/move/download/delete) for connected drives (Gate HOLD-UI-2026-03-02) | ◈ OpenCode | Planned | — | — | — |
+| UI-P1-T05 | Add explicit UI error surfaces for failed sync/proxy/favorites requests (Gate HOLD-UI-2026-03-02) | ◈ OpenCode | Planned | — | — | — |
+| UI-P1-T06 | Add clear loading, empty, and error state cards in file pane (Gate HOLD-UI-2026-03-02) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.13 | TOTP setup flow — QR generation, verification, backup codes (Gate 2FA-1) | ◈ OpenCode | Planned | — | — | — |
 | 2.14 | TOTP login challenge UI (Gate 2FA-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.15 | Settings: manage 2FA, backup codes, last-used timestamp (Gate 2FA-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.16 | E2E 2FA tests — full enable/use/disable cycle (Gate 2FA-1) | ◉ Gemini | Planned | — | — | — |
+| OPS-E2E-READY | Playwright preflight wait-for-api on 127.0.0.1:8100 (Gate QA-1) | ◈ OpenCode | Done | 25b691a | 2026-03-02T23:57:14Z | feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100 |
 
 ## Sprint 3
 - Progress: `[░░░░░░░░░░] 0%` (0 / 17 completed)
@@ -166,4 +173,3 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 6.8A | [OPTION A] Rich version history + unified trash — RECOMMENDED (Gate LAUNCH-1) | ◈ OpenCode | Planned | — | — | — |
 | 6.8B | [OPTION B] Collabora Online (full Office editing) — HIGH INFRA COST (Gate LAUNCH-1) | ◈ OpenCode | Planned | — | — | — |
 | 6.8C | [OPTION C] Magnet/torrent remote upload — REQUIRES ABUSE CONTROLS (Gate LAUNCH-1) | ◈ OpenCode | Planned | — | — | — |
-
