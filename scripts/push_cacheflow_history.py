@@ -5,7 +5,13 @@ from pathlib import Path
 import requests
 import yaml
 
-HISTORY_FILE = Path('/opt/docker/apps/cacheflow/monitoring/task_history.yaml')
+CACHEFLOW_BASE = Path(
+    os.environ.get(
+        "CACHEFLOW_BASE",
+        str(Path(__file__).resolve().parent.parent),
+    )
+).resolve()
+HISTORY_FILE = CACHEFLOW_BASE / 'monitoring' / 'task_history.yaml'
 PUSHGATEWAY = os.environ.get('PUSHGATEWAY','http://localhost:9091')
 JOB='cacheflow_task_history'
 

@@ -111,7 +111,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 3.8 | Auto-resume E2E test — network drop mid-transfer ⚠️ Human verify (Gate TRANSFER-1) | ◉ Gemini | Planned | — | — | — |
 | 3.10 | BullMQ background job queue for async transfers (Gate TRANSFER-1) | ◈ OpenCode | Done | e28b158 | 2026-03-03T03:10:11+00:00 | BullMQ queue + worker, transfer tray with toast |
 | 3.11 | Conflict resolution modal — shared component used everywhere (Gate TRANSFER-1) | ◆ ClaudeCode | Planned | — | — | — |
-| 3.15 | Rate limit handling layer — per-provider request queue (Gate TRANSFER-1) | ◈ OpenCode | Running | — | — | — |
+| 3.15 | Rate limit handling layer — per-provider request queue (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
 | 3.9 | Server streams source → CacheFlow → target without disk write (Gate ZERODISK-1) | ◈ OpenCode | Planned | — | — | — |
 | 3.12 | Zero-disk verification test + tab-close survival test ⚠️ Human verify (Gate ZERODISK-1) | ◉ Gemini | Planned | — | — | — |
 | 3.2 | Server-Sent Events (SSE) for real-time transfer progress (Gate SSE-1) | ◈ OpenCode | Planned | — | — | — |

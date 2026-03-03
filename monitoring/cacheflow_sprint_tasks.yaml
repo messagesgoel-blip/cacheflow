@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T03:11:46+00:00'
+generated_at: '2026-03-03T20:00:20+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -846,7 +846,7 @@ tasks:
   files: /lib/providers/rateLimitQueue.ts, /lib/apiClient.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: running
+  status: planned
   commit: ''
   done_at: ''
   changelog: ''

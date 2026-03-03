@@ -20,12 +20,23 @@ cmd="${1:-}"
 shift || true
 
 now_utc() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-repo_name() { basename "$(pwd)"; }
-branch_name() { git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"; }
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+default_root="/home/sanjay/cacheflow_work"
+if [ -n "${CACHEFLOW_COORD_ROOT:-}" ]; then
+  coord_root="$(cd "${CACHEFLOW_COORD_ROOT}" 2>/dev/null && pwd || echo "${CACHEFLOW_COORD_ROOT}")"
+elif [ -d "$default_root/.git" ]; then
+  coord_root="$default_root"
+elif git rev-parse --show-toplevel >/dev/null 2>&1; then
+  coord_root="$(git rev-parse --show-toplevel)"
+else
+  coord_root="$script_dir"
+fi
+repo_name() { basename "$coord_root"; }
+branch_name() { git -C "$coord_root" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"; }
 namespace() { echo "$(repo_name):$(branch_name)"; }
-lock_dir=".context/task_locks"
-contracts_dir=".context/contracts"
-change_log=".context/change_log.md"
+lock_dir="$coord_root/.context/task_locks"
+contracts_dir="$coord_root/.context/contracts"
+change_log="$coord_root/.context/change_log.md"
 
 ensure_dirs() {
   mkdir -p "$lock_dir" "$contracts_dir"

@@ -83,7 +83,12 @@ def push_metrics(text, gateway):
 
 
 def main():
-    base = Path(__file__).resolve().parent.parent
+    base = Path(
+        os.environ.get(
+            "CACHEFLOW_BASE",
+            str(Path(__file__).resolve().parent.parent),
+        )
+    ).resolve()
     metrics_file = base / "monitoring" / "cacheflow_metrics.yaml"
     if not metrics_file.exists():
         raise SystemExit("metrics file missing")

@@ -748,7 +748,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C8 OpenCode"
-  status: running
+  status: planned
   commit: ''
   done_at: ''
   changelog: ''

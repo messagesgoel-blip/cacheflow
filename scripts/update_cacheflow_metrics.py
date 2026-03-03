@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 from collections import defaultdict
@@ -11,7 +12,12 @@ from pathlib import Path
 
 import yaml
 
-BASE = Path("/opt/docker/apps/cacheflow")
+BASE = Path(
+    os.environ.get(
+        "CACHEFLOW_BASE",
+        str(Path(__file__).resolve().parent.parent),
+    )
+).resolve()
 ROADMAP = BASE / "docs" / "roadmap-v4.3.md"
 SPRINT_TASKS_FILE = BASE / "monitoring" / "cacheflow_sprint_tasks.yaml"
 METRICS_FILE = BASE / "monitoring" / "cacheflow_metrics.yaml"
@@ -178,6 +184,15 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
 
         if not target_status and key in active_locks and str(record.get("status", "")).lower() not in DONE_STATES:
             target_status = "running"
+
+        # If a task was previously running but has no active lock now, reset it to planned.
+        # This prevents stale running states after agent crashes or manual lock cleanup.
+        if (
+            not target_status
+            and str(record.get("status", "")).lower() == "running"
+            and key not in active_locks
+        ):
+            target_status = "planned"
 
         if target_status:
             if target_status == "done":
