@@ -8,12 +8,15 @@ from pathlib import Path
 import yaml
 
 
-BASE = Path(
-    os.environ.get(
-        "CACHEFLOW_BASE",
-        str(Path(__file__).resolve().parent.parent),
-    )
-).resolve()
+explicit_base = os.environ.get("CACHEFLOW_BASE")
+if explicit_base:
+    BASE = Path(explicit_base).resolve()
+else:
+    canonical = Path("/home/sanjay/cacheflow_work")
+    if (canonical / ".git").exists():
+        BASE = canonical.resolve()
+    else:
+        BASE = Path(__file__).resolve().parent.parent
 
 DASHBOARD = BASE / "docs" / "sprints-task-dashboard.md"
 STATE_FILE = BASE / "monitoring" / "cacheflow_task_state.yaml"

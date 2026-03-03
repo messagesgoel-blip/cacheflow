@@ -83,12 +83,15 @@ def push_metrics(text, gateway):
 
 
 def main():
-    base = Path(
-        os.environ.get(
-            "CACHEFLOW_BASE",
-            str(Path(__file__).resolve().parent.parent),
-        )
-    ).resolve()
+    explicit = os.environ.get("CACHEFLOW_BASE")
+    if explicit:
+        base = Path(explicit).resolve()
+    else:
+        canonical = Path("/home/sanjay/cacheflow_work")
+        if (canonical / ".git").exists():
+            base = canonical.resolve()
+        else:
+            base = Path(__file__).resolve().parent.parent
     metrics_file = base / "monitoring" / "cacheflow_metrics.yaml"
     if not metrics_file.exists():
         raise SystemExit("metrics file missing")

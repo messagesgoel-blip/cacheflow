@@ -5,12 +5,15 @@ from pathlib import Path
 import requests
 import yaml
 
-CACHEFLOW_BASE = Path(
-    os.environ.get(
-        "CACHEFLOW_BASE",
-        str(Path(__file__).resolve().parent.parent),
-    )
-).resolve()
+explicit_base = os.environ.get("CACHEFLOW_BASE")
+if explicit_base:
+    CACHEFLOW_BASE = Path(explicit_base).resolve()
+else:
+    canonical = Path("/home/sanjay/cacheflow_work")
+    if (canonical / ".git").exists():
+        CACHEFLOW_BASE = canonical.resolve()
+    else:
+        CACHEFLOW_BASE = Path(__file__).resolve().parent.parent
 HISTORY_FILE = CACHEFLOW_BASE / 'monitoring' / 'task_history.yaml'
 PUSHGATEWAY = os.environ.get('PUSHGATEWAY','http://localhost:9091')
 JOB='cacheflow_task_history'

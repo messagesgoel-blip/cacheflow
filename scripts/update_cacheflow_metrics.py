@@ -12,12 +12,17 @@ from pathlib import Path
 
 import yaml
 
-BASE = Path(
-    os.environ.get(
-        "CACHEFLOW_BASE",
-        str(Path(__file__).resolve().parent.parent),
-    )
-).resolve()
+def resolve_base() -> Path:
+    explicit = os.environ.get("CACHEFLOW_BASE")
+    if explicit:
+        return Path(explicit).resolve()
+    canonical = Path("/home/sanjay/cacheflow_work")
+    if (canonical / ".git").exists():
+        return canonical.resolve()
+    return Path(__file__).resolve().parent.parent
+
+
+BASE = resolve_base()
 ROADMAP = BASE / "docs" / "roadmap-v4.3.md"
 SPRINT_TASKS_FILE = BASE / "monitoring" / "cacheflow_sprint_tasks.yaml"
 METRICS_FILE = BASE / "monitoring" / "cacheflow_metrics.yaml"
