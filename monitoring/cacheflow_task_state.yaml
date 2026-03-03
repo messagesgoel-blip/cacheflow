@@ -24,10 +24,10 @@
   gate: AUTH-1
   sprint: 0
   agent: "\u25C6 ClaudeCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 7d8d37f
+  done_at: '2026-03-03T21:20:00+00:00'
+  changelog: 'docs(contracts): add ErrorCode → UI action mapping contract'
 1.1@AUTH-1:
   id: '1.1'
   task_key: 1.1@AUTH-1

@@ -120,10 +120,10 @@ tasks:
   files: /docs/contracts/errorcode-ui-actions.md
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 7d8d37f
+  done_at: '2026-03-03T21:20:00+00:00'
+  changelog: 'docs(contracts): add ErrorCode → UI action mapping contract'
 - id: '1.1'
   task_key: 1.1@AUTH-1
   description: Create global HTTP interceptor for all /api/remotes proxy calls
