@@ -63,3 +63,11 @@
 - files: web/app/api/auth/2fa/setup/route.ts, web/components/settings/TwoFAPanel.tsx
 - commit: pending
 - agent: codex
+
+## 2026-03-03 — Keep web API routes isolated from worker runtime modules
+- decision: `/web/app/api/transfers` and `/web/app/api/rate-limits` now import queue adapters from `web/lib/transfer/*` rather than `../worker/queues/*`.
+- rationale: The web container builds from `../web` context only, so cross-context imports into `worker/` cause module resolution failures and pull in unavailable worker-only dependencies.
+- alternatives rejected: Keeping worker imports with corrected relative paths; adding worker queue dependencies to web/root build graph.
+- files: web/app/api/transfers/route.ts, web/app/api/rate-limits/route.ts, web/lib/transfer/jobQueue.ts, web/lib/transfer/rateLimitQueue.ts
+- commit: pending
+- agent: codex

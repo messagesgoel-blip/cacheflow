@@ -9,8 +9,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getRateLimitQueueStats, getProviderRateLimitStats, clearProviderQueue, retryTransferJob } from '../../worker/queues/rateLimitQueue';
-import { withSecurityScan } from '../../lib/auth/securityAudit';
+import { getRateLimitQueueStats, getProviderRateLimitStats, clearProviderQueue, retryTransferJob } from '@/lib/transfer/rateLimitQueue';
+import { withSecurityScan } from '@/lib/auth/securityAudit';
 
 /**
  * GET /api/rate-limits

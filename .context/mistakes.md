@@ -53,3 +53,9 @@
 - why it failed: The script shells out to `rg` for every validation rule; on runners missing `rg`, the job fails before checks run.
 - do not attempt: Do not rely on preinstalled runner tooling for required shell dependencies; install `ripgrep` explicitly in workflow.
 - agent: codex
+
+## 2026-03-03 — Web app routes imported worker queue modules outside web build context
+- what was tried: Importing `../../../../worker/queues/*` directly from `web/app/api/transfers` and `web/app/api/rate-limits`.
+- why it failed: The web image builds with Docker context `../web`, so sibling `worker/` files and worker-only deps (`bullmq`) are not available during `next build`.
+- do not attempt: Do not import `../worker` runtime modules from web routes; keep web route dependencies inside `web/` (or proxy to API service).
+- agent: codex

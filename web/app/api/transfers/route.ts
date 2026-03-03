@@ -9,8 +9,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { addTransferJob, getTransferJob, getUserTransferJobs, getQueueStats, cancelTransferJob } from '../../../worker/queues/transferQueue';
-import { withSecurityScan } from '../../../lib/auth/securityAudit';
+import { addTransferJob, getTransferJob, getUserTransferJobs, getQueueStats, cancelTransferJob } from '@/lib/transfer/jobQueue';
+import { withSecurityScan } from '@/lib/auth/securityAudit';
 
 export interface CreateTransferRequest {
   sourceProvider: string;
