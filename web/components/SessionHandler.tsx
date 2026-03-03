@@ -1,19 +1,34 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface SessionState {
   expired: boolean
+  reason?: string
 }
 
 export default function SessionHandler() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [sessionState, setSessionState] = useState<SessionState | null>(null)
 
   const handleReconnect = useCallback(() => {
-    router.push('/providers')
-  }, [router])
+    const redirect = searchParams.get('redirect') || '/providers'
+    router.push(redirect)
+  }, [router, searchParams])
+
+  const dismiss = useCallback(() => {
+    setSessionState(null)
+  }, [])
+
+  useEffect(() => {
+    const reason = searchParams.get('reason')
+    if (reason === 'session_expired') {
+      setSessionState({ expired: true, reason })
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const handleRejection = (event: PromiseRejectionEvent) => {
@@ -24,9 +39,20 @@ export default function SessionHandler() {
       }
     }
 
+    const handleReauthRequired = (event: Event) => {
+      const customEvent = event as CustomEvent
+      setSessionState({ 
+        expired: true, 
+        reason: customEvent.detail?.reason || 'Session expired' 
+      })
+    }
+
     window.addEventListener('unhandledrejection', handleRejection)
+    window.addEventListener('cacheflow:reauth-required', handleReauthRequired)
+    
     return () => {
       window.removeEventListener('unhandledrejection', handleRejection)
+      window.removeEventListener('cacheflow:reauth-required', handleReauthRequired)
     }
   }, [])
 
@@ -34,7 +60,6 @@ export default function SessionHandler() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50">
-      {/* Main actionable banner */}
       <div className="bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-700 dark:to-orange-700 text-white px-4 py-3 shadow-lg">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -45,12 +70,11 @@ export default function SessionHandler() {
             </div>
             <div>
               <p className="font-medium">Session expired</p>
-              <p className="text-sm text-white/80">Your cloud provider session needs attention</p>
+              <p className="text-sm text-white/80">{sessionState.reason || 'Your cloud provider session needs attention'}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Reconnect button - primary action */}
             <button
               onClick={handleReconnect}
               className="px-4 py-2 bg-white text-orange-700 font-medium rounded-lg hover:bg-white/90 transition-colors flex items-center gap-2 shadow-sm"
@@ -61,9 +85,8 @@ export default function SessionHandler() {
               Reconnect Provider
             </button>
 
-            {/* Dismiss button */}
             <button
-              onClick={() => setSessionState(null)}
+              onClick={dismiss}
               className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               aria-label="Dismiss"
               title="Dismiss for now"
@@ -76,7 +99,6 @@ export default function SessionHandler() {
         </div>
       </div>
 
-      {/* Spacer to prevent content jump */}
       <div className="h-14" />
     </div>
   )

@@ -85,6 +85,18 @@ export abstract class StorageProvider {
         body: JSON.stringify(proxyBody)
       })
 
+      // Handle 401 - dispatch re-auth event for UI
+      if (response.status === 401) {
+        try {
+          const errorData = await response.json();
+          if (errorData.requiresReauth) {
+            window.dispatchEvent(new CustomEvent('cacheflow:reauth-required', { 
+              detail: { reason: errorData.error || 'Session expired' }
+            }));
+          }
+        } catch {}
+      }
+
       // Parse error response for UI to handle
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

@@ -112,7 +112,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       fetch('/api/favorites', { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.json())
         .then(body => { if (body.ok) setFavorites(new Set(body.data.favorites.map((f: any) => f.file_id))) })
-        .catch(err => console.error('Failed to fetch favorites:', err))
+        .catch(err => { console.error('Failed to fetch favorites:', err); setError('Failed to load favorites'); })
     }
   }, [token])
 
@@ -144,7 +144,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           serverConnections = result.data;
         }
       } catch (err) {
-        console.warn('[UnifiedFileBrowser] Failed to fetch server connections, using localStorage only:', err);
+        console.warn('[UnifiedFileBrowser] Failed to fetch server connections, using localStorage only:', err); setError('Failed to sync provider connections');
       }
 
       // Build ConnectedProvider list: merge server metadata with localStorage tokens
