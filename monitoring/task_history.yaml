@@ -505,3 +505,40 @@
     to: running
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-03T01:47:53+00:00'
+  commit: f8746650efee8f5b08536530b48865c8670c75bc
+  message: 'chore: reconcile task locks and metrics state cleanup'
+  changed:
+  - task_key: OPS-QA-WATCH@QA-1
+    id: OPS-QA-WATCH
+    gate: QA-1
+    from: running
+    to: done
+  done_task_keys:
+  - OPS-QA-WATCH@QA-1
+  done_tasks:
+  - OPS-QA-WATCH
+- timestamp: '2026-03-03T01:49:33+00:00'
+  commit: fd829fbec6fdedfe731528beb0590b46f95472e6
+  message: 'docs(QA): create blocker note for failing Filen IndexedDB check'
+  changed:
+  - task_key: 2.8@PREVIEW-1
+    id: '2.8'
+    gate: PREVIEW-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []
+- timestamp: '2026-03-03T01:51:07+00:00'
+  commit: 38155c1a710b8a1fe273bc9b6bd83a41339d6023
+  message: 'test(2.8@PREVIEW-1): add E2E tests for rich content previews'
+  changed:
+  - task_key: 2.8@PREVIEW-1
+    id: '2.8'
+    gate: PREVIEW-1
+    from: running
+    to: done
+  done_task_keys:
+  - 2.8@PREVIEW-1
+  done_tasks:
+  - '2.8'

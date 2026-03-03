@@ -18,6 +18,16 @@
   commit: ''
   done_at: ''
   changelog: ''
+0.4a@AUTH-1:
+  id: 0.4a
+  task_key: 0.4a@AUTH-1
+  gate: AUTH-1
+  sprint: 0
+  agent: "\u25C6 ClaudeCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
 1.1@AUTH-1:
   id: '1.1'
   task_key: 1.1@AUTH-1
@@ -354,10 +364,10 @@
   gate: PREVIEW-1
   sprint: 2
   agent: "\u25C9 Gemini"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 38155c1a710b
+  done_at: '2026-03-03T01:51:07+00:00'
+  changelog: Added E2E test suite; implementation blocked by component state issues.
 2.3@ACTIONS-1:
   id: '2.3'
   task_key: 2.3@ACTIONS-1
@@ -507,10 +517,11 @@ OPS-QA-WATCH@QA-1:
   gate: QA-1
   sprint: 2
   agent: "\u25C9 Gemini"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: f8746650efee
+  done_at: '2026-03-03T01:47:53+00:00'
+  changelog: QA watcher unblock verified on latest main; one minor failure remains
+    in security-verification-real
 2.13@2FA-1:
   id: '2.13'
   task_key: 2.13@2FA-1
@@ -611,12 +622,32 @@ OPS-QA-WATCH@QA-1:
   commit: ''
   done_at: ''
   changelog: ''
+0.4a@TRANSFER-1:
+  id: 0.4a
+  task_key: 0.4a@TRANSFER-1
+  gate: TRANSFER-1
+  sprint: 0
+  agent: "\u25C6 ClaudeCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
 0.5@TRANSFER-1:
   id: '0.5'
   task_key: 0.5@TRANSFER-1
   gate: TRANSFER-1
   sprint: 0
   agent: "\u25C8 OpenCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+0.9@TRANSFER-1:
+  id: '0.9'
+  task_key: 0.9@TRANSFER-1
+  gate: TRANSFER-1
+  sprint: 0
+  agent: "\u2605 CODEX (Master)"
   status: planned
   commit: ''
   done_at: ''
@@ -817,6 +848,16 @@ OPS-QA-WATCH@QA-1:
   gate: SSE-1
   sprint: 0
   agent: "\u25C8 OpenCode"
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+0.9@SSE-1:
+  id: '0.9'
+  task_key: 0.9@SSE-1
+  gate: SSE-1
+  sprint: 0
+  agent: "\u2605 CODEX (Master)"
   status: planned
   commit: ''
   done_at: ''

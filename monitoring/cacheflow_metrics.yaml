@@ -1,10 +1,10 @@
-generated_at: '2026-03-03T01:39:37+00:00'
+generated_at: '2026-03-03T02:04:59+00:00'
 current_sprint: 2
-sprint_progress: 16.0
+sprint_progress: 24.0
 sprint_start: 1700000000
-running_tasks: 3
-tasks_completed_total: 26
-total_tasks: 118
+running_tasks: 2
+tasks_completed_total: 28
+total_tasks: 122
 total_sprints: 7
 gate_status:
   AUTH-1: open
@@ -20,7 +20,7 @@ gate_status:
   NAV-1: open
   RESP-1: open
   HOLD-UI-2026-03-02: open
-  QA-1: running
+  QA-1: done
   2FA-1: running
   TRANSFER-1: open
   ZERODISK-1: open
@@ -33,11 +33,11 @@ gate_status:
   LAUNCH-1: open
 sprints:
 - sprint: 0
-  total_tasks: 14
+  total_tasks: 18
   done_tasks: 0
   running_tasks: 0
   pending_tasks: 0
-  planned_tasks: 14
+  planned_tasks: 18
   progress: 0.0
   commits_total: 0
 - sprint: 1
@@ -50,12 +50,12 @@ sprints:
   commits_total: 8
 - sprint: 2
   total_tasks: 25
-  done_tasks: 4
-  running_tasks: 3
+  done_tasks: 6
+  running_tasks: 2
   pending_tasks: 0
-  planned_tasks: 18
-  progress: 16.0
-  commits_total: 3
+  planned_tasks: 17
+  progress: 24.0
+  commits_total: 5
 - sprint: 3
   total_tasks: 17
   done_tasks: 0
@@ -107,6 +107,18 @@ tasks:
   sprint: 0
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
   agent: "\u25C8 OpenCode"
+  gate: AUTH-1
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+- id: 0.4a
+  task_key: 0.4a@AUTH-1
+  description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
+    \ deterministic UI behavior and default toast fallback"
+  sprint: 0
+  files: /docs/contracts/errorcode-ui-actions.md
+  agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
   status: planned
   commit: ''
@@ -458,7 +470,8 @@ tasks:
   changelog: ''
 - id: '2.6'
   task_key: 2.6@PREVIEW-1
-  description: "Fix preview panel mount \u2014 \"Opening\" toast must open a panel"
+  description: "Fix preview panel mount \u2014 \"Opening\" toast must open a panel;\
+    \ enforce CSP for image/PDF/text previews with Playwright zero-CSP-error verification"
   sprint: 2
   files: /components/files/PreviewPanel.tsx, /components/files/previewTypes.ts
   agent: "\u25C6 ClaudeCode"
@@ -469,7 +482,8 @@ tasks:
   changelog: ''
 - id: '2.7'
   task_key: 2.7@PREVIEW-1
-  description: 'Unsupported file types: immediate Download CTA'
+  description: 'Unsupported file types: immediate Download CTA via server-proxied
+    /api/remotes/{uuid}/download/{fileId}; never expose raw provider URLs'
   sprint: 2
   files: /components/files/PreviewPanel.tsx, /lib/files/mimeTypes.ts
   agent: "\u25C6 ClaudeCode"
@@ -485,10 +499,10 @@ tasks:
   files: /e2e/tests/filePreview.spec.ts
   agent: "\u25C9 Gemini"
   gate: PREVIEW-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 38155c1a710b
+  done_at: '2026-03-03T01:51:07+00:00'
+  changelog: Added E2E test suite; implementation blocked by component state issues.
 - id: '2.3'
   task_key: 2.3@ACTIONS-1
   description: 'File table: single click select + right panel, double click open'
@@ -657,10 +671,11 @@ tasks:
   files: /web/e2e/**, /monitoring/task_history.yaml, /docs/prompts/**, /BLOCKER_QA_SEED.md
   agent: "\u25C9 Gemini"
   gate: QA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: f8746650efee
+  done_at: '2026-03-03T01:47:53+00:00'
+  changelog: QA watcher unblock verified on latest main; one minor failure remains
+    in security-verification-real
 - id: '2.13'
   task_key: 2.13@2FA-1
   description: "TOTP setup flow \u2014 QR generation, verification, backup codes"
@@ -707,7 +722,8 @@ tasks:
   changelog: ''
 - id: '4.7'
   task_key: 4.7@2FA-1
-  description: "Share link creation \u2014 requires 2FA enabled on account"
+  description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
+    \ (all links vs password-only)"
   sprint: 4
   files: /app/api/share/route.ts, /lib/share/shareLinkService.ts
   agent: "\u25C8 OpenCode"
@@ -718,7 +734,8 @@ tasks:
   changelog: ''
 - id: '4.10'
   task_key: 4.10@2FA-1
-  description: "Share link UI \u2014 right-click \u2192 Get Share Link panel"
+  description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
+    \ prompt behavior must match /docs/decisions/share-link-2fa-scope.md"
   sprint: 4
   files: /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx
   agent: "\u25C6 ClaudeCode"
@@ -772,6 +789,18 @@ tasks:
   commit: ''
   done_at: ''
   changelog: ''
+- id: 0.4a
+  task_key: 0.4a@TRANSFER-1
+  description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
+    \ deterministic UI behavior and default toast fallback"
+  sprint: 0
+  files: /docs/contracts/errorcode-ui-actions.md
+  agent: "\u25C6 ClaudeCode"
+  gate: TRANSFER-1
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
 - id: '0.5'
   task_key: 0.5@TRANSFER-1
   description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
@@ -779,6 +808,19 @@ tasks:
   sprint: 0
   files: /lib/transfers/streamPipeline.ts, /tests/unit/streamPipeline.test.ts
   agent: "\u25C8 OpenCode"
+  gate: TRANSFER-1
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
+- id: '0.9'
+  task_key: 0.9@TRANSFER-1
+  description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
+    \ and block serverless/edge deployment configs in CI"
+  sprint: 0
+  files: /docs/architecture/deployment-constraints.md, /scripts/check-deployment-target.sh,
+    /.env.example
+  agent: "\u2605 CODEX (Master)"
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -1011,6 +1053,19 @@ tasks:
   commit: ''
   done_at: ''
   changelog: ''
+- id: '0.9'
+  task_key: 0.9@SSE-1
+  description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
+    \ and block serverless/edge deployment configs in CI"
+  sprint: 0
+  files: /docs/architecture/deployment-constraints.md, /scripts/check-deployment-target.sh,
+    /.env.example
+  agent: "\u2605 CODEX (Master)"
+  gate: SSE-1
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
 - id: '3.2'
   task_key: 3.2@SSE-1
   description: Server-Sent Events (SSE) for real-time transfer progress
@@ -1035,7 +1090,8 @@ tasks:
   changelog: ''
 - id: '4.7'
   task_key: 4.7@SHARE-1
-  description: "Share link creation \u2014 requires 2FA enabled on account"
+  description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
+    \ (all links vs password-only)"
   sprint: 4
   files: /app/api/share/route.ts, /lib/share/shareLinkService.ts
   agent: "\u25C8 OpenCode"
@@ -1068,7 +1124,8 @@ tasks:
   changelog: ''
 - id: '4.10'
   task_key: 4.10@SHARE-1
-  description: "Share link UI \u2014 right-click \u2192 Get Share Link panel"
+  description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
+    \ prompt behavior must match /docs/decisions/share-link-2fa-scope.md"
   sprint: 4
   files: /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx
   agent: "\u25C6 ClaudeCode"
@@ -1123,7 +1180,9 @@ tasks:
   changelog: ''
 - id: '5.7'
   task_key: 5.7@VAULT-1
-  description: "Vault UI \u2014 lock icon in sidebar, hidden from All Files"
+  description: "Vault UI \u2014 lock icon in sidebar, hidden from All Files; non-encryption\
+    \ disclaimer at setup, unlock modal, and folder header; user-facing name follows\
+    \ /docs/decisions/vault-naming-decision.md"
   sprint: 5
   files: /components/Sidebar/VaultFolderRow.tsx, /components/vault/UnlockVaultModal.tsx,
     /app/files/page.tsx (filter vault items)

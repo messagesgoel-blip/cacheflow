@@ -2,25 +2,30 @@
 Each sprint below will track task progress, commits, and changelog entries as work proceeds.
 
 ## Sprint 0
-- Progress: `[░░░░░░░░░░] 0%` (0 / 14 completed)
+- Progress: `[░░░░░░░░░░] 0%` (0 / 18 completed)
 - Total commits: `0` (update after commit + update script)
+- Gate criteria: `/docs/architecture/deployment-constraints.md` + `/scripts/check-deployment-target.sh` must exist and pass before Sprint 0 gate pass.
 - Current tasks:
 
 | Task ID | Task Description (Gate) | Assigned Agent | Status | Commit # | Done At | Changelog |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0.1 | Define and commit ProviderAdapter interface — all adapters implement this (Gate AUTH-1) | ★ CODEX (Master) | Planned | — | — | — |
 | 0.2 | Define AppError taxonomy and ErrorCode enum (Gate AUTH-1) | ◈ OpenCode | Planned | — | — | — |
+| 0.4a | ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic UI behavior and default toast fallback (Gate AUTH-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 0.3 | Define complete Prisma schema baseline — all tables, all relationships (Gate AUTH-2) | ◈ OpenCode | Planned | — | — | — |
 | 0.6 | Define singleton refresh promise pattern — prevent concurrent token refresh race (Gate AUTH-4) | ◈ OpenCode | Planned | — | — | — |
 | 0.1 | Define and commit ProviderAdapter interface — all adapters implement this (Gate TRANSFER-1) | ★ CODEX (Master) | Planned | — | — | — |
 | 0.2 | Define AppError taxonomy and ErrorCode enum (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
 | 0.3 | Define complete Prisma schema baseline — all tables, all relationships (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
 | 0.4 | Allocate Redis namespaces — document and enforce db separation (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
+| 0.4a | ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic UI behavior and default toast fallback (Gate TRANSFER-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 0.5 | Define streaming pipeline pattern — pipeline() + backpressure strategy (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
+| 0.9 | Stateful deployment guard — enforce long-running runtime targets and block serverless/edge deployment configs in CI (Gate TRANSFER-1) | ★ CODEX (Master) | Planned | — | — | — |
 | 0.1 | Define and commit ProviderAdapter interface — all adapters implement this (Gate ZERODISK-1) | ★ CODEX (Master) | Planned | — | — | — |
 | 0.5 | Define streaming pipeline pattern — pipeline() + backpressure strategy (Gate ZERODISK-1) | ◈ OpenCode | Planned | — | — | — |
 | 0.4 | Allocate Redis namespaces — document and enforce db separation (Gate SSE-1) | ◈ OpenCode | Planned | — | — | — |
 | 0.7 | Define BullMQ → SSE bridge via Redis pub/sub (Gate SSE-1) | ◈ OpenCode | Planned | — | — | — |
+| 0.9 | Stateful deployment guard — enforce long-running runtime targets and block serverless/edge deployment configs in CI (Gate SSE-1) | ★ CODEX (Master) | Planned | — | — | — |
 | 0.3 | Define complete Prisma schema baseline — all tables, all relationships (Gate VAULT-1) | ◈ OpenCode | Planned | — | — | — |
 
 ## Sprint 1
@@ -56,6 +61,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 ## Sprint 2
 - Progress: `[░░░░░░░░░░] 0%` (0 / 25 completed)
 - Total commits: `0` (update after commit + update script)
+- Gate criteria: preview flow must show zero CSP console errors and all unsupported-file downloads must be server-proxied (never raw provider URL).
 - Current tasks:
 
 | Task ID | Task Description (Gate) | Assigned Agent | Status | Commit # | Done At | Changelog |
@@ -63,8 +69,8 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 2.1 | Add persistent Upload / New Folder / Refresh action bar (Gate UPLOAD-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.2 | Implement file upload with progress and toast (Gate UPLOAD-1) | ◈ OpenCode | Planned | — | — | — |
 | 2.5 | Write E2E tests for all file action entry points (Gate UPLOAD-1) | ◉ Gemini | Planned | — | — | — |
-| 2.6 | Fix preview panel mount — "Opening" toast must open a panel (Gate PREVIEW-1) | ◆ ClaudeCode | Planned | — | — | — |
-| 2.7 | Unsupported file types: immediate Download CTA (Gate PREVIEW-1) | ◆ ClaudeCode | Planned | — | — | — |
+| 2.6 | Fix preview panel mount — "Opening" toast must open a panel; enforce CSP for image/PDF/text previews with Playwright zero-CSP-error verification (Gate PREVIEW-1) | ◆ ClaudeCode | Planned | — | — | — |
+| 2.7 | Unsupported file types: immediate Download CTA via server-proxied /api/remotes/{uuid}/download/{fileId}; never expose raw provider URLs (Gate PREVIEW-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.8 | E2E preview tests — supported and unsupported types (Gate PREVIEW-1) | ◉ Gemini | Planned | — | — | — |
 | 2.3 | File table: single click select + right panel, double click open (Gate ACTIONS-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.4 | Three-dot row menu + right-click context menu (identical) (Gate ACTIONS-1) | ◆ ClaudeCode | Planned | — | — | — |
@@ -89,6 +95,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 ## Sprint 3
 - Progress: `[░░░░░░░░░░] 0%` (0 / 17 completed)
 - Total commits: `0` (update after commit + update script)
+- Gate criteria: `/docs/decisions/share-link-2fa-scope.md` must be committed and reflected in task 4.7 + 4.10 behavior before Sprint 3 gate pass.
 - Current tasks:
 
 | Task ID | Task Description (Gate) | Assigned Agent | Status | Commit # | Done At | Changelog |
@@ -121,16 +128,16 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 4.1 | Define provider parity checklist — every provider must pass all 5 (Gate AUTH-1) | ★ CODEX (Master) | Planned | — | — | — |
 | 4.2 | Add 2–3 additional providers to reach 3–4 gold-standard total (Gate AUTH-1) | ◈ OpenCode | Planned | — | — | — |
 | 4.3 | E2E parity tests for each new provider (Gate AUTH-1) | ◉ Gemini | Planned | — | — | — |
-| 4.7 | Share link creation — requires 2FA enabled on account (Gate 2FA-1) | ◈ OpenCode | Planned | — | — | — |
-| 4.10 | Share link UI — right-click → Get Share Link panel (Gate 2FA-1) | ◆ ClaudeCode | Planned | — | — | — |
+| 4.7 | Share link creation — enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md (all links vs password-only) (Gate 2FA-1) | ◈ OpenCode | Planned | — | — | — |
+| 4.10 | Share link UI — right-click → Get Share Link panel; 2FA prompt behavior must match /docs/decisions/share-link-2fa-scope.md (Gate 2FA-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 4.12 | Remote upload v1 — HTTP/HTTPS URL to chosen provider (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
 | 4.13 | Smart auto-placement engine v1 (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
 | 4.14 | Remote upload UI — dropdown in Upload action menu (Gate TRANSFER-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 4.15 | E2E remote upload + placement tests (Gate TRANSFER-1) | ◉ Gemini | Planned | — | — | — |
-| 4.7 | Share link creation — requires 2FA enabled on account (Gate SHARE-1) | ◈ OpenCode | Planned | — | — | — |
+| 4.7 | Share link creation — enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md (all links vs password-only) (Gate SHARE-1) | ◈ OpenCode | Planned | — | — | — |
 | 4.8 | Share link proxy — hides underlying provider (Gate SHARE-1) | ◈ OpenCode | Planned | — | — | — |
 | 4.9 | Abuse controls — rate limits, throttling, link access logging (Gate SHARE-1) | ◈ OpenCode | Planned | — | — | — |
-| 4.10 | Share link UI — right-click → Get Share Link panel (Gate SHARE-1) | ◆ ClaudeCode | Planned | — | — | — |
+| 4.10 | Share link UI — right-click → Get Share Link panel; 2FA prompt behavior must match /docs/decisions/share-link-2fa-scope.md (Gate SHARE-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 4.11 | E2E share link tests — create, access, expire, revoke (Gate SHARE-1) | ◉ Gemini | Planned | — | — | — |
 | 4.4 | SSH2 connection manager with LRU session reuse (Gate SEC-1) | ◈ OpenCode | Planned | — | — | — |
 | 4.5 | AES-256-GCM encrypted credential storage for VPS/WebDAV (Gate SEC-1) | ◈ OpenCode | Planned | — | — | — |
@@ -145,7 +152,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | --- | --- | --- | --- | --- | --- | --- |
 | 5.5 | Vault data model and enable/disable API (Gate VAULT-1) | ◈ OpenCode | Planned | — | — | — |
 | 5.6 | Vault access gate — TOTP or PIN required to unlock (Gate VAULT-1) | ◈ OpenCode | Planned | — | — | — |
-| 5.7 | Vault UI — lock icon in sidebar, hidden from All Files (Gate VAULT-1) | ◆ ClaudeCode | Planned | — | — | — |
+| 5.7 | Vault UI — lock icon in sidebar, hidden from All Files; non-encryption disclaimer at setup, unlock modal, and folder header; user-facing name follows /docs/decisions/vault-naming-decision.md (Gate VAULT-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 5.8 | E2E vault tests — enable, lock, unlock, auto-lock (Gate VAULT-1) | ◉ Gemini | Planned | — | — | — |
 | 5.1 | Scheduled job data model and Schedules management UI (Gate SCHED-1) | ◈ OpenCode | Planned | — | — | — |
 | 5.2 | BullMQ cron worker — jobs run server-side, browser closed (Gate SCHED-1) | ◈ OpenCode | Planned | — | — | — |

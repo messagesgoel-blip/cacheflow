@@ -13,22 +13,64 @@
 | UUID-1 | Zero UUID-named folders in any connected provider after clean run | 1 · 1.12–1.15 | ☐ OPEN |
 | SYNC-1 | Connections page = Sidebar — identical on 10 consecutive loads | 1 · 1.16 | ☐ OPEN |
 | UPLOAD-1 | File upload produces visible feedback (success + failure); list refreshes; zero silent outcomes | 2 · 2.2 | ☐ OPEN |
-| PREVIEW-1 | Supported types open preview panel; unsupported show Download CTA; toast bottom-right only | 2 · 2.6–2.7 | ☐ OPEN |
+| PREVIEW-1 | Supported previews enforce CSP with zero console violations; unsupported types use server-proxied Download CTA only | 2 · 2.6–2.7 | ☐ OPEN |
 | ACTIONS-1 | Right-click menu = three-dot menu exactly; multi-select toolbar on ≥2 selections only | 2 · 2.4 | ☐ OPEN |
 | NAV-1 | Exactly 6 nav items; Connections is sole source of truth; no orphaned routes | 2 · 2.9 | ☐ OPEN |
 | RESP-1 | All core views render at 375px — no horizontal scroll | 2 · 2.12 | ☐ OPEN |
 | HOLD-UI-2026-03-02 | Phase 1 UI stabilization tasks block non-UI feature work until complete | 2 · UI-P1-T01-UI-P1-T06 | ☐ OPEN |
 | QA-1 | E2E preflight validates API readiness and watcher-driven unblock flow for Playwright execution | 2 · OPS-E2E-READY, OPS-QA-WATCH | ☐ OPEN |
-| 2FA-1 | 2FA enable/use/disable full cycle passes; backup codes work; share links blocked without 2FA | 2 · 2.13–2.16 | ☐ OPEN |
-| TRANSFER-1 | 1GB transfer with mid-transfer network drop resumes from last chunk, not from 0 | 3 · 3.5–3.6 | ☐ OPEN |
+| 2FA-1 | 2FA enable/use/disable full cycle passes; backup codes work; share-link enforcement follows /docs/decisions/share-link-2fa-scope.md | 2 · 2.13–2.16 | ☐ OPEN |
+| TRANSFER-1 | 1GB transfer with mid-transfer network drop resumes from last chunk, not from 0; deployment target must be stateful long-running runtime | 0/3 · 0.9, 3.5–3.6 | ☐ OPEN |
 | ZERODISK-1 | No file bytes written to server disk during cross-provider transfer (instrumented) | 3 · 3.9 | ☐ OPEN |
-| SSE-1 | BullMQ worker progress reaches SSE client via Redis pub/sub — works across multiple Node instances | 0 · 0.7 | ☐ OPEN |
+| SSE-1 | BullMQ worker progress reaches SSE client via Redis pub/sub on stateful long-running Node runtime (no serverless/edge targets) | 0 · 0.7, 0.9 | ☐ OPEN |
 | SHARE-1 | Share link: create/access/expire/revoke all work; abuse controls enforced | 4 · 4.7–4.11 | ☐ OPEN |
-| VAULT-1 | Vault hides content from All Files + Search; requires PIN; auto-locks; 2FA prerequisite enforced | 5 · 5.5–5.8 | ☐ OPEN |
+| VAULT-1 | Vault/private-folder UX hides content from All Files + Search; requires PIN; auto-locks; naming and disclaimer rules enforced via decision doc | 5 · 5.5–5.8 | ☐ OPEN |
 | SCHED-1 | Scheduled job runs with browser closed; produces job history log | 5 · 5.1–5.4 | ☐ OPEN |
 | SEARCH-1 | Cross-provider search returns results within 3s for ≤10k files; no persistent server-side index | 5 · 5.11 | ☐ OPEN |
 | SEC-1 | VPS/WebDAV credentials never in API response after save; provider secrets never in browser | 4 · 4.5 | ☐ OPEN |
 | LAUNCH-1 | Affiliate panel hidden from users with zero successful transfers §2  Master Orchestration Model How Codex Coordinates Sub-Agents Responsibility Description Tooling Codex breaks each sprint into atomic tasks, assigns to sub-agents, sets dependency order and concurrency rules. Codex CLI + task manifest Task Dispatch Codex sends scoped prompts with: (a) target files, (b) acceptance criteria, (c) forbidden side-effects, (d) rollback plan, (e) contract file to produce. Codex → sub-agent API Contract Enforcement Before dispatching any dependent task, Codex verifies the producer's contract file exists at /docs/contracts/{task-id}.md. No contract = no dispatch. File check + gate manifest Gate Enforcement Codex runs gate checklist after every sprint. Sub-agents cannot proceed to next sprint tasks without Codex gate-pass signal. Playwright + gate manifest Conflict Resolution When two sub-agents touch the same file, Codex mediates merge. No sub-agent merges unilaterally. Git + Codex review Rollback Authority Only Codex can trigger a rollback. It reverts to last green gate commit and re-dispatches affected tasks with updated failure context. Git tag per gate Audit Log Codex writes every task dispatch, contract check, result, and gate outcome to /logs/codex-audit.jsonl. Append-only JSONL Agent Scope Constraints Agent CAN touch CANNOT touch without Codex approval ★ CODEX (Master) All files (read). Task manifests. Gate verdicts. Merge decisions. Sprint 0 contracts. Production deploys. Secret rotation. Billing config. ◈ OpenCode /api/**, /lib/**, /prisma/**, /server/**, package.json (server deps) Frontend components. Auth cookie logic. Any client-visible API response shape change. ◆ ClaudeCode /app/**, /components/**, /styles/**, /hooks/**, /context/** API route implementations. Database schema. Token storage logic. ◉ Gemini /tests/**, /e2e/**, /scripts/**, /.github/workflows/** Production source files. Environment variables. Secrets. Inter-Agent Handoff Protocol When a task produces output consumed by another agent, a formal contract file must be created. This prevents agents from making assumptions about interfaces. Field Specification Producer Agent completing the task that generates an output consumed by another agent Contract file /docs/contracts/{task-id}.md — created by producer before marking task complete Required fields Endpoint URL or file path · Request/response shape · Error codes · Edge cases · Example payload Consumer rule Read contract before starting dependent task. If contract missing, block and ping Codex — do not infer Codex rule Verify contract file exists before dispatching any dependent task. Gate checks contract count matches expected Environment Matrix Env URL Database Gate to promote local localhost:3000 postgres:local — staging staging.cacheflow.io postgres:staging Codex gate-pass tag production cacheflow.io postgres:prod Codex gate-pass + human sign-off | Planning | ☐ OPEN |
+
+## Sprint Gate Criteria Additions (Gap Analysis · March 2026)
+
+### Sprint 0 Gate Criteria
+- ▶ `/docs/architecture/deployment-constraints.md` committed — stateful runtime requirement documented; CI check script present and passing.
+
+### Sprint 2 Gate Criteria
+- ▶ Preview panel: zero CSP console errors during image/PDF/text preview; download URLs are server-proxied, never raw provider URLs.
+
+### Sprint 3 Gate Criteria
+- ▶ `/docs/decisions/share-link-2fa-scope.md` committed with one option selected and rationale documented; task 4.7 and task 4.10 are amended to match.
+
+### Pre-Sprint Dispatch Requirements
+- Before `sprint-3-gate-pass` creation: Codex selects one 2FA scope option in `/docs/decisions/share-link-2fa-scope.md`; OpenCode task 4.7 and ClaudeCode task 4.10 must implement the same choice.
+- Before `sprint-4-gate-pass` creation: Codex commits `/docs/decisions/vault-naming-decision.md` selecting either `Private Folder` (recommended) or `Vault`, then applies that naming consistently across Sprint 5 UX.
+
+## Gap Task Addenda (March 2026)
+
+### Task 0.9 — Stateful Infrastructure Deployment Guard (★ CODEX (Master) · Gates SSE-1 + TRANSFER-1)
+1. Document deployment constraints in `/docs/architecture/deployment-constraints.md` for long-running Node.js runtime targets.
+2. Explicitly prohibit Vercel, Netlify, AWS Lambda, Cloudflare Workers, and other serverless/edge function targets due to SSE timeout and worker lifecycle constraints.
+3. Add CI script `/scripts/check-deployment-target.sh` to fail when prohibited deployment manifests are present (`vercel.json`, `netlify.toml`, or Lambda function definitions in repo root).
+4. Add `.env.example` entry `DEPLOYMENT_TARGET=docker` with explanatory comment.
+
+### Task 0.4a — ErrorCode → UI Action Mapping Contract (◆ ClaudeCode · Gates AUTH-1 + TRANSFER-1)
+Create `/docs/contracts/errorcode-ui-actions.md` as a binding contract that UI and API implementations must follow.
+
+| ErrorCode | UI Response |
+| --- | --- |
+| TOKEN_EXPIRED | SessionExpiredBanner with Reconnect button (Sprint 1.17) |
+| REFRESH_FAILED | Force logout → `/login?reason=session_expired` |
+| RATE_LIMITED | Amber tray status `Rate limited — retrying in Xs` with countdown |
+| PROVIDER_UNAVAILABLE | Red health dot in sidebar + `Provider offline` badge on Connections page |
+| CHUNK_FAILED | Transfer tray shows `Chunk failed — retrying (attempt N of 5)` |
+| QUOTA_EXCEEDED | Upgrade modal with storage summary (modal, not toast) |
+| SHARE_ABUSE_LIMIT | Inline error on Share Link panel: `Daily limit reached` |
+| VAULT_LOCKED | Redirect to vault unlock modal |
+| NOT_FOUND | Bottom-right toast: `File not found — it may have been moved or deleted` |
+| FORBIDDEN | Contextual handling by action-specific flows (share links, vault, etc.) |
+
+Any `ErrorCode` not listed above defaults to a bottom-right error toast using `AppError.message`.
+OpenCode must return these `ErrorCode` values in matching API scenarios.
 
 ## Gate AUTH-1
 
@@ -36,6 +78,7 @@
 | --- | --- | --- | --- | --- |
 | 0.1 | Define and commit ProviderAdapter interface — all adapters implement this | 0 | /lib/providers/ProviderAdapter.interface.ts, /lib/providers/types.ts | ★ CODEX (Master) |
 | 0.2 | Define AppError taxonomy and ErrorCode enum | 0 | /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts | ◈ OpenCode |
+| 0.4a | ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic UI behavior and default toast fallback | 0 | /docs/contracts/errorcode-ui-actions.md | ◆ ClaudeCode |
 | 1.1 | Create global HTTP interceptor for all /api/remotes proxy calls | 1 | /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts | ◈ OpenCode |
 | 1.5 | Multi-account schema — up to 3 accounts per provider | 1 | /prisma/migrations/002_multi_account/, /lib/vault/tokenVault.ts | ◈ OpenCode |
 | 1.7 | Write Playwright token expiry test | 1 | /e2e/tests/tokenExpiry.spec.ts | ◉ Gemini |
@@ -106,8 +149,8 @@
 
 | ID | Description | Sprint | Files | Agent |
 | --- | --- | --- | --- | --- |
-| 2.6 | Fix preview panel mount — "Opening" toast must open a panel | 2 | /components/files/PreviewPanel.tsx, /components/files/previewTypes.ts | ◆ ClaudeCode |
-| 2.7 | Unsupported file types: immediate Download CTA | 2 | /components/files/PreviewPanel.tsx, /lib/files/mimeTypes.ts | ◆ ClaudeCode |
+| 2.6 | Fix preview panel mount — "Opening" toast must open a panel; enforce CSP for image/PDF/text previews with Playwright zero-CSP-error verification | 2 | /components/files/PreviewPanel.tsx, /components/files/previewTypes.ts | ◆ ClaudeCode |
+| 2.7 | Unsupported file types: immediate Download CTA via server-proxied /api/remotes/{uuid}/download/{fileId}; never expose raw provider URLs | 2 | /components/files/PreviewPanel.tsx, /lib/files/mimeTypes.ts | ◆ ClaudeCode |
 | 2.8 | E2E preview tests — supported and unsupported types | 2 | /e2e/tests/filePreview.spec.ts | ◉ Gemini |
 
 ## Gate ACTIONS-1
@@ -158,8 +201,8 @@
 | 2.14 | TOTP login challenge UI | 2 | /app/auth/2fa-challenge/page.tsx, /components/auth/TOTPInput.tsx | ◆ ClaudeCode |
 | 2.15 | Settings: manage 2FA, backup codes, last-used timestamp | 2 | /app/settings/security/page.tsx, /components/settings/TwoFAPanel.tsx | ◆ ClaudeCode |
 | 2.16 | E2E 2FA tests — full enable/use/disable cycle | 2 | /e2e/tests/twoFA.spec.ts | ◉ Gemini |
-| 4.7 | Share link creation — requires 2FA enabled on account | 4 | /app/api/share/route.ts, /lib/share/shareLinkService.ts | ◈ OpenCode |
-| 4.10 | Share link UI — right-click → Get Share Link panel | 4 | /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx | ◆ ClaudeCode |
+| 4.7 | Share link creation — enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md (all links vs password-only) | 4 | /app/api/share/route.ts, /lib/share/shareLinkService.ts | ◈ OpenCode |
+| 4.10 | Share link UI — right-click → Get Share Link panel; 2FA prompt behavior must match /docs/decisions/share-link-2fa-scope.md | 4 | /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx | ◆ ClaudeCode |
 
 ## Gate TRANSFER-1
 
@@ -169,7 +212,9 @@
 | 0.2 | Define AppError taxonomy and ErrorCode enum | 0 | /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts | ◈ OpenCode |
 | 0.3 | Define complete Prisma schema baseline — all tables, all relationships | 0 | /prisma/schema.prisma, /docs/architecture/data-model.md | ◈ OpenCode |
 | 0.4 | Allocate Redis namespaces — document and enforce db separation | 0 | /docs/architecture/redis-namespaces.md, /lib/redis/client.ts (per-db connections) | ◈ OpenCode |
+| 0.4a | ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic UI behavior and default toast fallback | 0 | /docs/contracts/errorcode-ui-actions.md | ◆ ClaudeCode |
 | 0.5 | Define streaming pipeline pattern — pipeline() + backpressure strategy | 0 | /lib/transfers/streamPipeline.ts, /tests/unit/streamPipeline.test.ts | ◈ OpenCode |
+| 0.9 | Stateful deployment guard — enforce long-running runtime targets and block serverless/edge deployment configs in CI | 0 | /docs/architecture/deployment-constraints.md, /scripts/check-deployment-target.sh, /.env.example | ★ CODEX (Master) |
 | 3.1 | Persistent Transfer Manager Tray — always visible when active | 3 | /components/transfers/TransferTray.tsx, /components/transfers/TransferItem.tsx, /context/TransferContext.tsx | ◆ ClaudeCode |
 | 3.3 | Every file operation produces tray entry + toast | 3 | /lib/transfers/transferRegistry.ts, /app/api/remotes/[uuid]/**/route.ts | ◈ OpenCode |
 | 3.4 | Tray E2E — entry survives navigation, retry works on failure | 3 | /e2e/tests/transferTray.spec.ts | ◉ Gemini |
@@ -200,6 +245,7 @@
 | --- | --- | --- | --- | --- |
 | 0.4 | Allocate Redis namespaces — document and enforce db separation | 0 | /docs/architecture/redis-namespaces.md, /lib/redis/client.ts (per-db connections) | ◈ OpenCode |
 | 0.7 | Define BullMQ → SSE bridge via Redis pub/sub | 0 | /lib/transfers/progressBridge.ts, /docs/architecture/sse-pattern.md | ◈ OpenCode |
+| 0.9 | Stateful deployment guard — enforce long-running runtime targets and block serverless/edge deployment configs in CI | 0 | /docs/architecture/deployment-constraints.md, /scripts/check-deployment-target.sh, /.env.example | ★ CODEX (Master) |
 | 3.2 | Server-Sent Events (SSE) for real-time transfer progress | 3 | /app/api/transfers/[id]/progress/route.ts, /lib/transfers/progressEmitter.ts | ◈ OpenCode |
 | 3.10 | BullMQ background job queue for async transfers | 3 | /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts | ◈ OpenCode |
 
@@ -207,10 +253,10 @@
 
 | ID | Description | Sprint | Files | Agent |
 | --- | --- | --- | --- | --- |
-| 4.7 | Share link creation — requires 2FA enabled on account | 4 | /app/api/share/route.ts, /lib/share/shareLinkService.ts | ◈ OpenCode |
+| 4.7 | Share link creation — enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md (all links vs password-only) | 4 | /app/api/share/route.ts, /lib/share/shareLinkService.ts | ◈ OpenCode |
 | 4.8 | Share link proxy — hides underlying provider | 4 | /app/s/[linkId]/route.ts | ◈ OpenCode |
 | 4.9 | Abuse controls — rate limits, throttling, link access logging | 4 | /lib/share/abuseControls.ts, /app/api/share/[id]/revoke/route.ts | ◈ OpenCode |
-| 4.10 | Share link UI — right-click → Get Share Link panel | 4 | /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx | ◆ ClaudeCode |
+| 4.10 | Share link UI — right-click → Get Share Link panel; 2FA prompt behavior must match /docs/decisions/share-link-2fa-scope.md | 4 | /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx | ◆ ClaudeCode |
 | 4.11 | E2E share link tests — create, access, expire, revoke | 4 | /e2e/tests/shareLinks.spec.ts | ◉ Gemini |
 
 ## Gate VAULT-1
@@ -220,7 +266,7 @@
 | 0.3 | Define complete Prisma schema baseline — all tables, all relationships | 0 | /prisma/schema.prisma, /docs/architecture/data-model.md | ◈ OpenCode |
 | 5.5 | Vault data model and enable/disable API | 5 | /prisma/migrations/005_vault/, /app/api/vault/route.ts | ◈ OpenCode |
 | 5.6 | Vault access gate — TOTP or PIN required to unlock | 5 | /app/api/vault/[id]/unlock/route.ts, /lib/vault/vaultSession.ts | ◈ OpenCode |
-| 5.7 | Vault UI — lock icon in sidebar, hidden from All Files | 5 | /components/Sidebar/VaultFolderRow.tsx, /components/vault/UnlockVaultModal.tsx, /app/files/page.tsx (filter vault items) | ◆ ClaudeCode |
+| 5.7 | Vault UI — lock icon in sidebar, hidden from All Files; non-encryption disclaimer at setup, unlock modal, and folder header; user-facing name follows /docs/decisions/vault-naming-decision.md | 5 | /components/Sidebar/VaultFolderRow.tsx, /components/vault/UnlockVaultModal.tsx, /app/files/page.tsx (filter vault items) | ◆ ClaudeCode |
 | 5.8 | E2E vault tests — enable, lock, unlock, auto-lock | 5 | /e2e/tests/vault.spec.ts | ◉ Gemini |
 
 ## Gate SCHED-1

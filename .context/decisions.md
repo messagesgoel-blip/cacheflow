@@ -47,3 +47,11 @@
 - files: web/app/api/connections/route.ts, web/components/UnifiedFileBrowser.tsx, web/lib/apiClient.ts, web/lib/providers/StorageProvider.ts
 - commit: pending
 - agent: codex
+
+## 2026-03-03 — Integrate March gap-analysis controls into roadmap baseline
+- decision: Add task `0.9` (stateful deployment guard) and task `0.4a` (ErrorCode→UI action contract) as canonical roadmap tasks, and amend `2.6`, `2.7`, `4.7`, `4.10`, and `5.7` with CSP, proxy, 2FA-scope, and naming/disclaimer requirements.
+- rationale: These gaps carry operational/security/legal risk if left implicit; codifying them in roadmap + sprint board + generated task state prevents drift across agents.
+- alternatives rejected: Keep requirements only in ad-hoc prompt text; this would not propagate into monitoring/task-state or dispatch artifacts.
+- files: docs/roadmap-v4.3.md, docs/sprints-task-dashboard.md, monitoring/cacheflow_task_state.yaml, monitoring/cacheflow_metrics.yaml, monitoring/cacheflow_sprint_tasks.yaml, monitoring/task_history.yaml
+- commit: pending
+- agent: codex
