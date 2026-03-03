@@ -453,3 +453,55 @@
     to: running
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-03T00:27:34+00:00'
+  commit: 22aa6fd88f6738a14724b93e0f6902b34535d26f
+  message: 'feat(UI-P1-T02@HOLD-UI): proxy 401 with single refresh+retry, no loops'
+  changed:
+  - task_key: UI-P1-T02@HOLD-UI-2026-03-02
+    id: UI-P1-T02
+    gate: HOLD-UI-2026-03-02
+    from: running
+    to: done
+  - task_key: UI-P1-T05@HOLD-UI-2026-03-02
+    id: UI-P1-T05
+    gate: HOLD-UI-2026-03-02
+    from: running
+    to: done
+  done_task_keys:
+  - UI-P1-T02@HOLD-UI-2026-03-02
+  - UI-P1-T05@HOLD-UI-2026-03-02
+  done_tasks:
+  - UI-P1-T02
+  - UI-P1-T05
+- timestamp: '2026-03-03T00:32:48+00:00'
+  commit: 22aa6fd88f6738a14724b93e0f6902b34535d26f
+  message: 'feat(UI-P1-T02@HOLD-UI): proxy 401 with single refresh+retry, no loops'
+  changed:
+  - task_key: UI-P1-T01@HOLD-UI-2026-03-02
+    id: UI-P1-T01
+    gate: HOLD-UI-2026-03-02
+    from: done
+    to: planned
+  done_task_keys: []
+  done_tasks: []
+- timestamp: '2026-03-03T00:33:56+00:00'
+  commit: 22aa6fd88f6738a14724b93e0f6902b34535d26f
+  message: 'feat(UI-P1-T02@HOLD-UI): proxy 401 with single refresh+retry, no loops'
+  changed:
+  - task_key: OPS-QA-WATCH@QA-1
+    id: OPS-QA-WATCH
+    gate: QA-1
+    from: planned
+    to: running
+  - task_key: 2.13@2FA-1
+    id: '2.13'
+    gate: 2FA-1
+    from: planned
+    to: running
+  - task_key: 2.14@2FA-1
+    id: '2.14'
+    gate: 2FA-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []

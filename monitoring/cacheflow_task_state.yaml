@@ -434,21 +434,21 @@ UI-P1-T01@HOLD-UI-2026-03-02:
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: done
-  commit: c80bd24c88d9
-  done_at: '2026-03-03T00:15:33+00:00'
-  changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
-    file pane'
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
 UI-P1-T02@HOLD-UI-2026-03-02:
   id: UI-P1-T02
   task_key: UI-P1-T02@HOLD-UI-2026-03-02
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 3441639dfc78
+  done_at: '2026-03-03T00:35:45+00:00'
+  changelog: 'feat(UI-P1-T02@HOLD-UI-2026-03-02, UI-P1-T05@HOLD-UI-2026-03-02): fix
+    401 proxy failures and add UI error surfaces'
 UI-P1-T03@HOLD-UI-2026-03-02:
   id: UI-P1-T03
   task_key: UI-P1-T03@HOLD-UI-2026-03-02
@@ -475,10 +475,11 @@ UI-P1-T05@HOLD-UI-2026-03-02:
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 3441639dfc78
+  done_at: '2026-03-03T00:35:45+00:00'
+  changelog: 'feat(UI-P1-T02@HOLD-UI-2026-03-02, UI-P1-T05@HOLD-UI-2026-03-02): fix
+    401 proxy failures and add UI error surfaces'
 UI-P1-T06@HOLD-UI-2026-03-02:
   id: UI-P1-T06
   task_key: UI-P1-T06@HOLD-UI-2026-03-02
@@ -506,7 +507,7 @@ OPS-QA-WATCH@QA-1:
   gate: QA-1
   sprint: 2
   agent: "\u25C9 Gemini"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -516,7 +517,7 @@ OPS-QA-WATCH@QA-1:
   gate: 2FA-1
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -526,7 +527,7 @@ OPS-QA-WATCH@QA-1:
   gate: 2FA-1
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

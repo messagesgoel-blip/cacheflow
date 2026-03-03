@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T00:26:15+00:00'
+generated_at: '2026-03-03T01:39:37+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -485,11 +485,10 @@ tasks:
   files: /components/Sidebar.tsx, /components/UnifiedFileBrowser.tsx, /app/connections/page.tsx
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
-  status: done
-  commit: c80bd24c88d9
-  done_at: '2026-03-03T00:15:33+00:00'
-  changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
-    file pane'
+  status: planned
+  commit: ''
+  done_at: ''
+  changelog: ''
 - id: UI-P1-T02
   task_key: UI-P1-T02@HOLD-UI-2026-03-02
   description: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
@@ -497,10 +496,11 @@ tasks:
   files: /app/api/remotes/[uuid]/proxy/route.ts, /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 3441639dfc78
+  done_at: '2026-03-03T00:35:45+00:00'
+  changelog: 'feat(UI-P1-T02@HOLD-UI-2026-03-02, UI-P1-T05@HOLD-UI-2026-03-02): fix
+    401 proxy failures and add UI error surfaces'
 - id: UI-P1-T03
   task_key: UI-P1-T03@HOLD-UI-2026-03-02
   description: Fix preview panel open reliability from file rows and overflow Open
@@ -531,10 +531,11 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /lib/ui/toast.ts, /app/api/connections/route.ts
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 3441639dfc78
+  done_at: '2026-03-03T00:35:45+00:00'
+  changelog: 'feat(UI-P1-T02@HOLD-UI-2026-03-02, UI-P1-T05@HOLD-UI-2026-03-02): fix
+    401 proxy failures and add UI error surfaces'
 - id: UI-P1-T06
   task_key: UI-P1-T06@HOLD-UI-2026-03-02
   description: Add clear loading, empty, and error state cards in file pane
@@ -567,7 +568,7 @@ tasks:
   files: /web/e2e/**, /monitoring/task_history.yaml, /docs/prompts/**, /BLOCKER_QA_SEED.md
   agent: "\u25C9 Gemini"
   gate: QA-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -578,7 +579,7 @@ tasks:
   files: /app/api/auth/2fa/**, /lib/auth/totp.ts, /prisma/migrations/003_2fa/
   agent: "\u25C8 OpenCode"
   gate: 2FA-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -589,7 +590,7 @@ tasks:
   files: /app/auth/2fa-challenge/page.tsx, /components/auth/TOTPInput.tsx
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

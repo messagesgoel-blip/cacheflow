@@ -35,7 +35,11 @@ mcp_token() {
   if [ -n "${MCP_AUTH_TOKEN:-}" ]; then
     echo "$MCP_AUTH_TOKEN"
   else
-    docker inspect mcp-cache-server --format '{{range .Config.Env}}{{println .}}{{end}}' | rg '^MCP_AUTH_TOKEN=' | sed 's/MCP_AUTH_TOKEN=//' || true
+    if command -v rg >/dev/null 2>&1; then
+      docker inspect mcp-cache-server --format '{{range .Config.Env}}{{println .}}{{end}}' | rg '^MCP_AUTH_TOKEN=' | sed 's/MCP_AUTH_TOKEN=//' || true
+    else
+      docker inspect mcp-cache-server --format '{{range .Config.Env}}{{println .}}{{end}}' | grep '^MCP_AUTH_TOKEN=' | sed 's/MCP_AUTH_TOKEN=//' || true
+    fi
   fi
 }
 

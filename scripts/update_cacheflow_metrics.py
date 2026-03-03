@@ -188,11 +188,10 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
             else:
                 record["status"] = target_status
                 if target_status in ("planned", "pending", "running"):
-                    # Preserve completion metadata only when already done.
-                    if previous.get("status", "").lower() not in DONE_STATES:
-                        record["commit"] = ""
-                        record["done_at"] = ""
-                        record["changelog"] = ""
+                    # Non-done states should never carry completion metadata.
+                    record["commit"] = ""
+                    record["done_at"] = ""
+                    record["changelog"] = ""
 
         status = str(record.get("status", "planned")).lower()
         if status not in VALID_STATES:
