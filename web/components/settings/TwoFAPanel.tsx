@@ -137,7 +137,12 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
         return
       }
 
-      setSettings(prev => ({ ...prev, enabled: true }))
+      setSettings(prev => ({
+        ...prev,
+        enabled: true,
+        lastUsed: new Date().toISOString(),
+        backupCodesRemaining: backupCodes.length,
+      }))
       setSetupState(null)
       setVerificationCode('')
       setShowBackupCodes(true)
@@ -151,7 +156,7 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
   const handleGenerateBackupCodes = () => {
     setError('')
     if (backupCodes.length === 0) {
-      setError('No backup codes available. Complete setup to generate codes.')
+      setError('Backup codes are only shown during setup. Disable and re-enable 2FA to regenerate a new set.')
       return
     }
     setShowBackupCodes(true)
@@ -181,7 +186,7 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
         return
       }
 
-      setSettings({ enabled: false })
+      setSettings({ enabled: false, backupCodesRemaining: 0, lastUsed: undefined })
       setSetupState(null)
       setVerificationCode('')
       setShowBackupCodes(false)

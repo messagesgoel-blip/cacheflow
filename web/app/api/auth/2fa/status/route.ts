@@ -13,6 +13,7 @@ import { resolveAccessToken } from '@/lib/auth/requestAuth';
 
 export interface TwoFAStatusResponse {
   enabled: boolean;
+  lastUsed?: string;
   backupCodesRemaining?: number;
   error?: string;
 }
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<TwoFAStatu
 
     return NextResponse.json({
       enabled: cookieStore.get('totpEnabled')?.value === '1',
+      lastUsed: cookieStore.get('totpLastUsed')?.value,
       backupCodesRemaining,
     });
   } catch (error) {
