@@ -23,3 +23,9 @@
 - why it failed: Local task parser only recognized prior `sprint.task@gate` set and lacked newly added hold-task IDs.
 - do not attempt: Do not claim tasks before `git pull --rebase` and re-reading `docs/roadmap-v4.3.md` + `docs/sprints-task-dashboard.md`.
 - agent: codex
+
+## 2026-03-03 — SSH heredoc quoting corrupted TypeScript edits
+- what was tried: Rewriting TS files over SSH with nested quote-sensitive heredocs inside shell one-liners.
+- why it failed: Shell interpolation stripped string literals/template markers, producing invalid TypeScript and duplicated blocks.
+- do not attempt: Do not use nested/partially quoted heredocs for TS edits over SSH; use fully single-quoted heredocs piped to SSH or direct patch tooling.
+- agent: codex

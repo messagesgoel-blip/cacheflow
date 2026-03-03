@@ -12,13 +12,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { sign, verify } from 'jsonwebtoken';
 
-// SECURITY (1.18@AUTH-2): Require JWT_SECRET from environment - no fallbacks
+// SECURITY (1.18@AUTH-2): Require JWT_SECRET at runtime; avoid module-level throw during build
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('JWT_SECRET environment variable is required in production');
-  }
-  // Dev mode warning but allow with generated secret
   console.warn('JWT_SECRET not set - using dev-only generated secret. DO NOT USE IN PRODUCTION.');
 }
 

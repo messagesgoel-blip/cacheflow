@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import './globals.css'
 import SessionHandler from '@/components/SessionHandler'
 import ActionCenterProvider from '@/components/ActionCenterProvider'
@@ -55,7 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-        <SessionHandler />
+        <Suspense fallback={null}>
+          <SessionHandler />
+        </Suspense>
         <ActionCenterProvider>
           <TransferQueueProvider>
             {children}

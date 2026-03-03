@@ -10,10 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { sign, verify } from 'jsonwebtoken';
-import { withSecurityScan } from '../../../../lib/auth/securityAudit';
-
-const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret' : '');
+import { withSecurityScan } from '../../../../../lib/auth/securityAudit';
 
 interface ProxyRequest {
   method: string;
@@ -69,9 +66,9 @@ async function refreshAuthToken(): Promise<string> {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { uuid: string } }
+  { params }: { params: Promise<{ uuid: string }> }
 ): Promise<NextResponse<ProxyResponse>> {
-  const { uuid } = params;
+  const { uuid } = await params;
 
   try {
     const cookieStore = await cookies();

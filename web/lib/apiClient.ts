@@ -43,8 +43,12 @@ export interface RemoteFile {
 export interface ProviderConnection {
   id: string;
   provider: string;
+  accountKey?: string;
+  remoteId?: string;
   accountName: string;
   accountEmail?: string;
+  accountLabel?: string;
+  isDefault?: boolean;
   status: 'connected' | 'disconnected' | 'error';
   lastSyncAt?: string;
 }
@@ -158,17 +162,33 @@ export const apiClient = {
    * List all provider connections
    */
   async getConnections(): Promise<ApiResponse<ProviderConnection[]>> {
-    const response = await authFetch('/api/connections');
-    
-    if (!response.ok) {
+    try {
+      const bearerToken = typeof window !== 'undefined' ? localStorage.getItem('cf_token') : null;
+      const response = await authFetch('/api/connections', {
+        headers: bearerToken ? { Authorization: 'Bearer ' + bearerToken } : undefined,
+      });
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+
+      const payload = await response.json();
+      const connections = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
+
+      return { success: true, data: connections };
+    } catch (error) {
       return {
         success: false,
-        error: `HTTP ${response.status}: ${response.statusText}`,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
-
-    const data = await response.json();
-    return { success: true, data };
   },
 };
 

@@ -22,3 +22,7 @@
 | 2026-03-03T00:27:25Z | sanjay | UI-P1-T02@HOLD-UI-2026-03-02 | web/lib/providers/StorageProvider.ts |
 | 2026-03-03T00:27:25Z | sanjay | UI-P1-T05@HOLD-UI-2026-03-02 | web/components/errors/ |
 | 2026-03-03T00:27:26Z | sanjay | UI-P1-T05@HOLD-UI-2026-03-02 | web/lib/hooks/useOperationError.ts |
+| 2026-03-03T01:24:39Z | sanjay | web/app/api/connections/route.ts | Fix server connections fetch to use remotes and internal API base |
+| 2026-03-03T01:24:39Z | sanjay | web/components/UnifiedFileBrowser.tsx | Hydrate tokenManager from server remotes for seeded QA accounts |
+| 2026-03-03T01:24:39Z | sanjay | web/lib/providers/StorageProvider.ts | Route remote proxy through backend with bearer token to avoid session-expired loop |
+| 2026-03-03T01:24:39Z | sanjay | web/lib/apiClient.ts | Normalize /api/connections payload and send bearer token |

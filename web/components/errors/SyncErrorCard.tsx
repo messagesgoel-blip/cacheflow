@@ -19,7 +19,9 @@ export interface SyncErrorCardProps extends Omit<InlineErrorCardProps, 'type'> {
 
 export const SyncErrorCard: React.FC<SyncErrorCardProps> = ({
   operation = 'refresh',
-  ...props
+  title,
+  message,
+  ...rest
 }) => {
   const getDefaultTitle = () => {
     switch (operation) {
@@ -35,20 +37,20 @@ export const SyncErrorCard: React.FC<SyncErrorCardProps> = ({
   const getDefaultMessage = () => {
     switch (operation) {
       case 'initial-load':
-        return props.message || 'Unable to load your files. Please try again.';
+        return message || 'Unable to load your files. Please try again.';
       case 'background-sync':
-        return props.message || 'Background sync encountered an error. Your files may be out of date.';
+        return message || 'Background sync encountered an error. Your files may be out of date.';
       default:
-        return props.message || 'Unable to sync files. Please try again.';
+        return message || 'Unable to sync files. Please try again.';
     }
   };
 
   return (
     <InlineErrorCard
+      {...rest}
       type="sync"
-      title={props.title || getDefaultTitle()}
+      title={title || getDefaultTitle()}
       message={getDefaultMessage()}
-      {...props}
     />
   );
 };

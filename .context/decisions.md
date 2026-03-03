@@ -39,3 +39,11 @@
 - files: docs/roadmap-v4.3.md, docs/sprints-task-dashboard.md, monitoring/cacheflow_task_state.yaml, monitoring/cacheflow_metrics.yaml
 - commit: pending
 - agent: codex
+
+## 2026-03-03 — Use remotes-backed connections + remoteId hydration for QA-seeded accounts
+- decision: Treat `/api/remotes` as canonical source for frontend connections, hydrate `tokenManager` entries with `remoteId`, and proxy provider requests with bearer auth against `/api/remotes/:id/proxy`.
+- rationale: QA seeded accounts are stored in `user_remotes`; relying on `/api/tokens` and local token-only state left providers visible but file operations failing with empty views or `SESSION_EXPIRED`.
+- alternatives rejected: Keep `/api/tokens`-based connection mapping; keep Next cookie-refresh proxy as primary path for seeded remotes.
+- files: web/app/api/connections/route.ts, web/components/UnifiedFileBrowser.tsx, web/lib/apiClient.ts, web/lib/providers/StorageProvider.ts
+- commit: pending
+- agent: codex

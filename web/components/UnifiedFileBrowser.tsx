@@ -129,65 +129,111 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
   // Load connected providers - SYNC-1: fetch from server state API
   useEffect(() => {
-    let tokensChanged = false;
+    let tokensChanged = false
+    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav', 'local']
+
     if (token && !tokenManager.hasToken('local')) {
-      tokenManager.saveToken('local', { provider: 'local', accessToken: token, accountEmail: 'local-storage', displayName: 'Local Storage', expiresAt: null }); tokensChanged = true
+      tokenManager.saveToken('local', {
+        provider: 'local',
+        accessToken: token,
+        accountEmail: 'local-storage',
+        displayName: 'Local Storage',
+        expiresAt: null,
+      })
+      tokensChanged = true
     }
-    if (tokensChanged) { setRefreshKey(k => k + 1); return }
 
     const loadConnections = async () => {
-      // Fetch server-state connections for canonical metadata
-      let serverConnections: ProviderConnection[] = [];
+      let serverConnections: ProviderConnection[] = []
       try {
-        const result = await apiClient.getConnections();
+        const result = await apiClient.getConnections()
         if (result.success && result.data) {
-          serverConnections = result.data;
+          serverConnections = result.data
         }
       } catch (err) {
-        console.warn('[UnifiedFileBrowser] Failed to fetch server connections, using localStorage only:', err); setError('Failed to sync provider connections');
+        console.warn('[UnifiedFileBrowser] Failed to fetch server connections, using localStorage only:', err)
+        setError('Failed to sync provider connections')
+      }
+
+      // Hydrate token manager from server-state remotes so seeded QA accounts appear after login.
+      for (const conn of serverConnections) {
+        const pid = conn.provider as ProviderId
+        if (!providerIds.includes(pid)) continue
+
+        const accountKey = conn.accountKey || conn.accountEmail || conn.accountName || conn.id
+        const remoteId = conn.remoteId || conn.id
+        const existing = tokenManager.getTokens(pid).find(t => t.accountKey === accountKey)
+
+        if (!existing || (!(existing as any).remoteId && remoteId)) {
+          try {
+            tokenManager.saveToken(
+              pid,
+              {
+                provider: pid,
+                accessToken: existing?.accessToken || '',
+                accountEmail: conn.accountEmail || existing?.accountEmail || `${pid}@remote.local`,
+                displayName: conn.accountLabel || conn.accountName || existing?.displayName || accountKey,
+                accountId: (existing as any)?.accountId || accountKey,
+                accountKey,
+                expiresAt: existing?.expiresAt || null,
+              } as any,
+              remoteId
+            )
+            tokensChanged = true
+          } catch (syncErr) {
+            console.warn('[UnifiedFileBrowser] Failed to sync remote token:', pid, accountKey, syncErr)
+          }
+        }
+      }
+
+      if (tokensChanged) {
+        setRefreshKey(k => k + 1)
+        return
       }
 
       // Build ConnectedProvider list: merge server metadata with localStorage tokens
-      const connected: ConnectedProvider[] = [];
-      const loadingIds: ProviderId[] = [];
-      const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav', 'local'];
+      const connected: ConnectedProvider[] = []
+      const loadingIds: ProviderId[] = []
 
       for (const pid of providerIds) {
-        const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled);
+        const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
         tokens.forEach((t, idx) => {
           if (t && (t.accessToken || (t as any).remoteId)) {
-            // Find matching server connection for status metadata
-            // Match by provider and account name (accountEmail may not be available on ProviderConnection)
+            const remoteId = (t as any).remoteId
             const serverConn = serverConnections.find(
-              sc => sc.provider === pid && sc.accountName === (t.accountEmail || t.displayName)
-            );
+              sc => sc.provider === pid && (
+                (sc.accountKey && sc.accountKey === t.accountKey) ||
+                (sc.remoteId && remoteId && sc.remoteId === remoteId) ||
+                (!!sc.accountEmail && sc.accountEmail === t.accountEmail)
+              )
+            )
 
-            // Map server status to local status (server uses 'disconnected', local uses 'needs_reauth')
-            let status: 'connected' | 'error' | 'degraded' | 'needs_reauth' = 'connected';
+            // Map server status to local status (server uses "disconnected", local uses "needs_reauth")
+            let status: 'connected' | 'error' | 'degraded' | 'needs_reauth' = 'connected'
             if (serverConn) {
-              if (serverConn.status === 'error') status = 'error';
-              else if (serverConn.status === 'disconnected') status = 'needs_reauth';
+              if (serverConn.status === 'error') status = 'error'
+              else if (serverConn.status === 'disconnected') status = 'needs_reauth'
             }
 
             connected.push({
               providerId: pid,
               status,
               accountEmail: t.accountEmail || '',
-              displayName: t.displayName || serverConn?.accountName || `${pid}-${idx + 1}`,
+              displayName: t.displayName || serverConn?.accountLabel || serverConn?.accountName || `${pid}-${idx + 1}`,
               accountKey: t.accountKey,
               connectedAt: serverConn?.lastSyncAt ? new Date(serverConn.lastSyncAt).getTime() : Date.now()
-            });
-            if (!loadingIds.includes(pid)) loadingIds.push(pid);
+            })
+            if (!loadingIds.includes(pid)) loadingIds.push(pid)
           }
-        });
+        })
       }
-      setConnectedProviders(connected);
-      setLoadingProviders(loadingIds);
-    };
 
-    loadConnections();
+      setConnectedProviders(connected)
+      setLoadingProviders(loadingIds)
+    }
+
+    loadConnections()
   }, [token, refreshKey])
-
   const filteredFiles = useMemo(() => {
     if (!searchQuery || isSearching) return files
     const q = searchQuery.toLowerCase()

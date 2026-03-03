@@ -61,11 +61,7 @@ export abstract class StorageProvider {
 
   /**
    * Proxy fetch through server-side API to avoid CORS issues
-   * Uses production /api/remotes/[uuid]/proxy endpoint
-   * 
-   * Updated UI-P1-T02@HOLD-UI-2026-03-02:
-   * - Uses HttpOnly cookies instead of localStorage
-   * - Returns detailed error info for UI surfaces
+   * Uses backend /api/remotes/:uuid/proxy with bearer token from cf_token.
    */
   protected async proxyFetch(url: string, options: RequestInit = {}): Promise<Response> {
     if (this.remoteId) {
@@ -73,55 +69,43 @@ export abstract class StorageProvider {
         method: options.method || 'GET',
         url,
         headers: options.headers,
-        body: options.body
+        body: options.body,
       }
 
-      const response = await fetch(`/api/remotes/${this.remoteId}/proxy`, {
+      const bearerToken = typeof window !== 'undefined' ? localStorage.getItem('cf_token') : null
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || ''
+      const proxyUrl = apiBase
+        ? `${apiBase}/api/remotes/${this.remoteId}/proxy`
+        : `/api/remotes/${this.remoteId}/proxy`
+
+      const response = await fetch(proxyUrl, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
+          ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}),
         },
-        credentials: 'include', // Use HttpOnly cookies
-        body: JSON.stringify(proxyBody)
+        credentials: 'include',
+        body: JSON.stringify(proxyBody),
       })
 
-      // Handle 401 - dispatch re-auth event for UI
-      if (response.status === 401) {
-        try {
-          const errorData = await response.json();
-          if (errorData.requiresReauth) {
-            window.dispatchEvent(new CustomEvent('cacheflow:reauth-required', { 
-              detail: { reason: errorData.error || 'Session expired' }
-            }));
-          }
-        } catch {}
+      if (response.status === 401 && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cacheflow:reauth-required', {
+          detail: { reason: 'Session expired' },
+        }))
       }
 
-      // Parse error response for UI to handle
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        // Attach error metadata to response for UI to consume
-        (response as any).__errorData = errorData;
+        const errorData = await response.clone().json().catch(() => ({}))
+        ;(response as any).__errorData = errorData
       }
 
-      return response;
+      return response
     }
-    
+
     return fetch(url, options)
   }
 
-      return fetch(`/api/remotes/${this.remoteId}/proxy`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(proxyBody)
-      })
-    }
-    
-    return fetch(url, options)
-  }
+
 
   // Authentication
   /**
