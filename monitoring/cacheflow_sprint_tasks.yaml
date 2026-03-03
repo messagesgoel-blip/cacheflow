@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T02:04:59+00:00'
+generated_at: '2026-03-03T02:33:55+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -594,7 +594,7 @@ tasks:
   files: /app/api/auth/2fa/**, /lib/auth/totp.ts, /prisma/migrations/003_2fa/
   agent: "\u25C8 OpenCode"
   gate: 2FA-1
-  status: running
+  status: planned
   commit: ''
   done_at: ''
   changelog: ''
@@ -605,7 +605,7 @@ tasks:
   files: /app/auth/2fa-challenge/page.tsx, /components/auth/TOTPInput.tsx
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
-  status: running
+  status: planned
   commit: ''
   done_at: ''
   changelog: ''

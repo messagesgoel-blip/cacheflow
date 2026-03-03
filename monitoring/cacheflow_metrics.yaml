@@ -1,8 +1,8 @@
-generated_at: '2026-03-03T02:04:59+00:00'
-current_sprint: 2
-sprint_progress: 24.0
+generated_at: '2026-03-03T02:33:55+00:00'
+current_sprint: 0
+sprint_progress: 0.0
 sprint_start: 1700000000
-running_tasks: 2
+running_tasks: 0
 tasks_completed_total: 28
 total_tasks: 122
 total_sprints: 7
@@ -21,7 +21,7 @@ gate_status:
   RESP-1: open
   HOLD-UI-2026-03-02: open
   QA-1: done
-  2FA-1: running
+  2FA-1: open
   TRANSFER-1: open
   ZERODISK-1: open
   SSE-1: open
@@ -51,9 +51,9 @@ sprints:
 - sprint: 2
   total_tasks: 25
   done_tasks: 6
-  running_tasks: 2
+  running_tasks: 0
   pending_tasks: 0
-  planned_tasks: 17
+  planned_tasks: 19
   progress: 24.0
   commits_total: 5
 - sprint: 3
@@ -683,7 +683,7 @@ tasks:
   files: /app/api/auth/2fa/**, /lib/auth/totp.ts, /prisma/migrations/003_2fa/
   agent: "\u25C8 OpenCode"
   gate: 2FA-1
-  status: running
+  status: planned
   commit: ''
   done_at: ''
   changelog: ''
@@ -694,7 +694,7 @@ tasks:
   files: /app/auth/2fa-challenge/page.tsx, /components/auth/TOTPInput.tsx
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
-  status: running
+  status: planned
   commit: ''
   done_at: ''
   changelog: ''

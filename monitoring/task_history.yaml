@@ -542,3 +542,41 @@
   - 2.8@PREVIEW-1
   done_tasks:
   - '2.8'
+- timestamp: '2026-03-03T02:27:04+00:00'
+  commit: 4a7be94c28823ff067db25bd20ffd233df54ef21
+  message: 'chore(roadmap): add gap-analysis tasks 0.9/0.4a and propagate gate/task-state
+    updates'
+  changed:
+  - task_key: 2.13@2FA-1
+    id: '2.13'
+    gate: 2FA-1
+    from: running
+    to: done
+  - task_key: 2.14@2FA-1
+    id: '2.14'
+    gate: 2FA-1
+    from: running
+    to: done
+  done_task_keys:
+  - 2.13@2FA-1
+  - 2.14@2FA-1
+  done_tasks:
+  - '2.13'
+  - '2.14'
+- timestamp: '2026-03-03T02:33:55+00:00'
+  commit: 4a7be94c28823ff067db25bd20ffd233df54ef21
+  message: 'chore(roadmap): add gap-analysis tasks 0.9/0.4a and propagate gate/task-state
+    updates'
+  changed:
+  - task_key: 2.13@2FA-1
+    id: '2.13'
+    gate: 2FA-1
+    from: done
+    to: planned
+  - task_key: 2.14@2FA-1
+    id: '2.14'
+    gate: 2FA-1
+    from: done
+    to: planned
+  done_task_keys: []
+  done_tasks: []

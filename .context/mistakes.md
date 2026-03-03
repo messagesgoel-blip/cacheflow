@@ -29,3 +29,9 @@
 - why it failed: Shell interpolation stripped string literals/template markers, producing invalid TypeScript and duplicated blocks.
 - do not attempt: Do not use nested/partially quoted heredocs for TS edits over SSH; use fully single-quoted heredocs piped to SSH or direct patch tooling.
 - agent: codex
+
+## 2026-03-03 — 2FA task state falsely marked done from metrics bookkeeping
+- what was tried: Marking roadmap/metrics updates in a separate commit while 2FA locks were transitioning caused `2.13@2FA-1` and `2.14@2FA-1` to inherit done state in generated monitoring files.
+- why it failed: Task completion metadata was recorded without corresponding implementation completion commits for those task keys.
+- do not attempt: Do not close unrelated running tasks during bulk metrics/roadmap refresh; explicitly pass `--planned/--running` for protected in-flight tasks.
+- agent: codex
