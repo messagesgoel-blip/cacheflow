@@ -41,3 +41,9 @@
 - why it failed: Lock metadata no longer maps cleanly to agent dashboards/ownership attribution and complicates compliance reporting.
 - do not attempt: Always pass canonical agent names (`OpenCode`, `ClaudeCode`, `Gemini`, `Codex`) in `claim_task`; put descriptions in commit/note text instead.
 - agent: codex
+
+## 2026-03-03 — 2FA setup route failed from broken API import paths + secret scan
+- what was tried: Calling `/api/auth/2fa/setup` from settings UI while routes imported auth libs using deep relative paths and returned raw `secret` in response.
+- why it failed: Relative paths from `app/api/auth/2fa/*` did not resolve consistently, and `withSecurityScan` flagged the raw secret and threw in non-production, causing setup `500` and no QR render.
+- do not attempt: Do not use brittle deep relative imports in API routes (`../../../../...`); prefer `@/` aliases. Do not include raw TOTP secrets in scanned JSON responses.
+- agent: codex

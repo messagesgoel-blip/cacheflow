@@ -9,8 +9,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyTOTP, generate2FASessionToken } from '../../../../lib/auth/totp';
-import { withSecurityScan } from '../../../../lib/auth/securityAudit';
+import { verifyTOTP, generate2FASessionToken, hashBackupCode } from '@/lib/auth/totp';
+import { withSecurityScan } from '@/lib/auth/securityAudit';
 
 export interface VerifyRequest {
   code: string;
@@ -62,7 +62,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyRes
     if (backupCode) {
       // In production, fetch hashed backup codes from database
       // For now, this is a placeholder
-      const { hashBackupCode } = await import('../../../../lib/auth/totp');
       const hashedBackup = await hashBackupCode(backupCode);
       
       // Check against stored hashed codes (placeholder - would come from DB)

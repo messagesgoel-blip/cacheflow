@@ -55,3 +55,11 @@
 - files: docs/roadmap-v4.3.md, docs/sprints-task-dashboard.md, monitoring/cacheflow_task_state.yaml, monitoring/cacheflow_metrics.yaml, monitoring/cacheflow_sprint_tasks.yaml, monitoring/task_history.yaml
 - commit: pending
 - agent: codex
+
+## 2026-03-03 — Keep TOTP secret server-side during setup response
+- decision: `/api/auth/2fa/setup` sets `totpSecret` in an `httpOnly` cookie and returns only QR + backup codes (no raw secret in JSON).
+- rationale: `withSecurityScan` rejects secret leakage in API payloads, which otherwise hard-fails setup and blocks 2FA UI flows.
+- alternatives rejected: Returning raw secret to client; bypassing security scan.
+- files: web/app/api/auth/2fa/setup/route.ts, web/components/settings/TwoFAPanel.tsx
+- commit: pending
+- agent: codex

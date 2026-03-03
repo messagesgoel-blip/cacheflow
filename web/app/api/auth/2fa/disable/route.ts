@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { withSecurityScan } from '../../../../lib/auth/securityAudit';
+import { withSecurityScan } from '@/lib/auth/securityAudit';
 
 export interface DisableRequest {
   password: string;
