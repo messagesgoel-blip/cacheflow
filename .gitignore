@@ -23,3 +23,7 @@ webdav/webdav.htpasswd
 web/lib/providers/filen.ts
 api/src/routes/search.js
 api/src/services/embeddings.js
+
+web/next-env.d.ts
+.context/task_locks/
+logs/
