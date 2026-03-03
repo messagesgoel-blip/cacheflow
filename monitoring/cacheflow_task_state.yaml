@@ -528,40 +528,40 @@ OPS-QA-WATCH@QA-1:
   gate: 2FA-1
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: f287133ce7c8
+  done_at: '2026-03-03T10:51:00-05:00'
+  changelog: 'feat(2.13@2FA-1): harden 2FA setup/verify/status/disable routes'
 2.14@2FA-1:
   id: '2.14'
   task_key: 2.14@2FA-1
   gate: 2FA-1
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 5ff2a727531d
+  done_at: '2026-03-03T10:53:53-05:00'
+  changelog: 'fix(2.14@2FA-1): repair challenge page imports and submit flow'
 2.15@2FA-1:
   id: '2.15'
   task_key: 2.15@2FA-1
   gate: 2FA-1
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: dc3235d75767
+  done_at: '2026-03-03T10:56:05-05:00'
+  changelog: 'feat(2.15@2FA-1): surface last-used and backup state in settings'
 2.16@2FA-1:
   id: '2.16'
   task_key: 2.16@2FA-1
   gate: 2FA-1
   sprint: 2
   agent: "\u25C9 Gemini"
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 3c3e691c08e6
+  done_at: '2026-03-02T22:34:48-05:00'
+  changelog: 'fix(2.16@2FA-1): restore post-login 2FA settings interaction'
 4.7@2FA-1:
   id: '4.7'
   task_key: 4.7@2FA-1

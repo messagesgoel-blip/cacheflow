@@ -594,10 +594,10 @@ tasks:
   files: /app/api/auth/2fa/**, /lib/auth/totp.ts, /prisma/migrations/003_2fa/
   agent: "\u25C8 OpenCode"
   gate: 2FA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: f287133ce7c8
+  done_at: '2026-03-03T10:51:00-05:00'
+  changelog: 'feat(2.13@2FA-1): harden 2FA setup/verify/status/disable routes'
 - id: '2.14'
   task_key: 2.14@2FA-1
   description: TOTP login challenge UI
@@ -605,10 +605,10 @@ tasks:
   files: /app/auth/2fa-challenge/page.tsx, /components/auth/TOTPInput.tsx
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 5ff2a727531d
+  done_at: '2026-03-03T10:53:53-05:00'
+  changelog: 'fix(2.14@2FA-1): repair challenge page imports and submit flow'
 - id: '2.15'
   task_key: 2.15@2FA-1
   description: 'Settings: manage 2FA, backup codes, last-used timestamp'
@@ -616,10 +616,10 @@ tasks:
   files: /app/settings/security/page.tsx, /components/settings/TwoFAPanel.tsx
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: dc3235d75767
+  done_at: '2026-03-03T10:56:05-05:00'
+  changelog: 'feat(2.15@2FA-1): surface last-used and backup state in settings'
 - id: '2.16'
   task_key: 2.16@2FA-1
   description: "E2E 2FA tests \u2014 full enable/use/disable cycle"
@@ -627,10 +627,10 @@ tasks:
   files: /e2e/tests/twoFA.spec.ts
   agent: "\u25C9 Gemini"
   gate: 2FA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 3c3e691c08e6
+  done_at: '2026-03-02T22:34:48-05:00'
+  changelog: 'fix(2.16@2FA-1): restore post-login 2FA settings interaction'
 - id: '4.7'
   task_key: 4.7@2FA-1
   description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
