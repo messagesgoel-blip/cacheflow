@@ -105,6 +105,12 @@ if (corsAllowLocalhost) {
   // Local QA only (explicitly gated)
   corsAllowedOrigins.add('http://localhost:3010');
   corsAllowedOrigins.add('http://127.0.0.1:3010');
+  corsAllowedOrigins.add('http://localhost:3011');
+  corsAllowedOrigins.add('http://127.0.0.1:3011');
+  corsAllowedOrigins.add('http://localhost:3110');
+  corsAllowedOrigins.add('http://127.0.0.1:3110');
+  corsAllowedOrigins.add('http://localhost:3111');
+  corsAllowedOrigins.add('http://127.0.0.1:3111');
   // Common Next dev ports
   corsAllowedOrigins.add('http://localhost:3000');
   corsAllowedOrigins.add('http://127.0.0.1:3000');
@@ -120,7 +126,7 @@ const corsMiddleware = cors({
   },
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Authorization', 'Content-Type', 'X-Share-Password', 'X-Correlation-Id'],
-  credentials: false,
+  credentials: true,
   maxAge: 600,
 });
 

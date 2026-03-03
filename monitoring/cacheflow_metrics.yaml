@@ -1,14 +1,14 @@
-generated_at: '2026-03-03T20:00:20+00:00'
+generated_at: '2026-03-03T22:11:47+00:00'
 current_sprint: 0
-sprint_progress: 0.0
+sprint_progress: 11.11
 sprint_start: 1700000000
-running_tasks: 0
-tasks_completed_total: 36
+running_tasks: 5
+tasks_completed_total: 38
 total_tasks: 122
 total_sprints: 7
 gate_status:
-  AUTH-1: open
-  AUTH-2: open
+  AUTH-1: running
+  AUTH-2: running
   AUTH-3: done
   AUTH-4: open
   MODAL-1: done
@@ -16,13 +16,13 @@ gate_status:
   SYNC-1: open
   UPLOAD-1: open
   PREVIEW-1: open
-  ACTIONS-1: open
+  ACTIONS-1: running
   NAV-1: open
   RESP-1: open
   HOLD-UI-2026-03-02: open
   QA-1: done
   2FA-1: open
-  TRANSFER-1: open
+  TRANSFER-1: running
   ZERODISK-1: open
   SSE-1: open
   SHARE-1: open
@@ -34,12 +34,12 @@ gate_status:
 sprints:
 - sprint: 0
   total_tasks: 18
-  done_tasks: 0
-  running_tasks: 0
+  done_tasks: 2
+  running_tasks: 3
   pending_tasks: 0
-  planned_tasks: 18
-  progress: 0.0
-  commits_total: 0
+  planned_tasks: 13
+  progress: 11.11
+  commits_total: 2
 - sprint: 1
   total_tasks: 22
   done_tasks: 22
@@ -51,17 +51,17 @@ sprints:
 - sprint: 2
   total_tasks: 25
   done_tasks: 10
-  running_tasks: 0
+  running_tasks: 1
   pending_tasks: 0
-  planned_tasks: 15
+  planned_tasks: 14
   progress: 40.0
   commits_total: 9
 - sprint: 3
   total_tasks: 17
   done_tasks: 4
-  running_tasks: 0
+  running_tasks: 1
   pending_tasks: 0
-  planned_tasks: 13
+  planned_tasks: 12
   progress: 23.53
   commits_total: 2
 - sprint: 4
@@ -108,7 +108,7 @@ tasks:
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -123,7 +123,7 @@ tasks:
   status: done
   commit: 7d8d37f
   done_at: '2026-03-03T21:20:00+00:00'
-  changelog: 'docs(contracts): add ErrorCode → UI action mapping contract'
+  changelog: "docs(contracts): add ErrorCode \u2192 UI action mapping contract"
 - id: '1.1'
   task_key: 1.1@AUTH-1
   description: Create global HTTP interceptor for all /api/remotes proxy calls
@@ -212,7 +212,7 @@ tasks:
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -532,7 +532,7 @@ tasks:
   files: /e2e/tests/fileActions.spec.ts
   agent: "\u25C9 Gemini"
   gate: ACTIONS-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -763,10 +763,10 @@ tasks:
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 79590cabd655
+  done_at: '2026-03-03T21:28:36+00:00'
+  changelog: 'feat(errors): add shared AppError taxonomy for auth and transfer gates'
 - id: '0.3'
   task_key: 0.3@TRANSFER-1
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -774,7 +774,7 @@ tasks:
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -856,7 +856,7 @@ tasks:
   files: /e2e/tests/transferTray.spec.ts
   agent: "\u25C9 Gemini"
   gate: TRANSFER-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

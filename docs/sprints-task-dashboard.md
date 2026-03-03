@@ -2,21 +2,21 @@
 Each sprint below will track task progress, commits, and changelog entries as work proceeds.
 
 ## Sprint 0
-- Progress: `[░░░░░░░░░░] 0%` (0 / 18 completed)
-- Total commits: `0` (update after commit + update script)
+- Progress: `[█░░░░░░░░░] 11%` (2 / 18 completed)
+- Total commits: `2` (update after commit + update script)
 - Gate criteria: `/docs/architecture/deployment-constraints.md` + `/scripts/check-deployment-target.sh` must exist and pass before Sprint 0 gate pass.
 - Current tasks:
 
 | Task ID | Task Description (Gate) | Assigned Agent | Status | Commit # | Done At | Changelog |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0.1 | Define and commit ProviderAdapter interface — all adapters implement this (Gate AUTH-1) | ★ CODEX (Master) | Planned | — | — | — |
-| 0.2 | Define AppError taxonomy and ErrorCode enum (Gate AUTH-1) | ◈ OpenCode | Planned | — | — | — |
-| 0.4a | ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic UI behavior and default toast fallback (Gate AUTH-1) | ◆ ClaudeCode | Planned | — | — | — |
-| 0.3 | Define complete Prisma schema baseline — all tables, all relationships (Gate AUTH-2) | ◈ OpenCode | Planned | — | — | — |
+| 0.2 | Define AppError taxonomy and ErrorCode enum (Gate AUTH-1) | ◈ OpenCode | Running | — | — | — |
+| 0.4a | ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic UI behavior and default toast fallback (Gate AUTH-1) | ◆ ClaudeCode | Done | 7d8d37f | 2026-03-03T21:20:00+00:00 | docs(contracts): add ErrorCode → UI action mapping contract |
+| 0.3 | Define complete Prisma schema baseline — all tables, all relationships (Gate AUTH-2) | ◈ OpenCode | Running | — | — | — |
 | 0.6 | Define singleton refresh promise pattern — prevent concurrent token refresh race (Gate AUTH-4) | ◈ OpenCode | Planned | — | — | — |
 | 0.1 | Define and commit ProviderAdapter interface — all adapters implement this (Gate TRANSFER-1) | ★ CODEX (Master) | Planned | — | — | — |
-| 0.2 | Define AppError taxonomy and ErrorCode enum (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
-| 0.3 | Define complete Prisma schema baseline — all tables, all relationships (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
+| 0.2 | Define AppError taxonomy and ErrorCode enum (Gate TRANSFER-1) | ◈ OpenCode | Done | 79590ca | 2026-03-03T21:28:36+00:00 | feat(errors): add shared AppError taxonomy for auth and transfer gates |
+| 0.3 | Define complete Prisma schema baseline — all tables, all relationships (Gate TRANSFER-1) | ◈ OpenCode | Running | — | — | — |
 | 0.4 | Allocate Redis namespaces — document and enforce db separation (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
 | 0.4a | ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic UI behavior and default toast fallback (Gate TRANSFER-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 0.5 | Define streaming pipeline pattern — pipeline() + backpressure strategy (Gate TRANSFER-1) | ◈ OpenCode | Planned | — | — | — |
@@ -74,7 +74,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 2.8 | E2E preview tests — supported and unsupported types (Gate PREVIEW-1) | ◉ Gemini | Done | 38155c1 | 2026-03-03T01:51:07+00:00 | Added E2E test suite; implementation blocked by component state issues. |
 | 2.3 | File table: single click select + right panel, double click open (Gate ACTIONS-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.4 | Three-dot row menu + right-click context menu (identical) (Gate ACTIONS-1) | ◆ ClaudeCode | Planned | — | — | — |
-| 2.5 | Write E2E tests for all file action entry points (Gate ACTIONS-1) | ◉ Gemini | Planned | — | — | — |
+| 2.5 | Write E2E tests for all file action entry points (Gate ACTIONS-1) | ◉ Gemini | Running | — | — | — |
 | 2.9 | Merge Cloud Drives / Providers / Integrations → Connections (Gate NAV-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.10 | File table visual polish — skeleton loaders, hover, separators (Gate RESP-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 2.11 | Sidebar collapsible accordion per provider group (Gate RESP-1) | ◆ ClaudeCode | Planned | — | — | — |
@@ -104,7 +104,7 @@ Each sprint below will track task progress, commits, and changelog entries as wo
 | 3.16 | Dashboard + health E2E tests (Gate SYNC-1) | ◉ Gemini | Planned | — | — | — |
 | 3.1 | Persistent Transfer Manager Tray — always visible when active (Gate TRANSFER-1) | ◆ ClaudeCode | Planned | — | — | — |
 | 3.3 | Every file operation produces tray entry + toast (Gate TRANSFER-1) | ◈ OpenCode | Done | e28b158 | 2026-03-03T03:10:11+00:00 | BullMQ queue + worker, transfer tray with toast |
-| 3.4 | Tray E2E — entry survives navigation, retry works on failure (Gate TRANSFER-1) | ◉ Gemini | Planned | — | — | — |
+| 3.4 | Tray E2E — entry survives navigation, retry works on failure (Gate TRANSFER-1) | ◉ Gemini | Running | — | — | — |
 | 3.5 | Chunked upload: files >50MB use provider resumable upload APIs (Gate TRANSFER-1) | ◈ OpenCode | Done | 389271c | 2026-03-03T03:11:40+00:00 | Chunked upload + auto-resume |
 | 3.6 | Auto-resume: resume interrupted upload from last successful chunk (Gate TRANSFER-1) | ◈ OpenCode | Done | 389271c | 2026-03-03T03:11:40+00:00 | Chunked upload + auto-resume |
 | 3.7 | Tray: chunk-level progress for large files (Gate TRANSFER-1) | ◆ ClaudeCode | Planned | — | — | — |

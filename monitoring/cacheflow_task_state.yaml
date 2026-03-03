@@ -14,7 +14,7 @@
   gate: AUTH-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -27,7 +27,7 @@
   status: done
   commit: 7d8d37f
   done_at: '2026-03-03T21:20:00+00:00'
-  changelog: 'docs(contracts): add ErrorCode → UI action mapping contract'
+  changelog: "docs(contracts): add ErrorCode \u2192 UI action mapping contract"
 1.1@AUTH-1:
   id: '1.1'
   task_key: 1.1@AUTH-1
@@ -106,7 +106,7 @@
   gate: AUTH-2
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -394,7 +394,7 @@
   gate: ACTIONS-1
   sprint: 2
   agent: "\u25C9 Gemini"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -598,17 +598,17 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 79590cabd655
+  done_at: '2026-03-03T21:28:36+00:00'
+  changelog: 'feat(errors): add shared AppError taxonomy for auth and transfer gates'
 0.3@TRANSFER-1:
   id: '0.3'
   task_key: 0.3@TRANSFER-1
   gate: TRANSFER-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -678,7 +678,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 3
   agent: "\u25C9 Gemini"
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

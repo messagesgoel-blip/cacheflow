@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T20:00:20+00:00'
+generated_at: '2026-03-03T22:11:47+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -19,7 +19,7 @@ tasks:
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -31,10 +31,10 @@ tasks:
   files: /docs/contracts/errorcode-ui-actions.md
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 7d8d37f
+  done_at: '2026-03-03T21:20:00+00:00'
+  changelog: "docs(contracts): add ErrorCode \u2192 UI action mapping contract"
 - id: '1.1'
   task_key: 1.1@AUTH-1
   description: Create global HTTP interceptor for all /api/remotes proxy calls
@@ -123,7 +123,7 @@ tasks:
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -443,7 +443,7 @@ tasks:
   files: /e2e/tests/fileActions.spec.ts
   agent: "\u25C9 Gemini"
   gate: ACTIONS-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -674,10 +674,10 @@ tasks:
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 79590cabd655
+  done_at: '2026-03-03T21:28:36+00:00'
+  changelog: 'feat(errors): add shared AppError taxonomy for auth and transfer gates'
 - id: '0.3'
   task_key: 0.3@TRANSFER-1
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -685,7 +685,7 @@ tasks:
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''
@@ -767,7 +767,7 @@ tasks:
   files: /e2e/tests/transferTray.spec.ts
   agent: "\u25C9 Gemini"
   gate: TRANSFER-1
-  status: planned
+  status: running
   commit: ''
   done_at: ''
   changelog: ''

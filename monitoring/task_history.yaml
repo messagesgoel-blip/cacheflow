@@ -730,3 +730,41 @@
     to: planned
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-03T21:28:36+00:00'
+  commit: 79590cabd65558d30b872a385f3ec99ff044dc01
+  message: 'feat(errors): add shared AppError taxonomy for auth and transfer gates'
+  changed:
+  - task_key: 0.2@AUTH-1
+    id: '0.2'
+    gate: AUTH-1
+    from: planned
+    to: running
+  - task_key: 0.3@AUTH-2
+    id: '0.3'
+    gate: AUTH-2
+    from: planned
+    to: running
+  - task_key: 2.5@ACTIONS-1
+    id: '2.5'
+    gate: ACTIONS-1
+    from: planned
+    to: running
+  - task_key: 0.2@TRANSFER-1
+    id: '0.2'
+    gate: TRANSFER-1
+    from: planned
+    to: done
+  - task_key: 0.3@TRANSFER-1
+    id: '0.3'
+    gate: TRANSFER-1
+    from: planned
+    to: running
+  - task_key: 3.4@TRANSFER-1
+    id: '3.4'
+    gate: TRANSFER-1
+    from: planned
+    to: running
+  done_task_keys:
+  - 0.2@TRANSFER-1
+  done_tasks:
+  - '0.2'

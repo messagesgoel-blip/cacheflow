@@ -693,6 +693,8 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, onSelect, 
       <td className="px-4 py-3">
         <input
           type="checkbox"
+          data-testid="cf-row-checkbox"
+          data-file-id={file.id}
           checked={selected}
           onChange={(e) => { e.stopPropagation(); onSelect() }}
           className="rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity"
