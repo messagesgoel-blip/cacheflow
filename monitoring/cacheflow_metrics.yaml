@@ -1,36 +1,36 @@
-generated_at: '2026-03-03T03:11:46+00:00'
+generated_at: '2026-03-03T18:19:04+00:00'
 current_sprint: 2
-sprint_progress: 24.0
+sprint_progress: 40.0
 sprint_start: 1700000000
-running_tasks: 5
-tasks_completed_total: 32
+running_tasks: 1
+tasks_completed_total: 36
 total_tasks: 122
 total_sprints: 7
 gate_status:
+  2FA-1: open
+  ACTIONS-1: open
   AUTH-1: open
   AUTH-2: open
   AUTH-3: done
   AUTH-4: open
-  MODAL-1: done
-  UUID-1: done
-  SYNC-1: open
-  UPLOAD-1: open
-  PREVIEW-1: open
-  ACTIONS-1: open
-  NAV-1: open
-  RESP-1: open
   HOLD-UI-2026-03-02: open
+  LAUNCH-1: open
+  MODAL-1: done
+  NAV-1: open
+  PREVIEW-1: open
   QA-1: done
-  2FA-1: running
-  TRANSFER-1: running
-  ZERODISK-1: open
-  SSE-1: open
-  SHARE-1: open
-  VAULT-1: open
+  RESP-1: open
   SCHED-1: open
   SEARCH-1: open
   SEC-1: open
-  LAUNCH-1: open
+  SHARE-1: open
+  SSE-1: open
+  SYNC-1: open
+  TRANSFER-1: running
+  UPLOAD-1: open
+  UUID-1: done
+  VAULT-1: open
+  ZERODISK-1: open
 sprints:
 - sprint: 0
   total_tasks: 18
@@ -50,12 +50,12 @@ sprints:
   commits_total: 8
 - sprint: 2
   total_tasks: 25
-  done_tasks: 6
-  running_tasks: 4
+  done_tasks: 10
+  running_tasks: 0
   pending_tasks: 0
   planned_tasks: 15
-  progress: 24.0
-  commits_total: 5
+  progress: 40.0
+  commits_total: 9
 - sprint: 3
   total_tasks: 17
   done_tasks: 4
@@ -91,11 +91,11 @@ sprints:
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
-  description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
-    \ this"
+  description: Define and commit ProviderAdapter interface — all adapters implement
+    this
   sprint: 0
   files: /lib/providers/ProviderAdapter.interface.ts, /lib/providers/types.ts
-  agent: "\u2605 CODEX (Master)"
+  agent: ★ CODEX (Master)
   gate: AUTH-1
   status: planned
   commit: ''
@@ -106,7 +106,7 @@ tasks:
   description: Define AppError taxonomy and ErrorCode enum
   sprint: 0
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-1
   status: planned
   commit: ''
@@ -114,11 +114,11 @@ tasks:
   changelog: ''
 - id: 0.4a
   task_key: 0.4a@AUTH-1
-  description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
-    \ deterministic UI behavior and default toast fallback"
+  description: ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic
+    UI behavior and default toast fallback
   sprint: 0
   files: /docs/contracts/errorcode-ui-actions.md
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: AUTH-1
   status: planned
   commit: ''
@@ -129,7 +129,7 @@ tasks:
   description: Create global HTTP interceptor for all /api/remotes proxy calls
   sprint: 1
   files: /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-1
   status: done
   commit: 9fe35b97ff93
@@ -137,10 +137,10 @@ tasks:
   changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.5'
   task_key: 1.5@AUTH-1
-  description: "Multi-account schema \u2014 up to 3 accounts per provider"
+  description: Multi-account schema — up to 3 accounts per provider
   sprint: 1
   files: /prisma/migrations/002_multi_account/, /lib/vault/tokenVault.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-1
   status: done
   commit: 9fe35b97ff93
@@ -151,7 +151,7 @@ tasks:
   description: Write Playwright token expiry test
   sprint: 1
   files: /e2e/tests/tokenExpiry.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: AUTH-1
   status: done
   commit: a24bcfb5ac1a
@@ -163,7 +163,7 @@ tasks:
   description: Replace SESSION_EXPIRED raw text with actionable component
   sprint: 1
   files: /components/SessionExpiredBanner.tsx, /components/Sidebar/AccountRow.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: AUTH-1
   status: done
   commit: 9f3f322328c5
@@ -172,11 +172,10 @@ tasks:
     button'
 - id: '4.1'
   task_key: 4.1@AUTH-1
-  description: "Define provider parity checklist \u2014 every provider must pass all\
-    \ 5"
+  description: Define provider parity checklist — every provider must pass all 5
   sprint: 4
   files: /docs/provider-parity.md, /lib/providers/ProviderAdapter.interface.ts
-  agent: "\u2605 CODEX (Master)"
+  agent: ★ CODEX (Master)
   gate: AUTH-1
   status: planned
   commit: ''
@@ -184,11 +183,10 @@ tasks:
   changelog: ''
 - id: '4.2'
   task_key: 4.2@AUTH-1
-  description: "Add 2\u20133 additional providers to reach 3\u20134 gold-standard\
-    \ total"
+  description: Add 2–3 additional providers to reach 3–4 gold-standard total
   sprint: 4
   files: /lib/providers/box/**, /lib/providers/pcloud/**, /lib/providers/yandex/**
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-1
   status: planned
   commit: ''
@@ -199,7 +197,7 @@ tasks:
   description: E2E parity tests for each new provider
   sprint: 4
   files: /e2e/tests/providers/box.spec.ts, /e2e/tests/providers/pcloud.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: AUTH-1
   status: planned
   commit: ''
@@ -207,10 +205,10 @@ tasks:
   changelog: ''
 - id: '0.3'
   task_key: 0.3@AUTH-2
-  description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
+  description: Define complete Prisma schema baseline — all tables, all relationships
   sprint: 0
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-2
   status: planned
   commit: ''
@@ -221,7 +219,7 @@ tasks:
   description: Implement silent token refresh endpoint
   sprint: 1
   files: /app/api/auth/refresh/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-2
   status: done
   commit: 9fe35b97ff93
@@ -229,10 +227,10 @@ tasks:
   changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.4'
   task_key: 1.4@AUTH-2
-  description: "Token Vault v1 \u2014 encrypted at-rest provider credentials"
+  description: Token Vault v1 — encrypted at-rest provider credentials
   sprint: 1
   files: /lib/vault/tokenVault.ts, /prisma/migrations/001_token_vault/
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-2
   status: done
   commit: b1142283731b
@@ -240,10 +238,10 @@ tasks:
   changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
 - id: '1.18'
   task_key: 1.18@AUTH-2
-  description: "Security baseline \u2014 remove defaults, harden secrets"
+  description: Security baseline — remove defaults, harden secrets
   sprint: 1
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-2
   status: done
   commit: 9fe35b97ff93
@@ -251,10 +249,10 @@ tasks:
   changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.19'
   task_key: 1.19@AUTH-2
-  description: "Security audit test \u2014 verify no secrets in API responses"
+  description: Security audit test — verify no secrets in API responses
   sprint: 1
   files: /e2e/tests/securityAudit.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: AUTH-2
   status: done
   commit: a24bcfb5ac1a
@@ -266,7 +264,7 @@ tasks:
   description: Migrate from localStorage TokenManager to HttpOnly cookies
   sprint: 1
   files: /lib/tokenManager.ts (deprecated), /lib/auth/cookieAuth.ts (new)
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-3
   status: done
   commit: 9fe35b97ff93
@@ -277,7 +275,7 @@ tasks:
   description: Remove client-side token sync pattern entirely
   sprint: 1
   files: /app/api/auth/sync-token/ (delete), /components/providers/** (audit)
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: AUTH-3
   status: done
   commit: b1142283731b
@@ -285,11 +283,11 @@ tasks:
   changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
 - id: '0.6'
   task_key: 0.6@AUTH-4
-  description: "Define singleton refresh promise pattern \u2014 prevent concurrent\
-    \ token refresh race"
+  description: Define singleton refresh promise pattern — prevent concurrent token
+    refresh race
   sprint: 0
   files: /lib/auth/refreshGuard.ts, /docs/architecture/auth-patterns.md, /tests/unit/refreshGuard.test.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-4
   status: planned
   commit: ''
@@ -300,7 +298,7 @@ tasks:
   description: Create global HTTP interceptor for all /api/remotes proxy calls
   sprint: 1
   files: /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: AUTH-4
   status: done
   commit: 9fe35b97ff93
@@ -311,7 +309,7 @@ tasks:
   description: Replace shared modal boolean with provider discriminator enum
   sprint: 1
   files: /context/IntegrationContext.tsx, /components/modals/ConnectProviderModal.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: MODAL-1
   status: done
   commit: a24bcfb5ac1a
@@ -323,7 +321,7 @@ tasks:
   description: Implement correct forms for WebDAV and VPS/SFTP modals
   sprint: 1
   files: /components/modals/WebDAVModal.tsx, /components/modals/VPSModal.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: MODAL-1
   status: done
   commit: 63dad6f36533
@@ -334,7 +332,7 @@ tasks:
   description: Clear modal state on close and provider switch
   sprint: 1
   files: /context/IntegrationContext.tsx, /components/modals/ConnectProviderModal.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: MODAL-1
   status: done
   commit: 0e06e1fcf81d
@@ -343,10 +341,10 @@ tasks:
     implemented via IntegrationContext)'
 - id: '1.11'
   task_key: 1.11@MODAL-1
-  description: "Write Playwright modal test \u2014 all 9 provider Connect buttons"
+  description: Write Playwright modal test — all 9 provider Connect buttons
   sprint: 1
   files: /e2e/tests/providerModals.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: MODAL-1
   status: done
   commit: a24bcfb5ac1a
@@ -355,10 +353,10 @@ tasks:
     enum'
 - id: '1.12'
   task_key: 1.12@UUID-1
-  description: "Audit upload pipeline \u2014 locate all UUID injection points"
+  description: Audit upload pipeline — locate all UUID injection points
   sprint: 1
   files: /api/remotes/**, /lib/providers/**, /lib/uploads/**
-  agent: "\u2605 CODEX (Master)"
+  agent: ★ CODEX (Master)
   gate: UUID-1
   status: done
   commit: b6b0f5b84ee0
@@ -371,7 +369,7 @@ tasks:
   sprint: 1
   files: /lib/providers/googleDrive.ts, /lib/providers/onedrive.ts, /lib/providers/dropbox.ts,
     /lib/uploads/uploadManager.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: UUID-1
   status: done
   commit: 0e06e1fcf81d
@@ -383,7 +381,7 @@ tasks:
   description: Write and run migration script in staging
   sprint: 1
   files: /scripts/migrate-files-no-uuid.js
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: UUID-1
   status: done
   commit: 0e06e1fcf81d
@@ -395,7 +393,7 @@ tasks:
   description: Validate and apply migration to production
   sprint: 1
   files: /scripts/migrate-files-no-uuid.js --env=production
-  agent: "\u2605 CODEX (Master)"
+  agent: ★ CODEX (Master)
   gate: UUID-1
   status: done
   commit: b6b0f5b84ee0
@@ -407,7 +405,7 @@ tasks:
   description: Connections page and sidebar read from single server state store
   sprint: 1
   files: /app/api/connections/route.ts, /components/Sidebar.tsx, /app/connections/page.tsx
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SYNC-1
   status: done
   commit: a0832192b9e9
@@ -415,10 +413,10 @@ tasks:
   changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
 - id: '3.14'
   task_key: 3.14@SYNC-1
-  description: "Provider health indicators \u2014 green means it actually works"
+  description: Provider health indicators — green means it actually works
   sprint: 3
   files: /lib/providers/healthCheck.ts, /app/api/connections/health/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SYNC-1
   status: planned
   commit: ''
@@ -429,7 +427,7 @@ tasks:
   description: Dashboard + health E2E tests
   sprint: 3
   files: /e2e/tests/storageDashboard.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: SYNC-1
   status: planned
   commit: ''
@@ -440,7 +438,7 @@ tasks:
   description: Add persistent Upload / New Folder / Refresh action bar
   sprint: 2
   files: /app/files/page.tsx, /components/files/ActionBar.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: UPLOAD-1
   status: planned
   commit: ''
@@ -451,7 +449,7 @@ tasks:
   description: Implement file upload with progress and toast
   sprint: 2
   files: /app/api/remotes/[uuid]/upload/route.ts, /lib/providers/*/upload.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: UPLOAD-1
   status: planned
   commit: ''
@@ -462,7 +460,7 @@ tasks:
   description: Write E2E tests for all file action entry points
   sprint: 2
   files: /e2e/tests/fileActions.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: UPLOAD-1
   status: planned
   commit: ''
@@ -470,11 +468,11 @@ tasks:
   changelog: ''
 - id: '2.6'
   task_key: 2.6@PREVIEW-1
-  description: "Fix preview panel mount \u2014 \"Opening\" toast must open a panel;\
-    \ enforce CSP for image/PDF/text previews with Playwright zero-CSP-error verification"
+  description: Fix preview panel mount — "Opening" toast must open a panel; enforce
+    CSP for image/PDF/text previews with Playwright zero-CSP-error verification
   sprint: 2
   files: /components/files/PreviewPanel.tsx, /components/files/previewTypes.ts
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: PREVIEW-1
   status: planned
   commit: ''
@@ -486,7 +484,7 @@ tasks:
     /api/remotes/{uuid}/download/{fileId}; never expose raw provider URLs'
   sprint: 2
   files: /components/files/PreviewPanel.tsx, /lib/files/mimeTypes.ts
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: PREVIEW-1
   status: planned
   commit: ''
@@ -494,10 +492,10 @@ tasks:
   changelog: ''
 - id: '2.8'
   task_key: 2.8@PREVIEW-1
-  description: "E2E preview tests \u2014 supported and unsupported types"
+  description: E2E preview tests — supported and unsupported types
   sprint: 2
   files: /e2e/tests/filePreview.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: PREVIEW-1
   status: done
   commit: 38155c1a710b
@@ -508,7 +506,7 @@ tasks:
   description: 'File table: single click select + right panel, double click open'
   sprint: 2
   files: /components/files/FileTable.tsx, /components/files/FileDetailPanel.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: ACTIONS-1
   status: planned
   commit: ''
@@ -519,7 +517,7 @@ tasks:
   description: Three-dot row menu + right-click context menu (identical)
   sprint: 2
   files: /components/files/FileContextMenu.tsx, /components/files/MultiSelectToolbar.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: ACTIONS-1
   status: planned
   commit: ''
@@ -530,7 +528,7 @@ tasks:
   description: Write E2E tests for all file action entry points
   sprint: 2
   files: /e2e/tests/fileActions.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: ACTIONS-1
   status: planned
   commit: ''
@@ -538,11 +536,11 @@ tasks:
   changelog: ''
 - id: '2.9'
   task_key: 2.9@NAV-1
-  description: "Merge Cloud Drives / Providers / Integrations \u2192 Connections"
+  description: Merge Cloud Drives / Providers / Integrations → Connections
   sprint: 2
   files: /app/connections/page.tsx, /components/Sidebar/NavItems.tsx, /app/providers/
     (delete), /app/integrations/ (delete)
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: NAV-1
   status: planned
   commit: ''
@@ -550,10 +548,10 @@ tasks:
   changelog: ''
 - id: '2.10'
   task_key: 2.10@RESP-1
-  description: "File table visual polish \u2014 skeleton loaders, hover, separators"
+  description: File table visual polish — skeleton loaders, hover, separators
   sprint: 2
   files: /components/files/FileTable.tsx, /components/Sidebar/AccountRow.tsx, /styles/files.css
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: RESP-1
   status: planned
   commit: ''
@@ -564,7 +562,7 @@ tasks:
   description: Sidebar collapsible accordion per provider group
   sprint: 2
   files: /components/Sidebar/ProviderGroup.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: RESP-1
   status: planned
   commit: ''
@@ -572,10 +570,10 @@ tasks:
   changelog: ''
 - id: '2.12'
   task_key: 2.12@RESP-1
-  description: "Responsive layout pass \u2014 375px viewport minimum"
+  description: Responsive layout pass — 375px viewport minimum
   sprint: 2
   files: /components/Sidebar/**, /app/files/page.tsx, /app/connections/page.tsx, /styles/layout.css
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: RESP-1
   status: planned
   commit: ''
@@ -586,7 +584,7 @@ tasks:
   description: Fix Cloud Drives page empty or unclear connected state
   sprint: 2
   files: /components/Sidebar.tsx, /components/UnifiedFileBrowser.tsx, /app/connections/page.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: HOLD-UI-2026-03-02
   status: planned
   commit: ''
@@ -597,7 +595,7 @@ tasks:
   description: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
   sprint: 2
   files: /app/api/remotes/[uuid]/proxy/route.ts, /lib/apiClient.ts, /lib/interceptors/authInterceptor.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: HOLD-UI-2026-03-02
   status: done
   commit: 3441639dfc78
@@ -609,7 +607,7 @@ tasks:
   description: Fix preview panel open reliability from file rows and overflow Open
   sprint: 2
   files: /components/PreviewPanel.tsx, /components/UnifiedFileBrowser.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: HOLD-UI-2026-03-02
   status: planned
   commit: ''
@@ -621,7 +619,7 @@ tasks:
     drives
   sprint: 2
   files: /components/UnifiedFileBrowser.tsx, /app/api/remotes/[uuid]/**
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: HOLD-UI-2026-03-02
   status: planned
   commit: ''
@@ -632,7 +630,7 @@ tasks:
   description: Add explicit UI error surfaces for failed sync/proxy/favorites requests
   sprint: 2
   files: /components/UnifiedFileBrowser.tsx, /lib/ui/toast.ts, /app/api/connections/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: HOLD-UI-2026-03-02
   status: done
   commit: 3441639dfc78
@@ -644,7 +642,7 @@ tasks:
   description: Add clear loading, empty, and error state cards in file pane
   sprint: 2
   files: /components/UnifiedFileBrowser.tsx, /components/Sidebar.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: HOLD-UI-2026-03-02
   status: done
   commit: c80bd24c88d9
@@ -657,7 +655,7 @@ tasks:
   sprint: 2
   files: /web/playwright.config.ts, /web/e2e/fixtures/global-setup.ts, /web/e2e/fixtures/global-teardown.ts,
     /web/e2e/fixtures/README.md
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: QA-1
   status: done
   commit: 25b691aaa88d
@@ -669,7 +667,7 @@ tasks:
     E2E tasks, and emit blocker reports'
   sprint: 2
   files: /web/e2e/**, /monitoring/task_history.yaml, /docs/prompts/**, /BLOCKER_QA_SEED.md
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: QA-1
   status: done
   commit: 8d604fdb5bbb
@@ -678,55 +676,55 @@ tasks:
     remain
 - id: '2.13'
   task_key: 2.13@2FA-1
-  description: "TOTP setup flow \u2014 QR generation, verification, backup codes"
+  description: TOTP setup flow — QR generation, verification, backup codes
   sprint: 2
   files: /app/api/auth/2fa/**, /lib/auth/totp.ts, /prisma/migrations/003_2fa/
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: 2FA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: f287133ce7c8
+  done_at: '2026-03-03T10:51:00-05:00'
+  changelog: 'feat(2.13@2FA-1): harden 2FA setup/verify/status/disable routes'
 - id: '2.14'
   task_key: 2.14@2FA-1
   description: TOTP login challenge UI
   sprint: 2
   files: /app/auth/2fa-challenge/page.tsx, /components/auth/TOTPInput.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: 2FA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 5ff2a727531d
+  done_at: '2026-03-03T10:53:53-05:00'
+  changelog: 'fix(2.14@2FA-1): repair challenge page imports and submit flow'
 - id: '2.15'
   task_key: 2.15@2FA-1
   description: 'Settings: manage 2FA, backup codes, last-used timestamp'
   sprint: 2
   files: /app/settings/security/page.tsx, /components/settings/TwoFAPanel.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: 2FA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: dc3235d75767
+  done_at: '2026-03-03T10:56:05-05:00'
+  changelog: 'feat(2.15@2FA-1): surface last-used and backup state in settings'
 - id: '2.16'
   task_key: 2.16@2FA-1
-  description: "E2E 2FA tests \u2014 full enable/use/disable cycle"
+  description: E2E 2FA tests — full enable/use/disable cycle
   sprint: 2
   files: /e2e/tests/twoFA.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: 2FA-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 3c3e691c08e6
+  done_at: '2026-03-02T22:34:48-05:00'
+  changelog: 'fix(2.16@2FA-1): restore post-login 2FA settings interaction'
 - id: '4.7'
   task_key: 4.7@2FA-1
-  description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
-    \ (all links vs password-only)"
+  description: Share link creation — enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md
+    (all links vs password-only)
   sprint: 4
   files: /app/api/share/route.ts, /lib/share/shareLinkService.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: 2FA-1
   status: planned
   commit: ''
@@ -734,11 +732,11 @@ tasks:
   changelog: ''
 - id: '4.10'
   task_key: 4.10@2FA-1
-  description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
-    \ prompt behavior must match /docs/decisions/share-link-2fa-scope.md"
+  description: Share link UI — right-click → Get Share Link panel; 2FA prompt behavior
+    must match /docs/decisions/share-link-2fa-scope.md
   sprint: 4
   files: /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: 2FA-1
   status: planned
   commit: ''
@@ -746,11 +744,11 @@ tasks:
   changelog: ''
 - id: '0.1'
   task_key: 0.1@TRANSFER-1
-  description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
-    \ this"
+  description: Define and commit ProviderAdapter interface — all adapters implement
+    this
   sprint: 0
   files: /lib/providers/ProviderAdapter.interface.ts, /lib/providers/types.ts
-  agent: "\u2605 CODEX (Master)"
+  agent: ★ CODEX (Master)
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -761,7 +759,7 @@ tasks:
   description: Define AppError taxonomy and ErrorCode enum
   sprint: 0
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -769,10 +767,10 @@ tasks:
   changelog: ''
 - id: '0.3'
   task_key: 0.3@TRANSFER-1
-  description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
+  description: Define complete Prisma schema baseline — all tables, all relationships
   sprint: 0
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -780,10 +778,10 @@ tasks:
   changelog: ''
 - id: '0.4'
   task_key: 0.4@TRANSFER-1
-  description: "Allocate Redis namespaces \u2014 document and enforce db separation"
+  description: Allocate Redis namespaces — document and enforce db separation
   sprint: 0
   files: /docs/architecture/redis-namespaces.md, /lib/redis/client.ts (per-db connections)
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -791,11 +789,11 @@ tasks:
   changelog: ''
 - id: 0.4a
   task_key: 0.4a@TRANSFER-1
-  description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
-    \ deterministic UI behavior and default toast fallback"
+  description: ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic
+    UI behavior and default toast fallback
   sprint: 0
   files: /docs/contracts/errorcode-ui-actions.md
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -803,11 +801,10 @@ tasks:
   changelog: ''
 - id: '0.5'
   task_key: 0.5@TRANSFER-1
-  description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
-    \ strategy"
+  description: Define streaming pipeline pattern — pipeline() + backpressure strategy
   sprint: 0
   files: /lib/transfers/streamPipeline.ts, /tests/unit/streamPipeline.test.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -815,12 +812,12 @@ tasks:
   changelog: ''
 - id: '0.9'
   task_key: 0.9@TRANSFER-1
-  description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
-    \ and block serverless/edge deployment configs in CI"
+  description: Stateful deployment guard — enforce long-running runtime targets and
+    block serverless/edge deployment configs in CI
   sprint: 0
   files: /docs/architecture/deployment-constraints.md, /scripts/check-deployment-target.sh,
     /.env.example
-  agent: "\u2605 CODEX (Master)"
+  agent: ★ CODEX (Master)
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -828,11 +825,11 @@ tasks:
   changelog: ''
 - id: '3.1'
   task_key: 3.1@TRANSFER-1
-  description: "Persistent Transfer Manager Tray \u2014 always visible when active"
+  description: Persistent Transfer Manager Tray — always visible when active
   sprint: 3
   files: /components/transfers/TransferTray.tsx, /components/transfers/TransferItem.tsx,
     /context/TransferContext.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -843,7 +840,7 @@ tasks:
   description: Every file operation produces tray entry + toast
   sprint: 3
   files: /lib/transfers/transferRegistry.ts, /app/api/remotes/[uuid]/**/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: done
   commit: e28b1584db82
@@ -851,10 +848,10 @@ tasks:
   changelog: BullMQ queue + worker, transfer tray with toast
 - id: '3.4'
   task_key: 3.4@TRANSFER-1
-  description: "Tray E2E \u2014 entry survives navigation, retry works on failure"
+  description: Tray E2E — entry survives navigation, retry works on failure
   sprint: 3
   files: /e2e/tests/transferTray.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -866,7 +863,7 @@ tasks:
   sprint: 3
   files: /lib/providers/googleDrive/chunkedUpload.ts, /lib/providers/onedrive/chunkedUpload.ts,
     /lib/providers/dropbox/chunkedUpload.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: done
   commit: 389271cac8e3
@@ -877,7 +874,7 @@ tasks:
   description: 'Auto-resume: resume interrupted upload from last successful chunk'
   sprint: 3
   files: /app/api/transfers/[id]/chunks/route.ts, /lib/transfers/chunkStateManager.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: done
   commit: 389271cac8e3
@@ -888,7 +885,7 @@ tasks:
   description: 'Tray: chunk-level progress for large files'
   sprint: 3
   files: /components/transfers/TransferItem.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -896,11 +893,10 @@ tasks:
   changelog: ''
 - id: '3.8'
   task_key: 3.8@TRANSFER-1
-  description: "Auto-resume E2E test \u2014 network drop mid-transfer \u26A0\uFE0F\
-    \ Human verify"
+  description: Auto-resume E2E test — network drop mid-transfer ⚠️ Human verify
   sprint: 3
   files: /e2e/tests/chunkedResume.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -911,7 +907,7 @@ tasks:
   description: BullMQ background job queue for async transfers
   sprint: 3
   files: /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: done
   commit: e28b1584db82
@@ -919,10 +915,10 @@ tasks:
   changelog: BullMQ queue + worker, transfer tray with toast
 - id: '3.11'
   task_key: 3.11@TRANSFER-1
-  description: "Conflict resolution modal \u2014 shared component used everywhere"
+  description: Conflict resolution modal — shared component used everywhere
   sprint: 3
   files: /components/transfers/ConflictResolutionModal.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -930,10 +926,10 @@ tasks:
   changelog: ''
 - id: '3.15'
   task_key: 3.15@TRANSFER-1
-  description: "Rate limit handling layer \u2014 per-provider request queue"
+  description: Rate limit handling layer — per-provider request queue
   sprint: 3
   files: /lib/providers/rateLimitQueue.ts, /lib/apiClient.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: running
   commit: ''
@@ -941,10 +937,10 @@ tasks:
   changelog: ''
 - id: '4.12'
   task_key: 4.12@TRANSFER-1
-  description: "Remote upload v1 \u2014 HTTP/HTTPS URL to chosen provider"
+  description: Remote upload v1 — HTTP/HTTPS URL to chosen provider
   sprint: 4
   files: /app/api/remote-upload/route.ts, /lib/transfers/remoteUpload.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -955,7 +951,7 @@ tasks:
   description: Smart auto-placement engine v1
   sprint: 4
   files: /lib/placement/autoPlacementEngine.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -963,10 +959,10 @@ tasks:
   changelog: ''
 - id: '4.14'
   task_key: 4.14@TRANSFER-1
-  description: "Remote upload UI \u2014 dropdown in Upload action menu"
+  description: Remote upload UI — dropdown in Upload action menu
   sprint: 4
   files: /components/files/ActionBar.tsx, /components/files/RemoteUploadModal.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -977,7 +973,7 @@ tasks:
   description: E2E remote upload + placement tests
   sprint: 4
   files: /e2e/tests/remoteUpload.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: TRANSFER-1
   status: planned
   commit: ''
@@ -985,11 +981,11 @@ tasks:
   changelog: ''
 - id: '0.1'
   task_key: 0.1@ZERODISK-1
-  description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
-    \ this"
+  description: Define and commit ProviderAdapter interface — all adapters implement
+    this
   sprint: 0
   files: /lib/providers/ProviderAdapter.interface.ts, /lib/providers/types.ts
-  agent: "\u2605 CODEX (Master)"
+  agent: ★ CODEX (Master)
   gate: ZERODISK-1
   status: planned
   commit: ''
@@ -997,11 +993,10 @@ tasks:
   changelog: ''
 - id: '0.5'
   task_key: 0.5@ZERODISK-1
-  description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
-    \ strategy"
+  description: Define streaming pipeline pattern — pipeline() + backpressure strategy
   sprint: 0
   files: /lib/transfers/streamPipeline.ts, /tests/unit/streamPipeline.test.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: ZERODISK-1
   status: planned
   commit: ''
@@ -1009,11 +1004,10 @@ tasks:
   changelog: ''
 - id: '3.9'
   task_key: 3.9@ZERODISK-1
-  description: "Server streams source \u2192 CacheFlow \u2192 target without disk\
-    \ write"
+  description: Server streams source → CacheFlow → target without disk write
   sprint: 3
   files: /lib/transfers/streamTransfer.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: ZERODISK-1
   status: planned
   commit: ''
@@ -1021,11 +1015,10 @@ tasks:
   changelog: ''
 - id: '3.12'
   task_key: 3.12@ZERODISK-1
-  description: "Zero-disk verification test + tab-close survival test \u26A0\uFE0F\
-    \ Human verify"
+  description: Zero-disk verification test + tab-close survival test ⚠️ Human verify
   sprint: 3
   files: /e2e/tests/zeroDiskTransfer.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: ZERODISK-1
   status: planned
   commit: ''
@@ -1033,10 +1026,10 @@ tasks:
   changelog: ''
 - id: '0.4'
   task_key: 0.4@SSE-1
-  description: "Allocate Redis namespaces \u2014 document and enforce db separation"
+  description: Allocate Redis namespaces — document and enforce db separation
   sprint: 0
   files: /docs/architecture/redis-namespaces.md, /lib/redis/client.ts (per-db connections)
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SSE-1
   status: planned
   commit: ''
@@ -1044,10 +1037,10 @@ tasks:
   changelog: ''
 - id: '0.7'
   task_key: 0.7@SSE-1
-  description: "Define BullMQ \u2192 SSE bridge via Redis pub/sub"
+  description: Define BullMQ → SSE bridge via Redis pub/sub
   sprint: 0
   files: /lib/transfers/progressBridge.ts, /docs/architecture/sse-pattern.md
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SSE-1
   status: planned
   commit: ''
@@ -1055,12 +1048,12 @@ tasks:
   changelog: ''
 - id: '0.9'
   task_key: 0.9@SSE-1
-  description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
-    \ and block serverless/edge deployment configs in CI"
+  description: Stateful deployment guard — enforce long-running runtime targets and
+    block serverless/edge deployment configs in CI
   sprint: 0
   files: /docs/architecture/deployment-constraints.md, /scripts/check-deployment-target.sh,
     /.env.example
-  agent: "\u2605 CODEX (Master)"
+  agent: ★ CODEX (Master)
   gate: SSE-1
   status: planned
   commit: ''
@@ -1071,7 +1064,7 @@ tasks:
   description: Server-Sent Events (SSE) for real-time transfer progress
   sprint: 3
   files: /app/api/transfers/[id]/progress/route.ts, /lib/transfers/progressEmitter.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SSE-1
   status: planned
   commit: ''
@@ -1082,7 +1075,7 @@ tasks:
   description: BullMQ background job queue for async transfers
   sprint: 3
   files: /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SSE-1
   status: planned
   commit: ''
@@ -1090,11 +1083,11 @@ tasks:
   changelog: ''
 - id: '4.7'
   task_key: 4.7@SHARE-1
-  description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
-    \ (all links vs password-only)"
+  description: Share link creation — enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md
+    (all links vs password-only)
   sprint: 4
   files: /app/api/share/route.ts, /lib/share/shareLinkService.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SHARE-1
   status: planned
   commit: ''
@@ -1102,10 +1095,10 @@ tasks:
   changelog: ''
 - id: '4.8'
   task_key: 4.8@SHARE-1
-  description: "Share link proxy \u2014 hides underlying provider"
+  description: Share link proxy — hides underlying provider
   sprint: 4
   files: /app/s/[linkId]/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SHARE-1
   status: planned
   commit: ''
@@ -1113,10 +1106,10 @@ tasks:
   changelog: ''
 - id: '4.9'
   task_key: 4.9@SHARE-1
-  description: "Abuse controls \u2014 rate limits, throttling, link access logging"
+  description: Abuse controls — rate limits, throttling, link access logging
   sprint: 4
   files: /lib/share/abuseControls.ts, /app/api/share/[id]/revoke/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SHARE-1
   status: planned
   commit: ''
@@ -1124,11 +1117,11 @@ tasks:
   changelog: ''
 - id: '4.10'
   task_key: 4.10@SHARE-1
-  description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
-    \ prompt behavior must match /docs/decisions/share-link-2fa-scope.md"
+  description: Share link UI — right-click → Get Share Link panel; 2FA prompt behavior
+    must match /docs/decisions/share-link-2fa-scope.md
   sprint: 4
   files: /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: SHARE-1
   status: planned
   commit: ''
@@ -1136,10 +1129,10 @@ tasks:
   changelog: ''
 - id: '4.11'
   task_key: 4.11@SHARE-1
-  description: "E2E share link tests \u2014 create, access, expire, revoke"
+  description: E2E share link tests — create, access, expire, revoke
   sprint: 4
   files: /e2e/tests/shareLinks.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: SHARE-1
   status: planned
   commit: ''
@@ -1147,10 +1140,10 @@ tasks:
   changelog: ''
 - id: '0.3'
   task_key: 0.3@VAULT-1
-  description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
+  description: Define complete Prisma schema baseline — all tables, all relationships
   sprint: 0
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: VAULT-1
   status: planned
   commit: ''
@@ -1161,7 +1154,7 @@ tasks:
   description: Vault data model and enable/disable API
   sprint: 5
   files: /prisma/migrations/005_vault/, /app/api/vault/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: VAULT-1
   status: planned
   commit: ''
@@ -1169,10 +1162,10 @@ tasks:
   changelog: ''
 - id: '5.6'
   task_key: 5.6@VAULT-1
-  description: "Vault access gate \u2014 TOTP or PIN required to unlock"
+  description: Vault access gate — TOTP or PIN required to unlock
   sprint: 5
   files: /app/api/vault/[id]/unlock/route.ts, /lib/vault/vaultSession.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: VAULT-1
   status: planned
   commit: ''
@@ -1180,13 +1173,13 @@ tasks:
   changelog: ''
 - id: '5.7'
   task_key: 5.7@VAULT-1
-  description: "Vault UI \u2014 lock icon in sidebar, hidden from All Files; non-encryption\
-    \ disclaimer at setup, unlock modal, and folder header; user-facing name follows\
-    \ /docs/decisions/vault-naming-decision.md"
+  description: Vault UI — lock icon in sidebar, hidden from All Files; non-encryption
+    disclaimer at setup, unlock modal, and folder header; user-facing name follows
+    /docs/decisions/vault-naming-decision.md
   sprint: 5
   files: /components/Sidebar/VaultFolderRow.tsx, /components/vault/UnlockVaultModal.tsx,
     /app/files/page.tsx (filter vault items)
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: VAULT-1
   status: planned
   commit: ''
@@ -1194,10 +1187,10 @@ tasks:
   changelog: ''
 - id: '5.8'
   task_key: 5.8@VAULT-1
-  description: "E2E vault tests \u2014 enable, lock, unlock, auto-lock"
+  description: E2E vault tests — enable, lock, unlock, auto-lock
   sprint: 5
   files: /e2e/tests/vault.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: VAULT-1
   status: planned
   commit: ''
@@ -1205,10 +1198,10 @@ tasks:
   changelog: ''
 - id: '3.13'
   task_key: 3.13@SCHED-1
-  description: "Storage pooling dashboard \u2014 promote aggregate to hero position"
+  description: Storage pooling dashboard — promote aggregate to hero position
   sprint: 3
   files: /app/dashboard/page.tsx, /components/dashboard/StorageHero.tsx, /components/dashboard/ProviderCapacityBar.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: SCHED-1
   status: planned
   commit: ''
@@ -1219,7 +1212,7 @@ tasks:
   description: Scheduled job data model and Schedules management UI
   sprint: 5
   files: /prisma/migrations/004_scheduled_jobs/, /app/api/jobs/route.ts, /lib/jobs/scheduledJobService.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SCHED-1
   status: planned
   commit: ''
@@ -1227,10 +1220,10 @@ tasks:
   changelog: ''
 - id: '5.2'
   task_key: 5.2@SCHED-1
-  description: "BullMQ cron worker \u2014 jobs run server-side, browser closed"
+  description: BullMQ cron worker — jobs run server-side, browser closed
   sprint: 5
   files: /lib/queue/workers/scheduledJobWorker.ts, /lib/jobs/jobEngine.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SCHED-1
   status: planned
   commit: ''
@@ -1238,10 +1231,10 @@ tasks:
   changelog: ''
 - id: '5.3'
   task_key: 5.3@SCHED-1
-  description: "Schedules page UI \u2014 create, edit, pause, delete jobs"
+  description: Schedules page UI — create, edit, pause, delete jobs
   sprint: 5
   files: /app/schedules/page.tsx, /components/schedules/JobCard.tsx, /components/schedules/CreateJobModal.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: SCHED-1
   status: planned
   commit: ''
@@ -1249,11 +1242,10 @@ tasks:
   changelog: ''
 - id: '5.4'
   task_key: 5.4@SCHED-1
-  description: "E2E scheduled job test \u2014 runs with browser closed \u26A0\uFE0F\
-    \ Human verify"
+  description: E2E scheduled job test — runs with browser closed ⚠️ Human verify
   sprint: 5
   files: /e2e/tests/scheduledJobs.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: SCHED-1
   status: planned
   commit: ''
@@ -1261,10 +1253,10 @@ tasks:
   changelog: ''
 - id: '5.9'
   task_key: 5.9@SEARCH-1
-  description: "Duplicate detection \u2014 filename + size cross-provider comparison"
+  description: Duplicate detection — filename + size cross-provider comparison
   sprint: 5
   files: /lib/cleanup/duplicateDetector.ts, /app/api/cleanup/duplicates/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SEARCH-1
   status: planned
   commit: ''
@@ -1275,7 +1267,7 @@ tasks:
   description: Stale file detection + cleanup UI
   sprint: 5
   files: /app/cleanup/page.tsx, /components/cleanup/DuplicateGroup.tsx, /components/cleanup/StaleFileList.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: SEARCH-1
   status: planned
   commit: ''
@@ -1283,10 +1275,10 @@ tasks:
   changelog: ''
 - id: '5.11'
   task_key: 5.11@SEARCH-1
-  description: "Global cross-provider search v1 \u2014 name/metadata, ephemeral cache"
+  description: Global cross-provider search v1 — name/metadata, ephemeral cache
   sprint: 5
   files: /app/api/search/route.ts, /lib/search/crossProviderSearch.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SEARCH-1
   status: planned
   commit: ''
@@ -1297,7 +1289,7 @@ tasks:
   description: Search UI + performance test
   sprint: 5
   files: /components/search/GlobalSearchBar.tsx, /components/search/SearchResults.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: SEARCH-1
   status: planned
   commit: ''
@@ -1308,7 +1300,7 @@ tasks:
   description: E2E search + duplicate detection tests
   sprint: 5
   files: /e2e/tests/search.spec.ts, /e2e/tests/duplicateCleanup.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: SEARCH-1
   status: planned
   commit: ''
@@ -1316,10 +1308,10 @@ tasks:
   changelog: ''
 - id: '1.4'
   task_key: 1.4@SEC-1
-  description: "Token Vault v1 \u2014 encrypted at-rest provider credentials"
+  description: Token Vault v1 — encrypted at-rest provider credentials
   sprint: 1
   files: /lib/vault/tokenVault.ts, /prisma/migrations/001_token_vault/
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SEC-1
   status: done
   commit: 9fe35b97ff93
@@ -1327,10 +1319,10 @@ tasks:
   changelog: 'chore: compliance closeout and per-agent sprint prompts'
 - id: '1.18'
   task_key: 1.18@SEC-1
-  description: "Security baseline \u2014 remove defaults, harden secrets"
+  description: Security baseline — remove defaults, harden secrets
   sprint: 1
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SEC-1
   status: done
   commit: a0832192b9e9
@@ -1341,7 +1333,7 @@ tasks:
   description: SSH2 connection manager with LRU session reuse
   sprint: 4
   files: /lib/providers/vps/sshConnectionManager.ts, /lib/providers/vps/VPSAdapter.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SEC-1
   status: planned
   commit: ''
@@ -1352,7 +1344,7 @@ tasks:
   description: AES-256-GCM encrypted credential storage for VPS/WebDAV
   sprint: 4
   files: /lib/vault/credentialVault.ts, /app/api/connections/vps/route.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: SEC-1
   status: planned
   commit: ''
@@ -1363,7 +1355,7 @@ tasks:
   description: VPS parity test + credential security test
   sprint: 4
   files: /e2e/tests/providers/vps.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: SEC-1
   status: planned
   commit: ''
@@ -1374,7 +1366,7 @@ tasks:
   description: PWA manifest + next-pwa service worker (app shell only)
   sprint: 6
   files: /public/manifest.json, /next.config.js (next-pwa), /app/offline/page.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1382,10 +1374,10 @@ tasks:
   changelog: ''
 - id: '6.2'
   task_key: 6.2@LAUNCH-1
-  description: "SEO landing page \u2014 storage calculator + provider grid"
+  description: SEO landing page — storage calculator + provider grid
   sprint: 6
   files: /app/(marketing)/page.tsx, /components/marketing/StorageCalculator.tsx, /app/(marketing)/layout.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1396,7 +1388,7 @@ tasks:
   description: PWA install + offline E2E tests
   sprint: 6
   files: /e2e/tests/pwa.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1407,7 +1399,7 @@ tasks:
   description: Billing and subscription tier model
   sprint: 6
   files: /lib/billing/stripe.ts, /app/api/billing/**, /prisma/migrations/006_billing/
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1415,10 +1407,10 @@ tasks:
   changelog: ''
 - id: '6.5'
   task_key: 6.5@LAUNCH-1
-  description: "Tier enforcement \u2014 limits enforced reliably at API layer"
+  description: Tier enforcement — limits enforced reliably at API layer
   sprint: 6
   files: /lib/billing/tierEnforcement.ts, /middleware.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1426,10 +1418,10 @@ tasks:
   changelog: ''
 - id: '6.6'
   task_key: 6.6@LAUNCH-1
-  description: "Affiliate storage calculator \u2014 only shown post-transfer-reliability"
+  description: Affiliate storage calculator — only shown post-transfer-reliability
   sprint: 6
   files: /components/dashboard/AffiliatePanel.tsx
-  agent: "\u25C6 ClaudeCode"
+  agent: ◆ ClaudeCode
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1437,10 +1429,10 @@ tasks:
   changelog: ''
 - id: '6.7'
   task_key: 6.7@LAUNCH-1
-  description: "Billing E2E \u2014 limits enforced, upgrade/downgrade safe"
+  description: Billing E2E — limits enforced, upgrade/downgrade safe
   sprint: 6
   files: /e2e/tests/billing.spec.ts
-  agent: "\u25C9 Gemini"
+  agent: ◉ Gemini
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1448,10 +1440,10 @@ tasks:
   changelog: ''
 - id: 6.8A
   task_key: 6.8A@LAUNCH-1
-  description: "[OPTION A] Rich version history + unified trash \u2014 RECOMMENDED"
+  description: '[OPTION A] Rich version history + unified trash — RECOMMENDED'
   sprint: 6
   files: /lib/providers/*/trash.ts, /app/trash/page.tsx, /components/files/VersionHistoryPanel.tsx
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1459,11 +1451,10 @@ tasks:
   changelog: ''
 - id: 6.8B
   task_key: 6.8B@LAUNCH-1
-  description: "[OPTION B] Collabora Online (full Office editing) \u2014 HIGH INFRA\
-    \ COST"
+  description: '[OPTION B] Collabora Online (full Office editing) — HIGH INFRA COST'
   sprint: 6
   files: /docker-compose.collabora.yml, /app/api/wopi/**, /components/editor/CollaboraEditor.tsx
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: LAUNCH-1
   status: planned
   commit: ''
@@ -1471,10 +1462,10 @@ tasks:
   changelog: ''
 - id: 6.8C
   task_key: 6.8C@LAUNCH-1
-  description: "[OPTION C] Magnet/torrent remote upload \u2014 REQUIRES ABUSE CONTROLS"
+  description: '[OPTION C] Magnet/torrent remote upload — REQUIRES ABUSE CONTROLS'
   sprint: 6
   files: /lib/transfers/torrentUpload.ts, /lib/queue/workers/torrentWorker.ts
-  agent: "\u25C8 OpenCode"
+  agent: ◈ OpenCode
   gate: LAUNCH-1
   status: planned
   commit: ''
