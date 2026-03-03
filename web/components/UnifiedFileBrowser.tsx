@@ -570,8 +570,29 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             )}
             {selectedProvider === 'activity' ? <ActivityFeed />
             : selectedProvider === 'starred' ? <StarredView onFileClick={handleFileOpen} onRemoveFavorite={async (fileId, provider, accountKey) => { await handleToggleFavorite({ id: fileId, provider, accountKey } as any) }} />
-            : loading && files.length === 0 ? <div className="py-12 flex justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>
-            : (
+            : loading && files.length === 0 ? (
+              /* UI-P1-T06: Loading state card */
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 max-w-sm text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Loading files...</h3>
+                  <p className="text-sm text-gray-500">Fetching your files from connected providers</p>
+                </div>
+              </div>
+            ) : !loading && files.length === 0 ? (
+              /* UI-P1-T06: Empty state card */
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 max-w-sm text-center">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No files yet</h3>
+                  <p className="text-sm text-gray-500 mb-4">This folder is empty. Upload files or create a new folder to get started.</p>
+                </div>
+              </div>
+            ) : (
               <div className="space-y-10">
                 {/* When aggregated mode is on, force flat list regardless of grouped/flat toggle */}
                 {isAggregatedView ? (
