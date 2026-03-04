@@ -1,0 +1,52 @@
+name: CacheFlow Orchestrator
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - orchestrator
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    env:
+      OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+      CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Capture sprint context
+        id: sprint
+        shell: bash
+        run: |
+          if [ -f logs/orchestrator-state.json ]; then
+            sprint=$(node -e 'const fs=require("fs"); const p="logs/orchestrator-state.json"; const s=JSON.parse(fs.readFileSync(p,"utf8")); process.stdout.write(String(s.current_sprint ?? "unknown"));')
+          else
+            sprint="unknown"
+          fi
+          echo "current_sprint=$sprint" >> "$GITHUB_OUTPUT"
+
+      - name: Run orchestrator
+        run: npx ts-node scripts/orchestrate.ts
+
+      - name: Upload orchestration logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orchestration-logs-sprint-${{ steps.sprint.outputs.current_sprint }}
+          path: logs/
+          if-no-files-found: warn

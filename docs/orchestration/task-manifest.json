@@ -1,0 +1,3276 @@
+{
+  "version": "4.3",
+  "generated_at": "2026-03-03T23:35:21.368389+00:00",
+  "source_document": "/docs/CacheFlow_AgentRoadmap_v4_3.docx",
+  "source_snapshot": {
+    "docx_text_lines": 3078,
+    "task_rows": 122,
+    "unique_task_ids": 106
+  },
+  "scope_constraints": {
+    "codex": {
+      "allowed": [
+        "all files (read)",
+        "task manifests",
+        "gate verdicts",
+        "merge decisions",
+        "sprint contracts"
+      ],
+      "forbidden": [
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
+      ]
+    },
+    "opencode": {
+      "allowed": [
+        "/api/**",
+        "/lib/**",
+        "/prisma/**",
+        "/server/**",
+        "package.json (server deps)"
+      ],
+      "forbidden": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ]
+    },
+    "claudecode": {
+      "allowed": [
+        "/app/**",
+        "/components/**",
+        "/styles/**",
+        "/hooks/**",
+        "/context/**"
+      ],
+      "forbidden": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ]
+    },
+    "gemini": {
+      "allowed": [
+        "/tests/**",
+        "/e2e/**",
+        "/scripts/**",
+        "/.github/workflows/**"
+      ],
+      "forbidden": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ]
+    }
+  },
+  "criteria": {
+    "AUTH-1": {
+      "description": "Two auth runs 90 min apart \u2014 zero 401 loops, full file listings both times",
+      "sprint_reference": "Sprint 1 \u00b7 1.1\u20131.7"
+    },
+    "AUTH-2": {
+      "description": "All tokens stored server-side; no accessToken/refreshToken in any client-visible API response",
+      "sprint_reference": "Sprint 1 \u00b7 1.2\u20131.4"
+    },
+    "AUTH-3": {
+      "description": "HttpOnly cookies only; localStorage contains no token data",
+      "sprint_reference": "Sprint 1 \u00b7 1.3"
+    },
+    "AUTH-4": {
+      "description": "Singleton refresh promise \u2014 concurrent 401s resolve to a single refresh, never multiple",
+      "sprint_reference": "Sprint 0 \u00b7 0.6"
+    },
+    "MODAL-1": {
+      "description": "All 9 Connect buttons open correct modal with correct form (automated Playwright)",
+      "sprint_reference": "Sprint 1 \u00b7 1.11"
+    },
+    "UUID-1": {
+      "description": "Zero UUID-named folders in any connected provider after clean run",
+      "sprint_reference": "Sprint 1 \u00b7 1.12\u20131.15"
+    },
+    "SYNC-1": {
+      "description": "Connections page = Sidebar \u2014 identical on 10 consecutive loads",
+      "sprint_reference": "Sprint 1 \u00b7 1.16"
+    },
+    "UPLOAD-1": {
+      "description": "File upload produces visible feedback (success + failure); list refreshes; zero silent outcomes",
+      "sprint_reference": "Sprint 2 \u00b7 2.2"
+    },
+    "PREVIEW-1": {
+      "description": "Supported types open preview panel; unsupported show Download CTA; toast bottom-right only",
+      "sprint_reference": "Sprint 2 \u00b7 2.6\u20132.7"
+    },
+    "ACTIONS-1": {
+      "description": "Right-click menu = three-dot menu exactly; multi-select toolbar on \u22652 selections only",
+      "sprint_reference": "Sprint 2 \u00b7 2.4"
+    },
+    "NAV-1": {
+      "description": "Exactly 6 nav items; Connections is sole source of truth; no orphaned routes",
+      "sprint_reference": "Sprint 2 \u00b7 2.9"
+    },
+    "RESP-1": {
+      "description": "All core views render at 375px \u2014 no horizontal scroll",
+      "sprint_reference": "Sprint 2 \u00b7 2.12"
+    },
+    "2FA-1": {
+      "description": "2FA enable/use/disable full cycle passes; backup codes work; share links blocked without 2FA",
+      "sprint_reference": "Sprint 2 \u00b7 2.13\u20132.16"
+    },
+    "TRANSFER-1": {
+      "description": "1GB transfer with mid-transfer network drop resumes from last chunk, not from 0",
+      "sprint_reference": "Sprint 3 \u00b7 3.5\u20133.6"
+    },
+    "ZERODISK-1": {
+      "description": "No file bytes written to server disk during cross-provider transfer (instrumented)",
+      "sprint_reference": "Sprint 3 \u00b7 3.9"
+    },
+    "SSE-1": {
+      "description": "BullMQ worker progress reaches SSE client via Redis pub/sub \u2014 works across multiple Node instances",
+      "sprint_reference": "Sprint 0 \u00b7 0.7"
+    },
+    "SHARE-1": {
+      "description": "Share link: create/access/expire/revoke all work; abuse controls enforced",
+      "sprint_reference": "Sprint 4 \u00b7 4.7\u20134.11"
+    },
+    "VAULT-1": {
+      "description": "Vault hides content from All Files + Search; requires PIN; auto-locks; 2FA prerequisite enforced",
+      "sprint_reference": "Sprint 5 \u00b7 5.5\u20135.8"
+    },
+    "SCHED-1": {
+      "description": "Scheduled job runs with browser closed; produces job history log",
+      "sprint_reference": "Sprint 5 \u00b7 5.1\u20135.4"
+    },
+    "SEARCH-1": {
+      "description": "Cross-provider search returns results within 3s for \u226410k files; no persistent server-side index",
+      "sprint_reference": "Sprint 5 \u00b7 5.11"
+    },
+    "SEC-1": {
+      "description": "VPS/WebDAV credentials never in API response after save; provider secrets never in browser",
+      "sprint_reference": "Sprint 4 \u00b7 4.5"
+    },
+    "LAUNCH-1": {
+      "description": "Affiliate panel hidden from users with zero successful transfers",
+      "sprint_reference": "Sprint 6 \u00b7 6.6"
+    },
+    "HOLD-UI-2026-03-02": {
+      "description": "Phase 1 UI stabilization tasks block non-UI feature work until complete",
+      "sprint_reference": "Sprint 2 \u00b7 UI-P1-T01-UI-P1-T06"
+    },
+    "QA-1": {
+      "description": "E2E preflight validates API readiness and watcher-driven unblock flow for Playwright execution",
+      "sprint_reference": "Sprint 2 \u00b7 OPS-E2E-READY, OPS-QA-WATCH"
+    }
+  },
+  "sprints": {
+    "0": {
+      "wave1": [
+        "0.1",
+        "0.2",
+        "0.3",
+        "0.4",
+        "0.5",
+        "0.6",
+        "0.7",
+        "0.9"
+      ],
+      "wave2": [
+        "0.4a"
+      ],
+      "wave3": [],
+      "gate_criteria": [
+        "AUTH-1",
+        "AUTH-2",
+        "AUTH-4",
+        "SSE-1",
+        "TRANSFER-1",
+        "VAULT-1",
+        "ZERODISK-1"
+      ]
+    },
+    "1": {
+      "wave1": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "wave2": [
+        "1.6",
+        "1.7",
+        "1.8",
+        "1.9",
+        "1.10",
+        "1.11",
+        "1.17",
+        "1.19"
+      ],
+      "wave3": [],
+      "gate_criteria": [
+        "AUTH-1",
+        "AUTH-2",
+        "AUTH-3",
+        "AUTH-4",
+        "MODAL-1",
+        "SEC-1",
+        "SYNC-1",
+        "UUID-1"
+      ]
+    },
+    "2": {
+      "wave1": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "wave2": [
+        "2.1",
+        "2.3",
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "2.8",
+        "2.9",
+        "2.10",
+        "2.11",
+        "2.12",
+        "2.14",
+        "2.15",
+        "2.16",
+        "OPS-QA-WATCH",
+        "UI-P1-T01",
+        "UI-P1-T03",
+        "UI-P1-T06"
+      ],
+      "wave3": [],
+      "gate_criteria": [
+        "2FA-1",
+        "ACTIONS-1",
+        "HOLD-UI-2026-03-02",
+        "NAV-1",
+        "PREVIEW-1",
+        "QA-1",
+        "RESP-1",
+        "UPLOAD-1"
+      ]
+    },
+    "3": {
+      "wave1": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "wave2": [
+        "3.1",
+        "3.4",
+        "3.7",
+        "3.8",
+        "3.11",
+        "3.12",
+        "3.13",
+        "3.16"
+      ],
+      "wave3": [],
+      "gate_criteria": [
+        "SCHED-1",
+        "SSE-1",
+        "SYNC-1",
+        "TRANSFER-1",
+        "ZERODISK-1"
+      ]
+    },
+    "4": {
+      "wave1": [
+        "4.1",
+        "4.2",
+        "4.4",
+        "4.5",
+        "4.7",
+        "4.8",
+        "4.9",
+        "4.12",
+        "4.13"
+      ],
+      "wave2": [
+        "4.3",
+        "4.6",
+        "4.10",
+        "4.11",
+        "4.14",
+        "4.15"
+      ],
+      "wave3": [],
+      "gate_criteria": [
+        "2FA-1",
+        "AUTH-1",
+        "SEC-1",
+        "SHARE-1",
+        "TRANSFER-1"
+      ]
+    },
+    "5": {
+      "wave1": [
+        "5.1",
+        "5.2",
+        "5.5",
+        "5.6",
+        "5.9",
+        "5.11"
+      ],
+      "wave2": [
+        "5.3",
+        "5.4",
+        "5.7",
+        "5.8",
+        "5.10",
+        "5.12",
+        "5.13"
+      ],
+      "wave3": [],
+      "gate_criteria": [
+        "SCHED-1",
+        "SEARCH-1",
+        "VAULT-1"
+      ]
+    },
+    "6": {
+      "wave1": [
+        "6.4",
+        "6.5",
+        "6.8A",
+        "6.8B",
+        "6.8C"
+      ],
+      "wave2": [
+        "6.1",
+        "6.2",
+        "6.3",
+        "6.6",
+        "6.7"
+      ],
+      "wave3": [],
+      "gate_criteria": [
+        "LAUNCH-1"
+      ]
+    }
+  },
+  "tasks": [
+    {
+      "id": "0.1",
+      "sprint": 0,
+      "wave": 1,
+      "agent": "codex",
+      "title": "Define and commit ProviderAdapter interface \u2014 all adapters implement this",
+      "files": [
+        "/lib/providers/ProviderAdapter.interface.ts",
+        "/lib/providers/types.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.1.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-1",
+        "TRANSFER-1",
+        "ZERODISK-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "0.2",
+      "sprint": 0,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Define AppError taxonomy and ErrorCode enum",
+      "files": [
+        "/lib/errors/AppError.ts",
+        "/lib/errors/ErrorCode.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.2.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-1",
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "0.3",
+      "sprint": 0,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Define complete Prisma schema baseline \u2014 all tables, all relationships",
+      "files": [
+        "/prisma/schema.prisma",
+        "/docs/architecture/data-model.md"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.3.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-2",
+        "TRANSFER-1",
+        "VAULT-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "0.4",
+      "sprint": 0,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Allocate Redis namespaces \u2014 document and enforce db separation",
+      "files": [
+        "/docs/architecture/redis-namespaces.md",
+        "/lib/redis/client.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.4.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SSE-1",
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "0.5",
+      "sprint": 0,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Define streaming pipeline pattern \u2014 pipeline() + backpressure strategy",
+      "files": [
+        "/lib/transfers/streamPipeline.ts",
+        "/tests/unit/streamPipeline.test.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.5.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "TRANSFER-1",
+        "ZERODISK-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "0.6",
+      "sprint": 0,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Define singleton refresh promise pattern \u2014 prevent concurrent token refresh race",
+      "files": [
+        "/lib/auth/refreshGuard.ts",
+        "/docs/architecture/auth-patterns.md",
+        "/tests/unit/refreshGuard.test.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.6.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-4"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "0.7",
+      "sprint": 0,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Define BullMQ \u2192 SSE bridge via Redis pub/sub",
+      "files": [
+        "/lib/transfers/progressBridge.ts",
+        "/docs/architecture/sse-pattern.md"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.7.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SSE-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "0.9",
+      "sprint": 0,
+      "wave": 1,
+      "agent": "codex",
+      "title": "Stateful deployment guard \u2014 enforce long-running runtime targets and block serverless/edge deployment configs in CI",
+      "files": [
+        "/docs/architecture/deployment-constraints.md",
+        "/scripts/check-deployment-target.sh",
+        "/.env.example"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.9.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SSE-1",
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "0.4a",
+      "sprint": 0,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to deterministic UI behavior and default toast fallback",
+      "files": [
+        "/docs/contracts/errorcode-ui-actions.md"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/0.4a.md",
+      "depends_on_contracts": [
+        "0.1",
+        "0.2",
+        "0.3",
+        "0.4",
+        "0.5",
+        "0.6",
+        "0.7",
+        "0.9"
+      ],
+      "acceptance_criteria": [
+        "AUTH-1",
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.1",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Create global HTTP interceptor for all /api/remotes proxy calls",
+      "files": [
+        "/lib/apiClient.ts",
+        "/lib/interceptors/authInterceptor.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.1.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-1",
+        "AUTH-4"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.2",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Implement silent token refresh endpoint",
+      "files": [
+        "/app/api/auth/refresh/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.2.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-2"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.3",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Migrate from localStorage TokenManager to HttpOnly cookies",
+      "files": [
+        "/lib/tokenManager.ts",
+        "/lib/auth/cookieAuth.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.3.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-3"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.4",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Token Vault v1 \u2014 encrypted at-rest provider credentials",
+      "files": [
+        "/lib/vault/tokenVault.ts",
+        "/prisma/migrations/001_token_vault/"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.4.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-2",
+        "SEC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.5",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Multi-account schema \u2014 up to 3 accounts per provider",
+      "files": [
+        "/prisma/migrations/002_multi_account/",
+        "/lib/vault/tokenVault.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.5.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.12",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "codex",
+      "title": "Audit upload pipeline \u2014 locate all UUID injection points",
+      "files": [
+        "/api/remotes/**",
+        "/lib/providers/**",
+        "/lib/uploads/**"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.12.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "UUID-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.13",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Fix upload pipeline to preserve original File.name",
+      "files": [
+        "/lib/providers/googleDrive.ts",
+        "/lib/providers/onedrive.ts",
+        "/lib/providers/dropbox.ts",
+        "/lib/uploads/uploadManager.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.13.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "UUID-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.14",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Write and run migration script in staging",
+      "files": [
+        "/scripts/migrate-files-no-uuid.js"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.14.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "UUID-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.15",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "codex",
+      "title": "Validate and apply migration to production",
+      "files": [
+        "/scripts/migrate-files-no-uuid.js"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.15.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "UUID-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.16",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Connections page and sidebar read from single server state store",
+      "files": [
+        "/app/api/connections/route.ts",
+        "/components/Sidebar.tsx",
+        "/app/connections/page.tsx"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.16.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SYNC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.18",
+      "sprint": 1,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Security baseline \u2014 remove defaults, harden secrets",
+      "files": [
+        "/lib/auth/**",
+        "/app/api/**/route.ts",
+        "/middleware.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/1.18.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-2",
+        "SEC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.6",
+      "sprint": 1,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Remove client-side token sync pattern entirely",
+      "files": [
+        "/app/api/auth/sync-token/",
+        "/components/providers/**"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/1.6.md",
+      "depends_on_contracts": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "acceptance_criteria": [
+        "AUTH-3"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.7",
+      "sprint": 1,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Write Playwright token expiry test",
+      "files": [
+        "/e2e/tests/tokenExpiry.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/1.7.md",
+      "depends_on_contracts": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "acceptance_criteria": [
+        "AUTH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.8",
+      "sprint": 1,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Replace shared modal boolean with provider discriminator enum",
+      "files": [
+        "/context/IntegrationContext.tsx",
+        "/components/modals/ConnectProviderModal.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/1.8.md",
+      "depends_on_contracts": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "acceptance_criteria": [
+        "MODAL-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.9",
+      "sprint": 1,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Implement correct forms for WebDAV and VPS/SFTP modals",
+      "files": [
+        "/components/modals/WebDAVModal.tsx",
+        "/components/modals/VPSModal.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/1.9.md",
+      "depends_on_contracts": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "acceptance_criteria": [
+        "MODAL-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.10",
+      "sprint": 1,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Clear modal state on close and provider switch",
+      "files": [
+        "/context/IntegrationContext.tsx",
+        "/components/modals/ConnectProviderModal.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/1.10.md",
+      "depends_on_contracts": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "acceptance_criteria": [
+        "MODAL-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.11",
+      "sprint": 1,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Write Playwright modal test \u2014 all 9 provider Connect buttons",
+      "files": [
+        "/e2e/tests/providerModals.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/1.11.md",
+      "depends_on_contracts": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "acceptance_criteria": [
+        "MODAL-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.17",
+      "sprint": 1,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Replace SESSION_EXPIRED raw text with actionable component",
+      "files": [
+        "/components/SessionExpiredBanner.tsx",
+        "/components/Sidebar/AccountRow.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/1.17.md",
+      "depends_on_contracts": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "acceptance_criteria": [
+        "AUTH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "1.19",
+      "sprint": 1,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Security audit test \u2014 verify no secrets in API responses",
+      "files": [
+        "/e2e/tests/securityAudit.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/1.19.md",
+      "depends_on_contracts": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.12",
+        "1.13",
+        "1.14",
+        "1.15",
+        "1.16",
+        "1.18"
+      ],
+      "acceptance_criteria": [
+        "AUTH-2"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.2",
+      "sprint": 2,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Implement file upload with progress and toast",
+      "files": [
+        "/app/api/remotes/[uuid]/upload/route.ts",
+        "/lib/providers/*/upload.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/2.2.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "UPLOAD-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.13",
+      "sprint": 2,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "TOTP setup flow \u2014 QR generation, verification, backup codes",
+      "files": [
+        "/app/api/auth/2fa/**",
+        "/lib/auth/totp.ts",
+        "/prisma/migrations/003_2fa/"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/2.13.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "2FA-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "OPS-E2E-READY",
+      "sprint": 2,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Add Playwright preflight wait-for-api on 127.0.0.1:8100",
+      "files": [
+        "/web/playwright.config.ts",
+        "/web/e2e/fixtures/global-setup.ts",
+        "/web/e2e/fixtures/global-teardown.ts",
+        "/web/e2e/fixtures/README.md"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/OPS-E2E-READY.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "QA-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "UI-P1-T02",
+      "sprint": 2,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)",
+      "files": [
+        "/app/api/remotes/[uuid]/proxy/route.ts",
+        "/lib/apiClient.ts",
+        "/lib/interceptors/authInterceptor.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/UI-P1-T02.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "HOLD-UI-2026-03-02"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "UI-P1-T04",
+      "sprint": 2,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Restore file actions path (rename/move/download/delete) for connected drives",
+      "files": [
+        "/components/UnifiedFileBrowser.tsx",
+        "/app/api/remotes/[uuid]/**"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/UI-P1-T04.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "HOLD-UI-2026-03-02"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "UI-P1-T05",
+      "sprint": 2,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Add explicit UI error surfaces for failed sync/proxy/favorites requests",
+      "files": [
+        "/components/UnifiedFileBrowser.tsx",
+        "/lib/ui/toast.ts",
+        "/app/api/connections/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/UI-P1-T05.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "HOLD-UI-2026-03-02"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.1",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Add persistent Upload / New Folder / Refresh action bar",
+      "files": [
+        "/app/files/page.tsx",
+        "/components/files/ActionBar.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.1.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "UPLOAD-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.3",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "File table: single click select + right panel, double click open",
+      "files": [
+        "/components/files/FileTable.tsx",
+        "/components/files/FileDetailPanel.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.3.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "ACTIONS-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.4",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Three-dot row menu + right-click context menu (identical)",
+      "files": [
+        "/components/files/FileContextMenu.tsx",
+        "/components/files/MultiSelectToolbar.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.4.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "ACTIONS-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.5",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Write E2E tests for all file action entry points",
+      "files": [
+        "/e2e/tests/fileActions.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.5.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "ACTIONS-1",
+        "UPLOAD-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.6",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Fix preview panel mount \u2014 \"Opening\" toast must open a panel; enforce CSP for image/PDF/text previews with Playwright zero-CSP-error verification",
+      "files": [
+        "/components/files/PreviewPanel.tsx",
+        "/components/files/previewTypes.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.6.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "PREVIEW-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.7",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Unsupported file types: immediate Download CTA via server-proxied /api/remotes/{uuid}/download/{fileId}; never expose raw provider URLs",
+      "files": [
+        "/components/files/PreviewPanel.tsx",
+        "/lib/files/mimeTypes.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.7.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "PREVIEW-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.8",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "E2E preview tests \u2014 supported and unsupported types",
+      "files": [
+        "/e2e/tests/filePreview.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.8.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "PREVIEW-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.9",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Merge Cloud Drives / Providers / Integrations \u2192 Connections",
+      "files": [
+        "/app/connections/page.tsx",
+        "/components/Sidebar/NavItems.tsx",
+        "/app/providers/",
+        "/app/integrations/"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.9.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "NAV-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.10",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "File table visual polish \u2014 skeleton loaders, hover, separators",
+      "files": [
+        "/components/files/FileTable.tsx",
+        "/components/Sidebar/AccountRow.tsx",
+        "/styles/files.css"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.10.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "RESP-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.11",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Sidebar collapsible accordion per provider group",
+      "files": [
+        "/components/Sidebar/ProviderGroup.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.11.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "RESP-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.12",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Responsive layout pass \u2014 375px viewport minimum",
+      "files": [
+        "/components/Sidebar/**",
+        "/app/files/page.tsx",
+        "/app/connections/page.tsx",
+        "/styles/layout.css"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.12.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "RESP-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.14",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "TOTP login challenge UI",
+      "files": [
+        "/app/auth/2fa-challenge/page.tsx",
+        "/components/auth/TOTPInput.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.14.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "2FA-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.15",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Settings: manage 2FA, backup codes, last-used timestamp",
+      "files": [
+        "/app/settings/security/page.tsx",
+        "/components/settings/TwoFAPanel.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.15.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "2FA-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "2.16",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "E2E 2FA tests \u2014 full enable/use/disable cycle",
+      "files": [
+        "/e2e/tests/twoFA.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/2.16.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "2FA-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "OPS-QA-WATCH",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Run QA watcher loop: detect dependency unlocks, claim ready Gemini E2E tasks, and emit blocker reports",
+      "files": [
+        "/web/e2e/**",
+        "/monitoring/task_history.yaml",
+        "/docs/prompts/**",
+        "/BLOCKER_QA_SEED.md"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/OPS-QA-WATCH.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "QA-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "UI-P1-T01",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Fix Cloud Drives page empty or unclear connected state",
+      "files": [
+        "/components/Sidebar.tsx",
+        "/components/UnifiedFileBrowser.tsx",
+        "/app/connections/page.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/UI-P1-T01.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "HOLD-UI-2026-03-02"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "UI-P1-T03",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Fix preview panel open reliability from file rows and overflow Open",
+      "files": [
+        "/components/PreviewPanel.tsx",
+        "/components/UnifiedFileBrowser.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/UI-P1-T03.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "HOLD-UI-2026-03-02"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "UI-P1-T06",
+      "sprint": 2,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Add clear loading, empty, and error state cards in file pane",
+      "files": [
+        "/components/UnifiedFileBrowser.tsx",
+        "/components/Sidebar.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/UI-P1-T06.md",
+      "depends_on_contracts": [
+        "2.2",
+        "2.13",
+        "OPS-E2E-READY",
+        "UI-P1-T02",
+        "UI-P1-T04",
+        "UI-P1-T05"
+      ],
+      "acceptance_criteria": [
+        "HOLD-UI-2026-03-02"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.2",
+      "sprint": 3,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Server-Sent Events (SSE) for real-time transfer progress",
+      "files": [
+        "/app/api/transfers/[id]/progress/route.ts",
+        "/lib/transfers/progressEmitter.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/3.2.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SSE-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.3",
+      "sprint": 3,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Every file operation produces tray entry + toast",
+      "files": [
+        "/lib/transfers/transferRegistry.ts",
+        "/app/api/remotes/[uuid]/**/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/3.3.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.5",
+      "sprint": 3,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Chunked upload: files >50MB use provider resumable upload APIs",
+      "files": [
+        "/lib/providers/googleDrive/chunkedUpload.ts",
+        "/lib/providers/onedrive/chunkedUpload.ts",
+        "/lib/providers/dropbox/chunkedUpload.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/3.5.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.6",
+      "sprint": 3,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Auto-resume: resume interrupted upload from last successful chunk",
+      "files": [
+        "/app/api/transfers/[id]/chunks/route.ts",
+        "/lib/transfers/chunkStateManager.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/3.6.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.9",
+      "sprint": 3,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Server streams source \u2192 CacheFlow \u2192 target without disk write",
+      "files": [
+        "/lib/transfers/streamTransfer.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/3.9.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "ZERODISK-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.10",
+      "sprint": 3,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "BullMQ background job queue for async transfers",
+      "files": [
+        "/lib/queue/transferQueue.ts",
+        "/lib/queue/workers/transferWorker.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/3.10.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SSE-1",
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.14",
+      "sprint": 3,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Provider health indicators \u2014 green means it actually works",
+      "files": [
+        "/lib/providers/healthCheck.ts",
+        "/app/api/connections/health/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/3.14.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SYNC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.15",
+      "sprint": 3,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Rate limit handling layer \u2014 per-provider request queue",
+      "files": [
+        "/lib/providers/rateLimitQueue.ts",
+        "/lib/apiClient.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/3.15.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.1",
+      "sprint": 3,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Persistent Transfer Manager Tray \u2014 always visible when active",
+      "files": [
+        "/components/transfers/TransferTray.tsx",
+        "/components/transfers/TransferItem.tsx",
+        "/context/TransferContext.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/3.1.md",
+      "depends_on_contracts": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.4",
+      "sprint": 3,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Tray E2E \u2014 entry survives navigation, retry works on failure",
+      "files": [
+        "/e2e/tests/transferTray.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/3.4.md",
+      "depends_on_contracts": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.7",
+      "sprint": 3,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Tray: chunk-level progress for large files",
+      "files": [
+        "/components/transfers/TransferItem.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/3.7.md",
+      "depends_on_contracts": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.8",
+      "sprint": 3,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Auto-resume E2E test \u2014 network drop mid-transfer \u26a0\ufe0f Human verify",
+      "files": [
+        "/e2e/tests/chunkedResume.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/3.8.md",
+      "depends_on_contracts": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.11",
+      "sprint": 3,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Conflict resolution modal \u2014 shared component used everywhere",
+      "files": [
+        "/components/transfers/ConflictResolutionModal.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/3.11.md",
+      "depends_on_contracts": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.12",
+      "sprint": 3,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Zero-disk verification test + tab-close survival test \u26a0\ufe0f Human verify",
+      "files": [
+        "/e2e/tests/zeroDiskTransfer.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/3.12.md",
+      "depends_on_contracts": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "acceptance_criteria": [
+        "ZERODISK-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.13",
+      "sprint": 3,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Storage pooling dashboard \u2014 promote aggregate to hero position",
+      "files": [
+        "/app/dashboard/page.tsx",
+        "/components/dashboard/StorageHero.tsx",
+        "/components/dashboard/ProviderCapacityBar.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/3.13.md",
+      "depends_on_contracts": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "acceptance_criteria": [
+        "SCHED-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "3.16",
+      "sprint": 3,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Dashboard + health E2E tests",
+      "files": [
+        "/e2e/tests/storageDashboard.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/3.16.md",
+      "depends_on_contracts": [
+        "3.2",
+        "3.3",
+        "3.5",
+        "3.6",
+        "3.9",
+        "3.10",
+        "3.14",
+        "3.15"
+      ],
+      "acceptance_criteria": [
+        "SYNC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.1",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "codex",
+      "title": "Define provider parity checklist \u2014 every provider must pass all 5",
+      "files": [
+        "/docs/provider-parity.md",
+        "/lib/providers/ProviderAdapter.interface.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.1.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.2",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Add 2\u20133 additional providers to reach 3\u20134 gold-standard total",
+      "files": [
+        "/lib/providers/box/**",
+        "/lib/providers/pcloud/**",
+        "/lib/providers/yandex/**"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.2.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "AUTH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.4",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "SSH2 connection manager with LRU session reuse",
+      "files": [
+        "/lib/providers/vps/sshConnectionManager.ts",
+        "/lib/providers/vps/VPSAdapter.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.4.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SEC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.5",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "AES-256-GCM encrypted credential storage for VPS/WebDAV",
+      "files": [
+        "/lib/vault/credentialVault.ts",
+        "/app/api/connections/vps/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.5.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SEC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.7",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md (all links vs password-only)",
+      "files": [
+        "/app/api/share/route.ts",
+        "/lib/share/shareLinkService.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.7.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "2FA-1",
+        "SHARE-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.8",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Share link proxy \u2014 hides underlying provider",
+      "files": [
+        "/app/s/[linkId]/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.8.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SHARE-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.9",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Abuse controls \u2014 rate limits, throttling, link access logging",
+      "files": [
+        "/lib/share/abuseControls.ts",
+        "/app/api/share/[id]/revoke/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.9.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SHARE-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.12",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Remote upload v1 \u2014 HTTP/HTTPS URL to chosen provider",
+      "files": [
+        "/app/api/remote-upload/route.ts",
+        "/lib/transfers/remoteUpload.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.12.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.13",
+      "sprint": 4,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Smart auto-placement engine v1",
+      "files": [
+        "/lib/placement/autoPlacementEngine.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/4.13.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.3",
+      "sprint": 4,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "E2E parity tests for each new provider",
+      "files": [
+        "/e2e/tests/providers/box.spec.ts",
+        "/e2e/tests/providers/pcloud.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/4.3.md",
+      "depends_on_contracts": [
+        "4.1",
+        "4.2",
+        "4.4",
+        "4.5",
+        "4.7",
+        "4.8",
+        "4.9",
+        "4.12",
+        "4.13"
+      ],
+      "acceptance_criteria": [
+        "AUTH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.6",
+      "sprint": 4,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "VPS parity test + credential security test",
+      "files": [
+        "/e2e/tests/providers/vps.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/4.6.md",
+      "depends_on_contracts": [
+        "4.1",
+        "4.2",
+        "4.4",
+        "4.5",
+        "4.7",
+        "4.8",
+        "4.9",
+        "4.12",
+        "4.13"
+      ],
+      "acceptance_criteria": [
+        "SEC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.10",
+      "sprint": 4,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA prompt behavior must match /docs/decisions/share-link-2fa-scope.md",
+      "files": [
+        "/components/share/ShareLinkPanel.tsx",
+        "/components/share/ShareLinkList.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/4.10.md",
+      "depends_on_contracts": [
+        "4.1",
+        "4.2",
+        "4.4",
+        "4.5",
+        "4.7",
+        "4.8",
+        "4.9",
+        "4.12",
+        "4.13"
+      ],
+      "acceptance_criteria": [
+        "2FA-1",
+        "SHARE-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.11",
+      "sprint": 4,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "E2E share link tests \u2014 create, access, expire, revoke",
+      "files": [
+        "/e2e/tests/shareLinks.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/4.11.md",
+      "depends_on_contracts": [
+        "4.1",
+        "4.2",
+        "4.4",
+        "4.5",
+        "4.7",
+        "4.8",
+        "4.9",
+        "4.12",
+        "4.13"
+      ],
+      "acceptance_criteria": [
+        "SHARE-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.14",
+      "sprint": 4,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Remote upload UI \u2014 dropdown in Upload action menu",
+      "files": [
+        "/components/files/ActionBar.tsx",
+        "/components/files/RemoteUploadModal.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/4.14.md",
+      "depends_on_contracts": [
+        "4.1",
+        "4.2",
+        "4.4",
+        "4.5",
+        "4.7",
+        "4.8",
+        "4.9",
+        "4.12",
+        "4.13"
+      ],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "4.15",
+      "sprint": 4,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "E2E remote upload + placement tests",
+      "files": [
+        "/e2e/tests/remoteUpload.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/4.15.md",
+      "depends_on_contracts": [
+        "4.1",
+        "4.2",
+        "4.4",
+        "4.5",
+        "4.7",
+        "4.8",
+        "4.9",
+        "4.12",
+        "4.13"
+      ],
+      "acceptance_criteria": [
+        "TRANSFER-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.1",
+      "sprint": 5,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Scheduled job data model and Schedules management UI",
+      "files": [
+        "/prisma/migrations/004_scheduled_jobs/",
+        "/app/api/jobs/route.ts",
+        "/lib/jobs/scheduledJobService.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/5.1.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SCHED-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.2",
+      "sprint": 5,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "BullMQ cron worker \u2014 jobs run server-side, browser closed",
+      "files": [
+        "/lib/queue/workers/scheduledJobWorker.ts",
+        "/lib/jobs/jobEngine.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/5.2.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SCHED-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.5",
+      "sprint": 5,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Vault data model and enable/disable API",
+      "files": [
+        "/prisma/migrations/005_vault/",
+        "/app/api/vault/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/5.5.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "VAULT-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.6",
+      "sprint": 5,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Vault access gate \u2014 TOTP or PIN required to unlock",
+      "files": [
+        "/app/api/vault/[id]/unlock/route.ts",
+        "/lib/vault/vaultSession.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/5.6.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "VAULT-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.9",
+      "sprint": 5,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Duplicate detection \u2014 filename + size cross-provider comparison",
+      "files": [
+        "/lib/cleanup/duplicateDetector.ts",
+        "/app/api/cleanup/duplicates/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/5.9.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SEARCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.11",
+      "sprint": 5,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Global cross-provider search v1 \u2014 name/metadata, ephemeral cache",
+      "files": [
+        "/app/api/search/route.ts",
+        "/lib/search/crossProviderSearch.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/5.11.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SEARCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.3",
+      "sprint": 5,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Schedules page UI \u2014 create, edit, pause, delete jobs",
+      "files": [
+        "/app/schedules/page.tsx",
+        "/components/schedules/JobCard.tsx",
+        "/components/schedules/CreateJobModal.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/5.3.md",
+      "depends_on_contracts": [
+        "5.1",
+        "5.2",
+        "5.5",
+        "5.6",
+        "5.9",
+        "5.11"
+      ],
+      "acceptance_criteria": [
+        "SCHED-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.4",
+      "sprint": 5,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "E2E scheduled job test \u2014 runs with browser closed \u26a0\ufe0f Human verify",
+      "files": [
+        "/e2e/tests/scheduledJobs.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/5.4.md",
+      "depends_on_contracts": [
+        "5.1",
+        "5.2",
+        "5.5",
+        "5.6",
+        "5.9",
+        "5.11"
+      ],
+      "acceptance_criteria": [
+        "SCHED-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.7",
+      "sprint": 5,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Vault UI \u2014 lock icon in sidebar, hidden from All Files; non-encryption disclaimer at setup, unlock modal, and folder header; user-facing name follows /docs/decisions/vault-naming-decision.md",
+      "files": [
+        "/components/Sidebar/VaultFolderRow.tsx",
+        "/components/vault/UnlockVaultModal.tsx",
+        "/app/files/page.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/5.7.md",
+      "depends_on_contracts": [
+        "5.1",
+        "5.2",
+        "5.5",
+        "5.6",
+        "5.9",
+        "5.11"
+      ],
+      "acceptance_criteria": [
+        "VAULT-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.8",
+      "sprint": 5,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "E2E vault tests \u2014 enable, lock, unlock, auto-lock",
+      "files": [
+        "/e2e/tests/vault.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/5.8.md",
+      "depends_on_contracts": [
+        "5.1",
+        "5.2",
+        "5.5",
+        "5.6",
+        "5.9",
+        "5.11"
+      ],
+      "acceptance_criteria": [
+        "VAULT-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.10",
+      "sprint": 5,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Stale file detection + cleanup UI",
+      "files": [
+        "/app/cleanup/page.tsx",
+        "/components/cleanup/DuplicateGroup.tsx",
+        "/components/cleanup/StaleFileList.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/5.10.md",
+      "depends_on_contracts": [
+        "5.1",
+        "5.2",
+        "5.5",
+        "5.6",
+        "5.9",
+        "5.11"
+      ],
+      "acceptance_criteria": [
+        "SEARCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.12",
+      "sprint": 5,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Search UI + performance test",
+      "files": [
+        "/components/search/GlobalSearchBar.tsx",
+        "/components/search/SearchResults.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/5.12.md",
+      "depends_on_contracts": [
+        "5.1",
+        "5.2",
+        "5.5",
+        "5.6",
+        "5.9",
+        "5.11"
+      ],
+      "acceptance_criteria": [
+        "SEARCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "5.13",
+      "sprint": 5,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "E2E search + duplicate detection tests",
+      "files": [
+        "/e2e/tests/search.spec.ts",
+        "/e2e/tests/duplicateCleanup.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/5.13.md",
+      "depends_on_contracts": [
+        "5.1",
+        "5.2",
+        "5.5",
+        "5.6",
+        "5.9",
+        "5.11"
+      ],
+      "acceptance_criteria": [
+        "SEARCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.4",
+      "sprint": 6,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Billing and subscription tier model",
+      "files": [
+        "/lib/billing/stripe.ts",
+        "/app/api/billing/**",
+        "/prisma/migrations/006_billing/"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/6.4.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.5",
+      "sprint": 6,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "Tier enforcement \u2014 limits enforced reliably at API layer",
+      "files": [
+        "/lib/billing/tierEnforcement.ts",
+        "/middleware.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/6.5.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.8A",
+      "sprint": 6,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "[OPTION A] Rich version history + unified trash \u2014 RECOMMENDED",
+      "files": [
+        "/lib/providers/*/trash.ts",
+        "/app/trash/page.tsx",
+        "/components/files/VersionHistoryPanel.tsx"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/6.8A.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.8B",
+      "sprint": 6,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "[OPTION B] Collabora Online (full Office editing) \u2014 HIGH INFRA COST",
+      "files": [
+        "/docker-compose.collabora.yml",
+        "/app/api/wopi/**",
+        "/components/editor/CollaboraEditor.tsx"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/6.8B.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.8C",
+      "sprint": 6,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "[OPTION C] Magnet/torrent remote upload \u2014 REQUIRES ABUSE CONTROLS",
+      "files": [
+        "/lib/transfers/torrentUpload.ts",
+        "/lib/queue/workers/torrentWorker.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/6.8C.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.1",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "PWA manifest + next-pwa service worker (app shell only)",
+      "files": [
+        "/public/manifest.json",
+        "/next.config.js",
+        "/app/offline/page.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/6.1.md",
+      "depends_on_contracts": [
+        "6.4",
+        "6.5",
+        "6.8A",
+        "6.8B",
+        "6.8C"
+      ],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.2",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "SEO landing page \u2014 storage calculator + provider grid",
+      "files": [
+        "/app/(marketing)/page.tsx",
+        "/components/marketing/StorageCalculator.tsx",
+        "/app/(marketing)/layout.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/6.2.md",
+      "depends_on_contracts": [
+        "6.4",
+        "6.5",
+        "6.8A",
+        "6.8B",
+        "6.8C"
+      ],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.3",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "PWA install + offline E2E tests",
+      "files": [
+        "/e2e/tests/pwa.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/6.3.md",
+      "depends_on_contracts": [
+        "6.4",
+        "6.5",
+        "6.8A",
+        "6.8B",
+        "6.8C"
+      ],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.6",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "Affiliate storage calculator \u2014 only shown post-transfer-reliability",
+      "files": [
+        "/components/dashboard/AffiliatePanel.tsx"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/6.6.md",
+      "depends_on_contracts": [
+        "6.4",
+        "6.5",
+        "6.8A",
+        "6.8B",
+        "6.8C"
+      ],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.7",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "Billing E2E \u2014 limits enforced, upgrade/downgrade safe",
+      "files": [
+        "/e2e/tests/billing.spec.ts"
+      ],
+      "produces_contract": false,
+      "contract_path": "/docs/contracts/6.7.md",
+      "depends_on_contracts": [
+        "6.4",
+        "6.5",
+        "6.8A",
+        "6.8B",
+        "6.8C"
+      ],
+      "acceptance_criteria": [
+        "LAUNCH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    }
+  ]
+}
