@@ -216,7 +216,7 @@ async function runProcess(
     const onChunk = (chunk: Buffer): void => {
       const text = chunk.toString("utf8");
       stdout += text;
-      const blockedMatch = text.match(/BLOCKED:([^\n\r]+)/);
+      const blockedMatch = text.match(/^BLOCKED: (.+)$/m);
       if (blockedMatch && !blockedReason) {
         blockedReason = blockedMatch[1].trim();
       }
@@ -229,7 +229,7 @@ async function runProcess(
     child.stderr.on("data", (chunk: Buffer) => {
       const text = chunk.toString("utf8");
       stderr += text;
-      const blockedMatch = text.match(/BLOCKED:([^\n\r]+)/);
+      const blockedMatch = text.match(/^BLOCKED: (.+)$/m);
       if (blockedMatch && !blockedReason) {
         blockedReason = blockedMatch[1].trim();
       }

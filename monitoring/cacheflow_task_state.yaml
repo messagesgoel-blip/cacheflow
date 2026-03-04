@@ -4,7 +4,7 @@
   gate: AUTH-1
   sprint: 0
   agent: "\u2605 CODEX (Master)"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -14,7 +14,7 @@
   gate: AUTH-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: running
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -106,7 +106,7 @@
   gate: AUTH-2
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: running
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -177,7 +177,7 @@
   gate: AUTH-4
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -588,7 +588,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 0
   agent: "\u2605 CODEX (Master)"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -608,7 +608,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: running
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -618,7 +618,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -628,7 +628,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 0
   agent: "\u25C6 ClaudeCode"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -638,7 +638,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -648,7 +648,7 @@ OPS-QA-WATCH@QA-1:
   gate: TRANSFER-1
   sprint: 0
   agent: "\u2605 CODEX (Master)"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -798,7 +798,7 @@ OPS-QA-WATCH@QA-1:
   gate: ZERODISK-1
   sprint: 0
   agent: "\u2605 CODEX (Master)"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -808,7 +808,7 @@ OPS-QA-WATCH@QA-1:
   gate: ZERODISK-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -838,7 +838,7 @@ OPS-QA-WATCH@QA-1:
   gate: SSE-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -848,7 +848,7 @@ OPS-QA-WATCH@QA-1:
   gate: SSE-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -858,7 +858,7 @@ OPS-QA-WATCH@QA-1:
   gate: SSE-1
   sprint: 0
   agent: "\u2605 CODEX (Master)"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''
@@ -938,7 +938,7 @@ OPS-QA-WATCH@QA-1:
   gate: VAULT-1
   sprint: 0
   agent: "\u25C8 OpenCode"
-  status: planned
+  status: pending
   commit: ''
   done_at: ''
   changelog: ''

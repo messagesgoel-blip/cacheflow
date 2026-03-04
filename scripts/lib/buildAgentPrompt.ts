@@ -56,6 +56,8 @@ export function buildAgentPrompt(task: Task): string {
     "",
     "FORBIDDEN SIDE EFFECTS:",
     formatList(task.forbidden_side_effects),
-    "If you are about to touch a file not in TARGET FILES, stop and output BLOCKED:{reason} instead.",
+    "If you are about to touch a file not in TARGET FILES, stop immediately and output a line starting with exactly:",
+    "BLOCKED: followed by a short reason.",
+    "Example: BLOCKED: file not in scope",
   ].join("\n");
 }
