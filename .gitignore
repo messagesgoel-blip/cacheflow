@@ -5,6 +5,8 @@ __pycache__/
 venv/
 node_modules/
 .next/
+coverage/
+test-results/
 *.log
 .DS_Store
 backups/*.sql.gz
@@ -26,4 +28,5 @@ api/src/services/embeddings.js
 
 web/next-env.d.ts
 .context/task_locks/
+.context/cache_state/
 logs/
