@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PY_SCRIPT="$SCRIPT_DIR/update_cacheflow_metrics.py"
 DASHBOARD_SYNC_SCRIPT="$SCRIPT_DIR/sync_sprints_dashboard.py"
+STATUS_SYNC_SCRIPT="$SCRIPT_DIR/sync_status_running_sprint.py"
 PUSH_SCRIPT="$SCRIPT_DIR/push_cacheflow_metrics.py"
 HISTORY_SCRIPT="$SCRIPT_DIR/push_cacheflow_history.py"
 export CACHEFLOW_BASE="${CACHEFLOW_BASE:-$BASE_DIR}"
@@ -17,6 +18,9 @@ fi
 python3 "$PY_SCRIPT"
 if [ -f "$DASHBOARD_SYNC_SCRIPT" ]; then
   python3 "$DASHBOARD_SYNC_SCRIPT"
+fi
+if [ -f "$STATUS_SYNC_SCRIPT" ]; then
+  python3 "$STATUS_SYNC_SCRIPT"
 fi
 python3 "$PUSH_SCRIPT"
 python3 "$HISTORY_SCRIPT"

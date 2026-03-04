@@ -1,5 +1,15 @@
 {
+  "scripts": {
+    "orchestrate": "ts-node scripts/orchestrate.ts",
+    "recover": "ts-node scripts/recover.ts",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "googleapis": "^171.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

@@ -6,17 +6,19 @@ You are starting Sprint 1 for CacheFlow.
 
 Agent: Codex (Master)
 Sprint: 1
-Repo: /opt/docker/apps/cacheflow
+Repo: /home/sanjay/cacheflow_work
 
-Before coding:
+Fast session start (compact):
 1) git pull --rebase
-2) Read AGENTS.md and STATUS.md fully
-3) Read .context/decisions.md, .context/patterns.md, .context/mistakes.md, .context/dependencies.md
-4) Read docs/roadmap-v4.3.md and enforce gate sequencing
-5) Claim each task key before touching files:
+2) Run `agent-preflight`
+3) Read STATUS.md fully
+4) Check `git log --oneline -10`
+5) Read AGENTS.md; load `.context/decisions.md`, `.context/patterns.md`, `.context/mistakes.md`, `.context/dependencies.md` lazily only when relevant to files being touched
+6) Read `docs/sprints/sprint-1.md` and enforce gate sequencing
+7) Claim each task key before touching files:
    - ./agent-coord.sh claim_task <task_key> Codex "$(hostname)"
    - ./agent-coord.sh get_active_tasks
-6) For unplanned file touches:
+8) For unplanned file touches:
    - ./agent-coord.sh log_change <file> <reason>
 
 Assigned task keys:
@@ -28,6 +30,7 @@ Master responsibilities:
 - Merge/conflict mediation
 - Rollback decision authority
 - Sprint 1 gate pass/fail signaling
+- If interface/architecture changes are needed, read relevant `.context/*` entries first, then append updates.
 
 On completion of each task key:
 - Run relevant validations
