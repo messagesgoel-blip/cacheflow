@@ -41,6 +41,7 @@ interface ProcessResult {
 interface ProcessOptions {
   logPath?: string;
   appendLog?: boolean;
+  killProcessGroup?: boolean;
 }
 
 type TaskFailureReason = "timeout" | "non_zero_exit" | "task_no_complete_signal_after_retry";
@@ -220,6 +221,7 @@ async function runProcess(
       cwd: ROOT,
       stdio: ["ignore", "pipe", "pipe"],
       env: process.env,
+      detached: options?.killProcessGroup ?? false,
     });
     const logStream = options?.logPath
       ? createWriteStream(options.logPath, { flags: options.appendLog ? "a" : "w" })
@@ -244,6 +246,18 @@ async function runProcess(
       logStream.end();
     };
 
+    const signalChild = (signal: NodeJS.Signals): void => {
+      if (options?.killProcessGroup && typeof child.pid === "number") {
+        try {
+          process.kill(-child.pid, signal);
+          return;
+        } catch {
+          // Fall through to direct child signal if process-group kill is unavailable.
+        }
+      }
+      child.kill(signal);
+    };
+
     child.stdout.on("data", (chunk: Buffer) => {
       const text = chunk.toString("utf8");
       stdout += text;
@@ -257,10 +271,10 @@ async function runProcess(
 
     const timeout = setTimeout(() => {
       timedOut = true;
-      child.kill("SIGTERM");
+      signalChild("SIGTERM");
       setTimeout(() => {
         if (!settled) {
-          child.kill("SIGKILL");
+          signalChild("SIGKILL");
         }
       }, 5000).unref();
     }, timeoutMs);
@@ -351,6 +365,7 @@ async function runTaskWithRetry(task: Task, sprint: number, wave: "wave1" | "wav
     const result = await runProcess(command, args, WAVE2_TIMEOUT_MS, {
       logPath,
       appendLog: attempt > 1,
+      killProcessGroup: true,
     });
 
     if (result.timedOut) {

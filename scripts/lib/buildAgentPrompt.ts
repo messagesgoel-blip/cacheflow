@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import * as path from "node:path";
 import type { Agent, Task } from "./types";
 
 const ROLE_TEXT: Record<Agent, string> = {
@@ -12,7 +14,12 @@ const ROLE_TEXT: Record<Agent, string> = {
 };
 
 function normalizePromptPath(value: string): string {
-  return value.trim().replace(/^\//, "");
+  return value
+    .trim()
+    .replace(/^\//, "")
+    .replace(/\s+\(.*\)$/, "")
+    .replace(/\s+--.*$/, "")
+    .trim();
 }
 
 function formatList(items: string[]): string {
@@ -22,13 +29,56 @@ function formatList(items: string[]): string {
   return items.map((item) => `- ${item}`).join("\n");
 }
 
+function fileExistsInWorkspace(relativePath: string): boolean {
+  if (!relativePath) {
+    return false;
+  }
+
+  const wildcardIndex = relativePath.indexOf("*");
+  const basePath =
+    wildcardIndex >= 0 ? relativePath.slice(0, wildcardIndex).replace(/\/+$/, "") : relativePath;
+  if (!basePath) {
+    return false;
+  }
+
+  return existsSync(path.resolve(process.cwd(), basePath));
+}
+
+function inferIntent(targets: Array<{ exists: boolean }>): string {
+  if (targets.length === 0) {
+    return "Modify existing implementation";
+  }
+
+  const createCount = targets.filter((target) => !target.exists).length;
+  if (createCount === targets.length) {
+    return "Create new files from scratch";
+  }
+  if (createCount === 0) {
+    return "Modify existing implementation";
+  }
+  return "Extend existing files";
+}
+
 export function buildAgentPrompt(task: Task): string {
   const criteria = task.acceptance_criteria.map((criterion) => criterion.trim()).filter(Boolean);
-  const targetFiles = task.files.map((file) => normalizePromptPath(file)).filter(Boolean);
+  const targetFiles = task.files
+    .map((file) => normalizePromptPath(file))
+    .filter(Boolean)
+    .map((filePath) => ({
+      filePath,
+      exists: fileExistsInWorkspace(filePath),
+    }));
   const dependencies = task.depends_on_contracts
     .map((taskId) => normalizePromptPath(`/docs/contracts/${taskId}.md`))
     .filter(Boolean);
   const normalizedContractPath = normalizePromptPath(task.contract_path);
+  const intent = inferIntent(targetFiles);
+  const targetFileLines =
+    targetFiles.length === 0
+      ? ["- (none)"]
+      : targetFiles.map(
+          (target) => `${target.exists ? "[READ/MODIFY]" : "[CREATE]"} ${target.filePath}`,
+        );
 
   const contractObligation = task.produces_contract
     ? [
@@ -55,13 +105,18 @@ export function buildAgentPrompt(task: Task): string {
     "ROLE:",
     `Task ID: ${task.id}`,
     `Task Title: ${task.title}`,
+    `INTENT: ${intent}`,
     ROLE_TEXT[task.agent],
     "",
     "ACCEPTANCE CRITERIA:",
     formatList(criteria),
     "",
-    "TARGET FILES:",
-    formatList(targetFiles),
+    "TARGET FILES (you must create or modify ONLY these):",
+    targetFileLines.join("\n"),
+    "",
+    "Files marked [CREATE] do not exist yet — you must create them.",
+    "Files marked [READ/MODIFY] already exist — modify only what",
+    "the task requires.",
     "",
     "CONTRACT OBLIGATION:",
     contractObligation,
