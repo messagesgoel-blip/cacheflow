@@ -33,8 +33,6 @@ interface ProcessResult {
   stdout: string;
   stderr: string;
   timedOut: boolean;
-  blockedReason: string | null;
-  taskCompleteSeen: boolean;
 }
 
 function nowIso(): string {
@@ -208,31 +206,14 @@ async function runProcess(
 
     let stdout = "";
     let stderr = "";
-    let blockedReason: string | null = null;
-    let taskCompleteSeen = false;
     let timedOut = false;
     let settled = false;
 
-    const onChunk = (chunk: Buffer): void => {
-      const text = chunk.toString("utf8");
-      stdout += text;
-      const blockedMatch = text.match(/^BLOCKED: (.+)$/m);
-      if (blockedMatch && !blockedReason) {
-        blockedReason = blockedMatch[1].trim();
-      }
-      if (text.includes("TASK_COMPLETE:")) {
-        taskCompleteSeen = true;
-      }
-    };
-
-    child.stdout.on("data", onChunk);
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdout += chunk.toString("utf8");
+    });
     child.stderr.on("data", (chunk: Buffer) => {
-      const text = chunk.toString("utf8");
-      stderr += text;
-      const blockedMatch = text.match(/^BLOCKED: (.+)$/m);
-      if (blockedMatch && !blockedReason) {
-        blockedReason = blockedMatch[1].trim();
-      }
+      stderr += chunk.toString("utf8");
     });
 
     const timeout = setTimeout(() => {
@@ -253,8 +234,6 @@ async function runProcess(
         stdout,
         stderr,
         timedOut,
-        blockedReason,
-        taskCompleteSeen,
       });
     });
 
@@ -266,8 +245,6 @@ async function runProcess(
         stdout,
         stderr: `${stderr}\n${String(error)}`,
         timedOut,
-        blockedReason,
-        taskCompleteSeen,
       });
     });
   });
@@ -518,16 +495,31 @@ async function dispatchWave1(
     });
 
     const result = await runProcess(command, args, WAVE2_TIMEOUT_MS);
-    if (result.blockedReason) {
+    if (result.timedOut) {
       state.tasks[task.id] = "failed";
       await writeState(state);
-      await halt(`BLOCKED:${result.blockedReason}`, sprint, task.id);
+      await appendAudit({
+        ts: nowIso(),
+        event: "task_timeout",
+        sprint,
+        task: task.id,
+        agent: task.agent,
+        detail: `timeout after ${WAVE2_TIMEOUT_MS}ms`,
+      });
+      await halt(`wave1 timeout: ${task.id}`, sprint, task.id);
     }
 
     if (result.code !== 0) {
       state.tasks[task.id] = "failed";
       await writeState(state);
       await halt(`wave1 task exited non-zero: ${task.id}`, sprint, task.id);
+    }
+
+    const requiredMarker = `TASK_COMPLETE:${task.id}`;
+    if (!result.stdout.includes(requiredMarker) && !result.stderr.includes(requiredMarker)) {
+      state.tasks[task.id] = "failed";
+      await writeState(state);
+      await halt("task_no_complete_signal", sprint, task.id);
     }
 
     if (task.produces_contract) {
@@ -626,12 +618,6 @@ async function dispatchWave2(
       await halt(`wave2 timeout: ${task.id}`, sprint, task.id);
     }
 
-    if (result.blockedReason) {
-      state.tasks[task.id] = "failed";
-      await writeState(state);
-      await halt(`BLOCKED:${result.blockedReason}`, sprint, task.id);
-    }
-
     if (result.code !== 0) {
       state.tasks[task.id] = "failed";
       await writeState(state);
@@ -642,7 +628,7 @@ async function dispatchWave2(
     if (!result.stdout.includes(requiredMarker) && !result.stderr.includes(requiredMarker)) {
       state.tasks[task.id] = "failed";
       await writeState(state);
-      await halt(`wave2 completion marker missing: ${task.id}`, sprint, task.id);
+      await halt("task_no_complete_signal", sprint, task.id);
     }
 
     state.tasks[task.id] = "done";
