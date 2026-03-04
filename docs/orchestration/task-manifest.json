@@ -186,7 +186,8 @@
         "TRANSFER-1",
         "VAULT-1",
         "ZERODISK-1"
-      ]
+      ],
+      "gate_mode": "contracts_only"
     },
     "1": {
       "wave1": [
@@ -222,7 +223,8 @@
         "SEC-1",
         "SYNC-1",
         "UUID-1"
-      ]
+      ],
+      "gate_mode": "playwright"
     },
     "2": {
       "wave1": [
@@ -263,7 +265,8 @@
         "QA-1",
         "RESP-1",
         "UPLOAD-1"
-      ]
+      ],
+      "gate_mode": "playwright"
     },
     "3": {
       "wave1": [
@@ -293,7 +296,8 @@
         "SYNC-1",
         "TRANSFER-1",
         "ZERODISK-1"
-      ]
+      ],
+      "gate_mode": "playwright"
     },
     "4": {
       "wave1": [
@@ -322,7 +326,8 @@
         "SEC-1",
         "SHARE-1",
         "TRANSFER-1"
-      ]
+      ],
+      "gate_mode": "playwright"
     },
     "5": {
       "wave1": [
@@ -347,7 +352,8 @@
         "SCHED-1",
         "SEARCH-1",
         "VAULT-1"
-      ]
+      ],
+      "gate_mode": "playwright"
     },
     "6": {
       "wave1": [
@@ -367,7 +373,8 @@
       "wave3": [],
       "gate_criteria": [
         "LAUNCH-1"
-      ]
+      ],
+      "gate_mode": "playwright"
     }
   },
   "tasks": [

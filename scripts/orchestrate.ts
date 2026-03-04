@@ -522,11 +522,92 @@ function parsePlaywrightFailures(report: unknown): { failedCount: number; detail
   return { failedCount: details.length, details };
 }
 
-async function runGate(sprint: number, criteria: string[]): Promise<{ pass: boolean; detail: string }> {
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function gateContractsForSprint(manifest: TaskManifest, sprint: number): string[] {
+  const contracts = new Set<string>();
+  for (const task of getTasksForSprint(manifest, sprint)) {
+    if (task.produces_contract) {
+      contracts.add(normalizeRepoPath(task.contract_path));
+    }
+  }
+
+  // Sprint 0 includes standalone 0.4a contract verification.
+  if (sprint === 0) {
+    contracts.add("docs/contracts/0.4a.md");
+  }
+
+  return naturalSort([...contracts]);
+}
+
+async function evaluateContractsGate(
+  manifest: TaskManifest,
+  sprint: number,
+  criteria: string[],
+  modeLabel: string,
+): Promise<{ pass: boolean; detail: string }> {
+  const requiredContracts = gateContractsForSprint(manifest, sprint);
+  const missing = requiredContracts.filter((contractPath) => !existsSync(path.join(ROOT, contractPath)));
+  if (missing.length > 0) {
+    return {
+      pass: false,
+      detail: `Contract gate (${modeLabel}) missing ${missing.length} file(s): ${missing.join(", ")}; criteria=${criteria.join(", ")}`,
+    };
+  }
+
+  return {
+    pass: true,
+    detail: `Contract gate (${modeLabel}) passed; verified ${requiredContracts.length} contract file(s); criteria=${criteria.join(", ")}`,
+  };
+}
+
+async function findSpecFilesForCriteria(criteria: string[]): Promise<string[]> {
+  if (criteria.length === 0) {
+    return [];
+  }
+
+  const specRoots = ["web", "e2e", "tests"].filter((dir) => existsSync(path.join(ROOT, dir)));
+  if (specRoots.length === 0) {
+    return [];
+  }
+
+  const pattern = criteria.map((criterion) => escapeRegex(criterion)).join("|");
+  const cmd = `rg -l -g "*.spec.ts" -g "*.spec.tsx" -g "*.test.ts" -g "*.test.tsx" -g "*.spec.js" -g "*.test.js" "${pattern}" ${specRoots.join(" ")}`;
+  const result = await runProcess("bash", ["-lc", cmd], 60_000);
+  if (result.code !== 0) {
+    return [];
+  }
+
+  return result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+async function runGate(
+  manifest: TaskManifest,
+  sprint: number,
+  criteria: string[],
+  gateMode: string,
+): Promise<{ pass: boolean; detail: string }> {
+  const mode = gateMode.toLowerCase();
+  if (mode === "contracts_only") {
+    return evaluateContractsGate(manifest, sprint, criteria, "contracts_only");
+  }
+
+  const matchedSpecFiles = await findSpecFilesForCriteria(criteria);
+  if (matchedSpecFiles.length === 0) {
+    return evaluateContractsGate(manifest, sprint, criteria, "playwright_deferred_no_specs");
+  }
+
   await rm(GATE_RESULTS_PATH, { force: true });
 
   const gateCommand = `npx playwright test --reporter=json > "${GATE_RESULTS_PATH}"`;
-  const result = await runProcess("bash", ["-lc", gateCommand], 90 * 60 * 1000);
+  const result = await runProcess("bash", ["-lc", gateCommand], 90 * 60 * 1000, {
+    killProcessGroup: true,
+  });
 
   let reportData: unknown = {};
   if (existsSync(GATE_RESULTS_PATH)) {
@@ -548,10 +629,11 @@ async function runGate(sprint: number, criteria: string[]): Promise<{ pass: bool
       }
     }
   }
+  const failedCriteriaLabel = failedCriteria.size > 0 ? [...failedCriteria].join(", ") : "none";
 
   const detail = hasFailures
-    ? `Playwright failures=${parsed.failedCount}; failed_criteria=${[...failedCriteria].join(", ") || "unmapped"}; criteria=${criteria.join(", ")}; exit=${result.code}`
-    : `All criteria passed: ${criteria.join(", ")}`;
+    ? `Playwright failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length}; exit=${result.code}`
+    : `Playwright gate passed; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length};`;
 
   return {
     pass: !hasFailures,
@@ -762,30 +844,23 @@ async function dispatchWave2(
   }
 }
 
-async function runSprint(manifest: TaskManifest, state: OrchestratorState, sprint: number): Promise<void> {
-  const sprintMeta = manifest.sprints[String(sprint)];
-  const planLine = `Sprint ${sprint} · Wave 1: ${sprintMeta.wave1.join(", ")} → Wave 2: ${sprintMeta.wave2.join(", ")} → Gate: ${sprintMeta.gate_criteria.join(", ")}`;
-  console.log(planLine);
+async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, sprint: number): Promise<void> {
+  const sprintMeta = manifest.sprints[String(sprint)] as
+    | {
+        gate_criteria: string[];
+        gate_mode?: string;
+      }
+    | undefined;
+  if (!sprintMeta) {
+    throw new Error(`Missing sprint metadata for sprint ${sprint}`);
+  }
 
-  await appendAudit({
-    ts: nowIso(),
-    event: "dispatch",
-    sprint,
-    task: "plan",
-    agent: "codex",
-    detail: planLine,
-  });
-
-  await sleep(10_000);
-
-  await dispatchWave1(manifest, state, sprint);
-  await dispatchWave2(manifest, state, sprint);
-
+  const gateMode = sprintMeta.gate_mode ?? "playwright";
   state.current_wave = 3;
   state.current_state = "running_gate";
   await writeState(state);
 
-  const gate = await runGate(sprint, sprintMeta.gate_criteria);
+  const gate = await runGate(manifest, sprint, sprintMeta.gate_criteria, gateMode);
   if (gate.pass) {
     const tag = `sprint-${sprint}-gate-pass`;
     const tagCheck = await runProcess("git", ["tag", "--list", tag], 60_000);
@@ -830,6 +905,39 @@ async function runSprint(manifest: TaskManifest, state: OrchestratorState, sprin
   await halt(`gate failed for sprint ${sprint}`, sprint, "gate");
 }
 
+async function runSprint(manifest: TaskManifest, state: OrchestratorState, sprint: number): Promise<void> {
+  const sprintMeta = manifest.sprints[String(sprint)] as
+    | {
+        wave1: string[];
+        wave2: string[];
+        gate_criteria: string[];
+        gate_mode?: string;
+      }
+    | undefined;
+  if (!sprintMeta) {
+    throw new Error(`Missing sprint metadata for sprint ${sprint}`);
+  }
+
+  const gateMode = sprintMeta.gate_mode ?? "playwright";
+  const planLine = `Sprint ${sprint} · Wave 1: ${sprintMeta.wave1.join(", ")} → Wave 2: ${sprintMeta.wave2.join(", ")} → Gate: ${sprintMeta.gate_criteria.join(", ")} (mode=${gateMode})`;
+  console.log(planLine);
+
+  await appendAudit({
+    ts: nowIso(),
+    event: "dispatch",
+    sprint,
+    task: "plan",
+    agent: "codex",
+    detail: planLine,
+  });
+
+  await sleep(10_000);
+
+  await dispatchWave1(manifest, state, sprint);
+  await dispatchWave2(manifest, state, sprint);
+  await runSprintGate(manifest, state, sprint);
+}
+
 async function main(): Promise<void> {
   await ensureLogs();
 
@@ -840,11 +948,27 @@ async function main(): Promise<void> {
   const manifest = await readJsonFile<TaskManifest>(MANIFEST_PATH);
   await ensureAgentClisAvailable(manifest);
   const state = await loadState(manifest);
+  const gateOnly = process.argv.includes("--gate-only");
   const sprintLimitEnv = process.env.SPRINT_LIMIT;
   const sprintLimit = sprintLimitEnv === undefined ? null : Number(sprintLimitEnv);
 
   if (sprintLimitEnv !== undefined && !Number.isFinite(sprintLimit)) {
     throw new Error(`Invalid SPRINT_LIMIT: ${sprintLimitEnv}`);
+  }
+
+  if (gateOnly) {
+    const sprint = state.current_sprint;
+    const sprintMeta = manifest.sprints[String(sprint)];
+    if (!sprintMeta) {
+      throw new Error(`Cannot run --gate-only: sprint ${sprint} not found in manifest`);
+    }
+
+    console.log(`Gate-only mode for sprint ${sprint}`);
+    await runSprintGate(manifest, state, sprint);
+    state.current_state = "idle";
+    state.current_wave = 0;
+    await writeState(state);
+    return;
   }
 
   while (true) {
