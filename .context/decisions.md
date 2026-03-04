@@ -95,3 +95,11 @@
 - files: docs/orchestration/task-manifest.json, scripts/orchestrate.ts, scripts/lib/buildAgentPrompt.ts, scripts/recover.ts, .github/workflows/orchestrate.yml
 - commit: pending
 - agent: codex
+
+## 2026-03-04 — Drive dashboard metrics from orchestrator state transitions
+- decision: Trigger `scripts/refresh_cacheflow_metrics.sh` directly from `scripts/orchestrate.ts` on task/gate state transitions, with in-process throttling and failure notifications.
+- rationale: Manual dashboard refreshes lag live execution and can report stale completion/running counts during active waves.
+- alternatives rejected: Cron-only refresh loop; requiring human-triggered metric sync after each state change.
+- files: scripts/orchestrate.ts
+- commit: pending
+- agent: codex

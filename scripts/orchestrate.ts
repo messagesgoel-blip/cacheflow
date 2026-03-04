@@ -15,10 +15,14 @@ const CONFLICT_RESOLVED_FLAG = path.join(LOG_DIR, "conflict-resolved.flag");
 const GATE_RESULTS_PATH = path.join(LOG_DIR, "gate-results.json");
 const GATE_FAILURE_DIR = path.join(LOG_DIR, "gate-failures");
 const TASK_LOG_DIR = path.join(LOG_DIR, "tasks");
+const DASHBOARD_SYNC_SCRIPT = path.join(ROOT, "scripts", "refresh_cacheflow_metrics.sh");
 
 const WAVE2_TIMEOUT_MS = 45 * 60 * 1000;
 const WAVE1_CONTRACT_TIMEOUT_MS = 45 * 60 * 1000; // ASSUMPTION: contract generation timeout matches wave2 task timeout.
 const CONTRACT_POLL_MS = 30 * 1000;
+const DASHBOARD_SYNC_TIMEOUT_MS = 3 * 60 * 1000;
+const DASHBOARD_SYNC_MIN_INTERVAL_MS =
+  Number.parseInt(process.env.DASHBOARD_SYNC_MIN_INTERVAL_MS ?? "", 10) || 10_000;
 
 interface AuditEvent {
   ts: string;
@@ -51,6 +55,14 @@ interface TaskRunResult {
   reason?: TaskFailureReason;
   result: ProcessResult;
 }
+
+interface WriteStateOptions {
+  syncDashboard?: boolean;
+  syncReason?: string;
+}
+
+let dashboardSyncInFlight: Promise<void> | null = null;
+let lastDashboardSyncAt = 0;
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -152,6 +164,60 @@ async function notify(message: string): Promise<void> {
   }
 }
 
+function isRealtimeDashboardSyncEnabled(): boolean {
+  const value = (process.env.REALTIME_DASHBOARD_SYNC ?? "1").trim().toLowerCase();
+  return !["0", "false", "no", "off"].includes(value);
+}
+
+async function maybeSyncDashboard(sprint: number, reason: string): Promise<void> {
+  if (!isRealtimeDashboardSyncEnabled()) {
+    return;
+  }
+  if (!existsSync(DASHBOARD_SYNC_SCRIPT)) {
+    return;
+  }
+
+  const now = Date.now();
+  if (now - lastDashboardSyncAt < DASHBOARD_SYNC_MIN_INTERVAL_MS) {
+    return;
+  }
+
+  if (dashboardSyncInFlight) {
+    await dashboardSyncInFlight;
+    return;
+  }
+
+  dashboardSyncInFlight = (async () => {
+    const result = await runProcess(
+      "bash",
+      ["-lc", "./scripts/refresh_cacheflow_metrics.sh"],
+      DASHBOARD_SYNC_TIMEOUT_MS,
+      { killProcessGroup: true },
+    );
+
+    if (result.code !== 0) {
+      await appendAudit({
+        ts: nowIso(),
+        event: "dashboard_sync_fail",
+        sprint,
+        task: "dashboard",
+        agent: "codex",
+        detail: `${reason}; exit=${result.code}`,
+      });
+      await notify(`Dashboard sync failed for sprint ${sprint}: ${reason} (exit=${result.code})`);
+      return;
+    }
+
+    lastDashboardSyncAt = Date.now();
+  })();
+
+  try {
+    await dashboardSyncInFlight;
+  } finally {
+    dashboardSyncInFlight = null;
+  }
+}
+
 function buildInitialState(manifest: TaskManifest): OrchestratorState {
   const tasks: Record<string, "pending" | "running" | "done" | "failed"> = {};
   for (const task of manifest.tasks) {
@@ -187,12 +253,16 @@ async function loadState(manifest: TaskManifest): Promise<OrchestratorState> {
   return loaded;
 }
 
-async function writeState(state: OrchestratorState): Promise<void> {
+async function writeState(state: OrchestratorState, options?: WriteStateOptions): Promise<void> {
   const next: OrchestratorState = {
     ...state,
     last_updated: nowIso(),
   };
   await writeFile(STATE_PATH, `${JSON.stringify(next, null, 2)}\n`, "utf8");
+
+  if (options?.syncDashboard) {
+    await maybeSyncDashboard(next.current_sprint, options.syncReason ?? "task_state_change");
+  }
 }
 
 function getTasksForSprint(manifest: TaskManifest, sprint: number): Task[] {
@@ -697,12 +767,12 @@ async function dispatchWave1(
   for (const task of tasks) {
     state.tasks[task.id] = "running";
     state.current_state = "dispatching_wave1";
-    await writeState(state);
+    await writeState(state, { syncDashboard: true, syncReason: `${task.id}:running` });
 
     const outcome = await runTaskWithRetry(task, sprint, "wave1");
     if (!outcome.ok && outcome.reason === "timeout") {
       state.tasks[task.id] = "failed";
-      await writeState(state);
+      await writeState(state, { syncDashboard: true, syncReason: `${task.id}:failed:timeout` });
       await appendAudit({
         ts: nowIso(),
         event: "task_timeout",
@@ -716,13 +786,13 @@ async function dispatchWave1(
 
     if (!outcome.ok && outcome.reason === "non_zero_exit") {
       state.tasks[task.id] = "failed";
-      await writeState(state);
+      await writeState(state, { syncDashboard: true, syncReason: `${task.id}:failed:non_zero_exit` });
       await halt(`wave1 task exited non-zero: ${task.id}`, sprint, task.id);
     }
 
     if (!outcome.ok && outcome.reason === "task_no_complete_signal_after_retry") {
       state.tasks[task.id] = "failed";
-      await writeState(state);
+      await writeState(state, { syncDashboard: true, syncReason: `${task.id}:failed:no_complete_signal` });
       await appendAudit({
         ts: nowIso(),
         event: "halt",
@@ -741,7 +811,7 @@ async function dispatchWave1(
       const hasContract = await pollForContract(task);
       if (!hasContract) {
         state.tasks[task.id] = "failed";
-        await writeState(state);
+        await writeState(state, { syncDashboard: true, syncReason: `${task.id}:failed:missing_contract` });
         await halt(`missing contract ${task.contract_path}`, sprint, task.id);
       }
 
@@ -756,7 +826,7 @@ async function dispatchWave1(
     }
 
     state.tasks[task.id] = "done";
-    await writeState(state);
+    await writeState(state, { syncDashboard: true, syncReason: `${task.id}:done` });
   }
 }
 
@@ -767,7 +837,7 @@ async function dispatchWave2(
 ): Promise<void> {
   state.current_wave = 2;
   state.current_state = "dispatching_wave2";
-  await writeState(state);
+  await writeState(state, { syncDashboard: true, syncReason: "wave2:running" });
 
   const tasks = getTasksForSprint(manifest, sprint)
     .filter((task) => task.wave === 2)
@@ -807,7 +877,7 @@ async function dispatchWave2(
   for (const { task, outcome } of results) {
     if (!outcome.ok && outcome.reason === "timeout") {
       state.tasks[task.id] = "failed";
-      await writeState(state);
+      await writeState(state, { syncDashboard: true, syncReason: `${task.id}:failed:timeout` });
       await appendAudit({
         ts: nowIso(),
         event: "task_timeout",
@@ -821,13 +891,13 @@ async function dispatchWave2(
 
     if (!outcome.ok && outcome.reason === "non_zero_exit") {
       state.tasks[task.id] = "failed";
-      await writeState(state);
+      await writeState(state, { syncDashboard: true, syncReason: `${task.id}:failed:non_zero_exit` });
       await halt(`wave2 non-zero exit: ${task.id}`, sprint, task.id);
     }
 
     if (!outcome.ok && outcome.reason === "task_no_complete_signal_after_retry") {
       state.tasks[task.id] = "failed";
-      await writeState(state);
+      await writeState(state, { syncDashboard: true, syncReason: `${task.id}:failed:no_complete_signal` });
       await appendAudit({
         ts: nowIso(),
         event: "halt",
@@ -841,7 +911,7 @@ async function dispatchWave2(
     }
 
     state.tasks[task.id] = "done";
-    await writeState(state);
+    await writeState(state, { syncDashboard: true, syncReason: `${task.id}:done` });
   }
 }
 
@@ -859,7 +929,7 @@ async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, s
   const gateMode = sprintMeta.gate_mode ?? "playwright";
   state.current_wave = 3;
   state.current_state = "running_gate";
-  await writeState(state);
+  await writeState(state, { syncDashboard: true, syncReason: `sprint:${sprint}:gate:running` });
 
   const gate = await runGate(manifest, sprint, sprintMeta.gate_criteria, gateMode);
   if (gate.pass) {
@@ -875,7 +945,7 @@ async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, s
     state.current_state = "gate_passed";
     state.current_wave = 0;
     state.current_sprint = sprint + 1;
-    await writeState(state);
+    await writeState(state, { syncDashboard: true, syncReason: `sprint:${sprint}:gate:pass` });
 
     await appendAudit({
       ts: nowIso(),
@@ -890,7 +960,7 @@ async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, s
 
   state.current_state = "gate_failed";
   state.current_wave = 0;
-  await writeState(state);
+  await writeState(state, { syncDashboard: true, syncReason: `sprint:${sprint}:gate:fail` });
 
   const failureFile = await writeGateFailure(sprint, gate.detail);
   await appendAudit({
