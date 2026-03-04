@@ -69,7 +69,9 @@ export async function authInterceptor(
     try {
       const response = await fetch(url, options);
 
-      // Not a 401 - return as-is
+      // Check if this is a proxy request and handle requiresReauth flag
+      const isProxyRequest = url.includes('/api/remotes/') && url.includes('/proxy');
+      
       if (response.status !== 401) {
         return response;
       }
@@ -78,6 +80,10 @@ export async function authInterceptor(
       retryCount++;
       
       if (retryCount > maxRetries) {
+        // For proxy requests, don't redirect to login - return the response so UI can handle it
+        if (isProxyRequest) {
+          return response;
+        }
         // Max retries exceeded - redirect to login or throw
         window.location.href = '/login?reason=session_expired';
         throw new Error('Session expired - redirecting to login');

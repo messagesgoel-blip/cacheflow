@@ -48,6 +48,7 @@ import type {
  * Notes:
  * - `downloadStream` and `uploadStream` are stream-only to enforce zero-disk transfer paths.
  * - Resumable upload methods are required for providers participating in transfer resume flows.
+ * - Provider parity for AUTH-1 is defined by `PROVIDER_PARITY_CHECKLIST` (5 checks, all required).
  */
 export interface ProviderAdapter {
   readonly descriptor: ProviderDescriptor
@@ -81,3 +82,54 @@ export interface ProviderAdapter {
   createShareLink(request: CreateShareLinkRequest): Promise<CreateShareLinkResponse>
   revokeShareLink(request: RevokeShareLinkRequest): Promise<void>
 }
+
+export type ProviderParityCheckId =
+  | 'auth_lifecycle'
+  | 'file_discovery'
+  | 'file_mutation'
+  | 'stream_transfer'
+  | 'resumable_transfer'
+
+export interface ProviderParityCheck {
+  id: ProviderParityCheckId
+  title: string
+  requiredMethods: ReadonlyArray<Exclude<keyof ProviderAdapter, 'descriptor'>>
+}
+
+/**
+ * Canonical 5-check provider parity baseline.
+ * Every provider must pass all checks to be considered parity-complete.
+ */
+export const PROVIDER_PARITY_CHECKLIST: ReadonlyArray<ProviderParityCheck> = [
+  {
+    id: 'auth_lifecycle',
+    title: 'Auth lifecycle parity',
+    requiredMethods: ['connect', 'validateAuth', 'refreshAuth', 'disconnect'],
+  },
+  {
+    id: 'file_discovery',
+    title: 'File discovery parity',
+    requiredMethods: ['listFiles', 'searchFiles', 'getFile'],
+  },
+  {
+    id: 'file_mutation',
+    title: 'File mutation parity',
+    requiredMethods: ['createFolder', 'moveFile', 'copyFile', 'renameFile', 'deleteFile'],
+  },
+  {
+    id: 'stream_transfer',
+    title: 'Stream transfer parity',
+    requiredMethods: ['downloadStream', 'uploadStream'],
+  },
+  {
+    id: 'resumable_transfer',
+    title: 'Resumable transfer parity',
+    requiredMethods: [
+      'createResumableUpload',
+      'uploadResumableChunk',
+      'getResumableUploadStatus',
+      'finalizeResumableUpload',
+      'abortResumableUpload',
+    ],
+  },
+]

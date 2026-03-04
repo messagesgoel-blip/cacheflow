@@ -346,6 +346,42 @@ export interface RevokeShareLinkRequest {
   linkId?: string
 }
 
+export type UploadUuidInjectionCategory =
+  | 'request_tracking'
+  | 'transfer_tracking'
+  | 'resumable_session'
+  | 'remote_config'
+  | 'oauth_state'
+  | 'qa_mock'
+  | 'upload_path'
+  | 'unknown'
+
+export interface UploadUuidInjectionPoint {
+  id: string
+  filePath: string
+  line: number
+  expression: string
+  snippet: string
+  category: UploadUuidInjectionCategory
+  affectsUploadPath: boolean
+  notes: string
+}
+
+export interface UploadUuidAuditSummary {
+  scannedFiles: number
+  scannedLines: number
+  injectionPoints: number
+  uploadPathInjectionPoints: number
+  hasBlockingUploadPathInjection: boolean
+}
+
+export interface UploadUuidAuditReport {
+  gate: 'UUID-1'
+  generatedAt: string
+  points: UploadUuidInjectionPoint[]
+  summary: UploadUuidAuditSummary
+}
+
 export type ProviderAdapterErrorCode =
   | ErrorCode.UNAUTHORIZED
   | ErrorCode.TOKEN_EXPIRED

@@ -11,21 +11,25 @@ const { Pool } = require('pg');
 const LOCAL_PATH = process.env.LOCAL_CACHE_PATH || '/mnt/local';
 const POOL_PATH = process.env.POOL_PATH || '/mnt/pool';
 const DATABASE_URL = process.env.DATABASE_URL;
+const VALID_ENVIRONMENTS = new Set(['development', 'staging', 'production']);
 
-if (!DATABASE_URL) {
-  console.error('Error: DATABASE_URL environment variable is required');
-  process.exit(1);
+function createPool() {
+  if (!DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is required');
+  }
+  return new Pool({ connectionString: DATABASE_URL });
 }
-
-const pool = new Pool({ connectionString: DATABASE_URL });
 
 const UUID_REGEX = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/)+/i;
 
-async function migrateFiles() {
-  const client = await pool.connect();
+async function migrateFiles(options) {
+  let pool;
+  let client;
 
   try {
-    console.log('Starting file system migration to remove UUID prefixes...');
+    pool = createPool();
+    client = await pool.connect();
+    console.log(`Starting file system migration to remove UUID prefixes (${options.environment})...`);
 
     // Get all files from database
     const result = await client.query(`
@@ -74,7 +78,6 @@ async function migrateFiles() {
               if (fs.existsSync(oldPoolPath) && oldPoolPath !== newPoolPath) {
                 fs.unlinkSync(oldPoolPath);
               }
-              migratedCount++;
             } else {
               console.warn(`Different hash for duplicate ${newPath}. Skipping for manual resolution.`);
               errorCount++;
@@ -140,11 +143,15 @@ async function migrateFiles() {
     }
 
   } catch (error) {
-    console.error('Migration failed:', error);
-    process.exit(1);
+    console.error('Migration failed:', error.message || error);
+    throw error;
   } finally {
-    client.release();
-    await pool.end();
+    if (client) {
+      client.release();
+    }
+    if (pool) {
+      await pool.end();
+    }
   }
 }
 
@@ -185,11 +192,14 @@ function removeEmptyUUIDDirectories(userId, oldPath) {
 }
 
 // Dry-run mode
-async function dryRun() {
-  const client = await pool.connect();
+async function dryRun(options) {
+  let pool;
+  let client;
 
   try {
-    console.log('DRY RUN: Checking files that would be migrated...');
+    pool = createPool();
+    client = await pool.connect();
+    console.log(`DRY RUN (${options.environment}): Checking files that would be migrated...`);
 
     const result = await client.query(`
       SELECT id, user_id, path, status
@@ -214,29 +224,101 @@ async function dryRun() {
     console.log(`  Would migrate: ${wouldMigrate}`);
 
   } catch (error) {
-    console.error('Dry run failed:', error);
+    console.error('Dry run failed:', error.message || error);
+    throw error;
   } finally {
-    client.release();
-    await pool.end();
+    if (client) {
+      client.release();
+    }
+    if (pool) {
+      await pool.end();
+    }
   }
 }
 
-// Parse command line arguments
-const args = process.argv.slice(2);
-if (args.includes('--dry-run')) {
-  dryRun().then(() => process.exit(0));
-} else if (args.includes('--help')) {
+function printHelp() {
   console.log(`
 Usage: node migrate-files-no-uuid.js [options]
 
 Options:
-  --dry-run    Check what would be migrated without making changes
-  --help       Show this help message
+  --dry-run              Check what would be migrated without making changes
+  --env=<name>           Set execution environment (development|staging|production)
+  --confirm-production   Required to apply changes when --env=production
+  --help                 Show this help message
 
 This script migrates files from UUID-prefixed paths to clean paths.
 Run the database migration first, then run this script.
   `);
-  process.exit(0);
-} else {
-  migrateFiles().then(() => process.exit(0));
 }
+
+function parseArgs(argv) {
+  const options = {
+    dryRun: false,
+    help: false,
+    confirmProduction: false,
+    environment: (process.env.MIGRATION_ENV || process.env.NODE_ENV || 'development').toLowerCase()
+  };
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+
+    if (arg === '--dry-run') {
+      options.dryRun = true;
+      continue;
+    }
+
+    if (arg === '--help') {
+      options.help = true;
+      continue;
+    }
+
+    if (arg === '--confirm-production') {
+      options.confirmProduction = true;
+      continue;
+    }
+
+    if (arg.startsWith('--env=')) {
+      const value = arg.slice('--env='.length).trim().toLowerCase();
+      if (!value) {
+        throw new Error('Missing value for --env');
+      }
+      options.environment = value;
+      continue;
+    }
+
+    throw new Error(`Unknown option: ${arg}`);
+  }
+
+  if (!VALID_ENVIRONMENTS.has(options.environment)) {
+    throw new Error(`Invalid environment "${options.environment}". Use development, staging, or production.`);
+  }
+
+  return options;
+}
+
+// Parse command line arguments
+const args = process.argv.slice(2);
+let options;
+
+try {
+  options = parseArgs(args);
+} catch (error) {
+  console.error(`Error: ${error.message || error}`);
+  printHelp();
+  process.exit(1);
+}
+
+if (options.help) {
+  printHelp();
+  process.exit(0);
+}
+
+if (options.environment === 'production' && !options.dryRun && !options.confirmProduction) {
+  console.error('Error: Applying migration in production requires --confirm-production');
+  process.exit(1);
+}
+
+const runner = options.dryRun ? dryRun : migrateFiles;
+runner(options)
+  .then(() => process.exit(0))
+  .catch(() => process.exit(1));

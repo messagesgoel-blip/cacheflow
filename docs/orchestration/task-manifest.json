@@ -2114,7 +2114,7 @@
       "id": "3.8",
       "sprint": 3,
       "wave": 2,
-      "agent": "gemini",
+      "agent": "claudecode",
       "title": "Auto-resume E2E test \u2014 network drop mid-transfer \u26a0\ufe0f Human verify",
       "files": [
         "/e2e/tests/chunkedResume.spec.ts"

@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from './useToast';
-import { TransferItem } from '../components/transfers/TransferTray';
+import { TransferItem } from '../../context/TransferContext';
 
 export interface TransferOptions {
   sourceProvider: string;

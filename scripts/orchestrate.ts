@@ -23,6 +23,7 @@ const CONTRACT_POLL_MS = 30 * 1000;
 const DASHBOARD_SYNC_TIMEOUT_MS = 3 * 60 * 1000;
 const DASHBOARD_SYNC_MIN_INTERVAL_MS =
   Number.parseInt(process.env.DASHBOARD_SYNC_MIN_INTERVAL_MS ?? "", 10) || 10_000;
+const GEMINI_CODEX_B_COMMAND = "codex-b";
 
 interface AuditEvent {
   ts: string;
@@ -71,6 +72,19 @@ const AGENT_CLI_CANDIDATES: Record<Agent, string[]> = {
   gemini: ["GCLI", "gemini"],
   codex: ["codex"],
 };
+
+function isGeminiRerouteToCodexBEnabled(): boolean {
+  const until = process.env.GEMINI_ROUTE_TO_CODEX_B_UNTIL;
+  if (until) {
+    const parsed = Date.parse(until);
+    if (!Number.isNaN(parsed)) {
+      return Date.now() < parsed;
+    }
+  }
+
+  const flag = (process.env.GEMINI_ROUTE_TO_CODEX_B ?? "").trim().toLowerCase();
+  return flag === "1" || flag === "true" || flag === "yes" || flag === "on";
+}
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -445,6 +459,9 @@ function commandForTask(task: Task, prompt: string): { command: string; args: st
     case "claudecode":
       return { command: resolvedCommand, args: ["--print", prompt] };
     case "gemini":
+      if (isGeminiRerouteToCodexBEnabled()) {
+        return { command: GEMINI_CODEX_B_COMMAND, args: ["exec", prompt] };
+      }
       return { command: resolvedCommand, args: ["-p", prompt] };
     case "codex":
       // ASSUMPTION: codex CLI is available for codex-owned implementation tasks.
@@ -561,6 +578,15 @@ async function ensureAgentClisAvailable(manifest: TaskManifest): Promise<void> {
   if (missing.length > 0) {
     await notify(`Missing required agent CLIs: ${missing.join(", ")}`);
     throw new Error(`Missing required agent CLIs: ${missing.join(", ")}`);
+  }
+
+  if (isGeminiRerouteToCodexBEnabled()) {
+    const rerouteCheck = await runProcess("bash", ["-lc", `command -v ${GEMINI_CODEX_B_COMMAND}`], 60_000);
+    if (rerouteCheck.code !== 0) {
+      const message = `Gemini reroute enabled but ${GEMINI_CODEX_B_COMMAND} is missing`;
+      await notify(message);
+      throw new Error(message);
+    }
   }
 
   agentCliCommands = resolved;
@@ -806,14 +832,22 @@ async function runGate(
   }
 
   const matchedSpecFiles = await findSpecFilesForCriteria(criteria);
-  if (matchedSpecFiles.length === 0) {
+  const playwrightRoot = existsSync(path.join(ROOT, "web", "playwright.config.ts")) ? path.join(ROOT, "web") : ROOT;
+  const runnableSpecFiles =
+    playwrightRoot === path.join(ROOT, "web")
+      ? matchedSpecFiles.filter((specPath) => normalizeRepoPath(specPath).startsWith("web/e2e/"))
+      : matchedSpecFiles;
+
+  if (runnableSpecFiles.length === 0) {
     return evaluateContractsGate(manifest, sprint, criteria, "playwright_deferred_no_specs");
   }
 
   await rm(GATE_RESULTS_PATH, { force: true });
 
-  const playwrightRoot = existsSync(path.join(ROOT, "web", "playwright.config.ts")) ? path.join(ROOT, "web") : ROOT;
-  const gateCommand = `cd "${playwrightRoot}" && npx playwright test --reporter=json > "${GATE_RESULTS_PATH}"`;
+  const matchedSpecArgs = runnableSpecFiles
+    .map((specPath) => `"${path.join(ROOT, specPath)}"`)
+    .join(" ");
+  const gateCommand = `cd "${playwrightRoot}" && npx playwright test --reporter=json ${matchedSpecArgs} > "${GATE_RESULTS_PATH}"`;
   const result = await runProcess("bash", ["-lc", gateCommand], 90 * 60 * 1000, {
     killProcessGroup: true,
   });
@@ -838,7 +872,7 @@ async function runGate(
     }
   }
   const failedCriteriaLabel = failedCriteria.size > 0 ? [...failedCriteria].join(", ") : "none";
-  const unmatchedCriteria = await findUnmatchedCriteria(criteria, matchedSpecFiles);
+  const unmatchedCriteria = await findUnmatchedCriteria(criteria, runnableSpecFiles);
   const unmatchedLabel = unmatchedCriteria.length > 0 ? unmatchedCriteria.join(", ") : "none";
   const requiredCriteria = requiredSpecCriteria(manifest, criteria);
   const requiredMissing = unmatchedCriteria.filter((criterion) => requiredCriteria.includes(criterion));
@@ -848,6 +882,7 @@ async function runGate(
   const hasRequiredSpecFailures = requiredMissing.length > 0;
   const pass = !hasActualFailures && !hasRequiredSpecFailures;
   const exitWithoutFailuresWarning = result.code !== 0 && !hasActualFailures;
+  const timedOutLabel = result.timedOut ? "yes" : "no";
 
   const warnings: string[] = [];
   if (unmatchedCriteria.length > 0) {
@@ -859,8 +894,8 @@ async function runGate(
   const warningSuffix = warnings.length > 0 ? `; warning=${warnings.join(" | ")}` : "";
 
   const detail = pass
-    ? `Playwright gate passed; failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}${warningSuffix}`
-    : `Playwright failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}; unmatched_criteria=${unmatchedLabel}`;
+    ? `Playwright gate passed; failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${runnableSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}; timed_out=${timedOutLabel}${warningSuffix}`
+    : `Playwright failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${runnableSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}; timed_out=${timedOutLabel}; unmatched_criteria=${unmatchedLabel}`;
 
   return {
     pass,

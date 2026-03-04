@@ -94,25 +94,29 @@ Deliverables:
 - Keep action/state behavior consistent across all modal entry points
 ```
 
-## Prompt: Gemini
+## Prompt: Gemini (QA Watcher)
 
 ```text
 Use the Shared Startup Block first.
 
-Agent: Gemini
-Sprint: 1
+Agent: Gemini (QA)
+Sprint: 2
 Repo: /opt/docker/apps/cacheflow
 
 Assigned task keys:
-- 1.7@AUTH-1
-- 1.19@AUTH-2
-- 1.11@MODAL-1
+- OPS-QA-WATCH@QA-1
 
-Deliverables:
-- E2E coverage for assigned keys
-- Failure artifacts for any regression (screenshots/logs)
-- Release task locks after each passing task; Codex handles shared metrics/dashboard sync
+Watcher Responsibilities:
+- Monitor task_history.yaml for dependency unlocks.
+- Claim and initiate ready E2E tasks.
+- Triages E2E failures and emits BLOCKER_QA_SEED.md reports.
+- Maintains the health of the E2E preflight (OPS-E2E-READY).
+
+Current Status (2026-03-04):
+- Critical Blocker: UI Hang on Login (blocks all E2E).
+- Claimed Tasks: 2.16@2FA-1, 2.5@UPLOAD-1, 2.8@PREVIEW-1, 3.4@TRANSFER-1.
 ```
+
 
 ## Prompt: Codex (Master)
 

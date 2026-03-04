@@ -4,6 +4,8 @@ import './globals.css'
 import SessionExpiredBannerHost from '@/components/SessionExpiredBannerHost'
 import ActionCenterProvider from '@/components/ActionCenterProvider'
 import { TransferQueueProvider } from '@/components/TransferQueueProvider'
+import { TransferProvider } from '@/context/TransferContext'
+import { TransferTray } from '@/components/transfers/TransferTray'
 
 export const metadata: Metadata = {
   title: 'CacheFlow',
@@ -61,7 +63,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Suspense>
         <ActionCenterProvider>
           <TransferQueueProvider>
-            {children}
+            <TransferProvider>
+              {children}
+              <TransferTray />
+            </TransferProvider>
           </TransferQueueProvider>
         </ActionCenterProvider>
       </body>

@@ -14,6 +14,7 @@ const tokensRoutes = require('./routes/tokens');
 const healthRoutes = require('./routes/health');
 const cacheRoutes = require('./routes/cache');
 const transferRoutes = require('./routes/transfer');
+const remoteUploadRoutes = require('./routes/remoteUpload');
 const apiRoutes      = require('./routes/api');
 const userRemotesRoutes = require('./routes/userRemotes');
 const favoritesRoutes = require('./routes/favorites');
@@ -159,6 +160,7 @@ app.use('/remotes', remotesRoutes);
 app.use('/tokens', tokensRoutes);
 app.use('/cache', cacheRoutes);
 app.use('/transfer', transferRoutes);
+app.use('/remote-upload', remoteUploadRoutes);
 
 // New production-grade API routes
 app.use('/api', apiRoutes);

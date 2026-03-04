@@ -1,3 +1,9 @@
+/**
+ * Localhost QA Baseline
+ * Reviewed by QA Watcher: 2026-03-04
+ * Status: Passing preflight, but blocked by UI Hang regression in downstream suites.
+ */
+
 import { test, expect } from '@playwright/test'
 
 const SHOTS_DIR = '/srv/storage/screenshots/cacheflow'

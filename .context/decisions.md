@@ -103,3 +103,5 @@
 - files: scripts/orchestrate.ts
 - commit: pending
 - agent: codex
+
+- 2026-03-04T20:14:10Z mcp-cache-server: namespace resolution order is argument -> tags(repo/branch for set) -> MCP headers -> DEFAULT_NAMESPACE; cache_get uses semantic top-k=5 within namespace.

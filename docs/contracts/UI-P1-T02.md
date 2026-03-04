@@ -1,6 +1,6 @@
 # Contract: UI-P1-T02
 ## Endpoint or File Path
-- `web/app/api/remotes/[uuid]/proxy/route.ts`
+- `app/api/remotes/[uuid]/proxy/route.ts`
 - Endpoint: `POST /api/remotes/[uuid]/proxy`
 
 ## Request / Response Shape

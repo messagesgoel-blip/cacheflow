@@ -1,4 +1,4 @@
-generated_at: '2026-03-04T01:14:43+00:00'
+generated_at: '2026-03-04T21:26:42+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -9,9 +9,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: AUTH-1
   status: done
-  commit: 2ebfec6b47bd
-  done_at: '2026-03-04T01:14:43+00:00'
-  changelog: 'fix: remove BLOCKED echo trap, use TASK_COMPLETE-only detection'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.2'
   task_key: 0.2@AUTH-1
   description: Define AppError taxonomy and ErrorCode enum
@@ -19,10 +19,10 @@ tasks:
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: 0.4a
   task_key: 0.4a@AUTH-1
   description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
@@ -32,9 +32,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
   status: done
-  commit: 7d8d37f
-  done_at: '2026-03-03T21:20:00+00:00'
-  changelog: "docs(contracts): add ErrorCode \u2192 UI action mapping contract"
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.1'
   task_key: 1.1@AUTH-1
   description: Create global HTTP interceptor for all /api/remotes proxy calls
@@ -43,9 +43,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
   status: done
-  commit: 9fe35b97ff93
-  done_at: '2026-03-02T21:27:52+00:00'
-  changelog: 'chore: compliance closeout and per-agent sprint prompts'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.5'
   task_key: 1.5@AUTH-1
   description: "Multi-account schema \u2014 up to 3 accounts per provider"
@@ -54,9 +54,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
   status: done
-  commit: 9fe35b97ff93
-  done_at: '2026-03-02T21:27:52+00:00'
-  changelog: 'chore: compliance closeout and per-agent sprint prompts'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.7'
   task_key: 1.7@AUTH-1
   description: Write Playwright token expiry test
@@ -65,10 +65,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: AUTH-1
   status: done
-  commit: a24bcfb5ac1a
-  done_at: '2026-03-02T20:44:59+00:00'
-  changelog: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator
-    enum'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.17'
   task_key: 1.17@AUTH-1
   description: Replace SESSION_EXPIRED raw text with actionable component
@@ -76,11 +75,10 @@ tasks:
   files: /components/SessionExpiredBanner.tsx, /components/Sidebar/AccountRow.tsx
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
-  status: pending
-  commit: 9f3f322328c5
-  done_at: '2026-03-02T20:08:15+00:00'
-  changelog: 'feat(1.17@AUTH-1): improve session expired banner with actionable reconnect
-    button'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.1'
   task_key: 4.1@AUTH-1
   description: "Define provider parity checklist \u2014 every provider must pass all\
@@ -89,10 +87,10 @@ tasks:
   files: /docs/provider-parity.md, /lib/providers/ProviderAdapter.interface.ts
   agent: "\u2605 CODEX (Master)"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.2'
   task_key: 4.2@AUTH-1
   description: "Add 2\u20133 additional providers to reach 3\u20134 gold-standard\
@@ -101,10 +99,10 @@ tasks:
   files: /lib/providers/box/**, /lib/providers/pcloud/**, /lib/providers/yandex/**
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.3'
   task_key: 4.3@AUTH-1
   description: E2E parity tests for each new provider
@@ -112,10 +110,10 @@ tasks:
   files: /e2e/tests/providers/box.spec.ts, /e2e/tests/providers/pcloud.spec.ts
   agent: "\u25C9 Gemini"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.3'
   task_key: 0.3@AUTH-2
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -123,10 +121,10 @@ tasks:
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.2'
   task_key: 1.2@AUTH-2
   description: Implement silent token refresh endpoint
@@ -135,9 +133,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
   status: done
-  commit: 9fe35b97ff93
-  done_at: '2026-03-02T21:20:30+00:00'
-  changelog: 'chore: compliance closeout and per-agent sprint prompts'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.4'
   task_key: 1.4@AUTH-2
   description: "Token Vault v1 \u2014 encrypted at-rest provider credentials"
@@ -146,9 +144,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
   status: done
-  commit: b1142283731b
-  done_at: '2026-03-02T20:59:02+00:00'
-  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.18'
   task_key: 1.18@AUTH-2
   description: "Security baseline \u2014 remove defaults, harden secrets"
@@ -156,10 +154,10 @@ tasks:
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
-  status: pending
-  commit: 9fe35b97ff93
-  done_at: '2026-03-02T21:20:30+00:00'
-  changelog: 'chore: compliance closeout and per-agent sprint prompts'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.19'
   task_key: 1.19@AUTH-2
   description: "Security audit test \u2014 verify no secrets in API responses"
@@ -168,10 +166,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: AUTH-2
   status: done
-  commit: a24bcfb5ac1a
-  done_at: '2026-03-02T20:44:59+00:00'
-  changelog: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator
-    enum'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.3'
   task_key: 1.3@AUTH-3
   description: Migrate from localStorage TokenManager to HttpOnly cookies
@@ -180,9 +177,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-3
   status: done
-  commit: 9fe35b97ff93
-  done_at: '2026-03-02T21:20:30+00:00'
-  changelog: 'chore: compliance closeout and per-agent sprint prompts'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.6'
   task_key: 1.6@AUTH-3
   description: Remove client-side token sync pattern entirely
@@ -191,9 +188,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-3
   status: done
-  commit: b1142283731b
-  done_at: '2026-03-02T20:59:05+00:00'
-  changelog: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.6'
   task_key: 0.6@AUTH-4
   description: "Define singleton refresh promise pattern \u2014 prevent concurrent\
@@ -202,10 +199,10 @@ tasks:
   files: /lib/auth/refreshGuard.ts, /docs/architecture/auth-patterns.md, /tests/unit/refreshGuard.test.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-4
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.1'
   task_key: 1.1@AUTH-4
   description: Create global HTTP interceptor for all /api/remotes proxy calls
@@ -214,9 +211,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-4
   status: done
-  commit: 9fe35b97ff93
-  done_at: '2026-03-02T21:27:52+00:00'
-  changelog: 'chore: compliance closeout and per-agent sprint prompts'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.8'
   task_key: 1.8@MODAL-1
   description: Replace shared modal boolean with provider discriminator enum
@@ -225,10 +222,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
   status: done
-  commit: a24bcfb5ac1a
-  done_at: '2026-03-02T20:39:05+00:00'
-  changelog: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator
-    enum'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.9'
   task_key: 1.9@MODAL-1
   description: Implement correct forms for WebDAV and VPS/SFTP modals
@@ -237,9 +233,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
   status: done
-  commit: 63dad6f36533
-  done_at: '2026-03-02T21:02:16+00:00'
-  changelog: 'feat(1.9@MODAL-1): implement correct forms for WebDAV and VPS modals'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.10'
   task_key: 1.10@MODAL-1
   description: Clear modal state on close and provider switch
@@ -248,10 +244,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
   status: done
-  commit: 0e06e1fcf81d
-  done_at: '2026-03-02T21:03:26+00:00'
-  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
-    implemented via IntegrationContext)'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.11'
   task_key: 1.11@MODAL-1
   description: "Write Playwright modal test \u2014 all 9 provider Connect buttons"
@@ -260,10 +255,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: MODAL-1
   status: done
-  commit: a24bcfb5ac1a
-  done_at: '2026-03-02T20:44:59+00:00'
-  changelog: 'feat(1.8@MODAL-1): replace modal boolean with provider discriminator
-    enum'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.12'
   task_key: 1.12@UUID-1
   description: "Audit upload pipeline \u2014 locate all UUID injection points"
@@ -271,11 +265,10 @@ tasks:
   files: /api/remotes/**, /lib/providers/**, /lib/uploads/**
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
-  status: pending
-  commit: b6b0f5b84ee0
-  done_at: '2026-03-02T21:13:46+00:00'
-  changelog: 'Codex compliance closeout: UUID audit complete; migration dry-run reports
-    0 pending'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.13'
   task_key: 1.13@UUID-1
   description: Fix upload pipeline to preserve original File.name
@@ -284,11 +277,10 @@ tasks:
     /lib/uploads/uploadManager.ts
   agent: "\u25C8 OpenCode"
   gate: UUID-1
-  status: pending
-  commit: 0e06e1fcf81d
-  done_at: '2026-03-02T21:06:39+00:00'
-  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
-    implemented via IntegrationContext)'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.14'
   task_key: 1.14@UUID-1
   description: Write and run migration script in staging
@@ -297,10 +289,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: UUID-1
   status: done
-  commit: 0e06e1fcf81d
-  done_at: '2026-03-02T21:06:39+00:00'
-  changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
-    implemented via IntegrationContext)'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.15'
   task_key: 1.15@UUID-1
   description: Validate and apply migration to production
@@ -309,10 +300,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
   status: done
-  commit: b6b0f5b84ee0
-  done_at: '2026-03-02T21:13:46+00:00'
-  changelog: 'Codex compliance closeout: UUID audit complete; migration dry-run reports
-    0 pending'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.16'
   task_key: 1.16@SYNC-1
   description: Connections page and sidebar read from single server state store
@@ -320,10 +310,10 @@ tasks:
   files: /app/api/connections/route.ts, /components/Sidebar.tsx, /app/connections/page.tsx
   agent: "\u25C8 OpenCode"
   gate: SYNC-1
-  status: pending
-  commit: a0832192b9e9
-  done_at: '2026-03-02T21:32:03+00:00'
-  changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.14'
   task_key: 3.14@SYNC-1
   description: "Provider health indicators \u2014 green means it actually works"
@@ -331,10 +321,10 @@ tasks:
   files: /lib/providers/healthCheck.ts, /app/api/connections/health/route.ts
   agent: "\u25C8 OpenCode"
   gate: SYNC-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.16'
   task_key: 3.16@SYNC-1
   description: Dashboard + health E2E tests
@@ -342,10 +332,10 @@ tasks:
   files: /e2e/tests/storageDashboard.spec.ts
   agent: "\u25C9 Gemini"
   gate: SYNC-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.1'
   task_key: 2.1@UPLOAD-1
   description: Add persistent Upload / New Folder / Refresh action bar
@@ -353,10 +343,10 @@ tasks:
   files: /app/files/page.tsx, /components/files/ActionBar.tsx
   agent: "\u25C6 ClaudeCode"
   gate: UPLOAD-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.2'
   task_key: 2.2@UPLOAD-1
   description: Implement file upload with progress and toast
@@ -364,10 +354,10 @@ tasks:
   files: /app/api/remotes/[uuid]/upload/route.ts, /lib/providers/*/upload.ts
   agent: "\u25C8 OpenCode"
   gate: UPLOAD-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.5'
   task_key: 2.5@UPLOAD-1
   description: Write E2E tests for all file action entry points
@@ -375,10 +365,10 @@ tasks:
   files: /e2e/tests/fileActions.spec.ts
   agent: "\u25C9 Gemini"
   gate: UPLOAD-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.6'
   task_key: 2.6@PREVIEW-1
   description: "Fix preview panel mount \u2014 \"Opening\" toast must open a panel;\
@@ -387,10 +377,10 @@ tasks:
   files: /components/files/PreviewPanel.tsx, /components/files/previewTypes.ts
   agent: "\u25C6 ClaudeCode"
   gate: PREVIEW-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.7'
   task_key: 2.7@PREVIEW-1
   description: 'Unsupported file types: immediate Download CTA via server-proxied
@@ -399,10 +389,10 @@ tasks:
   files: /components/files/PreviewPanel.tsx, /lib/files/mimeTypes.ts
   agent: "\u25C6 ClaudeCode"
   gate: PREVIEW-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.8'
   task_key: 2.8@PREVIEW-1
   description: "E2E preview tests \u2014 supported and unsupported types"
@@ -411,9 +401,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: PREVIEW-1
   status: done
-  commit: 38155c1a710b
-  done_at: '2026-03-03T01:51:07+00:00'
-  changelog: Added E2E test suite; implementation blocked by component state issues.
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.3'
   task_key: 2.3@ACTIONS-1
   description: 'File table: single click select + right panel, double click open'
@@ -421,10 +411,10 @@ tasks:
   files: /components/files/FileTable.tsx, /components/files/FileDetailPanel.tsx
   agent: "\u25C6 ClaudeCode"
   gate: ACTIONS-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.4'
   task_key: 2.4@ACTIONS-1
   description: Three-dot row menu + right-click context menu (identical)
@@ -432,10 +422,10 @@ tasks:
   files: /components/files/FileContextMenu.tsx, /components/files/MultiSelectToolbar.tsx
   agent: "\u25C6 ClaudeCode"
   gate: ACTIONS-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.5'
   task_key: 2.5@ACTIONS-1
   description: Write E2E tests for all file action entry points
@@ -443,10 +433,10 @@ tasks:
   files: /e2e/tests/fileActions.spec.ts
   agent: "\u25C9 Gemini"
   gate: ACTIONS-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.9'
   task_key: 2.9@NAV-1
   description: "Merge Cloud Drives / Providers / Integrations \u2192 Connections"
@@ -455,10 +445,10 @@ tasks:
     (delete), /app/integrations/ (delete)
   agent: "\u25C6 ClaudeCode"
   gate: NAV-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.10'
   task_key: 2.10@RESP-1
   description: "File table visual polish \u2014 skeleton loaders, hover, separators"
@@ -466,10 +456,10 @@ tasks:
   files: /components/files/FileTable.tsx, /components/Sidebar/AccountRow.tsx, /styles/files.css
   agent: "\u25C6 ClaudeCode"
   gate: RESP-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.11'
   task_key: 2.11@RESP-1
   description: Sidebar collapsible accordion per provider group
@@ -477,10 +467,10 @@ tasks:
   files: /components/Sidebar/ProviderGroup.tsx
   agent: "\u25C6 ClaudeCode"
   gate: RESP-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.12'
   task_key: 2.12@RESP-1
   description: "Responsive layout pass \u2014 375px viewport minimum"
@@ -488,10 +478,10 @@ tasks:
   files: /components/Sidebar/**, /app/files/page.tsx, /app/connections/page.tsx, /styles/layout.css
   agent: "\u25C6 ClaudeCode"
   gate: RESP-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: UI-P1-T01
   task_key: UI-P1-T01@HOLD-UI-2026-03-02
   description: Fix Cloud Drives page empty or unclear connected state
@@ -499,10 +489,10 @@ tasks:
   files: /components/Sidebar.tsx, /components/UnifiedFileBrowser.tsx, /app/connections/page.tsx
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: UI-P1-T02
   task_key: UI-P1-T02@HOLD-UI-2026-03-02
   description: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
@@ -511,10 +501,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
   status: done
-  commit: 3441639dfc78
-  done_at: '2026-03-03T00:35:45+00:00'
-  changelog: 'feat(UI-P1-T02@HOLD-UI-2026-03-02, UI-P1-T05@HOLD-UI-2026-03-02): fix
-    401 proxy failures and add UI error surfaces'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: UI-P1-T03
   task_key: UI-P1-T03@HOLD-UI-2026-03-02
   description: Fix preview panel open reliability from file rows and overflow Open
@@ -522,10 +511,10 @@ tasks:
   files: /components/PreviewPanel.tsx, /components/UnifiedFileBrowser.tsx
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: UI-P1-T04
   task_key: UI-P1-T04@HOLD-UI-2026-03-02
   description: Restore file actions path (rename/move/download/delete) for connected
@@ -534,10 +523,10 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /app/api/remotes/[uuid]/**
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: UI-P1-T05
   task_key: UI-P1-T05@HOLD-UI-2026-03-02
   description: Add explicit UI error surfaces for failed sync/proxy/favorites requests
@@ -545,11 +534,10 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /lib/ui/toast.ts, /app/api/connections/route.ts
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: pending
-  commit: 3441639dfc78
-  done_at: '2026-03-03T00:35:45+00:00'
-  changelog: 'feat(UI-P1-T02@HOLD-UI-2026-03-02, UI-P1-T05@HOLD-UI-2026-03-02): fix
-    401 proxy failures and add UI error surfaces'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: UI-P1-T06
   task_key: UI-P1-T06@HOLD-UI-2026-03-02
   description: Add clear loading, empty, and error state cards in file pane
@@ -557,11 +545,10 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /components/Sidebar.tsx
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
-  status: pending
-  commit: c80bd24c88d9
-  done_at: '2026-03-03T00:15:33+00:00'
-  changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
-    file pane'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: OPS-E2E-READY
   task_key: OPS-E2E-READY@QA-1
   description: Add Playwright preflight wait-for-api on 127.0.0.1:8100
@@ -570,10 +557,10 @@ tasks:
     /web/e2e/fixtures/README.md
   agent: "\u25C8 OpenCode"
   gate: QA-1
-  status: pending
-  commit: 25b691aaa88d
-  done_at: '2026-03-03T00:05:16+00:00'
-  changelog: 'feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: OPS-QA-WATCH
   task_key: OPS-QA-WATCH@QA-1
   description: 'Run QA watcher loop: detect dependency unlocks, claim ready Gemini
@@ -582,11 +569,10 @@ tasks:
   files: /web/e2e/**, /monitoring/task_history.yaml, /docs/prompts/**, /BLOCKER_QA_SEED.md
   agent: "\u25C9 Gemini"
   gate: QA-1
-  status: pending
-  commit: 8d604fdb5bbb
-  done_at: '2026-03-03T03:07:10+00:00'
-  changelog: QA watcher unblock validated after 2FA completion; mock provider issues
-    remain
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.13'
   task_key: 2.13@2FA-1
   description: "TOTP setup flow \u2014 QR generation, verification, backup codes"
@@ -595,9 +581,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: 2FA-1
   status: done
-  commit: f287133ce7c8
-  done_at: '2026-03-03T10:51:00-05:00'
-  changelog: 'feat(2.13@2FA-1): harden 2FA setup/verify/status/disable routes'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.14'
   task_key: 2.14@2FA-1
   description: TOTP login challenge UI
@@ -606,9 +592,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
   status: done
-  commit: 5ff2a727531d
-  done_at: '2026-03-03T10:53:53-05:00'
-  changelog: 'fix(2.14@2FA-1): repair challenge page imports and submit flow'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.15'
   task_key: 2.15@2FA-1
   description: 'Settings: manage 2FA, backup codes, last-used timestamp'
@@ -617,9 +603,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
   status: done
-  commit: dc3235d75767
-  done_at: '2026-03-03T10:56:05-05:00'
-  changelog: 'feat(2.15@2FA-1): surface last-used and backup state in settings'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '2.16'
   task_key: 2.16@2FA-1
   description: "E2E 2FA tests \u2014 full enable/use/disable cycle"
@@ -627,10 +613,10 @@ tasks:
   files: /e2e/tests/twoFA.spec.ts
   agent: "\u25C9 Gemini"
   gate: 2FA-1
-  status: pending
-  commit: 3c3e691c08e6
-  done_at: '2026-03-02T22:34:48-05:00'
-  changelog: 'fix(2.16@2FA-1): restore post-login 2FA settings interaction'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.7'
   task_key: 4.7@2FA-1
   description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
@@ -639,10 +625,10 @@ tasks:
   files: /app/api/share/route.ts, /lib/share/shareLinkService.ts
   agent: "\u25C8 OpenCode"
   gate: 2FA-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.10'
   task_key: 4.10@2FA-1
   description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
@@ -651,10 +637,10 @@ tasks:
   files: /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.1'
   task_key: 0.1@TRANSFER-1
   description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
@@ -664,9 +650,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: TRANSFER-1
   status: done
-  commit: 2ebfec6b47bd
-  done_at: '2026-03-04T01:14:43+00:00'
-  changelog: 'fix: remove BLOCKED echo trap, use TASK_COMPLETE-only detection'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.2'
   task_key: 0.2@TRANSFER-1
   description: Define AppError taxonomy and ErrorCode enum
@@ -674,10 +660,10 @@ tasks:
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.3'
   task_key: 0.3@TRANSFER-1
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -685,10 +671,10 @@ tasks:
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.4'
   task_key: 0.4@TRANSFER-1
   description: "Allocate Redis namespaces \u2014 document and enforce db separation"
@@ -696,10 +682,10 @@ tasks:
   files: /docs/architecture/redis-namespaces.md, /lib/redis/client.ts (per-db connections)
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: 0.4a
   task_key: 0.4a@TRANSFER-1
   description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
@@ -708,10 +694,10 @@ tasks:
   files: /docs/contracts/errorcode-ui-actions.md
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.5'
   task_key: 0.5@TRANSFER-1
   description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
@@ -720,10 +706,10 @@ tasks:
   files: /lib/transfers/streamPipeline.ts, /tests/unit/streamPipeline.test.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.9'
   task_key: 0.9@TRANSFER-1
   description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
@@ -733,10 +719,10 @@ tasks:
     /.env.example
   agent: "\u2605 CODEX (Master)"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.1'
   task_key: 3.1@TRANSFER-1
   description: "Persistent Transfer Manager Tray \u2014 always visible when active"
@@ -745,10 +731,10 @@ tasks:
     /context/TransferContext.tsx
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.3'
   task_key: 3.3@TRANSFER-1
   description: Every file operation produces tray entry + toast
@@ -756,10 +742,10 @@ tasks:
   files: /lib/transfers/transferRegistry.ts, /app/api/remotes/[uuid]/**/route.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: pending
-  commit: e28b1584db82
-  done_at: '2026-03-03T03:10:11+00:00'
-  changelog: BullMQ queue + worker, transfer tray with toast
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.4'
   task_key: 3.4@TRANSFER-1
   description: "Tray E2E \u2014 entry survives navigation, retry works on failure"
@@ -767,10 +753,10 @@ tasks:
   files: /e2e/tests/transferTray.spec.ts
   agent: "\u25C9 Gemini"
   gate: TRANSFER-1
-  status: running
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.5'
   task_key: 3.5@TRANSFER-1
   description: 'Chunked upload: files >50MB use provider resumable upload APIs'
@@ -779,10 +765,10 @@ tasks:
     /lib/providers/dropbox/chunkedUpload.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: pending
-  commit: 389271cac8e3
-  done_at: '2026-03-03T03:11:40+00:00'
-  changelog: Chunked upload + auto-resume
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.6'
   task_key: 3.6@TRANSFER-1
   description: 'Auto-resume: resume interrupted upload from last successful chunk'
@@ -790,10 +776,10 @@ tasks:
   files: /app/api/transfers/[id]/chunks/route.ts, /lib/transfers/chunkStateManager.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: pending
-  commit: 389271cac8e3
-  done_at: '2026-03-03T03:11:40+00:00'
-  changelog: Chunked upload + auto-resume
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.7'
   task_key: 3.7@TRANSFER-1
   description: 'Tray: chunk-level progress for large files'
@@ -801,10 +787,10 @@ tasks:
   files: /components/transfers/TransferItem.tsx
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.8'
   task_key: 3.8@TRANSFER-1
   description: "Auto-resume E2E test \u2014 network drop mid-transfer \u26A0\uFE0F\
@@ -813,10 +799,10 @@ tasks:
   files: /e2e/tests/chunkedResume.spec.ts
   agent: "\u25C9 Gemini"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.10'
   task_key: 3.10@TRANSFER-1
   description: BullMQ background job queue for async transfers
@@ -824,10 +810,10 @@ tasks:
   files: /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: pending
-  commit: e28b1584db82
-  done_at: '2026-03-03T03:10:11+00:00'
-  changelog: BullMQ queue + worker, transfer tray with toast
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.11'
   task_key: 3.11@TRANSFER-1
   description: "Conflict resolution modal \u2014 shared component used everywhere"
@@ -835,10 +821,10 @@ tasks:
   files: /components/transfers/ConflictResolutionModal.tsx
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.15'
   task_key: 3.15@TRANSFER-1
   description: "Rate limit handling layer \u2014 per-provider request queue"
@@ -846,10 +832,10 @@ tasks:
   files: /lib/providers/rateLimitQueue.ts, /lib/apiClient.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.12'
   task_key: 4.12@TRANSFER-1
   description: "Remote upload v1 \u2014 HTTP/HTTPS URL to chosen provider"
@@ -857,10 +843,10 @@ tasks:
   files: /app/api/remote-upload/route.ts, /lib/transfers/remoteUpload.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.13'
   task_key: 4.13@TRANSFER-1
   description: Smart auto-placement engine v1
@@ -868,10 +854,10 @@ tasks:
   files: /lib/placement/autoPlacementEngine.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.14'
   task_key: 4.14@TRANSFER-1
   description: "Remote upload UI \u2014 dropdown in Upload action menu"
@@ -879,10 +865,10 @@ tasks:
   files: /components/files/ActionBar.tsx, /components/files/RemoteUploadModal.tsx
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.15'
   task_key: 4.15@TRANSFER-1
   description: E2E remote upload + placement tests
@@ -890,10 +876,10 @@ tasks:
   files: /e2e/tests/remoteUpload.spec.ts
   agent: "\u25C9 Gemini"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.1'
   task_key: 0.1@ZERODISK-1
   description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
@@ -903,9 +889,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: ZERODISK-1
   status: done
-  commit: 2ebfec6b47bd
-  done_at: '2026-03-04T01:14:43+00:00'
-  changelog: 'fix: remove BLOCKED echo trap, use TASK_COMPLETE-only detection'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.5'
   task_key: 0.5@ZERODISK-1
   description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
@@ -914,10 +900,10 @@ tasks:
   files: /lib/transfers/streamPipeline.ts, /tests/unit/streamPipeline.test.ts
   agent: "\u25C8 OpenCode"
   gate: ZERODISK-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.9'
   task_key: 3.9@ZERODISK-1
   description: "Server streams source \u2192 CacheFlow \u2192 target without disk\
@@ -926,10 +912,10 @@ tasks:
   files: /lib/transfers/streamTransfer.ts
   agent: "\u25C8 OpenCode"
   gate: ZERODISK-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.12'
   task_key: 3.12@ZERODISK-1
   description: "Zero-disk verification test + tab-close survival test \u26A0\uFE0F\
@@ -938,10 +924,10 @@ tasks:
   files: /e2e/tests/zeroDiskTransfer.spec.ts
   agent: "\u25C9 Gemini"
   gate: ZERODISK-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.4'
   task_key: 0.4@SSE-1
   description: "Allocate Redis namespaces \u2014 document and enforce db separation"
@@ -949,10 +935,10 @@ tasks:
   files: /docs/architecture/redis-namespaces.md, /lib/redis/client.ts (per-db connections)
   agent: "\u25C8 OpenCode"
   gate: SSE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.7'
   task_key: 0.7@SSE-1
   description: "Define BullMQ \u2192 SSE bridge via Redis pub/sub"
@@ -960,10 +946,10 @@ tasks:
   files: /lib/transfers/progressBridge.ts, /docs/architecture/sse-pattern.md
   agent: "\u25C8 OpenCode"
   gate: SSE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.9'
   task_key: 0.9@SSE-1
   description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
@@ -973,10 +959,10 @@ tasks:
     /.env.example
   agent: "\u2605 CODEX (Master)"
   gate: SSE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.2'
   task_key: 3.2@SSE-1
   description: Server-Sent Events (SSE) for real-time transfer progress
@@ -984,10 +970,10 @@ tasks:
   files: /app/api/transfers/[id]/progress/route.ts, /lib/transfers/progressEmitter.ts
   agent: "\u25C8 OpenCode"
   gate: SSE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '3.10'
   task_key: 3.10@SSE-1
   description: BullMQ background job queue for async transfers
@@ -995,10 +981,10 @@ tasks:
   files: /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts
   agent: "\u25C8 OpenCode"
   gate: SSE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.7'
   task_key: 4.7@SHARE-1
   description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
@@ -1007,10 +993,10 @@ tasks:
   files: /app/api/share/route.ts, /lib/share/shareLinkService.ts
   agent: "\u25C8 OpenCode"
   gate: SHARE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.8'
   task_key: 4.8@SHARE-1
   description: "Share link proxy \u2014 hides underlying provider"
@@ -1018,10 +1004,10 @@ tasks:
   files: /app/s/[linkId]/route.ts
   agent: "\u25C8 OpenCode"
   gate: SHARE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.9'
   task_key: 4.9@SHARE-1
   description: "Abuse controls \u2014 rate limits, throttling, link access logging"
@@ -1029,10 +1015,10 @@ tasks:
   files: /lib/share/abuseControls.ts, /app/api/share/[id]/revoke/route.ts
   agent: "\u25C8 OpenCode"
   gate: SHARE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.10'
   task_key: 4.10@SHARE-1
   description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
@@ -1041,10 +1027,10 @@ tasks:
   files: /components/share/ShareLinkPanel.tsx, /components/share/ShareLinkList.tsx
   agent: "\u25C6 ClaudeCode"
   gate: SHARE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.11'
   task_key: 4.11@SHARE-1
   description: "E2E share link tests \u2014 create, access, expire, revoke"
@@ -1052,10 +1038,10 @@ tasks:
   files: /e2e/tests/shareLinks.spec.ts
   agent: "\u25C9 Gemini"
   gate: SHARE-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '0.3'
   task_key: 0.3@VAULT-1
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -1063,10 +1049,10 @@ tasks:
   files: /prisma/schema.prisma, /docs/architecture/data-model.md
   agent: "\u25C8 OpenCode"
   gate: VAULT-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '5.5'
   task_key: 5.5@VAULT-1
   description: Vault data model and enable/disable API
@@ -1121,10 +1107,10 @@ tasks:
   files: /app/dashboard/page.tsx, /components/dashboard/StorageHero.tsx, /components/dashboard/ProviderCapacityBar.tsx
   agent: "\u25C6 ClaudeCode"
   gate: SCHED-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '5.1'
   task_key: 5.1@SCHED-1
   description: Scheduled job data model and Schedules management UI
@@ -1233,9 +1219,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SEC-1
   status: done
-  commit: 9fe35b97ff93
-  done_at: '2026-03-02T21:20:30+00:00'
-  changelog: 'chore: compliance closeout and per-agent sprint prompts'
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '1.18'
   task_key: 1.18@SEC-1
   description: "Security baseline \u2014 remove defaults, harden secrets"
@@ -1243,10 +1229,10 @@ tasks:
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
   agent: "\u25C8 OpenCode"
   gate: SEC-1
-  status: pending
-  commit: a0832192b9e9
-  done_at: '2026-03-02T21:32:03+00:00'
-  changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.4'
   task_key: 4.4@SEC-1
   description: SSH2 connection manager with LRU session reuse
@@ -1254,10 +1240,10 @@ tasks:
   files: /lib/providers/vps/sshConnectionManager.ts, /lib/providers/vps/VPSAdapter.ts
   agent: "\u25C8 OpenCode"
   gate: SEC-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.5'
   task_key: 4.5@SEC-1
   description: AES-256-GCM encrypted credential storage for VPS/WebDAV
@@ -1265,10 +1251,10 @@ tasks:
   files: /lib/vault/credentialVault.ts, /app/api/connections/vps/route.ts
   agent: "\u25C8 OpenCode"
   gate: SEC-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '4.6'
   task_key: 4.6@SEC-1
   description: VPS parity test + credential security test
@@ -1276,10 +1262,10 @@ tasks:
   files: /e2e/tests/providers/vps.spec.ts
   agent: "\u25C9 Gemini"
   gate: SEC-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 413a06830917
+  done_at: '2026-03-04T21:26:42+00:00'
+  changelog: 'fix: use page.goto for navigation in transferTray test + mock remotes'
 - id: '6.1'
   task_key: 6.1@LAUNCH-1
   description: PWA manifest + next-pwa service worker (app shell only)

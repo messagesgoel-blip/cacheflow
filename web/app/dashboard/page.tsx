@@ -95,7 +95,7 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Dashboard</h1>
 
-        {/* Storage Hero - SCHED-1: Storage pooling dashboard */}
+        {/* Storage Hero - SCHED-1: Storage pooling dashboard with aggregate hero */}
         <div className="mb-8">
           <StorageHero connectedProviders={connectedProviders} />
         </div>

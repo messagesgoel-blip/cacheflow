@@ -24,3 +24,5 @@
 - use when: Dispatching work to OpenCode/ClaudeCode/Gemini/Codex from the master orchestrator.
 - example: `buildAgentPrompt(task)` in `scripts/lib/buildAgentPrompt.ts` with the fixed five sections (ROLE, ACCEPTANCE CRITERIA, TARGET FILES, CONTRACT OBLIGATION, FORBIDDEN SIDE EFFECTS).
 - do not deviate because: consistent scoped prompts are required for deterministic agent behavior and contract-gated handoffs.
+
+- 2026-03-04T20:14:10Z agent-coord: run cache invalidation hooks on task-claim (invalidate codebase-context on HEAD change; invalidate system-prompt on AGENTS/CORE checksum change).
