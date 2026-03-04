@@ -280,6 +280,50 @@ function findLowestIncompleteSprint(manifest: TaskManifest, state: OrchestratorS
   return null;
 }
 
+function parseOptionalSprintArg(argv: string[]): number | null {
+  let raw: string | null = null;
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--sprint") {
+      const next = argv[index + 1];
+      if (!next || next.startsWith("--")) {
+        throw new Error("Missing value for --sprint");
+      }
+      raw = next;
+      break;
+    }
+    if (arg.startsWith("--sprint=")) {
+      raw = arg.slice("--sprint=".length);
+      break;
+    }
+  }
+
+  if (raw === null) {
+    return null;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(`Invalid --sprint value: ${raw}`);
+  }
+  return parsed;
+}
+
+function incompleteSprintTasks(manifest: TaskManifest, state: OrchestratorState, sprint: number): string[] {
+  return getTasksForSprint(manifest, sprint)
+    .filter((task) => state.tasks[task.id] !== "done")
+    .map((task) => `${task.id}:${state.tasks[task.id] ?? "pending"}`);
+}
+
+function ensureSprintGateReady(manifest: TaskManifest, state: OrchestratorState, sprint: number): void {
+  const pending = incompleteSprintTasks(manifest, state, sprint);
+  if (pending.length === 0) {
+    return;
+  }
+
+  throw new Error(`Cannot gate sprint ${sprint}: tasks still pending: [${pending.join(", ")}]`);
+}
+
 async function runProcess(
   command: string,
   args: string[],
@@ -975,6 +1019,8 @@ async function dispatchWave2(
 }
 
 async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, sprint: number): Promise<void> {
+  ensureSprintGateReady(manifest, state, sprint);
+
   const sprintMeta = manifest.sprints[String(sprint)] as
     | {
         gate_criteria: string[];
@@ -1078,7 +1124,9 @@ async function main(): Promise<void> {
   const manifest = await readJsonFile<TaskManifest>(MANIFEST_PATH);
   await ensureAgentClisAvailable(manifest);
   const state = await loadState(manifest);
+  const argv = process.argv.slice(2);
   const gateOnly = process.argv.includes("--gate-only");
+  const sprintArg = parseOptionalSprintArg(argv);
   const sprintLimitEnv = process.env.SPRINT_LIMIT;
   const sprintLimit = sprintLimitEnv === undefined ? null : Number(sprintLimitEnv);
 
@@ -1087,7 +1135,12 @@ async function main(): Promise<void> {
   }
 
   if (gateOnly) {
-    const sprint = state.current_sprint;
+    const sprint = sprintArg ?? state.current_sprint - 1;
+    if (sprint < 0) {
+      throw new Error(
+        `Cannot determine gate-only sprint from current_sprint=${state.current_sprint}; provide --sprint <N>`,
+      );
+    }
     const sprintMeta = manifest.sprints[String(sprint)];
     if (!sprintMeta) {
       throw new Error(`Cannot run --gate-only: sprint ${sprint} not found in manifest`);
