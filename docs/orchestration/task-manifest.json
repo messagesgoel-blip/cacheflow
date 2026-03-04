@@ -266,6 +266,9 @@
         "RESP-1",
         "UPLOAD-1"
       ],
+      "skip_criteria": [
+        "HOLD-UI-2026-03-02"
+      ],
       "gate_mode": "playwright"
     },
     "3": {

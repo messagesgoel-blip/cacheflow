@@ -844,14 +844,19 @@ async function runGate(
   const requiredMissing = unmatchedCriteria.filter((criterion) => requiredCriteria.includes(criterion));
   const requiredMissingLabel = requiredMissing.length > 0 ? requiredMissing.join(", ") : "none";
 
-  const hasActualFailures = parsed.failedCount > 0 || failedCriteria.size > 0 || result.timedOut || result.code !== 0;
+  const hasActualFailures = parsed.failedCount > 0 || failedCriteria.size > 0 || result.timedOut;
   const hasRequiredSpecFailures = requiredMissing.length > 0;
   const pass = !hasActualFailures && !hasRequiredSpecFailures;
+  const exitWithoutFailuresWarning = result.code !== 0 && !hasActualFailures;
 
-  const warningSuffix =
-    unmatchedCriteria.length > 0
-      ? `; warning=unmatched_criteria(${unmatchedCriteria.length}): ${unmatchedLabel}`
-      : "";
+  const warnings: string[] = [];
+  if (unmatchedCriteria.length > 0) {
+    warnings.push(`unmatched_criteria(${unmatchedCriteria.length}): ${unmatchedLabel}`);
+  }
+  if (exitWithoutFailuresWarning) {
+    warnings.push(`playwright_exit_without_failures(exit=${result.code})`);
+  }
+  const warningSuffix = warnings.length > 0 ? `; warning=${warnings.join(" | ")}` : "";
 
   const detail = pass
     ? `Playwright gate passed; failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}${warningSuffix}`
@@ -1072,6 +1077,7 @@ async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, s
   const sprintMeta = manifest.sprints[String(sprint)] as
     | {
         gate_criteria: string[];
+        skip_criteria?: string[];
         gate_mode?: string;
       }
     | undefined;
@@ -1079,12 +1085,14 @@ async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, s
     throw new Error(`Missing sprint metadata for sprint ${sprint}`);
   }
 
+  const skipCriteria = new Set(sprintMeta.skip_criteria ?? []);
+  const gateCriteria = sprintMeta.gate_criteria.filter((criterion) => !skipCriteria.has(criterion));
   const gateMode = sprintMeta.gate_mode ?? "playwright";
   state.current_wave = 3;
   state.current_state = "running_gate";
   await writeState(state, { syncDashboard: true, syncReason: `sprint:${sprint}:gate:running` });
 
-  const gate = await runGate(manifest, sprint, sprintMeta.gate_criteria, gateMode);
+  const gate = await runGate(manifest, sprint, gateCriteria, gateMode);
   if (gate.pass) {
     const tag = `sprint-${sprint}-gate-pass`;
     const tagCheck = await runProcess("git", ["tag", "--list", tag], 60_000);

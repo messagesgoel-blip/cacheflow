@@ -30,6 +30,7 @@ export interface SprintPlan {
   wave2: string[];
   wave3: string[];
   gate_criteria: string[];
+  skip_criteria?: string[];
 }
 
 export interface TaskManifest {
