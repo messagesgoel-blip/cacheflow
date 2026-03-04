@@ -6,10 +6,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   env: {
-    API_URL: process.env.API_URL || 'http://api:8100',
+    API_URL: process.env.API_URL || 'http://127.0.0.1:8100',
   },
   async rewrites() {
-    const apiUrl = process.env.API_URL || 'http://api:8100';
+    const apiUrl = process.env.API_URL || 'http://127.0.0.1:8100';
     return [
       { source: '/health', destination: `${apiUrl}/health` },
       { source: '/cache', destination: `${apiUrl}/cache` },
