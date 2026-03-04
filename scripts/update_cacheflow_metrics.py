@@ -27,6 +27,7 @@ ROADMAP = BASE / "docs" / "roadmap-v4.3.md"
 SPRINT_TASKS_FILE = BASE / "monitoring" / "cacheflow_sprint_tasks.yaml"
 METRICS_FILE = BASE / "monitoring" / "cacheflow_metrics.yaml"
 STATE_FILE = BASE / "monitoring" / "cacheflow_task_state.yaml"
+ORCHESTRATOR_STATE_FILE = BASE / "logs" / "orchestrator-state.json"
 HISTORY_FILE = BASE / "monitoring" / "task_history.yaml"
 LOCK_DIR = BASE / ".context" / "task_locks"
 
@@ -49,6 +50,19 @@ def run_git(args: list[str]) -> str:
         )
         .stdout.strip()
     )
+
+
+def load_orchestrator_overrides() -> dict:
+    if not ORCHESTRATOR_STATE_FILE.exists():
+        return {}
+    try:
+        data = json.loads(ORCHESTRATOR_STATE_FILE.read_text())
+        overrides = data.get("tasks", {})
+        if overrides:
+            print(f"[sync] orchestrator-state override: {len(overrides)} tasks")
+        return overrides
+    except Exception:
+        return {}
 
 
 def parse_tasks() -> list[dict]:
@@ -153,6 +167,7 @@ def _status_map(args: argparse.Namespace) -> dict:
 
 def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict], dict, list[dict]]:
     existing_state = load_state()
+    orchestrator_overrides = load_orchestrator_overrides()
     state_out = {}
     changes = []
     commit_full = run_git(["rev-parse", "HEAD"])
@@ -179,6 +194,7 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
         }
 
         target_status = None
+        # Priority 1: Command line arguments
         for candidate_status in ("done", "running", "pending", "planned"):
             for selector in selectors[candidate_status]:
                 if _selector_matches(task, selector):
@@ -187,6 +203,12 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
             if target_status:
                 break
 
+        # Priority 2: Orchestrator state override
+        orchestrator_status = orchestrator_overrides.get(key) or orchestrator_overrides.get(task["id"])
+        if orchestrator_status in ("done", "running"):
+            target_status = orchestrator_status
+
+        # Priority 3: Active locks (implies running)
         if not target_status and key in active_locks and str(record.get("status", "")).lower() not in DONE_STATES:
             target_status = "running"
 
