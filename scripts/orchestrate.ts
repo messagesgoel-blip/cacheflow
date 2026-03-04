@@ -657,6 +657,52 @@ async function findSpecFilesForCriteria(criteria: string[]): Promise<string[]> {
     .filter(Boolean);
 }
 
+async function findUnmatchedCriteria(criteria: string[], matchedSpecFiles: string[]): Promise<string[]> {
+  if (criteria.length === 0 || matchedSpecFiles.length === 0) {
+    return criteria;
+  }
+
+  const matchedCriteria = new Set<string>();
+  for (const specFile of matchedSpecFiles) {
+    const specPath = path.join(ROOT, specFile);
+    if (!existsSync(specPath)) {
+      continue;
+    }
+
+    let raw = "";
+    try {
+      raw = await readFile(specPath, "utf8");
+    } catch {
+      continue;
+    }
+
+    for (const criterion of criteria) {
+      if (raw.includes(criterion)) {
+        matchedCriteria.add(criterion);
+      }
+    }
+  }
+
+  return criteria.filter((criterion) => !matchedCriteria.has(criterion));
+}
+
+function requiredSpecCriteria(manifest: TaskManifest, criteria: string[]): string[] {
+  const required: string[] = [];
+  for (const criterion of criteria) {
+    const criterionMeta = (manifest.criteria as Record<string, unknown>)[criterion];
+    if (!criterionMeta || typeof criterionMeta !== "object") {
+      continue;
+    }
+
+    const record = criterionMeta as Record<string, unknown>;
+    if (record.required_spec === true || record.requiredSpec === true) {
+      required.push(criterion);
+    }
+  }
+
+  return required;
+}
+
 async function runGate(
   manifest: TaskManifest,
   sprint: number,
@@ -691,7 +737,6 @@ async function runGate(
   }
 
   const parsed = parsePlaywrightFailures(reportData);
-  const hasFailures = result.code !== 0 || parsed.failedCount > 0;
   const failedCriteria = new Set<string>();
   for (const failureTitle of parsed.details) {
     for (const criterion of criteria) {
@@ -701,13 +746,27 @@ async function runGate(
     }
   }
   const failedCriteriaLabel = failedCriteria.size > 0 ? [...failedCriteria].join(", ") : "none";
+  const unmatchedCriteria = await findUnmatchedCriteria(criteria, matchedSpecFiles);
+  const unmatchedLabel = unmatchedCriteria.length > 0 ? unmatchedCriteria.join(", ") : "none";
+  const requiredCriteria = requiredSpecCriteria(manifest, criteria);
+  const requiredMissing = unmatchedCriteria.filter((criterion) => requiredCriteria.includes(criterion));
+  const requiredMissingLabel = requiredMissing.length > 0 ? requiredMissing.join(", ") : "none";
 
-  const detail = hasFailures
-    ? `Playwright failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length}; exit=${result.code}`
-    : `Playwright gate passed; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length};`;
+  const hasActualFailures = parsed.failedCount > 0 || failedCriteria.size > 0 || result.timedOut;
+  const hasRequiredSpecFailures = requiredMissing.length > 0;
+  const pass = !hasActualFailures && !hasRequiredSpecFailures;
+
+  const warningSuffix =
+    unmatchedCriteria.length > 0
+      ? `; warning=unmatched_criteria(${unmatchedCriteria.length}): ${unmatchedLabel}`
+      : "";
+
+  const detail = pass
+    ? `Playwright gate passed; failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}${warningSuffix}`
+    : `Playwright failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${matchedSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}; unmatched_criteria=${unmatchedLabel}`;
 
   return {
-    pass: !hasFailures,
+    pass,
     detail,
   };
 }
