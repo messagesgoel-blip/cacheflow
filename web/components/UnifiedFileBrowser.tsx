@@ -547,11 +547,11 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                     <button
                       data-testid="cf-aggregated-view-toggle"
                       onClick={() => {
-                        setIsAggregatedView(!isAggregatedView);
-                        if (!isAggregatedView) {
-                          // When turning on aggregated view, make sure we're in flat view
-                          if (isGroupedView) toggleGroupedView();
+                        // When turning ON aggregated view, make sure we're in flat view
+                        if (!isAggregatedView && isGroupedView) {
+                          toggleGroupedView();
                         }
+                        setIsAggregatedView(prev => !prev);
                       }}
                       className={`px-3 py-1.5 text-xs font-bold transition-colors ${isAggregatedView ? 'bg-green-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
                       aria-pressed={isAggregatedView}
