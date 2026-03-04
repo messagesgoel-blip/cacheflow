@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { createWriteStream, existsSync } from "node:fs";
 import { mkdir, readFile, rm, stat, writeFile, appendFile } from "node:fs/promises";
 import path from "node:path";
-import type { OrchestratorState, Task, TaskManifest } from "./lib/types";
+import type { Agent, OrchestratorState, Task, TaskManifest } from "./lib/types";
 import { buildAgentPrompt } from "./lib/buildAgentPrompt";
 
 const ROOT = path.resolve(process.cwd());
@@ -63,6 +63,14 @@ interface WriteStateOptions {
 
 let dashboardSyncInFlight: Promise<void> | null = null;
 let lastDashboardSyncAt = 0;
+let agentCliCommands: Partial<Record<Agent, string>> = {};
+
+const AGENT_CLI_CANDIDATES: Record<Agent, string[]> = {
+  opencode: ["OC", "opencode"],
+  claudecode: ["CCLI", "claude"],
+  gemini: ["GCLI", "gemini"],
+  codex: ["codex"],
+};
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -427,19 +435,22 @@ async function runProcess(
 }
 
 function commandForTask(task: Task, prompt: string): { command: string; args: string[] } {
+  const resolvedCommand =
+    agentCliCommands[task.agent] ?? AGENT_CLI_CANDIDATES[task.agent][0] ?? AGENT_CLI_CANDIDATES.opencode[0];
+
   switch (task.agent) {
     case "opencode":
       // Keep opencode invocation minimal; routing/model selection is handled externally.
-      return { command: "opencode", args: ["run", prompt] };
+      return { command: resolvedCommand, args: ["run", prompt] };
     case "claudecode":
-      return { command: "claude", args: ["--print", prompt] };
+      return { command: resolvedCommand, args: ["--print", prompt] };
     case "gemini":
-      return { command: "gemini", args: ["-p", prompt] };
+      return { command: resolvedCommand, args: ["-p", prompt] };
     case "codex":
       // ASSUMPTION: codex CLI is available for codex-owned implementation tasks.
-      return { command: "codex", args: ["exec", prompt] };
+      return { command: resolvedCommand, args: ["exec", prompt] };
     default:
-      return { command: "opencode", args: ["run", prompt] };
+      return { command: AGENT_CLI_CANDIDATES.opencode[0], args: ["run", prompt] };
   }
 }
 
@@ -516,26 +527,43 @@ async function runTaskWithRetry(task: Task, sprint: number, wave: "wave1" | "wav
 }
 
 async function ensureAgentClisAvailable(manifest: TaskManifest): Promise<void> {
-  const needed = new Set<string>();
+  const neededAgents = new Set<Agent>();
   for (const task of manifest.tasks) {
-    if (task.agent === "opencode") needed.add("opencode");
-    if (task.agent === "claudecode") needed.add("claude");
-    if (task.agent === "gemini") needed.add("gemini");
-    if (task.agent === "codex") needed.add("codex");
+    neededAgents.add(task.agent);
   }
 
   const missing: string[] = [];
-  for (const command of needed) {
-    const check = await runProcess("bash", ["-lc", `command -v ${command}`], 60_000);
-    if (check.code !== 0) {
-      missing.push(command);
+  const resolved: Partial<Record<Agent, string>> = {};
+
+  for (const agent of neededAgents) {
+    const candidates = AGENT_CLI_CANDIDATES[agent];
+    let selected: string | null = null;
+
+    for (const candidate of candidates) {
+      const check = await runProcess("bash", ["-lc", `command -v ${candidate}`], 60_000);
+      if (check.code !== 0) {
+        continue;
+      }
+
+      const resolvedPath = check.stdout.split(/\r?\n/).map((line) => line.trim()).find(Boolean);
+      selected = resolvedPath || candidate;
+      break;
     }
+
+    if (!selected) {
+      missing.push(`${agent}(${candidates.join(" | ")})`);
+      continue;
+    }
+
+    resolved[agent] = selected;
   }
 
   if (missing.length > 0) {
     await notify(`Missing required agent CLIs: ${missing.join(", ")}`);
     throw new Error(`Missing required agent CLIs: ${missing.join(", ")}`);
   }
+
+  agentCliCommands = resolved;
 }
 
 function resolveContractPath(task: Task): string {

@@ -22,14 +22,7 @@ function normalizePromptPath(value: string): string {
     .trim();
 }
 
-function formatList(items: string[]): string {
-  if (items.length === 0) {
-    return "- (none)";
-  }
-  return items.map((item) => `- ${item}`).join("\n");
-}
-
-function fileExistsInWorkspace(relativePath: string): boolean {
+function workspacePathExists(relativePath: string): boolean {
   if (!relativePath) {
     return false;
   }
@@ -42,6 +35,50 @@ function fileExistsInWorkspace(relativePath: string): boolean {
   }
 
   return existsSync(path.resolve(process.cwd(), basePath));
+}
+
+function shouldPreferWebPrefix(agent: Agent, normalizedPath: string): boolean {
+  if (!["claudecode", "gemini"].includes(agent)) {
+    return false;
+  }
+  if (normalizedPath.startsWith("web/")) {
+    return false;
+  }
+
+  return /^(app|components|styles|e2e|tests|playwright|public|context|hooks|lib)\//.test(
+    normalizedPath,
+  );
+}
+
+function resolveTargetPath(agent: Agent, rawPath: string): { filePath: string; exists: boolean } {
+  const normalized = normalizePromptPath(rawPath);
+  if (!normalized) {
+    return { filePath: normalized, exists: false };
+  }
+
+  const candidates = [normalized];
+  if (!normalized.startsWith("web/")) {
+    candidates.push(`web/${normalized}`);
+  }
+
+  for (const candidate of candidates) {
+    if (workspacePathExists(candidate)) {
+      return { filePath: candidate, exists: true };
+    }
+  }
+
+  if (shouldPreferWebPrefix(agent, normalized)) {
+    return { filePath: `web/${normalized}`, exists: false };
+  }
+
+  return { filePath: normalized, exists: false };
+}
+
+function formatList(items: string[]): string {
+  if (items.length === 0) {
+    return "- (none)";
+  }
+  return items.map((item) => `- ${item}`).join("\n");
 }
 
 function inferIntent(targets: Array<{ exists: boolean }>): string {
@@ -62,12 +99,8 @@ function inferIntent(targets: Array<{ exists: boolean }>): string {
 export function buildAgentPrompt(task: Task): string {
   const criteria = task.acceptance_criteria.map((criterion) => criterion.trim()).filter(Boolean);
   const targetFiles = task.files
-    .map((file) => normalizePromptPath(file))
-    .filter(Boolean)
-    .map((filePath) => ({
-      filePath,
-      exists: fileExistsInWorkspace(filePath),
-    }));
+    .map((file) => resolveTargetPath(task.agent, file))
+    .filter((target) => Boolean(target.filePath));
   const dependencies = task.depends_on_contracts
     .map((taskId) => normalizePromptPath(`/docs/contracts/${taskId}.md`))
     .filter(Boolean);
