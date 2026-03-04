@@ -11,6 +11,10 @@ const ROLE_TEXT: Record<Agent, string> = {
     "You are Codex (master orchestrator implementation tasks). You must not deploy to production or rotate secrets.",
 };
 
+function normalizePromptPath(value: string): string {
+  return value.trim().replace(/^\//, "");
+}
+
 function formatList(items: string[]): string {
   if (items.length === 0) {
     return "- (none)";
@@ -20,17 +24,26 @@ function formatList(items: string[]): string {
 
 export function buildAgentPrompt(task: Task): string {
   const criteria = task.acceptance_criteria.map((criterion) => criterion.trim()).filter(Boolean);
-  const targetFiles = task.files.map((file) => file.trim()).filter(Boolean);
+  const targetFiles = task.files.map((file) => normalizePromptPath(file)).filter(Boolean);
   const dependencies = task.depends_on_contracts
-    .map((taskId) => `/docs/contracts/${taskId}.md`)
+    .map((taskId) => normalizePromptPath(`/docs/contracts/${taskId}.md`))
     .filter(Boolean);
+  const normalizedContractPath = normalizePromptPath(task.contract_path);
 
   const contractObligation = task.produces_contract
     ? [
-        `Before marking this task complete, you MUST create the file at ${task.contract_path} containing: endpoint URL or file path, request/response shape, error codes, edge cases, example payload.`,
+        `Before marking this task complete, you MUST create the file at ${normalizedContractPath} containing: endpoint URL or file path, request/response shape, error codes, edge cases, example payload.`,
         `Output the string TASK_COMPLETE:${task.id} only after this file exists.`,
+        "Your FINAL line of output must be exactly:",
+        `TASK_COMPLETE:${task.id}`,
+        "Do not add anything after this line.",
       ].join("\n")
-    : `Output the string TASK_COMPLETE:${task.id} only after all acceptance criteria are satisfied.`;
+    : [
+        `Output the string TASK_COMPLETE:${task.id} only after all acceptance criteria are satisfied.`,
+        "Your FINAL line of output must be exactly:",
+        `TASK_COMPLETE:${task.id}`,
+        "Do not add anything after this line.",
+      ].join("\n");
 
   const dependencyText =
     dependencies.length > 0
