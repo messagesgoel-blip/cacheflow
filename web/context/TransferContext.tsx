@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 
 export interface TransferItem {
   jobId: string;
@@ -246,6 +247,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
                 status: data.status === 'completed' ? 'completed' as const :
                         data.status === 'failed' ? 'failed' as const :
                         data.status === 'active' ? 'active' as const :
+                        data.status === 'waiting' ? 'waiting' as const :
                         t.status,
                 error: data.error,
                 // Chunk-level progress
@@ -292,6 +294,43 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       eventSources.clear();
     };
   }, [transfers]);
+
+  useEffect(() => {
+    fetch('/api/transfers?limit=50')
+      .then(r => r.json())
+      .then(data => {
+        if (data.transfers?.length) {
+          setTransfers(prev => {
+            const existingIds = new Set(prev.map(t => t.jobId))
+            const newTransfers = data.transfers.filter(
+              (t: TransferItem) => !existingIds.has(t.jobId)
+            )
+            return [...prev, ...newTransfers]
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const pathname = usePathname();
+  useEffect(() => {
+    if (transfers.length === 0) {
+      fetch('/api/transfers?limit=50')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && data.transfers?.length) {
+            setTransfers(prev => {
+              const existingIds = new Set(prev.map(t => t.jobId))
+              const newTransfers = data.transfers.filter(
+                (t: TransferItem) => !existingIds.has(t.jobId)
+              )
+              return [...prev, ...newTransfers]
+            })
+          }
+        })
+        .catch(() => {})
+    }
+  }, [pathname, transfers])
 
   // Poll for updates every 5 seconds as fallback
   useEffect(() => {
