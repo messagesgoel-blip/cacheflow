@@ -728,6 +728,12 @@ async function main(): Promise<void> {
   const manifest = await readJsonFile<TaskManifest>(MANIFEST_PATH);
   await ensureAgentClisAvailable(manifest);
   const state = await loadState(manifest);
+  const sprintLimitEnv = process.env.SPRINT_LIMIT;
+  const sprintLimit = sprintLimitEnv === undefined ? null : Number(sprintLimitEnv);
+
+  if (sprintLimitEnv !== undefined && !Number.isFinite(sprintLimit)) {
+    throw new Error(`Invalid SPRINT_LIMIT: ${sprintLimitEnv}`);
+  }
 
   while (true) {
     const sprint = findLowestIncompleteSprint(manifest, state);
@@ -739,7 +745,23 @@ async function main(): Promise<void> {
       break;
     }
 
+    if (sprintLimit !== null && sprint > sprintLimit) {
+      state.current_state = "idle";
+      state.current_wave = 0;
+      await writeState(state);
+      console.log(`Sprint limit ${sprintLimit} reached. Stopping before sprint ${sprint}.`);
+      break;
+    }
+
     await runSprint(manifest, state, sprint);
+
+    if (sprintLimit !== null && sprint >= sprintLimit) {
+      state.current_state = "idle";
+      state.current_wave = 0;
+      await writeState(state);
+      console.log(`Sprint ${sprint} gate passed. Sprint limit ${sprintLimit} reached; stopping.`);
+      break;
+    }
   }
 }
 
