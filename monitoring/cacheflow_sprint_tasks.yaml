@@ -1,4 +1,4 @@
-generated_at: '2026-03-03T22:11:47+00:00'
+generated_at: '2026-03-04T01:14:43+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -8,10 +8,10 @@ tasks:
   files: /lib/providers/ProviderAdapter.interface.ts, /lib/providers/types.ts
   agent: "\u2605 CODEX (Master)"
   gate: AUTH-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 2ebfec6b47bd
+  done_at: '2026-03-04T01:14:43+00:00'
+  changelog: 'fix: remove BLOCKED echo trap, use TASK_COMPLETE-only detection'
 - id: '0.2'
   task_key: 0.2@AUTH-1
   description: Define AppError taxonomy and ErrorCode enum
@@ -76,7 +76,7 @@ tasks:
   files: /components/SessionExpiredBanner.tsx, /components/Sidebar/AccountRow.tsx
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
-  status: done
+  status: pending
   commit: 9f3f322328c5
   done_at: '2026-03-02T20:08:15+00:00'
   changelog: 'feat(1.17@AUTH-1): improve session expired banner with actionable reconnect
@@ -156,7 +156,7 @@ tasks:
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
-  status: done
+  status: pending
   commit: 9fe35b97ff93
   done_at: '2026-03-02T21:20:30+00:00'
   changelog: 'chore: compliance closeout and per-agent sprint prompts'
@@ -271,7 +271,7 @@ tasks:
   files: /api/remotes/**, /lib/providers/**, /lib/uploads/**
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
-  status: done
+  status: pending
   commit: b6b0f5b84ee0
   done_at: '2026-03-02T21:13:46+00:00'
   changelog: 'Codex compliance closeout: UUID audit complete; migration dry-run reports
@@ -284,7 +284,7 @@ tasks:
     /lib/uploads/uploadManager.ts
   agent: "\u25C8 OpenCode"
   gate: UUID-1
-  status: done
+  status: pending
   commit: 0e06e1fcf81d
   done_at: '2026-03-02T21:06:39+00:00'
   changelog: 'feat(1.10@MODAL-1): clear modal state on close and provider switch (already
@@ -320,7 +320,7 @@ tasks:
   files: /app/api/connections/route.ts, /components/Sidebar.tsx, /app/connections/page.tsx
   agent: "\u25C8 OpenCode"
   gate: SYNC-1
-  status: done
+  status: pending
   commit: a0832192b9e9
   done_at: '2026-03-02T21:32:03+00:00'
   changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
@@ -545,7 +545,7 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /lib/ui/toast.ts, /app/api/connections/route.ts
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
-  status: done
+  status: pending
   commit: 3441639dfc78
   done_at: '2026-03-03T00:35:45+00:00'
   changelog: 'feat(UI-P1-T02@HOLD-UI-2026-03-02, UI-P1-T05@HOLD-UI-2026-03-02): fix
@@ -557,7 +557,7 @@ tasks:
   files: /components/UnifiedFileBrowser.tsx, /components/Sidebar.tsx
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
-  status: done
+  status: pending
   commit: c80bd24c88d9
   done_at: '2026-03-03T00:15:33+00:00'
   changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
@@ -570,7 +570,7 @@ tasks:
     /web/e2e/fixtures/README.md
   agent: "\u25C8 OpenCode"
   gate: QA-1
-  status: done
+  status: pending
   commit: 25b691aaa88d
   done_at: '2026-03-03T00:05:16+00:00'
   changelog: 'feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100'
@@ -582,7 +582,7 @@ tasks:
   files: /web/e2e/**, /monitoring/task_history.yaml, /docs/prompts/**, /BLOCKER_QA_SEED.md
   agent: "\u25C9 Gemini"
   gate: QA-1
-  status: done
+  status: pending
   commit: 8d604fdb5bbb
   done_at: '2026-03-03T03:07:10+00:00'
   changelog: QA watcher unblock validated after 2FA completion; mock provider issues
@@ -627,7 +627,7 @@ tasks:
   files: /e2e/tests/twoFA.spec.ts
   agent: "\u25C9 Gemini"
   gate: 2FA-1
-  status: done
+  status: pending
   commit: 3c3e691c08e6
   done_at: '2026-03-02T22:34:48-05:00'
   changelog: 'fix(2.16@2FA-1): restore post-login 2FA settings interaction'
@@ -663,10 +663,10 @@ tasks:
   files: /lib/providers/ProviderAdapter.interface.ts, /lib/providers/types.ts
   agent: "\u2605 CODEX (Master)"
   gate: TRANSFER-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 2ebfec6b47bd
+  done_at: '2026-03-04T01:14:43+00:00'
+  changelog: 'fix: remove BLOCKED echo trap, use TASK_COMPLETE-only detection'
 - id: '0.2'
   task_key: 0.2@TRANSFER-1
   description: Define AppError taxonomy and ErrorCode enum
@@ -674,10 +674,10 @@ tasks:
   files: /lib/errors/AppError.ts, /lib/errors/ErrorCode.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: done
-  commit: 79590cabd655
-  done_at: '2026-03-03T21:28:36+00:00'
-  changelog: 'feat(errors): add shared AppError taxonomy for auth and transfer gates'
+  status: running
+  commit: ''
+  done_at: ''
+  changelog: ''
 - id: '0.3'
   task_key: 0.3@TRANSFER-1
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -756,7 +756,7 @@ tasks:
   files: /lib/transfers/transferRegistry.ts, /app/api/remotes/[uuid]/**/route.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: done
+  status: pending
   commit: e28b1584db82
   done_at: '2026-03-03T03:10:11+00:00'
   changelog: BullMQ queue + worker, transfer tray with toast
@@ -779,7 +779,7 @@ tasks:
     /lib/providers/dropbox/chunkedUpload.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: done
+  status: pending
   commit: 389271cac8e3
   done_at: '2026-03-03T03:11:40+00:00'
   changelog: Chunked upload + auto-resume
@@ -790,7 +790,7 @@ tasks:
   files: /app/api/transfers/[id]/chunks/route.ts, /lib/transfers/chunkStateManager.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: done
+  status: pending
   commit: 389271cac8e3
   done_at: '2026-03-03T03:11:40+00:00'
   changelog: Chunked upload + auto-resume
@@ -824,7 +824,7 @@ tasks:
   files: /lib/queue/transferQueue.ts, /lib/queue/workers/transferWorker.ts
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
-  status: done
+  status: pending
   commit: e28b1584db82
   done_at: '2026-03-03T03:10:11+00:00'
   changelog: BullMQ queue + worker, transfer tray with toast
@@ -902,10 +902,10 @@ tasks:
   files: /lib/providers/ProviderAdapter.interface.ts, /lib/providers/types.ts
   agent: "\u2605 CODEX (Master)"
   gate: ZERODISK-1
-  status: planned
-  commit: ''
-  done_at: ''
-  changelog: ''
+  status: done
+  commit: 2ebfec6b47bd
+  done_at: '2026-03-04T01:14:43+00:00'
+  changelog: 'fix: remove BLOCKED echo trap, use TASK_COMPLETE-only detection'
 - id: '0.5'
   task_key: 0.5@ZERODISK-1
   description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
@@ -1243,7 +1243,7 @@ tasks:
   files: /lib/auth/**, /app/api/**/route.ts (audit), /middleware.ts
   agent: "\u25C8 OpenCode"
   gate: SEC-1
-  status: done
+  status: pending
   commit: a0832192b9e9
   done_at: '2026-03-02T21:32:03+00:00'
   changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
