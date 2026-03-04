@@ -1,4 +1,4 @@
-generated_at: '2026-03-04T21:31:34+00:00'
+generated_at: '2026-03-04T21:33:26+00:00'
 tasks:
 - id: '0.1'
   task_key: 0.1@AUTH-1
@@ -9,9 +9,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.2'
   task_key: 0.2@AUTH-1
   description: Define AppError taxonomy and ErrorCode enum
@@ -20,9 +20,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: 0.4a
   task_key: 0.4a@AUTH-1
   description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
@@ -32,9 +32,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.1'
   task_key: 1.1@AUTH-1
   description: Create global HTTP interceptor for all /api/remotes proxy calls
@@ -43,9 +43,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.5'
   task_key: 1.5@AUTH-1
   description: "Multi-account schema \u2014 up to 3 accounts per provider"
@@ -54,9 +54,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.7'
   task_key: 1.7@AUTH-1
   description: Write Playwright token expiry test
@@ -65,9 +65,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.17'
   task_key: 1.17@AUTH-1
   description: Replace SESSION_EXPIRED raw text with actionable component
@@ -76,9 +76,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.1'
   task_key: 4.1@AUTH-1
   description: "Define provider parity checklist \u2014 every provider must pass all\
@@ -88,9 +88,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.2'
   task_key: 4.2@AUTH-1
   description: "Add 2\u20133 additional providers to reach 3\u20134 gold-standard\
@@ -100,9 +100,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.3'
   task_key: 4.3@AUTH-1
   description: E2E parity tests for each new provider
@@ -111,9 +111,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: AUTH-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.3'
   task_key: 0.3@AUTH-2
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -122,9 +122,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.2'
   task_key: 1.2@AUTH-2
   description: Implement silent token refresh endpoint
@@ -133,9 +133,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.4'
   task_key: 1.4@AUTH-2
   description: "Token Vault v1 \u2014 encrypted at-rest provider credentials"
@@ -144,9 +144,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.18'
   task_key: 1.18@AUTH-2
   description: "Security baseline \u2014 remove defaults, harden secrets"
@@ -155,9 +155,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-2
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.19'
   task_key: 1.19@AUTH-2
   description: "Security audit test \u2014 verify no secrets in API responses"
@@ -166,9 +166,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: AUTH-2
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.3'
   task_key: 1.3@AUTH-3
   description: Migrate from localStorage TokenManager to HttpOnly cookies
@@ -177,9 +177,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-3
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.6'
   task_key: 1.6@AUTH-3
   description: Remove client-side token sync pattern entirely
@@ -188,9 +188,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: AUTH-3
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.6'
   task_key: 0.6@AUTH-4
   description: "Define singleton refresh promise pattern \u2014 prevent concurrent\
@@ -200,9 +200,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-4
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.1'
   task_key: 1.1@AUTH-4
   description: Create global HTTP interceptor for all /api/remotes proxy calls
@@ -211,9 +211,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: AUTH-4
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.8'
   task_key: 1.8@MODAL-1
   description: Replace shared modal boolean with provider discriminator enum
@@ -222,9 +222,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.9'
   task_key: 1.9@MODAL-1
   description: Implement correct forms for WebDAV and VPS/SFTP modals
@@ -233,9 +233,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.10'
   task_key: 1.10@MODAL-1
   description: Clear modal state on close and provider switch
@@ -244,9 +244,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: MODAL-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.11'
   task_key: 1.11@MODAL-1
   description: "Write Playwright modal test \u2014 all 9 provider Connect buttons"
@@ -255,9 +255,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: MODAL-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.12'
   task_key: 1.12@UUID-1
   description: "Audit upload pipeline \u2014 locate all UUID injection points"
@@ -266,9 +266,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.13'
   task_key: 1.13@UUID-1
   description: Fix upload pipeline to preserve original File.name
@@ -278,9 +278,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: UUID-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.14'
   task_key: 1.14@UUID-1
   description: Write and run migration script in staging
@@ -289,9 +289,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: UUID-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.15'
   task_key: 1.15@UUID-1
   description: Validate and apply migration to production
@@ -300,9 +300,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: UUID-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.16'
   task_key: 1.16@SYNC-1
   description: Connections page and sidebar read from single server state store
@@ -311,9 +311,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SYNC-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.14'
   task_key: 3.14@SYNC-1
   description: "Provider health indicators \u2014 green means it actually works"
@@ -322,9 +322,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SYNC-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.16'
   task_key: 3.16@SYNC-1
   description: Dashboard + health E2E tests
@@ -333,9 +333,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: SYNC-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.1'
   task_key: 2.1@UPLOAD-1
   description: Add persistent Upload / New Folder / Refresh action bar
@@ -344,9 +344,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: UPLOAD-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.2'
   task_key: 2.2@UPLOAD-1
   description: Implement file upload with progress and toast
@@ -355,9 +355,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: UPLOAD-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.5'
   task_key: 2.5@UPLOAD-1
   description: Write E2E tests for all file action entry points
@@ -366,9 +366,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: UPLOAD-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.6'
   task_key: 2.6@PREVIEW-1
   description: "Fix preview panel mount \u2014 \"Opening\" toast must open a panel;\
@@ -378,9 +378,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: PREVIEW-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.7'
   task_key: 2.7@PREVIEW-1
   description: 'Unsupported file types: immediate Download CTA via server-proxied
@@ -390,9 +390,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: PREVIEW-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.8'
   task_key: 2.8@PREVIEW-1
   description: "E2E preview tests \u2014 supported and unsupported types"
@@ -401,9 +401,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: PREVIEW-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.3'
   task_key: 2.3@ACTIONS-1
   description: 'File table: single click select + right panel, double click open'
@@ -412,9 +412,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: ACTIONS-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.4'
   task_key: 2.4@ACTIONS-1
   description: Three-dot row menu + right-click context menu (identical)
@@ -423,9 +423,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: ACTIONS-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.5'
   task_key: 2.5@ACTIONS-1
   description: Write E2E tests for all file action entry points
@@ -434,9 +434,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: ACTIONS-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.9'
   task_key: 2.9@NAV-1
   description: "Merge Cloud Drives / Providers / Integrations \u2192 Connections"
@@ -446,9 +446,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: NAV-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.10'
   task_key: 2.10@RESP-1
   description: "File table visual polish \u2014 skeleton loaders, hover, separators"
@@ -457,9 +457,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: RESP-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.11'
   task_key: 2.11@RESP-1
   description: Sidebar collapsible accordion per provider group
@@ -468,9 +468,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: RESP-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.12'
   task_key: 2.12@RESP-1
   description: "Responsive layout pass \u2014 375px viewport minimum"
@@ -479,9 +479,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: RESP-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: UI-P1-T01
   task_key: UI-P1-T01@HOLD-UI-2026-03-02
   description: Fix Cloud Drives page empty or unclear connected state
@@ -490,9 +490,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: UI-P1-T02
   task_key: UI-P1-T02@HOLD-UI-2026-03-02
   description: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
@@ -501,9 +501,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: UI-P1-T03
   task_key: UI-P1-T03@HOLD-UI-2026-03-02
   description: Fix preview panel open reliability from file rows and overflow Open
@@ -512,9 +512,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: UI-P1-T04
   task_key: UI-P1-T04@HOLD-UI-2026-03-02
   description: Restore file actions path (rename/move/download/delete) for connected
@@ -524,9 +524,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: UI-P1-T05
   task_key: UI-P1-T05@HOLD-UI-2026-03-02
   description: Add explicit UI error surfaces for failed sync/proxy/favorites requests
@@ -535,9 +535,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: HOLD-UI-2026-03-02
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: UI-P1-T06
   task_key: UI-P1-T06@HOLD-UI-2026-03-02
   description: Add clear loading, empty, and error state cards in file pane
@@ -546,9 +546,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: HOLD-UI-2026-03-02
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: OPS-E2E-READY
   task_key: OPS-E2E-READY@QA-1
   description: Add Playwright preflight wait-for-api on 127.0.0.1:8100
@@ -558,9 +558,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: QA-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: OPS-QA-WATCH
   task_key: OPS-QA-WATCH@QA-1
   description: 'Run QA watcher loop: detect dependency unlocks, claim ready Gemini
@@ -570,9 +570,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: QA-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.13'
   task_key: 2.13@2FA-1
   description: "TOTP setup flow \u2014 QR generation, verification, backup codes"
@@ -581,9 +581,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: 2FA-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.14'
   task_key: 2.14@2FA-1
   description: TOTP login challenge UI
@@ -592,9 +592,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.15'
   task_key: 2.15@2FA-1
   description: 'Settings: manage 2FA, backup codes, last-used timestamp'
@@ -603,9 +603,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '2.16'
   task_key: 2.16@2FA-1
   description: "E2E 2FA tests \u2014 full enable/use/disable cycle"
@@ -614,9 +614,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: 2FA-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.7'
   task_key: 4.7@2FA-1
   description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
@@ -626,9 +626,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: 2FA-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.10'
   task_key: 4.10@2FA-1
   description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
@@ -638,9 +638,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: 2FA-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.1'
   task_key: 0.1@TRANSFER-1
   description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
@@ -650,9 +650,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.2'
   task_key: 0.2@TRANSFER-1
   description: Define AppError taxonomy and ErrorCode enum
@@ -661,9 +661,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.3'
   task_key: 0.3@TRANSFER-1
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -672,9 +672,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.4'
   task_key: 0.4@TRANSFER-1
   description: "Allocate Redis namespaces \u2014 document and enforce db separation"
@@ -683,9 +683,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: 0.4a
   task_key: 0.4a@TRANSFER-1
   description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
@@ -695,9 +695,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.5'
   task_key: 0.5@TRANSFER-1
   description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
@@ -707,9 +707,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.9'
   task_key: 0.9@TRANSFER-1
   description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
@@ -720,9 +720,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.1'
   task_key: 3.1@TRANSFER-1
   description: "Persistent Transfer Manager Tray \u2014 always visible when active"
@@ -732,9 +732,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.3'
   task_key: 3.3@TRANSFER-1
   description: Every file operation produces tray entry + toast
@@ -743,9 +743,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.4'
   task_key: 3.4@TRANSFER-1
   description: "Tray E2E \u2014 entry survives navigation, retry works on failure"
@@ -754,9 +754,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.5'
   task_key: 3.5@TRANSFER-1
   description: 'Chunked upload: files >50MB use provider resumable upload APIs'
@@ -766,9 +766,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.6'
   task_key: 3.6@TRANSFER-1
   description: 'Auto-resume: resume interrupted upload from last successful chunk'
@@ -777,9 +777,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.7'
   task_key: 3.7@TRANSFER-1
   description: 'Tray: chunk-level progress for large files'
@@ -788,9 +788,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.8'
   task_key: 3.8@TRANSFER-1
   description: "Auto-resume E2E test \u2014 network drop mid-transfer \u26A0\uFE0F\
@@ -800,9 +800,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.10'
   task_key: 3.10@TRANSFER-1
   description: BullMQ background job queue for async transfers
@@ -811,9 +811,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.11'
   task_key: 3.11@TRANSFER-1
   description: "Conflict resolution modal \u2014 shared component used everywhere"
@@ -822,9 +822,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.15'
   task_key: 3.15@TRANSFER-1
   description: "Rate limit handling layer \u2014 per-provider request queue"
@@ -833,9 +833,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.12'
   task_key: 4.12@TRANSFER-1
   description: "Remote upload v1 \u2014 HTTP/HTTPS URL to chosen provider"
@@ -844,9 +844,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.13'
   task_key: 4.13@TRANSFER-1
   description: Smart auto-placement engine v1
@@ -855,9 +855,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.14'
   task_key: 4.14@TRANSFER-1
   description: "Remote upload UI \u2014 dropdown in Upload action menu"
@@ -866,9 +866,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.15'
   task_key: 4.15@TRANSFER-1
   description: E2E remote upload + placement tests
@@ -877,9 +877,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: TRANSFER-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.1'
   task_key: 0.1@ZERODISK-1
   description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
@@ -889,9 +889,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: ZERODISK-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.5'
   task_key: 0.5@ZERODISK-1
   description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
@@ -901,9 +901,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: ZERODISK-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.9'
   task_key: 3.9@ZERODISK-1
   description: "Server streams source \u2192 CacheFlow \u2192 target without disk\
@@ -913,9 +913,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: ZERODISK-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.12'
   task_key: 3.12@ZERODISK-1
   description: "Zero-disk verification test + tab-close survival test \u26A0\uFE0F\
@@ -925,9 +925,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: ZERODISK-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.4'
   task_key: 0.4@SSE-1
   description: "Allocate Redis namespaces \u2014 document and enforce db separation"
@@ -936,9 +936,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SSE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.7'
   task_key: 0.7@SSE-1
   description: "Define BullMQ \u2192 SSE bridge via Redis pub/sub"
@@ -947,9 +947,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SSE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.9'
   task_key: 0.9@SSE-1
   description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
@@ -960,9 +960,9 @@ tasks:
   agent: "\u2605 CODEX (Master)"
   gate: SSE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.2'
   task_key: 3.2@SSE-1
   description: Server-Sent Events (SSE) for real-time transfer progress
@@ -971,9 +971,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SSE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '3.10'
   task_key: 3.10@SSE-1
   description: BullMQ background job queue for async transfers
@@ -982,9 +982,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SSE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.7'
   task_key: 4.7@SHARE-1
   description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
@@ -994,9 +994,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SHARE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.8'
   task_key: 4.8@SHARE-1
   description: "Share link proxy \u2014 hides underlying provider"
@@ -1005,9 +1005,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SHARE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.9'
   task_key: 4.9@SHARE-1
   description: "Abuse controls \u2014 rate limits, throttling, link access logging"
@@ -1016,9 +1016,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SHARE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.10'
   task_key: 4.10@SHARE-1
   description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
@@ -1028,9 +1028,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: SHARE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.11'
   task_key: 4.11@SHARE-1
   description: "E2E share link tests \u2014 create, access, expire, revoke"
@@ -1039,9 +1039,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: SHARE-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '0.3'
   task_key: 0.3@VAULT-1
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
@@ -1050,9 +1050,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: VAULT-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '5.5'
   task_key: 5.5@VAULT-1
   description: Vault data model and enable/disable API
@@ -1108,9 +1108,9 @@ tasks:
   agent: "\u25C6 ClaudeCode"
   gate: SCHED-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '5.1'
   task_key: 5.1@SCHED-1
   description: Scheduled job data model and Schedules management UI
@@ -1219,9 +1219,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SEC-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '1.18'
   task_key: 1.18@SEC-1
   description: "Security baseline \u2014 remove defaults, harden secrets"
@@ -1230,9 +1230,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SEC-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.4'
   task_key: 4.4@SEC-1
   description: SSH2 connection manager with LRU session reuse
@@ -1241,9 +1241,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SEC-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.5'
   task_key: 4.5@SEC-1
   description: AES-256-GCM encrypted credential storage for VPS/WebDAV
@@ -1252,9 +1252,9 @@ tasks:
   agent: "\u25C8 OpenCode"
   gate: SEC-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '4.6'
   task_key: 4.6@SEC-1
   description: VPS parity test + credential security test
@@ -1263,9 +1263,9 @@ tasks:
   agent: "\u25C9 Gemini"
   gate: SEC-1
   status: done
-  commit: 92003bf18867
-  done_at: '2026-03-04T21:31:33+00:00'
-  changelog: "chore: sprint 4 untracked outputs \u2014 new files from agent tasks"
+  commit: 343ad7516b00
+  done_at: '2026-03-04T21:33:25+00:00'
+  changelog: 'chore: sprint 4 tracked file changes'
 - id: '6.1'
   task_key: 6.1@LAUNCH-1
   description: PWA manifest + next-pwa service worker (app shell only)
