@@ -315,6 +315,7 @@ async function runProcess(
 function commandForTask(task: Task, prompt: string): { command: string; args: string[] } {
   switch (task.agent) {
     case "opencode":
+      // Keep opencode invocation minimal; routing/model selection is handled externally.
       return { command: "opencode", args: ["run", prompt] };
     case "claudecode":
       return { command: "claude", args: ["--print", prompt] };
