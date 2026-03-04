@@ -665,6 +665,25 @@ function parsePlaywrightFailures(report: unknown): { failedCount: number; detail
   return { failedCount: details.length, details };
 }
 
+function parsePlaywrightReport(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    // Some environments prepend non-JSON lines before the reporter payload.
+    const firstBrace = raw.indexOf("{");
+    if (firstBrace === -1) {
+      return {};
+    }
+
+    const trimmed = raw.slice(firstBrace);
+    try {
+      return JSON.parse(trimmed);
+    } catch {
+      return {};
+    }
+  }
+}
+
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -793,7 +812,8 @@ async function runGate(
 
   await rm(GATE_RESULTS_PATH, { force: true });
 
-  const gateCommand = `npx playwright test --reporter=json > "${GATE_RESULTS_PATH}"`;
+  const playwrightRoot = existsSync(path.join(ROOT, "web", "playwright.config.ts")) ? path.join(ROOT, "web") : ROOT;
+  const gateCommand = `cd "${playwrightRoot}" && npx playwright test --reporter=json > "${GATE_RESULTS_PATH}"`;
   const result = await runProcess("bash", ["-lc", gateCommand], 90 * 60 * 1000, {
     killProcessGroup: true,
   });
@@ -802,7 +822,7 @@ async function runGate(
   if (existsSync(GATE_RESULTS_PATH)) {
     try {
       const raw = await readFile(GATE_RESULTS_PATH, "utf8");
-      reportData = JSON.parse(raw);
+      reportData = parsePlaywrightReport(raw);
     } catch {
       reportData = {};
     }
@@ -824,7 +844,7 @@ async function runGate(
   const requiredMissing = unmatchedCriteria.filter((criterion) => requiredCriteria.includes(criterion));
   const requiredMissingLabel = requiredMissing.length > 0 ? requiredMissing.join(", ") : "none";
 
-  const hasActualFailures = parsed.failedCount > 0 || failedCriteria.size > 0 || result.timedOut;
+  const hasActualFailures = parsed.failedCount > 0 || failedCriteria.size > 0 || result.timedOut || result.code !== 0;
   const hasRequiredSpecFailures = requiredMissing.length > 0;
   const pass = !hasActualFailures && !hasRequiredSpecFailures;
 
