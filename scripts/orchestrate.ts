@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { createWriteStream, existsSync } from "node:fs";
 import { mkdir, readFile, rm, stat, writeFile, appendFile } from "node:fs/promises";
 import path from "node:path";
 import type { OrchestratorState, Task, TaskManifest } from "./lib/types";
@@ -14,6 +14,7 @@ const NOTIFICATIONS_PATH = path.join(LOG_DIR, "notifications.txt");
 const CONFLICT_RESOLVED_FLAG = path.join(LOG_DIR, "conflict-resolved.flag");
 const GATE_RESULTS_PATH = path.join(LOG_DIR, "gate-results.json");
 const GATE_FAILURE_DIR = path.join(LOG_DIR, "gate-failures");
+const TASK_LOG_DIR = path.join(LOG_DIR, "tasks");
 
 const WAVE2_TIMEOUT_MS = 45 * 60 * 1000;
 const WAVE1_CONTRACT_TIMEOUT_MS = 45 * 60 * 1000; // ASSUMPTION: contract generation timeout matches wave2 task timeout.
@@ -26,6 +27,8 @@ interface AuditEvent {
   task: string;
   agent: string;
   detail: string;
+  attempt?: number;
+  reason?: string;
 }
 
 interface ProcessResult {
@@ -33,6 +36,19 @@ interface ProcessResult {
   stdout: string;
   stderr: string;
   timedOut: boolean;
+}
+
+interface ProcessOptions {
+  logPath?: string;
+  appendLog?: boolean;
+}
+
+type TaskFailureReason = "timeout" | "non_zero_exit" | "task_no_complete_signal_after_retry";
+
+interface TaskRunResult {
+  ok: boolean;
+  reason?: TaskFailureReason;
+  result: ProcessResult;
 }
 
 function nowIso(): string {
@@ -95,6 +111,7 @@ function pathMatchesPattern(repoPath: string, target: string): boolean {
 async function ensureLogs(): Promise<void> {
   await mkdir(LOG_DIR, { recursive: true });
   await mkdir(GATE_FAILURE_DIR, { recursive: true });
+  await mkdir(TASK_LOG_DIR, { recursive: true });
 }
 
 async function readJsonFile<T>(filePath: string): Promise<T> {
@@ -196,6 +213,7 @@ async function runProcess(
   command: string,
   args: string[],
   timeoutMs: number,
+  options?: ProcessOptions,
 ): Promise<ProcessResult> {
   return new Promise<ProcessResult>((resolve) => {
     const child = spawn(command, args, {
@@ -203,17 +221,38 @@ async function runProcess(
       stdio: ["ignore", "pipe", "pipe"],
       env: process.env,
     });
+    const logStream = options?.logPath
+      ? createWriteStream(options.logPath, { flags: options.appendLog ? "a" : "w" })
+      : null;
 
     let stdout = "";
     let stderr = "";
     let timedOut = false;
     let settled = false;
 
+    const writeLog = (text: string): void => {
+      if (logStream) {
+        logStream.write(text);
+      }
+    };
+
+    const finalizeLog = (exitCode: number): void => {
+      if (!logStream) {
+        return;
+      }
+      logStream.write(`\nEXIT_CODE: ${exitCode}\n`);
+      logStream.end();
+    };
+
     child.stdout.on("data", (chunk: Buffer) => {
-      stdout += chunk.toString("utf8");
+      const text = chunk.toString("utf8");
+      stdout += text;
+      writeLog(text);
     });
     child.stderr.on("data", (chunk: Buffer) => {
-      stderr += chunk.toString("utf8");
+      const text = chunk.toString("utf8");
+      stderr += text;
+      writeLog(text);
     });
 
     const timeout = setTimeout(() => {
@@ -227,10 +266,15 @@ async function runProcess(
     }, timeoutMs);
 
     child.on("close", (code) => {
+      if (settled) {
+        return;
+      }
       settled = true;
       clearTimeout(timeout);
+      const exitCode = code ?? 1;
+      finalizeLog(exitCode);
       resolve({
-        code: code ?? 1,
+        code: exitCode,
         stdout,
         stderr,
         timedOut,
@@ -238,8 +282,12 @@ async function runProcess(
     });
 
     child.on("error", (error) => {
+      if (settled) {
+        return;
+      }
       settled = true;
       clearTimeout(timeout);
+      finalizeLog(1);
       resolve({
         code: 1,
         stdout,
@@ -264,6 +312,77 @@ function commandForTask(task: Task, prompt: string): { command: string; args: st
     default:
       return { command: "opencode", args: ["run", prompt] };
   }
+}
+
+function taskLogPath(sprint: number, taskId: string): string {
+  const safeTaskId = taskId.replace(/[^a-zA-Z0-9._-]/g, "_");
+  return path.join(TASK_LOG_DIR, `${sprint}-${safeTaskId}.log`);
+}
+
+async function runTaskWithRetry(task: Task, sprint: number, wave: "wave1" | "wave2"): Promise<TaskRunResult> {
+  const prompt = buildAgentPrompt(task);
+  const { command, args } = commandForTask(task, prompt);
+  const requiredMarker = `TASK_COMPLETE:${task.id}`;
+  const logPath = taskLogPath(sprint, task.id);
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    if (attempt === 2) {
+      await appendAudit({
+        ts: nowIso(),
+        event: "retry",
+        sprint,
+        task: task.id,
+        agent: task.agent,
+        detail: `${wave} retry attempt 2`,
+        attempt: 2,
+      });
+      await appendFile(logPath, "\n--- RETRY ATTEMPT 2 ---\n", "utf8");
+    }
+
+    await appendAudit({
+      ts: nowIso(),
+      event: "dispatch",
+      sprint,
+      task: task.id,
+      agent: task.agent,
+      detail: `${wave} command=${command}${attempt > 1 ? ` attempt=${attempt}` : ""}`,
+    });
+
+    const result = await runProcess(command, args, WAVE2_TIMEOUT_MS, {
+      logPath,
+      appendLog: attempt > 1,
+    });
+
+    if (result.timedOut) {
+      return { ok: false, reason: "timeout", result };
+    }
+
+    if (result.code !== 0) {
+      return { ok: false, reason: "non_zero_exit", result };
+    }
+
+    if (result.stdout.includes(requiredMarker) || result.stderr.includes(requiredMarker)) {
+      return { ok: true, result };
+    }
+
+    if (attempt === 1) {
+      await appendAudit({
+        ts: nowIso(),
+        event: "warning",
+        sprint,
+        task: task.id,
+        agent: task.agent,
+        detail: "task_no_complete_signal (attempt 1)",
+      });
+      continue;
+    }
+  }
+
+  return {
+    ok: false,
+    reason: "task_no_complete_signal_after_retry",
+    result: { code: 0, stdout: "", stderr: "", timedOut: false },
+  };
 }
 
 async function ensureAgentClisAvailable(manifest: TaskManifest): Promise<void> {
@@ -482,20 +601,8 @@ async function dispatchWave1(
     state.current_state = "dispatching_wave1";
     await writeState(state);
 
-    const prompt = buildAgentPrompt(task);
-    const { command, args } = commandForTask(task, prompt);
-
-    await appendAudit({
-      ts: nowIso(),
-      event: "dispatch",
-      sprint,
-      task: task.id,
-      agent: task.agent,
-      detail: `wave1 command=${command}`,
-    });
-
-    const result = await runProcess(command, args, WAVE2_TIMEOUT_MS);
-    if (result.timedOut) {
+    const outcome = await runTaskWithRetry(task, sprint, "wave1");
+    if (!outcome.ok && outcome.reason === "timeout") {
       state.tasks[task.id] = "failed";
       await writeState(state);
       await appendAudit({
@@ -509,17 +616,25 @@ async function dispatchWave1(
       await halt(`wave1 timeout: ${task.id}`, sprint, task.id);
     }
 
-    if (result.code !== 0) {
+    if (!outcome.ok && outcome.reason === "non_zero_exit") {
       state.tasks[task.id] = "failed";
       await writeState(state);
       await halt(`wave1 task exited non-zero: ${task.id}`, sprint, task.id);
     }
 
-    const requiredMarker = `TASK_COMPLETE:${task.id}`;
-    if (!result.stdout.includes(requiredMarker) && !result.stderr.includes(requiredMarker)) {
+    if (!outcome.ok && outcome.reason === "task_no_complete_signal_after_retry") {
       state.tasks[task.id] = "failed";
       await writeState(state);
-      await halt("task_no_complete_signal", sprint, task.id);
+      await appendAudit({
+        ts: nowIso(),
+        event: "halt",
+        sprint,
+        task: task.id,
+        agent: "codex",
+        detail: "task_no_complete_signal_after_retry",
+        reason: "task_no_complete_signal_after_retry",
+      });
+      await halt("task_no_complete_signal_after_retry", sprint, task.id);
     }
 
     if (task.produces_contract) {
@@ -585,26 +700,14 @@ async function dispatchWave2(
   await writeState(state);
 
   const execution = tasks.map(async (task) => {
-    const prompt = buildAgentPrompt(task);
-    const { command, args } = commandForTask(task, prompt);
-
-    await appendAudit({
-      ts: nowIso(),
-      event: "dispatch",
-      sprint,
-      task: task.id,
-      agent: task.agent,
-      detail: `wave2 command=${command}`,
-    });
-
-    const result = await runProcess(command, args, WAVE2_TIMEOUT_MS);
-    return { task, result };
+    const outcome = await runTaskWithRetry(task, sprint, "wave2");
+    return { task, outcome };
   });
 
   const results = await Promise.all(execution);
 
-  for (const { task, result } of results) {
-    if (result.timedOut) {
+  for (const { task, outcome } of results) {
+    if (!outcome.ok && outcome.reason === "timeout") {
       state.tasks[task.id] = "failed";
       await writeState(state);
       await appendAudit({
@@ -618,17 +721,25 @@ async function dispatchWave2(
       await halt(`wave2 timeout: ${task.id}`, sprint, task.id);
     }
 
-    if (result.code !== 0) {
+    if (!outcome.ok && outcome.reason === "non_zero_exit") {
       state.tasks[task.id] = "failed";
       await writeState(state);
       await halt(`wave2 non-zero exit: ${task.id}`, sprint, task.id);
     }
 
-    const requiredMarker = `TASK_COMPLETE:${task.id}`;
-    if (!result.stdout.includes(requiredMarker) && !result.stderr.includes(requiredMarker)) {
+    if (!outcome.ok && outcome.reason === "task_no_complete_signal_after_retry") {
       state.tasks[task.id] = "failed";
       await writeState(state);
-      await halt("task_no_complete_signal", sprint, task.id);
+      await appendAudit({
+        ts: nowIso(),
+        event: "halt",
+        sprint,
+        task: task.id,
+        agent: "codex",
+        detail: "task_no_complete_signal_after_retry",
+        reason: "task_no_complete_signal_after_retry",
+      });
+      await halt("task_no_complete_signal_after_retry", sprint, task.id);
     }
 
     state.tasks[task.id] = "done";
