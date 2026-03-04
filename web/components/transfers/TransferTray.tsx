@@ -111,7 +111,10 @@ export const TransferTray: React.FC = () => {
 
   // Tray is expanded
   return (
-    <div className="fixed bottom-4 right-4 w-80 max-h-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
+    <div 
+      data-testid="cf-transfer-tray"
+      className="fixed bottom-4 right-4 w-80 max-h-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50">
         <h3 className="font-semibold text-gray-900">Transfers</h3>

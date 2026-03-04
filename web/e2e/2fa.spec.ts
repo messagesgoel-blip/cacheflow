@@ -2,17 +2,56 @@ import { test, expect } from '@playwright/test';
 
 test.describe('2.16@2FA-1: Two-Factor Authentication', () => {
   test.beforeEach(async ({ page, request }) => {
-    // Login as test user
-    const response = await request.post('http://localhost:8100/auth/login', {
-      data: { email: 'sup@goels.in', password: '123password' },
+    // 1. Mock 2FA Status
+    await page.route('**/api/auth/2fa/status', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ enabled: false }),
+      });
     });
-    const { token } = await response.json();
-    await page.addInitScript((t: string) => {
-      localStorage.setItem('cf_token', t);
+
+    // 2. Mock 2FA Setup (QR Code)
+    await page.route('**/api/auth/2fa/setup', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=otpauth://totp/CacheFlow:sup@goels.in?secret=JBSWY3DPEHPK3PXP&issuer=CacheFlow',
+          secret: 'JBSWY3DPEHPK3PXP',
+          backupCodes: ['12345678', '87654321', '11223344', '44332211'],
+        }),
+      });
+    });
+
+    // 3. Mock 2FA Verify
+    await page.route('**/api/auth/2fa/verify', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+
+    // 4. Mock Session
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          user: { id: 'user-123', email: 'sup@goels.in', name: 'Test User' },
+          expires: new Date(Date.now() + 3600000).toISOString(),
+        }),
+      });
+    });
+
+    // Login as test user
+    await page.addInitScript(() => {
+      localStorage.setItem('cf_token', 'mock-token');
       localStorage.setItem('cf_email', 'sup@goels.in');
-    }, token);
+    });
     await page.goto('/files');
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('[data-testid="cf-sidebar-root"]')).toBeVisible({ timeout: 15000 });
   });
 
