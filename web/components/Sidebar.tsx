@@ -37,24 +37,22 @@ export default function Sidebar({
   // Fetch health and quotas lazily
   useEffect(() => {
     if (!mounted || connectedProviders.length === 0) return
-    
-    const fetchData = async () => {
-      const mainToken = localStorage.getItem('cf_token')
-      if (!mainToken) return
 
+    const fetchData = async () => {
+      // Use cookie-based auth (HttpOnly) - no client-side token needed
       const newHealth: Record<string, any> = {}
       const newQuotas: Record<string, ProviderQuota> = {}
 
       for (const cp of connectedProviders) {
         const cacheKey = `${cp.providerId}:${cp.accountKey}`
-        
-        // 1. Health
+
+        // 1. Health - use credentials: include for cookies
         try {
           const tokens = JSON.parse(localStorage.getItem(`cacheflow_tokens_${cp.providerId}`) || '[]')
           const token = tokens.find((t: any) => t.accountKey === cp.accountKey)
           if (token?.remoteId) {
             const res = await fetch(`/api/remotes/${token.remoteId}/health`, {
-              headers: { Authorization: `Bearer ${mainToken}` }
+              credentials: 'include',
             })
             const body = await res.json()
             if (body.ok) newHealth[cacheKey] = body.data

@@ -163,10 +163,8 @@ export const apiClient = {
    */
   async getConnections(): Promise<ApiResponse<ProviderConnection[]>> {
     try {
-      const bearerToken = typeof window !== 'undefined' ? localStorage.getItem('cf_token') : null;
-      const response = await authFetch('/api/connections', {
-        headers: bearerToken ? { Authorization: 'Bearer ' + bearerToken } : undefined,
-      });
+      // Use authFetch which handles cookies automatically (HttpOnly)
+      const response = await authFetch('/api/connections');
 
       if (!response.ok) {
         return {
