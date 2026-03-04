@@ -1,98 +1,123 @@
 /**
  * Transfer Tray Component
- * 
+ *
  * Shows ongoing and recent file transfers with progress.
  * Pinned to bottom-right of screen.
- * 
+ * Uses TransferContext for global state management.
+ * Always visible when there are active transfers.
+ *
  * Gate: TRANSFER-1
- * Task: 3.3@TRANSFER-1
+ * Task: 3.1
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useTransferContext, TransferItem as TransferItemType } from '../../context/TransferContext';
+import { TransferItem } from './TransferItem';
 
-export interface TransferItem {
-  jobId: string;
-  fileName: string;
-  fileSize: number;
-  progress: number;
-  status: 'waiting' | 'active' | 'completed' | 'failed';
-  error?: string;
-}
+/**
+ * TransferTray Component
+ *
+ * Persistent tray that shows file transfers. When collapsed and there are
+ * active transfers, shows a floating button with badge. When expanded, shows all
+ * active and recent transfers.
+ *
+ * Gate: TRANSFER-1
+ * Task: 3.1
+ */
+export const TransferTray: React.FC = () => {
+  const {
+    transfers,
+    activeCount,
+    hasActiveTransfers,
+    cancelTransfer,
+    retryTransfer,
+    dismissTransfer,
+    refreshTransfers,
+  } = useTransferContext();
 
-export interface TransferTrayProps {
-  transfers?: TransferItem[];
-  onDismiss?: (jobId: string) => void;
-  onRetry?: (jobId: string) => void;
-}
+  const [isOpen, setIsOpen] = useState(false);
 
-export const TransferTray: React.FC<TransferTrayProps> = ({
-  transfers = [],
-  onDismiss,
-  onRetry,
-}) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [activeTransfers, setActiveTransfers] = useState<TransferItem[]>([]);
-  const [completedTransfers, setCompletedTransfers] = useState<TransferItem[]>([]);
-
-  useEffect(() => {
-    if (!transfers) return;
-
-    const active = transfers.filter(t => t.status === 'active' || t.status === 'waiting');
-    const completed = transfers.filter(t => t.status === 'completed' || t.status === 'failed');
-
-    setActiveTransfers(active);
-    setCompletedTransfers(completed.slice(0, 5)); // Keep last 5
+  // Separate active and completed transfers
+  const { activeTransfers, completedTransfers } = useMemo(() => {
+    const active = transfers.filter(
+      (t): t is TransferItemType => t.status === 'active' || t.status === 'waiting'
+    );
+    const completed = transfers.filter(
+      (t): t is TransferItemType => t.status === 'completed' || t.status === 'failed'
+    );
+    return {
+      activeTransfers: active,
+      completedTransfers: completed.slice(0, 5), // Keep last 5 completed
+    };
   }, [transfers]);
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return '⏳';
-      case 'waiting': return '⏱️';
-      case 'completed': return '✅';
-      case 'failed': return '❌';
-      default: return '📁';
+  // Handle cancel action
+  const handleCancel = async (jobId: string) => {
+    try {
+      await cancelTransfer(jobId);
+    } catch (error) {
+      console.error('Failed to cancel transfer:', error);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-blue-500';
-      case 'waiting': return 'bg-gray-400';
-      case 'completed': return 'bg-green-500';
-      case 'failed': return 'bg-red-500';
-      default: return 'bg-gray-500';
+  // Handle retry action
+  const handleRetry = async (jobId: string) => {
+    try {
+      await retryTransfer(jobId);
+    } catch (error) {
+      console.error('Failed to retry transfer:', error);
     }
   };
 
-  if (!isOpen && activeTransfers.length === 0) {
+  // Handle dismiss action
+  const handleDismiss = (jobId: string) => {
+    dismissTransfer(jobId);
+  };
+
+  // If tray is collapsed and there are no active transfers, show the collapsed button
+  if (!isOpen && !hasActiveTransfers) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 p-3 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+        className="fixed bottom-4 right-4 p-3 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors z-50"
         aria-label="Show transfers"
       >
-        📁
+        <span className="text-lg">📁</span>
       </button>
     );
   }
 
+  // If there are active transfers and tray is collapsed, show badge on button
+  if (!isOpen && hasActiveTransfers) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-4 right-4 p-2 bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 transition-colors z-50"
+        aria-label={`${activeCount} active transfer${activeCount > 1 ? 's' : ''}`}
+      >
+        <div className="relative">
+          <span className="text-lg text-white">📁</span>
+          {activeCount > 0 && (
+            <span data-testid="activeBadge" className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              {activeCount > 9 ? '9+' : activeCount}
+            </span>
+          )}
+        </div>
+      </button>
+    );
+  }
+
+  // Tray is expanded
   return (
     <div className="fixed bottom-4 right-4 w-80 max-h-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50">
         <h3 className="font-semibold text-gray-900">Transfers</h3>
         <div className="flex items-center gap-2">
-          {activeTransfers.length > 0 && (
-            <span className="text-xs text-gray-600">{activeTransfers.length} active</span>
+          {activeCount > 0 && (
+            <span className="text-xs text-gray-600">{activeCount} active</span>
           )}
           <button
             onClick={() => setIsOpen(false)}
@@ -107,65 +132,57 @@ export const TransferTray: React.FC<TransferTrayProps> = ({
       {/* Content */}
       <div className="overflow-y-auto max-h-80">
         {/* Active transfers */}
-        {activeTransfers.map(transfer => (
-          <div key={transfer.jobId} className="p-3 border-b border-gray-100">
-            <div className="flex items-start gap-2">
-              <span className="text-lg">{getStatusIcon(transfer.status)}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{transfer.fileName}</p>
-                <p className="text-xs text-gray-500">{formatFileSize(transfer.fileSize)}</p>
-                
-                {transfer.status === 'active' && (
-                  <div className="mt-2">
-                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>Progress</span>
-                      <span>{transfer.progress}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all ${getStatusColor(transfer.status)}`}
-                        style={{ width: `${transfer.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                {transfer.status === 'failed' && transfer.error && (
-                  <p className="text-xs text-red-600 mt-1">{transfer.error}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+        {activeTransfers.length > 0 && (
+          <>
+            {activeTransfers.map((transfer) => (
+              <TransferItem
+                key={transfer.jobId}
+                jobId={transfer.jobId}
+                fileName={transfer.fileName}
+                fileSize={transfer.fileSize}
+                progress={transfer.progress}
+                status={transfer.status}
+                error={transfer.error}
+                operation={transfer.operation}
+                sourceProvider={transfer.sourceProvider}
+                destProvider={transfer.destProvider}
+                currentChunk={transfer.currentChunk}
+                totalChunks={transfer.totalChunks}
+                committedChunks={transfer.committedChunks}
+                bytesTransferred={transfer.bytesTransferred}
+                onCancel={handleCancel}
+                onDismiss={handleDismiss}
+              />
+            ))}
+          </>
+        )}
 
         {/* Completed transfers */}
-        {completedTransfers.map(transfer => (
-          <div key={transfer.jobId} className="p-3 border-b border-gray-100 opacity-75">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{getStatusIcon(transfer.status)}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-700 truncate">{transfer.fileName}</p>
-                <p className="text-xs text-gray-500">{formatFileSize(transfer.fileSize)}</p>
+        {completedTransfers.length > 0 && (
+          <>
+            {activeTransfers.length > 0 && (
+              <div className="px-3 py-2 text-xs text-gray-500 border-b border-gray-100">
+                Completed
               </div>
-              {transfer.status === 'completed' && (
-                <button
-                  onClick={() => onDismiss?.(transfer.jobId)}
-                  className="text-xs text-gray-400 hover:text-gray-600"
-                >
-                  ×
-                </button>
-              )}
-              {transfer.status === 'failed' && onRetry && (
-                <button
-                  onClick={() => onRetry(transfer.jobId)}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  Retry
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
+            )}
+            {completedTransfers.map((transfer) => (
+              <TransferItem
+                key={transfer.jobId}
+                jobId={transfer.jobId}
+                fileName={transfer.fileName}
+                fileSize={transfer.fileSize}
+                progress={transfer.progress}
+                status={transfer.status}
+                error={transfer.error}
+                operation={transfer.operation}
+                sourceProvider={transfer.sourceProvider}
+                destProvider={transfer.destProvider}
+                onRetry={handleRetry}
+                onDismiss={handleDismiss}
+              />
+            ))}
+          </>
+        )}
 
         {/* Empty state */}
         {activeTransfers.length === 0 && completedTransfers.length === 0 && (
