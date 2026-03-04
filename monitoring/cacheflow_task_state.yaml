@@ -136,7 +136,7 @@
   gate: AUTH-2
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: done
+  status: pending
   commit: 9fe35b97ff93
   done_at: '2026-03-02T21:20:30+00:00'
   changelog: 'chore: compliance closeout and per-agent sprint prompts'
@@ -284,7 +284,7 @@
   gate: SYNC-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: done
+  status: pending
   commit: a0832192b9e9
   done_at: '2026-03-02T21:32:03+00:00'
   changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
@@ -485,7 +485,7 @@ UI-P1-T05@HOLD-UI-2026-03-02:
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: done
+  status: pending
   commit: 3441639dfc78
   done_at: '2026-03-03T00:35:45+00:00'
   changelog: 'feat(UI-P1-T02@HOLD-UI-2026-03-02, UI-P1-T05@HOLD-UI-2026-03-02): fix
@@ -496,7 +496,7 @@ UI-P1-T06@HOLD-UI-2026-03-02:
   gate: HOLD-UI-2026-03-02
   sprint: 2
   agent: "\u25C6 ClaudeCode"
-  status: done
+  status: pending
   commit: c80bd24c88d9
   done_at: '2026-03-03T00:15:33+00:00'
   changelog: 'feat(UI-P1-T06@HOLD-UI-2026-03-02): add loading/empty state cards in
@@ -507,7 +507,7 @@ OPS-E2E-READY@QA-1:
   gate: QA-1
   sprint: 2
   agent: "\u25C8 OpenCode"
-  status: done
+  status: pending
   commit: 25b691aaa88d
   done_at: '2026-03-03T00:05:16+00:00'
   changelog: 'feat(OPS-E2E-READY@QA-1): Playwright preflight wait-for-api on 127.0.0.1:8100'
@@ -517,7 +517,7 @@ OPS-QA-WATCH@QA-1:
   gate: QA-1
   sprint: 2
   agent: "\u25C9 Gemini"
-  status: done
+  status: pending
   commit: 8d604fdb5bbb
   done_at: '2026-03-03T03:07:10+00:00'
   changelog: QA watcher unblock validated after 2FA completion; mock provider issues
@@ -1098,7 +1098,7 @@ OPS-QA-WATCH@QA-1:
   gate: SEC-1
   sprint: 1
   agent: "\u25C8 OpenCode"
-  status: done
+  status: pending
   commit: a0832192b9e9
   done_at: '2026-03-02T21:32:03+00:00'
   changelog: 'fix(SEC-1): remove default secrets and harden security baseline'
