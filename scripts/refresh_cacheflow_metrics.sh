@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+LOCK_FILE="${LOCK_FILE:-/tmp/refresh_cacheflow_metrics.lock}"
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+  echo "refresh_cacheflow_metrics: lock held, skipping overlap" >&2
+  exit 0
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PY_SCRIPT="$SCRIPT_DIR/update_cacheflow_metrics.py"
