@@ -1,0 +1,14 @@
+{
+  // CacheFlow project-level oh-my-opencode config
+  "sisyphus_agent": {
+    "planner_enabled": true,
+    "replace_plan": true
+  },
+  "features": {
+    "git-master": {
+      "enabled": true,
+      "atomic_commits": true
+    }
+  },
+  "default_skills": ["playwright", "git-master"]
+}

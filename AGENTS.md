@@ -1,81 +1,50 @@
-# PROJECT KNOWLEDGE BASE
+# CacheFlow — Agent Context
 
-**Generated:** 2026-03-04
-**Commit:** N/A
-**Branch:** N/A
+## Project
+Multi-cloud file management platform. Next.js/TypeScript 
+frontend, Node.js API, PostgreSQL + Redis.
+Hosted at cacheflow.goels.in. Admin: admin@cacheflow.goels.in.
 
-## OVERVIEW
-CacheFlow - Personal hybrid cloud storage with NVMe cache + rclone sync. Full-stack TypeScript/JavaScript application with Next.js frontend, Express API, and worker processes for cloud provider synchronization.
+## Repository Structure
+- web/          Next.js frontend (port 3010 in dev, 3000 in Docker)
+- api/          Express backend (port 8100)
+- worker/       BullMQ job workers
+- lib/          Shared utilities and provider adapters
+- docs/contracts/  API shape contracts — READ BEFORE IMPLEMENTING
+- docs/orchestration/  Sprint manifests and state
+- logs/         Audit logs and task logs
 
-## STRUCTURE
-```
-./
-├── api/           # Express.js API server (port 8100)
-├── web/           # Next.js web application (port 3010)
-├── lib/           # Shared TypeScript utilities and services
-├── worker/        # Background sync workers
-├── scripts/       # Orchestration and utility scripts
-├── docs/          # Documentation
-└── infra/         # Docker compose infrastructure
-```
+## Auth Rules (CRITICAL)
+- HttpOnly cookies ONLY. Never write tokens to localStorage.
+- Token vault: lib/vault/tokenVault.ts
+- Never expose raw tokens in API responses
+- Client JS must never read or write auth tokens
 
-## WHERE TO LOOK
-| Task | Location | Notes |
-|------|----------|-------|
-| Cloud Providers | lib/providers/ | 20+ provider implementations (Google Drive, OneDrive, etc.) |
-| File Sync Logic | lib/transfers/ | Chunked uploads, progress tracking, resume capability |
-| Authentication | web/lib/auth/ | JWT, 2FA, provider OAuth flows |
-| API Endpoints | api/src/routes/ | Express routes for file operations |
-| Vault/Crypto | lib/vault/ | Encrypted credential storage |
-| UI Components | web/components/ | React components for file browser, providers, etc. |
+## Storage Providers
+Google Drive, OneDrive, Box, Dropbox, Filen, WebDAV, VPS/SFTP.
+All provider adapters in lib/providers/.
+Credentials never returned in API responses after save.
 
-## CODE MAP
-| Symbol | Type | Location | Role |
-|--------|------|----------|------|
-| ProviderAdapter | Interface | lib/providers/ | Contract for all cloud providers |
-| AppError | Class | lib/errors/ | Structured error handling |
-| CredentialVault | Class | lib/vault/ | Encrypted credential storage |
-| useOperationError | Hook | web/lib/hooks/ | React error handling |
+## Sprint System
+- Current sprint: see logs/orchestrator-state.json
+- Task manifest: docs/orchestration/task-manifest.json  
+- Contracts: docs/contracts/{task-id}.md
+- Always read the relevant contract before implementing a task
+- Always run: cd web && npx tsc --noEmit before committing
 
-## CONVENTIONS
-- Strict TypeScript everywhere with noImplicitAny
-- Jest for testing, Playwright for E2E
-- JWT authentication with refresh tokens
-- AES-256-GCM encryption for stored credentials
-- Per-provider rate limiting with queues
+## Testing
+- Playwright E2E in web/e2e/
+- Always run tests from web/ directory
+- All E2E tests mock API calls — never hit real providers
+- Run gate: SPRINT_LIMIT=N npx ts-node scripts/orchestrate.ts --gate-only --sprint N
 
-## ANTI-PATTERNS (THIS PROJECT)
-- NEVER assume a port is free — always `ss -ltnp` first
-- NEVER do giant rewrites — prefer small patch scripts
-- NEVER skip Git safety config: `git config --global --add safe.directory`
-- JWT verification: always verify signature, never fallback to decode() without verification
+## Commit Rules
+- Use --no-verify flag: git commit --no-verify
+- Never commit .next/, node_modules/, coverage/
+- Monitoring files are gitignored (docs/sprints-task-dashboard.md, monitoring/*.yaml)
 
-## UNIQUE STYLES
-- Gate/Task system in JSDoc comments for feature tracking
-- Provider interface contracts in `lib/providers/types.ts`
-- Chunked upload pattern across all providers
-- Atomic Redis operations (INCRBY/DECRBY) for counters
-
-## COMMANDS
-```bash
-# Development
-npm run orchestrate          # Run orchestration script
-npm run recover             # Run recovery script
-npm run typecheck           # Type check scripts
-
-# Testing
-./test-all.sh               # Run all test suites
-cd web && npm test          # Web tests
-cd api && npm test          # API tests
-cd worker && npm test       # Worker tests
-
-# Services
-docker compose up -d         # Start all services
-ss -ltnp                   # Check port usage
-```
-
-## NOTES
-- Repo mounted at `/workspace/cacheflow` in container
-- Docker socket available for container control
-- 20+ cloud providers supported with adapter pattern
-- Large files (>500 lines) in provider implementations indicate complexity hotspots
+## Agent Roles in This Repo
+- OpenCode/Hephaestus: backend API, lib/, worker/ tasks
+- ClaudeCode: frontend web/ tasks, components, pages
+- Gemini: QA, Playwright tests, infra
+- Sisyphus: orchestration, planning, coordination

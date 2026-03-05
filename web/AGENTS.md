@@ -1,51 +1,34 @@
-# WEB KNOWLEDGE BASE
+# CacheFlow Web — Agent Context
 
-**Generated:** 2026-03-04
-**Commit:** N/A
-**Branch:** N/A
+## Stack
+Next.js 14, TypeScript, Tailwind CSS, React.
+App Router (app/ directory). No Pages Router.
 
-## OVERVIEW
-Next.js web application frontend for CacheFlow (runs on port 3010). Implements file browser, provider configuration, and user authentication UI.
+## Key Directories
+- app/           Next.js pages and API routes
+- components/    React components
+- context/       React context providers (TransferContext, etc.)
+- lib/           Client-side utilities and provider clients
+- e2e/           Playwright tests
+- public/        Static assets
 
-## STRUCTURE
-```
-./web/
-├── app/               # Next.js 13+ app router pages
-├── components/        # React UI components
-├── e2e/              # Playwright end-to-end tests
-├── lib/              # Web-specific utilities
-├── __tests__/        # Unit and integration tests
-├── context/          # React context providers
-├── middleware.ts     # Next.js middleware
-├── next.config.js    # Next.js configuration
-└── package.json      # Web app dependencies
-```
+## API Routes
+All in app/api/. Proxy to backend at http://127.0.0.1:8100.
+Never use Docker service names (api:8100) — always 127.0.0.1:8100.
 
-## WHERE TO LOOK
-| Task | Location | Notes |
-|------|----------|-------|
-| Main Pages | app/ | Dashboard, file browser, settings UI |
-| UI Components | components/ | File browser, provider cards, file actions |
-| Auth Flow | app/api/auth/ | Next.js API routes for authentication |
-| Hooks | lib/hooks/ | Custom React hooks for data fetching |
-| Providers | app/api/remotes/ | Cloud provider API routes |
-| E2E Tests | e2e/ | Playwright tests for UI flows |
+## Auth Pattern
+- Session via NextAuth at /api/auth/
+- HttpOnly cookies set by server
+- apiClient.ts uses fetch with credentials: 'include'
+- Never use localStorage for auth tokens
 
-## CONVENTIONS
-- Next.js 13+ App Router pattern
-- TypeScript strict mode
-- React Server Components where possible
-- Client Components only when interactivity required
-- Jest for unit tests, Playwright for E2E tests
+## Component Rules  
+- Use existing ui/ primitives before creating new ones
+- data-testid attributes required on interactive elements
+- Tailwind only — no custom CSS files
 
-## ANTI-PATTERNS (THIS PROJECT)
-- No direct API calls from client components - use server actions
-- Never expose credentials in client-side code
-- Avoid large bundles - use code splitting appropriately
-
-## UNIQUE STYLES
-- Server Actions for mutations
-- Streaming responses for large file operations
-- React Server Components for initial data loading
-- Client Components for interactive elements
-- Form state management with React Hook Form
+## Testing
+- Config: playwright.config.ts (testDir: ./e2e)
+- Run: npx playwright test from web/ directory
+- Auth bypass in tests: mock /api/auth/session, use page.goto('/files')
+- Always mock /api/connections, /api/files, /api/remotes in E2E tests
