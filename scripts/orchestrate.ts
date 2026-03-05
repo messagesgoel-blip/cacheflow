@@ -302,6 +302,37 @@ function findLowestIncompleteSprint(manifest: TaskManifest, state: OrchestratorS
   return null;
 }
 
+async function hasSprintGatePassTag(sprint: number): Promise<boolean> {
+  const tag = `sprint-${sprint}-gate-pass`;
+  const tagCheck = await runProcess("git", ["tag", "--list", tag], 60_000);
+  return tagCheck.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .includes(tag);
+}
+
+async function findNextRunnableSprint(manifest: TaskManifest, state: OrchestratorState): Promise<number | null> {
+  const byTaskProgress = findLowestIncompleteSprint(manifest, state);
+  if (byTaskProgress !== null) {
+    return byTaskProgress;
+  }
+
+  const sprints = naturalSort([...new Set(manifest.tasks.map((task) => String(task.sprint)))]).map(Number);
+  for (const sprint of sprints) {
+    const sprintTasks = getTasksForSprint(manifest, sprint);
+    if (sprintTasks.length === 0) {
+      continue;
+    }
+
+    const passed = await hasSprintGatePassTag(sprint);
+    if (!passed) {
+      return sprint;
+    }
+  }
+
+  return null;
+}
+
 function parseOptionalSprintArg(argv: string[]): number | null {
   let raw: string | null = null;
   for (let index = 0; index < argv.length; index += 1) {
@@ -1246,7 +1277,7 @@ async function main(): Promise<void> {
   }
 
   while (true) {
-    const sprint = findLowestIncompleteSprint(manifest, state);
+    const sprint = await findNextRunnableSprint(manifest, state);
     if (sprint === null) {
       state.current_state = "idle";
       state.current_wave = 0;

@@ -1,6 +1,11 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   typescript: {
     // Existing codebase contains legacy TS issues; do not block deploy builds.
     ignoreBuildErrors: true,
