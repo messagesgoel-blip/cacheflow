@@ -65,3 +65,9 @@
 - why it failed: Current API auth behavior returns `401` for `/api/health` without credentials even when API is healthy, causing false startup failures.
 - do not attempt: Do not gate API readiness on 2xx from auth-protected health endpoints; probe `/health` first and treat `/api/health` 401 as reachability.
 - agent: codex
+
+## 2026-03-05 — Search E2E mocked provider URLs too narrowly
+- what was tried: Asserting file rows from `search.spec.ts` while matching only specific proxy URL substrings.
+- why it failed: Provider search requests are serialized through `/api/remotes/:id/proxy` and shape differs by provider/runtime, so narrow URL checks missed valid requests and produced empty results.
+- do not attempt: Do not key search E2E solely on fragile URL fragments; verify provider search dispatch and use broader payload-aware proxy mocks.
+- agent: codex

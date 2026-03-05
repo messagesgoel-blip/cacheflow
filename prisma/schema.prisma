@@ -8,7 +8,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Tenant {
@@ -43,7 +42,7 @@ model User {
   // 2FA (2FA-1)
   twoFactorEnabled    Boolean?  @default(false) @map("two_factor_enabled")
   twoFactorSecret     Bytes?    @map("two_factor_secret")
-  twoFactorBackupCodes String[]? @map("two_factor_backup_codes")
+  twoFactorBackupCodes String[] @map("two_factor_backup_codes")
   twoFactorEnabledAt  DateTime? @map("two_factor_enabled_at")
   twoFactorDisabledAt DateTime? @map("two_factor_disabled_at")
 
@@ -55,6 +54,7 @@ model User {
   tokens       Token[]
   oauthTokens   OAuthToken[]
   userRemotes  UserRemote[]
+  cloudConfigs CloudConfig[]
   auditLogs    AuditLog[]
 
   @@index([email])
@@ -313,4 +313,20 @@ model RateLimit {
   @@unique([userId, provider, action, windowStart])
   @@index([userId, provider])
   @@map("rate_limits")
+}
+
+model ScheduledJob {
+  id              String    @id
+  name            String
+  jobType         String    @map("job_type")
+  cronExpression  String    @map("cron_expression")
+  enabled         Boolean   @default(true)
+  lastRunAt       DateTime? @map("last_run_at")
+  nextRunAt       DateTime? @map("next_run_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([nextRunAt])
+  @@index([enabled])
+  @@map("scheduled_jobs")
 }

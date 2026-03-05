@@ -2,14 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { ProviderId, ConnectedProvider } from '@/lib/providers/types'
+import VaultFolderRow from './VaultFolderRow'
 
 interface SidebarNavProps {
   connectedProviders: ConnectedProvider[]
-  selectedProvider: ProviderId | 'all' | 'recent' | 'starred' | 'activity'
+  selectedProvider: ProviderId | 'all' | 'recent' | 'starred' | 'activity' | 'vault'
   activeAccountKey: string
-  onNavigate: (providerId: ProviderId | 'all' | 'recent' | 'starred' | 'activity', accountKey?: string) => void
+  onNavigate: (providerId: ProviderId | 'all' | 'recent' | 'starred' | 'activity' | 'vault', accountKey?: string) => void
   isOpen: boolean
   onClose: () => void
+  // Vault props
+  vaultEnabled?: boolean
+  vaultLocked?: boolean
+  onVaultNavigate?: () => void
 }
 
 export default function SidebarNav({
@@ -19,6 +24,9 @@ export default function SidebarNav({
   onNavigate,
   isOpen,
   onClose,
+  vaultEnabled = false,
+  vaultLocked = true,
+  onVaultNavigate,
 }: SidebarNavProps) {
   const [mounted, setMounted] = useState(false)
 
@@ -114,6 +122,15 @@ export default function SidebarNav({
               <span className="text-xl">⚡</span>
               <span>Activity Feed</span>
             </button>
+
+            {/* Vault / Private Folder */}
+            {vaultEnabled && onVaultNavigate && (
+              <VaultFolderRow
+                isSelected={selectedProvider === 'vault'}
+                isLocked={vaultLocked}
+                onClick={onVaultNavigate}
+              />
+            )}
 
             <div className="my-4 border-t border-gray-100 dark:border-gray-800" />
 

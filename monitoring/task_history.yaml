@@ -2797,3 +2797,172 @@
     to: running
   done_task_keys: []
   done_tasks: []
+- timestamp: '2026-03-05T04:22:00+00:00'
+  commit: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  message: 'chore: update task history after sprint 4 gate pass'
+  changed:
+  - task_key: 5.1@SCHED-1
+    id: '5.1'
+    gate: SCHED-1
+    from: running
+    to: done
+  done_task_keys:
+  - 5.1@SCHED-1
+  done_tasks:
+  - '5.1'
+- timestamp: '2026-03-05T04:28:00+00:00'
+  commit: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  message: 'chore: update task history after sprint 4 gate pass'
+  changed:
+  - task_key: 5.2@SCHED-1
+    id: '5.2'
+    gate: SCHED-1
+    from: planned
+    to: done
+  done_task_keys:
+  - 5.2@SCHED-1
+  done_tasks:
+  - '5.2'
+- timestamp: '2026-03-05T04:28:40+00:00'
+  commit: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  message: 'chore: update task history after sprint 4 gate pass'
+  changed:
+  - task_key: 5.5@VAULT-1
+    id: '5.5'
+    gate: VAULT-1
+    from: planned
+    to: done
+  done_task_keys:
+  - 5.5@VAULT-1
+  done_tasks:
+  - '5.5'
+- timestamp: '2026-03-05T04:33:40+00:00'
+  commit: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  message: 'chore: update task history after sprint 4 gate pass'
+  changed:
+  - task_key: 5.6@VAULT-1
+    id: '5.6'
+    gate: VAULT-1
+    from: planned
+    to: done
+  done_task_keys:
+  - 5.6@VAULT-1
+  done_tasks:
+  - '5.6'
+- timestamp: '2026-03-05T04:39:00+00:00'
+  commit: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  message: 'chore: update task history after sprint 4 gate pass'
+  changed:
+  - task_key: 5.9@SEARCH-1
+    id: '5.9'
+    gate: SEARCH-1
+    from: planned
+    to: done
+  done_task_keys:
+  - 5.9@SEARCH-1
+  done_tasks:
+  - '5.9'
+- timestamp: '2026-03-05T04:45:41+00:00'
+  commit: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  message: 'chore: update task history after sprint 4 gate pass'
+  changed:
+  - task_key: 5.11@SEARCH-1
+    id: '5.11'
+    gate: SEARCH-1
+    from: planned
+    to: done
+  done_task_keys:
+  - 5.11@SEARCH-1
+  done_tasks:
+  - '5.11'
+- timestamp: '2026-03-05T05:04:26+00:00'
+  commit: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  message: 'chore: update task history after sprint 4 gate pass'
+  changed:
+  - task_key: 5.7@VAULT-1
+    id: '5.7'
+    gate: VAULT-1
+    from: planned
+    to: running
+  - task_key: 5.8@VAULT-1
+    id: '5.8'
+    gate: VAULT-1
+    from: planned
+    to: running
+  - task_key: 5.3@SCHED-1
+    id: '5.3'
+    gate: SCHED-1
+    from: planned
+    to: done
+  - task_key: 5.4@SCHED-1
+    id: '5.4'
+    gate: SCHED-1
+    from: planned
+    to: running
+  - task_key: 5.10@SEARCH-1
+    id: '5.10'
+    gate: SEARCH-1
+    from: planned
+    to: running
+  - task_key: 5.12@SEARCH-1
+    id: '5.12'
+    gate: SEARCH-1
+    from: planned
+    to: running
+  - task_key: 5.13@SEARCH-1
+    id: '5.13'
+    gate: SEARCH-1
+    from: planned
+    to: running
+  done_task_keys:
+  - 5.3@SCHED-1
+  done_tasks:
+  - '5.3'
+- timestamp: '2026-03-05T05:11:55+00:00'
+  commit: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  message: 'chore: update task history after sprint 4 gate pass'
+  changed:
+  - task_key: 5.7@VAULT-1
+    id: '5.7'
+    gate: VAULT-1
+    from: running
+    to: done
+  - task_key: 5.8@VAULT-1
+    id: '5.8'
+    gate: VAULT-1
+    from: running
+    to: done
+  - task_key: 5.4@SCHED-1
+    id: '5.4'
+    gate: SCHED-1
+    from: running
+    to: done
+  - task_key: 5.10@SEARCH-1
+    id: '5.10'
+    gate: SEARCH-1
+    from: running
+    to: done
+  - task_key: 5.12@SEARCH-1
+    id: '5.12'
+    gate: SEARCH-1
+    from: running
+    to: done
+  - task_key: 5.13@SEARCH-1
+    id: '5.13'
+    gate: SEARCH-1
+    from: running
+    to: done
+  done_task_keys:
+  - 5.7@VAULT-1
+  - 5.8@VAULT-1
+  - 5.4@SCHED-1
+  - 5.10@SEARCH-1
+  - 5.12@SEARCH-1
+  - 5.13@SEARCH-1
+  done_tasks:
+  - '5.10'
+  - '5.12'
+  - '5.13'
+  - '5.4'
+  - '5.7'
+  - '5.8'

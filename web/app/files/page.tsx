@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react'
 import UnifiedFileBrowser from '@/components/UnifiedFileBrowser'
 import Navbar from '@/components/Navbar'
 import SidebarNav from '@/components/Sidebar/SidebarNav'
+import VaultFolderRow from '@/components/Sidebar/VaultFolderRow'
+import UnlockVaultModal from '@/components/vault/UnlockVaultModal'
 import '@/styles/layout.css'
+
+// Disclaimer text for vault
+const VAULT_DISCLAIMER = 'Private Folder hides files from All Files and search, but does not provide encryption. Your files remain accessible to anyone with provider access.'
 
 export default function FilesPage() {
   const [token, setToken] = useState<string | null>(null)
@@ -13,6 +18,13 @@ export default function FilesPage() {
   const [connectedProviders, setConnectedProviders] = useState<any[]>([])
   const [selectedProvider, setSelectedProvider] = useState<string>('all')
   const [activeAccountKey, setActiveAccountKey] = useState('')
+
+  // Vault state
+  const [vaultEnabled, setVaultEnabled] = useState(false)
+  const [vaultLocked, setVaultLocked] = useState(true)
+  const [vaultId, setVaultId] = useState<string | null>(null)
+  const [showUnlockModal, setShowUnlockModal] = useState(false)
+  const [vaultSessionToken, setVaultSessionToken] = useState<string | null>(null)
 
   useEffect(() => {
     const t = localStorage.getItem('cf_token')
@@ -56,7 +68,91 @@ export default function FilesPage() {
     fetchProviders()
   }, [token])
 
+  // Fetch vault status on mount
+  useEffect(() => {
+    if (!token) return
+
+    const fetchVaultStatus = async () => {
+      try {
+        const res = await fetch('/api/vault', {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
+        })
+        const body = await res.json()
+        if (body.isEnabled) {
+          setVaultEnabled(true)
+          // Generate a vault ID for this user (in real implementation, this would come from the API)
+          setVaultId(`vault_${token.substring(0, 8)}`)
+          // Check if there's an existing session in localStorage
+          const storedSession = localStorage.getItem('vault_session')
+          if (storedSession) {
+            const session = JSON.parse(storedSession)
+            if (new Date(session.expiresAt) > new Date()) {
+              setVaultSessionToken(session.token)
+              setVaultLocked(false)
+            } else {
+              localStorage.removeItem('vault_session')
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch vault status:', err)
+      }
+    }
+
+    fetchVaultStatus()
+  }, [token])
+
+  // Handle vault unlock
+  const handleVaultUnlock = async (pin: string): Promise<boolean> => {
+    if (!vaultId) return false
+
+    try {
+      const res = await fetch(`/api/vault/${vaultId}/unlock`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ pin }),
+      })
+
+      const body = await res.json()
+
+      if (body.success) {
+        // Store session token
+        setVaultSessionToken(body.session_token)
+        setVaultLocked(false)
+        localStorage.setItem('vault_session', JSON.stringify({
+          token: body.session_token,
+          expiresAt: body.expires_at,
+        }))
+        return true
+      }
+
+      return false
+    } catch (err) {
+      console.error('Failed to unlock vault:', err)
+      return false
+    }
+  }
+
+  // Handle vault navigation
+  const handleVaultNavigate = () => {
+    if (vaultEnabled) {
+      if (vaultLocked) {
+        setShowUnlockModal(true)
+      } else {
+        setSelectedProvider('vault')
+      }
+    }
+  }
+
+  // Filter vault files from All Files view
+  // Note: This is a placeholder - actual filtering requires UnifiedFileBrowser modification
   const handleNavigate = (providerId: any, accountKey?: string) => {
+    // When navigating to 'all', vault files should be filtered out
+    // This would be implemented in UnifiedFileBrowser
     setSelectedProvider(providerId)
     if (accountKey) setActiveAccountKey(accountKey)
   }
@@ -107,6 +203,9 @@ export default function FilesPage() {
         onNavigate={handleNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        vaultEnabled={vaultEnabled}
+        vaultLocked={vaultLocked}
+        onVaultNavigate={handleVaultNavigate}
       />
 
       <div className="layout-with-sidebar">
@@ -151,15 +250,57 @@ export default function FilesPage() {
               <span className="text-xl">⭐</span>
               <span>Starred</span>
             </button>
+
+            {/* Vault / Private Folder */}
+            {vaultEnabled && (
+              <VaultFolderRow
+                isSelected={selectedProvider === 'vault'}
+                isLocked={vaultLocked}
+                onClick={handleVaultNavigate}
+              />
+            )}
+
+            {/* Setup Vault CTA when not enabled */}
+            {!vaultEnabled && (
+              <button
+                onClick={() => {
+                  // TODO: Open vault setup modal with disclaimer
+                  alert(VAULT_DISCLAIMER)
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <span className="text-xl">🔒</span>
+                <span>Enable Private Folder</span>
+              </button>
+            )}
           </nav>
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          {/* Vault header with disclaimer when viewing vault */}
+          {selectedProvider === 'vault' && (
+            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-600 dark:text-amber-400">🔒</span>
+                <div>
+                  <h2 className="font-medium text-amber-900 dark:text-amber-100">Private Folder</h2>
+                  <p className="text-sm text-amber-700 dark:text-amber-300">{VAULT_DISCLAIMER}</p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="max-w-7xl mx-auto">
             <UnifiedFileBrowser token={token} />
           </div>
         </main>
       </div>
+
+      {/* Unlock Vault Modal */}
+      <UnlockVaultModal
+        isOpen={showUnlockModal}
+        onClose={() => setShowUnlockModal(false)}
+        onUnlock={handleVaultUnlock}
+      />
     </div>
   )
 }
