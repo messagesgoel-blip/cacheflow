@@ -71,3 +71,21 @@
 - why it failed: Provider search requests are serialized through `/api/remotes/:id/proxy` and shape differs by provider/runtime, so narrow URL checks missed valid requests and produced empty results.
 - do not attempt: Do not key search E2E solely on fragile URL fragments; verify provider search dispatch and use broader payload-aware proxy mocks.
 - agent: codex
+
+## 2026-03-05 — Gate base URL probe matched unrelated service on port 3000
+- what was tried: Selecting Playwright gate base URL by accepting any HTTP response (`status < 500`) on candidate ports.
+- why it failed: Port `3000` served Dockhand (not CacheFlow), so E2E tests ran against the wrong app and timed out on missing selectors.
+- do not attempt: Do not use generic root-page probes for gate URL selection; require a CacheFlow API signature check (for example `/api/connections` returning JSON with 200/401/403).
+- agent: codex
+
+## 2026-03-05 — Blanket Next.js `/api/:path*` rewrite shadowed local app API routes
+- what was tried: Keeping a global rewrite of all `/api/*` traffic to backend while also adding local `web/app/api/**` handlers.
+- why it failed: Dynamic local routes (notably `/api/remotes/[uuid]/proxy`) were bypassed; requests hit backend rewrite target directly and failed (`ECONNREFUSED` / auth mismatches), leaving file tables empty.
+- do not attempt: Do not combine blanket `/api/:path*` rewrites with local API route handlers. Use explicit legacy rewrites only for paths without local handlers.
+- agent: codex
+
+## 2026-03-05 — Transfer polling started before session auth
+- what was tried: Polling `/api/transfers?limit=50` unconditionally from `TransferContext` on every mount/path change.
+- why it failed: Public/login routes produced repeated 401 responses and inflated error/load signals during chaos runs.
+- do not attempt: Do not start transfer polling before `/api/auth/session` confirms authenticated state.
+- agent: codex

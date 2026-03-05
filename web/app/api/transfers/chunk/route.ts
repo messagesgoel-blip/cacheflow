@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { withSecurityScan } from '../../../../lib/auth/securityAudit';
+import { resolveAccessToken } from '@/lib/auth/requestAuth';
 
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB threshold for chunked upload
@@ -38,10 +39,10 @@ export interface ChunkUploadResponse {
  * 
  * Upload a single chunk of a large file.
  */
-export async function POST(request: NextRequest): Promise<NextResponse<ChunkUploadResponse>> {
+export async function POST(request: NextRequest): Promise<NextResponse<any>> {
   try {
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get('accessToken')?.value;
+    const accessToken = resolveAccessToken(request, cookieStore);
     
     if (!accessToken) {
       return NextResponse.json(
@@ -120,6 +121,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChunkUplo
  */
 export async function GET(request: NextRequest): Promise<NextResponse<any>> {
   try {
+    const cookieStore = await cookies();
+    const accessToken = resolveAccessToken(request, cookieStore);
+    if (!accessToken) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get('fileId');
 

@@ -11,6 +11,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { addTransferJob, getTransferJob, getUserTransferJobs, getQueueStats, cancelTransferJob } from '@/lib/transfer/jobQueue';
 import { withSecurityScan } from '@/lib/auth/securityAudit';
+import { decodeAuthPayload, resolveAccessToken } from '@/lib/auth/requestAuth';
+import { resolveServerApiBase } from '@/lib/auth/serverApiBase';
 
 export interface CreateTransferRequest {
   sourceProvider: string;
@@ -34,6 +36,36 @@ export interface TransferStatus {
   error?: string;
 }
 
+async function resolveUserId(request: NextRequest): Promise<string | null> {
+  const cookieStore = await cookies();
+  const accessToken = resolveAccessToken(request, cookieStore);
+  if (!accessToken) return null;
+
+  const decoded = await decodeAuthPayload(accessToken);
+  if (decoded?.id !== undefined && decoded?.id !== null) {
+    return String(decoded.id);
+  }
+
+  try {
+    const apiBase = resolveServerApiBase();
+    const backendResponse = await fetch(`${apiBase}/auth/me`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!backendResponse.ok) return null;
+    const payload = await backendResponse.json().catch(() => ({}));
+    const userId = payload?.user?.id;
+    return userId !== undefined && userId !== null ? String(userId) : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * POST /api/transfers
  * 
@@ -41,25 +73,10 @@ export interface TransferStatus {
  */
 export async function POST(request: NextRequest): Promise<NextResponse<any>> {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get('accessToken')?.value;
-    
-    if (!accessToken) {
+    const userId = await resolveUserId(request);
+    if (!userId) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Decode user from token
-    const { verify } = await import('jsonwebtoken');
-    const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
-    let payload: any;
-    try {
-      payload = verify(accessToken, JWT_SECRET);
-    } catch {
-      return NextResponse.json(
-        { success: false, error: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -77,7 +94,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<any>> {
 
     // Create transfer job
     const job = await addTransferJob({
-      userId: payload.userId,
+      userId,
       sourceProvider,
       destProvider,
       fileId,
@@ -114,10 +131,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<any>> {
  */
 export async function GET(request: NextRequest): Promise<NextResponse<any>> {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get('accessToken')?.value;
-    
-    if (!accessToken) {
+    const userId = await resolveUserId(request);
+    if (!userId) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
@@ -127,20 +142,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<any>> {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Decode user from token
-    const { verify } = await import('jsonwebtoken');
-    const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
-    let payload: any;
-    try {
-      payload = verify(accessToken, JWT_SECRET);
-    } catch {
-      return NextResponse.json(
-        { success: false, error: 'Invalid token' },
-        { status: 401 }
-      );
-    }
-
-    const jobs = await getUserTransferJobs(payload.userId, limit);
+    const jobs = await getUserTransferJobs(userId, limit);
     
     const transfers: TransferStatus[] = jobs.map(job => ({
       jobId: job.id,

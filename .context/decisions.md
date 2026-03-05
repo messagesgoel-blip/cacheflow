@@ -130,10 +130,34 @@
 - commit: pending
 - agent: codex
 
-## 2026-03-05 — Default Playwright/gate traffic to existing app server on port 3000
-- decision: Default Playwright `baseURL` to `http://127.0.0.1:3000`, run dev webServer only when explicitly enabled, and reorder orchestrator gate probe candidates to prefer `3000/3010` before `4020`.
-- rationale: Auto-spawning Next dev on `4020` repeatedly caused heavy compile load, stale server selection, and unstable gate outcomes.
-- alternatives rejected: Keeping `4020` as first probe target; always spawning a fresh Next dev server during gate runs.
+## 2026-03-05 — Default Playwright/gate traffic to existing CacheFlow server with API signature probe
+- decision: Default Playwright `baseURL` to `http://127.0.0.1:3010`, run dev webServer only when explicitly enabled, and make orchestrator pick gate base URL only when `GET /api/connections` returns JSON with auth-ish status.
+- rationale: Generic "any HTTP response" probing selected unrelated services on port 3000, causing false gate failures and wasted test load.
+- alternatives rejected: Keeping `4020`/`3000` heuristic ordering without API signature validation; always spawning a fresh Next dev server during gate runs.
 - files: web/playwright.config.ts, scripts/orchestrate.ts, web/next.config.js
+- commit: pending
+- agent: codex
+
+## 2026-03-05 — Stabilize live QA/chaos path with same-origin proxy + targeted API rewrites
+- decision: Remove blanket `'/api/:path*'` rewrite in `web/next.config.js`, keep only explicit legacy rewrites (`/api/files`, `/api/tokens`, etc.), and force provider proxy calls through same-origin `/api/remotes/:uuid/proxy`.
+- rationale: Broad API rewrite intercepted local dynamic route handlers, bypassed security/refresh logic, and caused repeated `ECONNREFUSED` and empty file table states.
+- alternatives rejected: Keeping broad rewrite with route-level workarounds; direct cross-origin provider proxy calls from browser.
+- files: web/next.config.js, web/lib/providers/StorageProvider.ts, web/app/api/remotes/[uuid]/proxy/route.ts
+- commit: pending
+- agent: codex
+
+## 2026-03-05 — Seed QA remotes for admin/test users, not only legacy sup@goels.in
+- decision: Extend startup QA seed to target configured admin/test emails (`CACHEFLOW_QA_ADMIN_EMAILS`, `ADMIN_EMAIL`, `CACHEFLOW_TEST_USER_EMAIL`, optional `QA_SEED_EMAILS`) with idempotent upserts.
+- rationale: Chaos/gate verification used `admin@cacheflow.goels.in`; seeding only `sup@goels.in` left admin with zero connections and no actionable file operations.
+- alternatives rejected: Manual one-off DB seeding each run; chaos scripts that assume remotes already exist.
+- files: api/src/services/qaSeed.js
+- commit: pending
+- agent: codex
+
+## 2026-03-05 — Transfer auth + remotes health hardening for live chaos stability
+- decision: Resolve transfer user identity via `resolveAccessToken` + verified JWT decode fallback to backend `/auth/me`, and add local `GET /api/remotes/[uuid]/health` proxy route.
+- rationale: Transfer polling was returning false 401s for valid backend-issued access tokens, and sidebar health checks spammed 404 due missing Next route.
+- alternatives rejected: Keeping `jsonwebtoken.verify` with local secret only; relying on client-side suppression of failed health checks.
+- files: web/app/api/transfers/route.ts, web/app/api/transfers/chunk/route.ts, web/app/api/remotes/[uuid]/health/route.ts
 - commit: pending
 - agent: codex

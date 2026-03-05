@@ -44,5 +44,25 @@
 
 ## Playwright Existing-Server Default
 - use when: Running E2E or sprint gates on long-lived environments with app already running in Docker.
-- example: default `baseURL=http://127.0.0.1:3000`, only enable `webServer` when `PLAYWRIGHT_USE_DEV_SERVER=1`.
-- do not deviate because: auto-starting Next dev for every run increases CPU/memory churn and causes stale-port gate flakiness.
+- example: default `baseURL=http://127.0.0.1:3010`, only enable `webServer` when `PLAYWRIGHT_USE_DEV_SERVER=1`, and validate base URL via `/api/connections` JSON probe.
+- do not deviate because: auto-starting Next dev for every run increases CPU/memory churn, and non-specific port probes can target unrelated services.
+
+## Local API Route Priority over Rewrites
+- use when: Adding or maintaining `web/app/api/**` route handlers that proxy/auth-transform backend calls.
+- example: keep only explicit legacy rewrites in `next.config.js` (e.g. `/api/files/:path*`) and never use blanket `/api/:path*`.
+- do not deviate because: blanket rewrites can intercept dynamic local routes (like `/api/remotes/[uuid]/proxy`) and silently bypass local auth/sanitization logic.
+
+## Chaos Preflight Contract
+- use when: Running live chaos checks against `cacheflow.goels.in`.
+- example: run `scripts/chaos/preflight_live.sh` first and require `login=true` + `connections>=1` before UI actions.
+- do not deviate because: action-level failures become ambiguous when auth/session/seed prerequisites are not established upfront.
+
+## Auth-gated Transfer Polling
+- use when: Mounting global transfer context across authenticated and public routes.
+- example: verify `/api/auth/session` first, skip `/api/transfers` polling on `/login` and other public auth routes.
+- do not deviate because: pre-auth polling creates recurring 401 noise and unnecessary backend load.
+
+## Stable Upload Trigger in Unified File Browser
+- use when: Running UI automation and live chaos actions against Files view.
+- example: expose `data-testid="cf-action-upload"` with hidden input and provider-targeted upload handler in `UnifiedFileBrowser`.
+- do not deviate because: action-level tests need deterministic upload entrypoint and cache invalidation to verify downstream file operations.

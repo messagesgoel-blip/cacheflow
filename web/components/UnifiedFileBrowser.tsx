@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { ProviderId, FileMetadata, PROVIDERS, formatBytes, ConnectedProvider } from '@/lib/providers/types'
 import { getProvider } from '@/lib/providers'
 import { transferFileBetweenProviders } from '@/lib/transfer/crossProvider'
@@ -52,6 +52,8 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [previewPanelFile, setPreviewPanelFile] = useState<{ file: FileMetadata, url: string | null, type: 'image' | 'pdf' | 'text' | 'other' } | null>(null)
   const [clipboard, setClipboard] = useState<{ mode: 'copy' | 'move', file: FileMetadata } | null>(null)
   const [draggedFile, setDraggedFile] = useState<FileMetadata | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const uploadInputRef = useRef<HTMLInputElement | null>(null)
 
   // Aggregated mode state with persistence
   const [isAggregatedView, setIsAggregatedView] = useState(() => {
@@ -477,6 +479,81 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const handleFileMove = (file: FileMetadata) => setTransferModal({ open: true, mode: 'move', file })
   const handleFileCopy = (file: FileMetadata) => setTransferModal({ open: true, mode: 'copy', file })
   const handleFileRename = (file: FileMetadata) => setRenameModal({ open: true, file })
+  const resolveUploadTarget = useCallback((): { providerId: ProviderId; accountKey: string } | null => {
+    const isProviderScoped = !['all', 'recent', 'starred', 'activity'].includes(selectedProvider)
+    if (isProviderScoped) {
+      const pid = selectedProvider as ProviderId
+      const scopedAccount = connectedProviders.find(
+        (cp) => cp.providerId === pid && (!activeAccountKey || cp.accountKey === activeAccountKey),
+      ) || connectedProviders.find((cp) => cp.providerId === pid)
+      if (!scopedAccount) return null
+      return { providerId: pid, accountKey: scopedAccount.accountKey || '' }
+    }
+
+    if (activeAccountKey) {
+      const active = connectedProviders.find((cp) => cp.accountKey === activeAccountKey)
+      if (active) return { providerId: active.providerId, accountKey: active.accountKey || '' }
+    }
+
+    const fallback = connectedProviders[0]
+    return fallback ? { providerId: fallback.providerId, accountKey: fallback.accountKey || '' } : null
+  }, [selectedProvider, activeAccountKey, connectedProviders])
+
+  const handleUploadSelection = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const filesToUpload = Array.from(e.target.files || [])
+    if (filesToUpload.length === 0) return
+
+    const target = resolveUploadTarget()
+    if (!target) {
+      actions.notify({
+        kind: 'error',
+        title: 'Upload failed',
+        message: 'No connected provider is available for upload.',
+      })
+      e.target.value = ''
+      return
+    }
+
+    const provider = getProvider(target.providerId)
+    if (!provider) {
+      actions.notify({
+        kind: 'error',
+        title: 'Upload failed',
+        message: `Provider ${target.providerId} is not available.`,
+      })
+      e.target.value = ''
+      return
+    }
+
+    if (target.accountKey) {
+      tokenManager.setActiveToken(target.providerId, target.accountKey)
+    }
+    const tokenData = tokenManager.getToken(target.providerId, target.accountKey)
+    provider.remoteId = (tokenData as any)?.remoteId
+
+    const folderId = currentPath === '/' ? rootFolderId(target.providerId) : currentPath
+    const task = actions.startTask({
+      title: 'Uploading',
+      message: `${filesToUpload.length} file${filesToUpload.length > 1 ? 's' : ''}`,
+      progress: null,
+    })
+
+    setUploading(true)
+    try {
+      for (const file of filesToUpload) {
+        await provider.uploadFile(file, { folderId })
+      }
+      await metadataCache.invalidateCache(target.providerId, target.accountKey)
+      setRefreshKey((k) => k + 1)
+      task.succeed(`${filesToUpload.length} file${filesToUpload.length > 1 ? 's' : ''}`)
+    } catch (err: any) {
+      task.fail(err?.message || 'Upload failed')
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
+
   const handleFileDelete = async (file: FileMetadata) => {
     if (await actions.confirm({ title: 'Delete?', message: `Delete "${file.name}"?`, confirmText: 'Delete', cancelText: 'Cancel' })) {
       const task = actions.startTask({ title: 'Deleting', message: file.name, progress: null })
@@ -514,6 +591,14 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         addTransfer({ type: mode, file: f, targetProviderId: pid, targetAccountKey: key, targetFolderId: fid })
       }} />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <input
+          ref={uploadInputRef}
+          type="file"
+          multiple
+          className="hidden"
+          onChange={handleUploadSelection}
+          data-testid="cf-action-upload-input"
+        />
         {transferModal.open && transferModal.file && <TransferModal isOpen={transferModal.open} mode={transferModal.mode} file={transferModal.file} connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))} onClose={() => setTransferModal({ open: false, mode: 'copy', file: null })} onSubmit={async (args) => { addTransfer({ type: transferModal.mode, file: transferModal.file!, ...args }); setTransferModal({ open: false, mode: 'copy', file: null }); setSelectedFiles(new Set()) }} />}
         {renameModal.open && renameModal.file && <RenameModal isOpen={renameModal.open} title="Rename" initialValue={renameModal.file?.name || ''} onClose={() => setRenameModal({ open: false, file: null })} onSubmit={async (newName) => { const f = renameModal.file!; const p = getProvider(f.provider)!; p.remoteId = (f as any).remoteId; await p.renameFile(f.id, newName); await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); setRenameModal({ open: false, file: null }); setRefreshKey(k => k + 1) }} />}
         {showShortcutHelp && <ShortcutHelp onClose={() => setShowShortcutHelp(false)} />}
@@ -602,6 +687,14 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
               {isSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500" /></div>}
             </div>
+            <button
+              data-testid="cf-action-upload"
+              onClick={() => uploadInputRef.current?.click()}
+              disabled={uploading || connectedProviders.length === 0}
+              className="px-3 py-1.5 text-xs font-bold rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {uploading ? 'Uploading...' : 'Upload'}
+            </button>
             <button data-testid="files-refresh" onClick={() => setRefreshKey(k => k + 1)} className="p-2 hover:bg-gray-100 rounded-lg"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
           </div>
         </div>

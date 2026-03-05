@@ -24,6 +24,13 @@ export default function Sidebar({
   const [dragOverAccount, setDragOverAccount] = useState<string | null>(null)
   const [healthStates, setHealthStates] = useState<Record<string, { status: string, message?: string }>>({})
   const [quotas, setQuotas] = useState<Record<string, ProviderQuota>>({})
+  const providerSignature = useMemo(
+    () => connectedProviders
+      .map((cp) => `${cp.providerId}:${cp.accountKey || ''}`)
+      .sort()
+      .join('|'),
+    [connectedProviders],
+  )
 
   // Load collapse state from localStorage
   useEffect(() => {
@@ -80,7 +87,7 @@ export default function Sidebar({
     fetchData()
     const interval = setInterval(fetchData, 900000) // Every 15 mins
     return () => clearInterval(interval)
-  }, [mounted, connectedProviders])
+  }, [mounted, providerSignature])
 
   // Aggregate Quota computed
   const aggregateQuota = useMemo(() => {

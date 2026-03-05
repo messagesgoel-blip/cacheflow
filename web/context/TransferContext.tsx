@@ -58,6 +58,8 @@ function formatFileSize(bytes: number): string {
 export function TransferProvider({ children }: { children: ReactNode }) {
   const [transfers, setTransfers] = useState<TransferItem[]>([]);
   const [isPolling, setIsPolling] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   /**
    * Start a new transfer via API
@@ -153,6 +155,10 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   const refreshTransfers = useCallback(async (): Promise<void> => {
     try {
       const response = await fetch('/api/transfers?limit=50');
+      if (response.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
       const result = await response.json();
 
       if (result.success) {
@@ -169,8 +175,61 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     }
   }, [transfers]);
 
+  const pathname = usePathname();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const isPublicPath =
+      pathname === '/login' ||
+      pathname === '/register' ||
+      pathname.startsWith('/auth/');
+
+    if (isPublicPath) {
+      setIsAuthenticated(false);
+      setAuthChecked(true);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    (async () => {
+      try {
+        const response = await fetch('/api/auth/session', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+
+        if (cancelled) return;
+        if (!response.ok) {
+          setIsAuthenticated(false);
+          setAuthChecked(true);
+          return;
+        }
+
+        const session = await response.json().catch(() => ({}));
+        setIsAuthenticated(Boolean(session?.authenticated || session?.success || session?.user));
+      } catch {
+        if (!cancelled) {
+          setIsAuthenticated(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setAuthChecked(true);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
+
   // Connect to SSE for real-time progress updates
   useEffect(() => {
+    if (!authChecked || !isAuthenticated) return;
+
     const eventSources: Map<string, EventSource> = new Map();
 
     const connectToSSE = (transfer: TransferItem) => {
@@ -296,6 +355,8 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   }, [transfers]);
 
   useEffect(() => {
+    if (!authChecked || !isAuthenticated) return;
+
     fetch('/api/transfers?limit=50')
       .then(r => r.json())
       .then(data => {
@@ -310,10 +371,10 @@ export function TransferProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch(() => {})
-  }, [])
-
-  const pathname = usePathname();
+  }, [authChecked, isAuthenticated])
   useEffect(() => {
+    if (!authChecked || !isAuthenticated) return;
+
     if (transfers.length === 0) {
       fetch('/api/transfers?limit=50')
         .then(r => r.json())
@@ -330,10 +391,12 @@ export function TransferProvider({ children }: { children: ReactNode }) {
         })
         .catch(() => {})
     }
-  }, [pathname, transfers])
+  }, [pathname, transfers, authChecked, isAuthenticated])
 
   // Poll for updates every 5 seconds as fallback
   useEffect(() => {
+    if (!authChecked || !isAuthenticated) return;
+
     const hasActiveTransfers = transfers.some(t => t.status === 'active' || t.status === 'waiting');
 
     if (!isPolling && hasActiveTransfers) {
@@ -348,7 +411,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [transfers, isPolling, refreshTransfers]);
+  }, [transfers, isPolling, refreshTransfers, authChecked, isAuthenticated]);
 
   // Calculate active count
   const activeCount = transfers.filter(t => t.status === 'active' || t.status === 'waiting').length;
