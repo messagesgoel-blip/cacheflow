@@ -161,3 +161,19 @@
 - files: web/app/api/transfers/route.ts, web/app/api/transfers/chunk/route.ts, web/app/api/remotes/[uuid]/health/route.ts
 - commit: pending
 - agent: codex
+
+## 2026-03-05 — Unify Integrations entrypoint on server-state Connections route
+- decision: Route `/remotes` to `/connections` and rely on `/api/connections` as the single source of truth for integrations rendering.
+- rationale: Legacy remotes flow depended on localStorage token + deprecated APIs, producing infinite loading and split-brain behavior versus sidebar state.
+- alternatives rejected: Patching legacy `RemotesPanel` API calls in-place while keeping duplicate data sources active.
+- files: web/app/remotes/page.tsx, web/app/connections/page.tsx
+- commit: pending
+- agent: codex
+
+## 2026-03-05 — Consolidate file action toasts into a keyed single stream
+- decision: Add keyed task banners (`key: 'file-action'`) so Opening/Downloading/Rename/Delete operations replace each other instead of stacking.
+- rationale: Chaos run showed stale "Opening" toasts persisting and stacking with subsequent actions.
+- alternatives rejected: Keeping per-action independent toasts and trying to manually dismiss each call site.
+- files: web/components/ActionCenterProvider.tsx, web/components/UnifiedFileBrowser.tsx
+- commit: pending
+- agent: codex

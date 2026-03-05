@@ -52,7 +52,7 @@ export default function TransferModal({
     return () => {
       document.body.style.overflow = ''
     }
-  }, [isOpen])
+  }, [isOpen, file?.provider, availableProviders])
 
   useEffect(() => {
     if (!isOpen) {
@@ -60,9 +60,22 @@ export default function TransferModal({
       setError(null)
       return
     }
-    if (file?.provider && availableProviders.includes(file.provider as ProviderId)) {
-      setTargetProviderId(file.provider as ProviderId)
-    } else if (availableProviders.length) {
+    const sourceProvider = file?.provider as ProviderId | undefined
+    const differentProvider = sourceProvider
+      ? availableProviders.find((pid) => pid !== sourceProvider)
+      : undefined
+
+    if (differentProvider) {
+      setTargetProviderId(differentProvider)
+      return
+    }
+
+    if (sourceProvider && availableProviders.includes(sourceProvider)) {
+      setTargetProviderId(sourceProvider)
+      return
+    }
+
+    if (availableProviders.length) {
       setTargetProviderId(availableProviders[0])
     }
   }, [isOpen])

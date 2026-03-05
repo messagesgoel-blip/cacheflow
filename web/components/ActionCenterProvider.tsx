@@ -6,6 +6,7 @@ type BannerKind = 'info' | 'success' | 'error' | 'progress'
 
 type Banner = {
   id: string
+  key?: string
   kind: BannerKind
   title: string
   message?: string
@@ -44,7 +45,7 @@ type TaskHandle = {
 
 type ActionCenterApi = {
   notify: (input: NotifyInput) => void
-  startTask: (input: { title: string; message?: string; progress?: number | null }) => TaskHandle
+  startTask: (input: { title: string; message?: string; progress?: number | null; key?: string }) => TaskHandle
   confirm: (input: { title: string; message?: string; confirmText?: string; cancelText?: string }) => Promise<boolean>
   prompt: (input: { title: string; message?: string; initial?: string; placeholder?: string; confirmText?: string; cancelText?: string }) => Promise<string | null>
 }
@@ -105,9 +106,22 @@ export default function ActionCenterProvider({ children }: { children: React.Rea
       }, ttlMs)
     }
 
-    function startTask(input: { title: string; message?: string; progress?: number | null }): TaskHandle {
+    function startTask(input: { title: string; message?: string; progress?: number | null; key?: string }): TaskHandle {
       const id = nextId('task')
-      setBanners((prev) => [...prev, { id, kind: 'progress', title: input.title, message: input.message, progress: input.progress ?? null }])
+      setBanners((prev) => {
+        const withoutExisting = input.key ? prev.filter((b) => b.key !== input.key) : prev
+        return [
+          ...withoutExisting,
+          {
+            id,
+            key: input.key,
+            kind: 'progress',
+            title: input.title,
+            message: input.message,
+            progress: input.progress ?? null,
+          },
+        ]
+      })
 
       function update(patch: { title?: string; message?: string; progress?: number | null }) {
         setBanners((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch, kind: 'progress' } : b)))

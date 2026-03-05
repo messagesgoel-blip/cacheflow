@@ -21,6 +21,7 @@ import StarredView from '@/components/StarredView'
 import ActivityFeed from '@/components/ActivityFeed'
 import ShortcutHelp from '@/components/ShortcutHelp'
 import apiClient, { type ProviderConnection } from '@/lib/apiClient'
+import { isTextPreviewEligible, resolvePreviewType, type PreviewType } from '@/lib/files/previewUtils'
 
 interface UnifiedFileBrowserProps {
   token: string
@@ -49,7 +50,13 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [isFavoriting, setIsFavoriting] = useState<Set<string>>(new Set())
   const [showShortcutHelp, setShowShortcutHelp] = useState(false)
-  const [previewPanelFile, setPreviewPanelFile] = useState<{ file: FileMetadata, url: string | null, type: 'image' | 'pdf' | 'text' | 'other' } | null>(null)
+  const [previewPanelFile, setPreviewPanelFile] = useState<{
+    file: FileMetadata
+    url: string | null
+    type: PreviewType
+    textContent?: string
+    previewError?: string
+  } | null>(null)
   const [clipboard, setClipboard] = useState<{ mode: 'copy' | 'move', file: FileMetadata } | null>(null)
   const [draggedFile, setDraggedFile] = useState<FileMetadata | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -307,7 +314,21 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           if (account.accountKey) tokenManager.setActiveToken(account.providerId, account.accountKey)
           const result = await provider.searchFiles({ query: searchQuery })
           if (isStale) return
-          allResults.push(...result.files.map(f => ({ ...f, provider: account.providerId, providerName: PROVIDERS.find(p => p.id === account.providerId)?.name || account.providerId, accountKey: account.accountKey, sourceLabel: account.displayName, remoteId: (tokenData as any).remoteId } as any)))
+          allResults.push(
+            ...result.files.map((f) =>
+              normalizeFileMetadata(
+                {
+                  ...f,
+                  provider: account.providerId,
+                  providerName: PROVIDERS.find((p) => p.id === account.providerId)?.name || account.providerId,
+                  accountKey: account.accountKey,
+                  sourceLabel: account.displayName,
+                  remoteId: (tokenData as any).remoteId,
+                } as any,
+                { fallbackName: (f as any)?.name || (f as any)?.title || 'untitled' },
+              ),
+            ),
+          )
         } catch (err: any) { warnings.push(`${account.displayName}: ${err.message}`) }
       }))
       if (isStale) return
@@ -338,14 +359,19 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                 if (!provider) return []
                 const folderId = options?.folderId === '/' ? rootFolderId(account.providerId) : (options?.folderId || rootFolderId(account.providerId))
                 const result = await provider.listFiles({ folderId })
-                return result.files.map(f => ({
-                  ...f,
-                  provider: account.providerId,
-                  providerName: PROVIDERS.find(p => p.id === account.providerId)?.name || account.providerId,
-                  accountKey: account.accountKey,
-                  sourceLabel: account.displayName,
-                  remoteId: (tokenData as any)?.remoteId
-                } as FileMetadata))
+                return result.files.map((f) =>
+                  normalizeFileMetadata(
+                    {
+                      ...f,
+                      provider: account.providerId,
+                      providerName: PROVIDERS.find((p) => p.id === account.providerId)?.name || account.providerId,
+                      accountKey: account.accountKey,
+                      sourceLabel: account.displayName,
+                      remoteId: (tokenData as any)?.remoteId,
+                    } as FileMetadata,
+                    { fallbackName: (f as any)?.name || (f as any)?.title || 'untitled' },
+                  ),
+                )
               }
             }
           })
@@ -377,11 +403,16 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
           setAggregatedFiles(filtered)
           // Convert back to FileMetadata for compatibility with existing UI
-          const converted = filtered.map(f => ({
-            ...f,
-            isDuplicate: f.isDuplicate,
-            providers: f.providers
-          } as FileMetadata & { isDuplicate?: boolean; providers?: ProviderId[] }))
+          const converted = filtered.map((f) =>
+            normalizeFileMetadata(
+              {
+                ...f,
+                isDuplicate: f.isDuplicate,
+                providers: f.providers,
+              } as FileMetadata & { isDuplicate?: boolean; providers?: ProviderId[] },
+              { fallbackName: f.name || 'untitled' },
+            ),
+          )
           setFiles(converted)
           setSelectedFiles(new Set())
         } catch (err: any) {
@@ -416,7 +447,21 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             catch (err: any) { errors.push(`${pid}: ${err.message}`); continue }
           }
           if (isStale) return
-          allFiles.push(...resultFiles.map(file => ({ ...file, provider: pid, providerName: PROVIDERS.find(p => p.id === pid)?.name || pid, accountKey: key, sourceLabel: (t as any).displayName || (t as any).accountEmail || pid, remoteId: (t as any).remoteId } as any)))
+          allFiles.push(
+            ...resultFiles.map((file) =>
+              normalizeFileMetadata(
+                {
+                  ...file,
+                  provider: pid,
+                  providerName: PROVIDERS.find((p) => p.id === pid)?.name || pid,
+                  accountKey: key,
+                  sourceLabel: (t as any).displayName || (t as any).accountEmail || pid,
+                  remoteId: (t as any).remoteId,
+                } as any,
+                { fallbackName: (file as any)?.name || (file as any)?.title || 'untitled' },
+              ),
+            ),
+          )
         }
       }
       if (isStale) return
@@ -451,28 +496,41 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   }
 
   const handleFileDownload = async (file: FileMetadata) => {
-    const task = actions.startTask({ title: 'Downloading', message: file.name, progress: null })
+    const safeName = file.name || 'untitled'
+    const task = actions.startTask({ key: 'file-action', title: 'Downloading', message: safeName, progress: null })
     try {
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider); if (!provider) throw new Error('Provider not available')
       provider.remoteId = (file as any).remoteId
-      const blob = await provider.downloadFile(file.id); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = file.name; a.click(); window.URL.revokeObjectURL(url); task.succeed(file.name)
-    } catch (err: any) { task.fail(err.message) }
+      const blob = await provider.downloadFile(file.id); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = safeName; a.click(); window.URL.revokeObjectURL(url); task.succeed(safeName)
+    } catch (err: any) {
+      const message = err?.message || 'Could not load preview'
+      setPreviewPanelFile({
+        file: normalizeFileMetadata(file, { fallbackName: safeName }),
+        url: null,
+        type: resolvePreviewType({ mimeType: file.mimeType, fileName: safeName }),
+        previewError: message,
+      })
+      task.fail(message)
+    }
   }
 
   const handleFileOpen = async (file: FileMetadata) => {
     if (file.isFolder) { handleFolderClick(file); return }
-    const task = actions.startTask({ title: 'Opening', message: file.name, progress: null })
+    const safeName = file.name || 'untitled'
+    const task = actions.startTask({ key: 'file-action', title: 'Opening', message: safeName, progress: null })
     try {
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider); if (!provider) throw new Error('Provider not available')
       provider.remoteId = (file as any).remoteId
       const blob = await provider.downloadFile(file.id); const url = window.URL.createObjectURL(blob)
-      let type: 'image' | 'pdf' | 'text' | 'other' = 'text'
-      if (file.mimeType.startsWith('image/')) type = 'image'
-      else if (file.mimeType === 'application/pdf') type = 'pdf'
-      else if (file.mimeType.startsWith('text/')) type = 'text'
-      setPreviewPanelFile({ file, url, type }); task.succeed(file.name)
+      const type = resolvePreviewType({ mimeType: file.mimeType, fileName: safeName })
+      let textContent: string | undefined
+      if (type === 'text' && isTextPreviewEligible({ size: file.size })) {
+        textContent = await blob.text()
+      }
+      setPreviewPanelFile({ file: normalizeFileMetadata(file, { fallbackName: safeName }), url, type, textContent })
+      task.succeed(safeName)
     } catch (err: any) { task.fail(err.message) }
   }
 
@@ -533,6 +591,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
     const folderId = currentPath === '/' ? rootFolderId(target.providerId) : currentPath
     const task = actions.startTask({
+      key: 'file-action',
       title: 'Uploading',
       message: `${filesToUpload.length} file${filesToUpload.length > 1 ? 's' : ''}`,
       progress: null,
@@ -540,8 +599,32 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
     setUploading(true)
     try {
+      const uploadedFiles: FileMetadata[] = []
       for (const file of filesToUpload) {
-        await provider.uploadFile(file, { folderId })
+        const uploaded = await provider.uploadFile(file, { folderId })
+        uploadedFiles.push(
+          normalizeFileMetadata(
+            {
+              ...uploaded,
+              provider: target.providerId,
+              providerName: PROVIDERS.find((p) => p.id === target.providerId)?.name || target.providerId,
+              accountKey: target.accountKey,
+              sourceLabel: tokenData?.displayName || tokenData?.accountEmail || target.providerId,
+              remoteId: (tokenData as any)?.remoteId,
+            } as any,
+            { fallbackName: file.name },
+          ),
+        )
+      }
+      if (uploadedFiles.length > 0) {
+        setFiles((prev) => {
+          const byId = new Map<string, FileMetadata>()
+          uploadedFiles.forEach((item) => byId.set(item.id, item))
+          prev.forEach((item) => {
+            if (!byId.has(item.id)) byId.set(item.id, item)
+          })
+          return Array.from(byId.values())
+        })
       }
       await metadataCache.invalidateCache(target.providerId, target.accountKey)
       setRefreshKey((k) => k + 1)
@@ -555,15 +638,28 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   }
 
   const handleFileDelete = async (file: FileMetadata) => {
-    if (await actions.confirm({ title: 'Delete?', message: `Delete "${file.name}"?`, confirmText: 'Delete', cancelText: 'Cancel' })) {
-      const task = actions.startTask({ title: 'Deleting', message: file.name, progress: null })
-      try {
-        if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
-        const provider = getProvider(file.provider); 
-        if (!provider) throw new Error('Provider not found')
-        provider.remoteId = (file as any).remoteId
-        await provider.deleteFile(file.id); await metadataCache.invalidateCache(file.provider as any, (file as any).accountKey); setRefreshKey(k => k + 1); task.succeed(file.name)
-      } catch (err: any) { task.fail(err.message) }
+    const safeName = file.name || 'untitled'
+    const ok = await actions.confirm({ title: 'Delete?', message: `Delete "${safeName}"?`, confirmText: 'Delete', cancelText: 'Cancel' })
+    if (!ok) return
+
+    const task = actions.startTask({ key: 'file-action', title: 'Deleting', message: safeName, progress: null })
+    const previousFile = file
+    setFiles((prev) => prev.filter((item) => item.id !== file.id))
+    setPreviewPanelFile((prev) => (prev?.file?.id === file.id ? null : prev))
+    try {
+      if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
+      const provider = getProvider(file.provider)
+      if (!provider) throw new Error('Provider not found')
+      provider.remoteId = (file as any).remoteId
+      await provider.deleteFile(file.id)
+      await metadataCache.invalidateCache(file.provider as any, (file as any).accountKey)
+      setRefreshKey((k) => k + 1)
+      task.succeed(safeName)
+    } catch (err: any) {
+      setFiles((prev) => (prev.some((item) => item.id === previousFile.id) ? prev : [previousFile, ...prev]))
+      const message = err?.message || 'Delete failed'
+      task.fail(message)
+      actions.notify({ kind: 'error', title: 'Delete failed', message })
     }
   }
 
@@ -765,7 +861,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 function FileTable({ files, selectedFiles, focusedIndex, favorites, isFavoriting, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, showProviderBadge, showDuplicateBadge }: any) {
   return (
     <table className="w-full text-left table-fixed">
-      <thead className="bg-gray-50 dark:bg-gray-800 text-gray-400 uppercase text-[9px] font-black tracking-widest border-b border-gray-100 dark:border-gray-800">
+      <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-400 uppercase text-[9px] font-black tracking-widest border-b border-gray-100 dark:border-gray-800">
         <tr><th className="px-4 py-3 w-10"></th><th className="px-4 py-3 w-8"></th><th className="px-4 py-3">Name</th>{showProviderBadge && <th className="px-4 py-3 w-32">Provider</th>}<th className="px-4 py-3 w-24">Size</th><th className="px-4 py-3 w-32">Modified</th><th className="px-4 py-3 w-12"></th></tr>
       </thead>
       <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
@@ -781,8 +877,9 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, onSelect, 
   const provider = PROVIDERS.find(p => p.id === file.provider); const [showOverflow, setShowOverflow] = useState(false)
   const isDuplicate = file.isDuplicate || (file.providers && file.providers.length > 1)
   const providerCount = file.providers?.length || 1
+  const resolvedFileName = file.name || '[unnamed]'
   return (
-    <tr draggable={!file.isFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={file.name} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'} ${focused ? 'ring-2 ring-blue-500/50 ring-inset z-10' : ''}`} onClick={() => file.isFolder ? onFolderClick(file) : onOpen(file)}>
+    <tr draggable={!file.isFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={resolvedFileName} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'} ${focused ? 'ring-2 ring-blue-500/50 ring-inset z-10' : ''}`} onClick={() => file.isFolder ? onFolderClick(file) : onOpen(file)}>
       <td className="px-4 py-3">
         <input
           type="checkbox"
@@ -808,7 +905,7 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, onSelect, 
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-xl flex-shrink-0">{file.isFolder ? '📁' : getFileIcon(file.mimeType)}</span>
           <div className="min-w-0 flex items-center gap-2">
-            <p className="font-semibold text-sm truncate text-gray-900 dark:text-gray-100">{file.name}</p>
+            <p className={`font-semibold text-sm truncate ${resolvedFileName === '[unnamed]' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'}`}>{resolvedFileName}</p>
             {showDuplicateBadge && isDuplicate && (
               <span className="px-1.5 py-0.5 text-[9px] font-bold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full border border-purple-200 dark:border-purple-800 whitespace-nowrap" title={`Also on ${providerCount - 1} other provider${providerCount > 2 ? 's' : ''}`}>
                 📋 {providerCount}x
@@ -829,6 +926,34 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, onSelect, 
 
 function dateMsSafe(d?: string | null) { const ms = Date.parse(d || ''); return isNaN(ms) ? 0 : ms }
 function providerLabel(f: FileMetadata) { return (f as any).sourceLabel || f.providerName || f.provider }
+
+function normalizeFileMetadata(
+  file: any,
+  options: { fallbackName?: string } = {},
+): FileMetadata {
+  const resolvedName =
+    file?.name ||
+    file?.title ||
+    file?.filename ||
+    options.fallbackName ||
+    'untitled'
+  const resolvedPath = file?.path || file?.pathDisplay || `/${resolvedName}`
+  const resolvedMimeType = file?.mimeType || file?.mime_type || 'application/octet-stream'
+
+  return {
+    ...file,
+    id: String(file?.id || file?.fileId || `${resolvedPath}:${resolvedName}`),
+    name: String(resolvedName),
+    path: String(resolvedPath),
+    pathDisplay: String(file?.pathDisplay || resolvedPath),
+    size: Number(file?.size || 0),
+    mimeType: String(resolvedMimeType),
+    isFolder: Boolean(file?.isFolder),
+    modifiedTime: file?.modifiedTime || file?.modified_at || new Date().toISOString(),
+    providerName: file?.providerName || file?.provider || 'provider',
+  } as FileMetadata
+}
+
 export function getFileIcon(mimeType: string): string {
   if (mimeType?.startsWith('image/')) return '🖼️'
   if (mimeType?.startsWith('video/')) return '🎬'

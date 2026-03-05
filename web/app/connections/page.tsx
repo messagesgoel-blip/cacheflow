@@ -20,6 +20,14 @@ interface ServerConnection {
   lastSyncAt?: string
 }
 
+interface SessionResponse {
+  authenticated?: boolean
+  user?: {
+    email?: string
+  }
+  accessToken?: string
+}
+
 function toConnectedProvider(conn: ServerConnection): ConnectedProvider {
   return {
     providerId: conn.provider as ProviderId,
@@ -55,29 +63,81 @@ export default function ConnectionsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-    if (t && e) {
-      setToken(t)
-      setEmail(e)
+    let isMounted = true
+
+    const hydrateSession = async () => {
+      const localToken = localStorage.getItem('cf_token')
+      const localEmail = localStorage.getItem('cf_email') || ''
+      if (localToken) {
+        if (isMounted) {
+          setToken(localToken)
+          setEmail(localEmail)
+        }
+        return
+      }
+
+      try {
+        const res = await fetch('/api/auth/session', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (!res.ok) {
+          if (isMounted) {
+            setToken(null)
+            setEmail('')
+          }
+          return
+        }
+        const session = (await res.json()) as SessionResponse
+        if (!isMounted) return
+        if (session.authenticated && session.accessToken) {
+          setToken(session.accessToken)
+          setEmail(session.user?.email || '')
+          localStorage.setItem('cf_token', session.accessToken)
+          localStorage.setItem('cf_email', session.user?.email || '')
+        } else if (session.user && session.accessToken) {
+          setToken(session.accessToken)
+          setEmail(session.user?.email || '')
+          localStorage.setItem('cf_token', session.accessToken)
+          localStorage.setItem('cf_email', session.user?.email || '')
+        } else {
+          setToken(null)
+          setEmail('')
+        }
+      } catch {
+        if (isMounted) {
+          setToken(null)
+          setEmail('')
+        }
+      }
+    }
+
+    hydrateSession()
+    return () => {
+      isMounted = false
     }
   }, [])
 
-  const fetchConnections = useCallback(async (t: string) => {
+  const fetchConnections = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/connections', {
-        headers: { Authorization: `Bearer ${t}` },
+        credentials: 'include',
         cache: 'no-store',
       })
+      if (res.status === 401) {
+        window.location.href = '/login?reason=session_expired'
+        return
+      }
       const body = await res.json()
       if (!body.success) {
         setError(body.error || 'Failed to load connections')
         return
       }
       setConnections(body.data ?? [])
-    } catch (err) {
+    } catch {
       setError('Network error — could not reach server')
     } finally {
       setLoading(false)
@@ -86,15 +146,15 @@ export default function ConnectionsPage() {
 
   useEffect(() => {
     if (token) {
-      fetchConnections(token)
+      fetchConnections()
     }
   }, [token, fetchConnections])
 
   const handleNavigate = (
-    providerId: ProviderId | 'all' | 'recent' | 'starred' | 'activity',
+    providerId: ProviderId | 'all' | 'vault' | 'recent' | 'starred' | 'activity',
     accountKey?: string
   ) => {
-    setSelectedProvider(providerId)
+    setSelectedProvider(providerId === 'vault' ? 'all' : providerId)
     if (accountKey) setActiveAccountKey(accountKey)
   }
 
@@ -171,7 +231,7 @@ export default function ConnectionsPage() {
                 </p>
               </div>
               <button
-                onClick={() => fetchConnections(token)}
+                onClick={() => fetchConnections()}
                 disabled={loading}
                 className="px-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >

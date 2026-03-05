@@ -2,11 +2,14 @@
 
 import { FileMetadata, PROVIDERS, formatBytes } from '@/lib/providers/types'
 import { getFileIcon } from './UnifiedFileBrowser'
+import type { PreviewType } from '@/lib/files/previewUtils'
 
 interface PreviewPanelProps {
   file: FileMetadata
   url: string | null
-  type: 'image' | 'pdf' | 'text' | 'other'
+  type: PreviewType
+  textContent?: string
+  previewError?: string
   onClose: () => void
   onDownload: (file: FileMetadata) => void
   onRename: (file: FileMetadata) => void
@@ -19,6 +22,8 @@ export default function PreviewPanel({
   file,
   url,
   type,
+  textContent,
+  previewError,
   onClose,
   onDownload,
   onRename,
@@ -27,6 +32,8 @@ export default function PreviewPanel({
   onDelete
 }: PreviewPanelProps) {
   const provider = PROVIDERS.find(p => p.id === file.provider)
+  const canActOnFile = Boolean(file?.id && file?.name)
+  const actionDisabledClass = 'opacity-50 cursor-not-allowed'
 
   return (
     <div 
@@ -49,7 +56,13 @@ export default function PreviewPanel({
 
       {/* Preview Area */}
       <div className="aspect-square bg-gray-50 dark:bg-gray-950 flex items-center justify-center overflow-hidden border-b border-gray-100 dark:border-gray-800">
-        {!url ? (
+        {previewError ? (
+          <div className="flex flex-col items-center gap-2 text-center p-8">
+            <span className="text-5xl">⚠️</span>
+            <p className="text-xs text-red-600 uppercase font-bold tracking-widest">Could not load preview</p>
+            <p className="text-xs text-gray-500">{previewError}</p>
+          </div>
+        ) : !url ? (
           <div className="text-6xl">{getFileIcon(file.mimeType)}</div>
         ) : type === 'image' ? (
           <img src={url} alt={file.name} className="max-w-full max-h-full object-contain" />
@@ -57,6 +70,12 @@ export default function PreviewPanel({
           <div className="flex flex-col items-center gap-2">
             <span className="text-6xl">📄</span>
             <span className="text-xs text-gray-500 uppercase font-bold tracking-widest">PDF Document</span>
+          </div>
+        ) : type === 'text' ? (
+          <div className="w-full h-full overflow-auto p-4 text-left">
+            <pre className="text-xs leading-relaxed font-mono whitespace-pre-wrap break-words text-gray-700 dark:text-gray-200">
+              {textContent ?? 'Loading text preview…'}
+            </pre>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 text-center p-8">
@@ -105,36 +124,46 @@ export default function PreviewPanel({
         <div className="pt-6 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-2">
           <button 
             data-testid="cf-preview-action-download"
-            onClick={() => onDownload(file)}
-            className="flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-shadow shadow-md hover:shadow-lg col-span-2"
+            onClick={() => canActOnFile && onDownload(file)}
+            disabled={!canActOnFile}
+            title={!canActOnFile ? 'File details loading...' : undefined}
+            className={`flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-shadow shadow-md hover:shadow-lg col-span-2 ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Download File
           </button>
           <button 
             data-testid="cf-preview-action-rename"
-            onClick={() => onRename(file)}
-            className="flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium"
+            onClick={() => canActOnFile && onRename(file)}
+            disabled={!canActOnFile}
+            title={!canActOnFile ? 'File details loading...' : undefined}
+            className={`flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Rename
           </button>
           <button 
             data-testid="cf-preview-action-move"
-            onClick={() => onMove(file)}
-            className="flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium"
+            onClick={() => canActOnFile && onMove(file)}
+            disabled={!canActOnFile}
+            title={!canActOnFile ? 'File details loading...' : undefined}
+            className={`flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Move
           </button>
           <button 
             data-testid="cf-preview-action-copy"
-            onClick={() => onCopy(file)}
-            className="flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium"
+            onClick={() => canActOnFile && onCopy(file)}
+            disabled={!canActOnFile}
+            title={!canActOnFile ? 'File details loading...' : undefined}
+            className={`flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Copy
           </button>
           <button 
             data-testid="cf-preview-action-delete"
-            onClick={() => onDelete(file)}
-            className="flex items-center justify-center gap-2 py-2 border border-red-100 dark:border-red-900/30 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-medium"
+            onClick={() => canActOnFile && onDelete(file)}
+            disabled={!canActOnFile}
+            title={!canActOnFile ? 'File details loading...' : undefined}
+            className={`flex items-center justify-center gap-2 py-2 border border-red-100 dark:border-red-900/30 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-medium ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Delete
           </button>

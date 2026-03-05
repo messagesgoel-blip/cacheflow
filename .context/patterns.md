@@ -66,3 +66,13 @@
 - use when: Running UI automation and live chaos actions against Files view.
 - example: expose `data-testid="cf-action-upload"` with hidden input and provider-targeted upload handler in `UnifiedFileBrowser`.
 - do not deviate because: action-level tests need deterministic upload entrypoint and cache invalidation to verify downstream file operations.
+
+## Keyed File-Action Toast Stream
+- use when: Triggering file action status banners (open/download/upload/delete/rename/move/copy).
+- example: `actions.startTask({ key: 'file-action', title: 'Opening', message: file.name })`.
+- do not deviate because: multiple concurrent file-action banners stack and leave stale status messages visible after UI state has already changed.
+
+## File Metadata Normalization at UI Boundary
+- use when: Merging provider responses into shared file table/preview components.
+- example: map every file through a normalization helper ensuring `id,name,path,pathDisplay,mimeType,isFolder,modifiedTime` are always present before storing in UI state.
+- do not deviate because: partial provider payloads or optimistic updates can render blank name cells and break downstream actions that require stable file identity fields.

@@ -14,10 +14,10 @@ export async function GET() {
     const accessToken = cookieStore.get('accessToken')?.value;
 
     if (!accessToken) {
-      return NextResponse.json(
-        { authenticated: false, error: 'No active session' },
-        { status: 401 }
-      );
+      return NextResponse.json({
+        authenticated: false,
+        error: 'No active session',
+      });
     }
 
     const secret = process.env.JWT_SECRET;
@@ -38,9 +38,9 @@ export async function GET() {
       accessToken,
     });
   } catch {
-    return NextResponse.json(
-      { authenticated: false, error: 'Invalid or expired session' },
-      { status: 401 }
-    );
+    return NextResponse.json({
+      authenticated: false,
+      error: 'Invalid or expired session',
+    });
   }
 }

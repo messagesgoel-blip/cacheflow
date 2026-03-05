@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test'
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3000'
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3010'
 const useDevWebServer = ['1', 'true', 'yes', 'on'].includes(
   (process.env.PLAYWRIGHT_USE_DEV_SERVER || '').toLowerCase(),
 )
@@ -25,8 +25,8 @@ export default defineConfig({
   ...(useDevWebServer
     ? {
         webServer: {
-          command: 'npx next dev -p 3000',
-          url: 'http://127.0.0.1:3000',
+          command: 'npx next dev -p 3010',
+          url: 'http://127.0.0.1:3010',
           reuseExistingServer: true,
           timeout: 120000,
         },
