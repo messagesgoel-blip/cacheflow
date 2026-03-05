@@ -312,20 +312,40 @@ async function hasSprintGatePassTag(sprint: number): Promise<boolean> {
 }
 
 async function findNextRunnableSprint(manifest: TaskManifest, state: OrchestratorState): Promise<number | null> {
-  const byTaskProgress = findLowestIncompleteSprint(manifest, state);
-  if (byTaskProgress !== null) {
-    return byTaskProgress;
+  const sprints = naturalSort([...new Set(manifest.tasks.map((task) => String(task.sprint)))]).map(Number);
+  for (let index = 0; index < sprints.length; index += 1) {
+    const sprint = sprints[index];
+    const sprintTasks = getTasksForSprint(manifest, sprint);
+    if (sprintTasks.length === 0) {
+      continue;
+    }
+
+    const hasIncompleteTasks = sprintTasks.some((task) => state.tasks[task.id] !== "done");
+    if (hasIncompleteTasks) {
+      for (let priorIndex = 0; priorIndex < index; priorIndex += 1) {
+        const priorSprint = sprints[priorIndex];
+        const priorTasks = getTasksForSprint(manifest, priorSprint);
+        if (priorTasks.length === 0) {
+          continue;
+        }
+
+        const priorGatePassed = await hasSprintGatePassTag(priorSprint);
+        if (!priorGatePassed) {
+          return priorSprint;
+        }
+      }
+      return sprint;
+    }
   }
 
-  const sprints = naturalSort([...new Set(manifest.tasks.map((task) => String(task.sprint)))]).map(Number);
   for (const sprint of sprints) {
     const sprintTasks = getTasksForSprint(manifest, sprint);
     if (sprintTasks.length === 0) {
       continue;
     }
 
-    const passed = await hasSprintGatePassTag(sprint);
-    if (!passed) {
+    const gatePassed = await hasSprintGatePassTag(sprint);
+    if (!gatePassed) {
       return sprint;
     }
   }
