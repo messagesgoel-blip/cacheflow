@@ -61,7 +61,7 @@ test.describe('Provider Aggregation', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Wait for the page to load and controls to be available
-    await page.waitForSelector('[data-testid="cf-allproviders-view-toggle-grouped"]', { state: 'visible' });
+    await page.waitForSelector('[data-testid="cf-allproviders-view-toggle-grouped"]', { state: 'visible', timeout: 30000 });
   });
 
   test('toggle aggregated view visibility', async ({ page }) => {

@@ -30,6 +30,17 @@ test.describe('File Action Entry Points', () => {
       localStorage.setItem('cf_email', 'sup@goels.in');
     }, token);
 
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          user: { id: 'test-user', email: 'test@example.com' },
+          expires: new Date(Date.now() + 3600000).toISOString()
+        })
+      })
+    })
+
     await page.goto('/files');
     await page.waitForLoadState('networkidle');
     

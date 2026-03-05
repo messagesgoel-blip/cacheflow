@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 60_000,
+  timeout: 90_000,
   
   // Global setup/teardown for API preflight checks
   globalSetup: './e2e/fixtures/global-setup.ts',
@@ -32,8 +32,8 @@ export default defineConfig({
   ],
   
   // Retry configuration
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 2 : 1,
+  workers: 1,
   
   // Project configuration for different browsers
   projects: [

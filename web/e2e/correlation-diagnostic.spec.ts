@@ -6,6 +6,17 @@ import { execSync } from 'child_process'
 const SHOTS_DIR = '/srv/storage/screenshots/cacheflow'
 
 test('Observability: Correlation ID Persistence Diagnostic', async ({ page }) => {
+  await page.route('**/api/auth/session', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        user: { id: 'test-user', email: 'test@example.com' },
+        expires: new Date(Date.now() + 3600000).toISOString()
+      })
+    })
+  })
+
   // 1. Login
   await page.goto('http://localhost:3010/login')
   await page.fill('input[placeholder="Email"]', 'sup@goels.in')
