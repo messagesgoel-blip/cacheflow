@@ -255,6 +255,7 @@ async function main() {
     // refresh row reference after rename
     let rowAfterRename = await findRowByName(page, renamedName, 5000);
     if (!rowAfterRename) rowAfterRename = await findRowByName(page, originalName, 5000);
+    if (!rowAfterRename) rowAfterRename = await findLikelyFileRow(page);
     if (!rowAfterRename) rowAfterRename = page.locator('tbody tr').first();
 
     // copy + move through overflow menu
@@ -330,6 +331,21 @@ async function main() {
         if (await confirm.count()) await confirm.click().catch(() => {});
         await page.waitForTimeout(2000);
         deleted = true;
+      }
+    }
+    if (!deleted && rowAfterRename && await rowAfterRename.count()) {
+      await rowAfterRename.hover().catch(() => {});
+      const ov = rowAfterRename.getByTestId('cf-files-row-overflow').first();
+      if (await ov.count()) {
+        await ov.click({ force: true }).catch(() => {});
+        const delBtn = page.getByRole('button', { name: /^delete$/i }).first();
+        if (await delBtn.count()) {
+          await delBtn.click().catch(() => {});
+          const confirm = page.getByRole('button', { name: /delete|confirm|yes/i }).first();
+          if (await confirm.count()) await confirm.click().catch(() => {});
+          await page.waitForTimeout(2000);
+          deleted = true;
+        }
       }
     }
     report.actions.delete = deleted ? 'attempted' : 'not-found-or-failed';
