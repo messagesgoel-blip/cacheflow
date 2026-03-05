@@ -25,4 +25,9 @@
 - example: `buildAgentPrompt(task)` in `scripts/lib/buildAgentPrompt.ts` with the fixed five sections (ROLE, ACCEPTANCE CRITERIA, TARGET FILES, CONTRACT OBLIGATION, FORBIDDEN SIDE EFFECTS).
 - do not deviate because: consistent scoped prompts are required for deterministic agent behavior and contract-gated handoffs.
 
+## Module Audit Pipeline (Sprint 0-5)
+- use when: Needing module-level completion evidence (task completeness, file existence, contract presence, done/last-change/commit timestamps, ownership).
+- example: `python3 scripts/generate_module_audit.py && ./scripts/refresh_cacheflow_metrics.sh` then query `cacheflow_module_audit_score`.
+- do not deviate because: ad-hoc manual checks miss stale/missing module files and do not provide consistent Grafana-ready lineage columns.
+
 - 2026-03-04T20:14:10Z agent-coord: run cache invalidation hooks on task-claim (invalidate codebase-context on HEAD change; invalidate system-prompt on AGENTS/CORE checksum change).

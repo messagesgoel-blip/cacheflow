@@ -15,6 +15,7 @@ DASHBOARD_SYNC_SCRIPT="$SCRIPT_DIR/sync_sprints_dashboard.py"
 STATUS_SYNC_SCRIPT="$SCRIPT_DIR/sync_status_running_sprint.py"
 PUSH_SCRIPT="$SCRIPT_DIR/push_cacheflow_metrics.py"
 HISTORY_SCRIPT="$SCRIPT_DIR/push_cacheflow_history.py"
+MODULE_AUDIT_SCRIPT="$SCRIPT_DIR/generate_module_audit.py"
 export CACHEFLOW_BASE="${CACHEFLOW_BASE:-$BASE_DIR}"
 
 if [ ! -f "$PY_SCRIPT" ]; then
@@ -28,6 +29,9 @@ if [ -f "$DASHBOARD_SYNC_SCRIPT" ]; then
 fi
 if [ -f "$STATUS_SYNC_SCRIPT" ]; then
   python3 "$STATUS_SYNC_SCRIPT"
+fi
+if [ -f "$MODULE_AUDIT_SCRIPT" ]; then
+  python3 "$MODULE_AUDIT_SCRIPT"
 fi
 python3 "$PUSH_SCRIPT"
 python3 "$HISTORY_SCRIPT"

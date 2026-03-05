@@ -1,0 +1,4249 @@
+generated_at: '2026-03-05T14:20:29+00:00'
+scope: sprints_0_to_5
+summary:
+  total_modules: 96
+  complete_modules: 83
+  partial_modules: 13
+  incomplete_modules: 0
+modules:
+- seq: 1
+  module_id: '0.1'
+  task_key: 0.1@AUTH-1
+  sprint: 0
+  wave: 1
+  module_title: Define and commit ProviderAdapter interface — all adapters implement
+    this
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.1.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T01:14:43+00:00'
+  timestamp_last_changed: '2026-03-04T16:26:55-05:00'
+  timestamp_committed: '2026-03-03T20:12:09-05:00'
+  commit_hash: 2ebfec6b47bd85684fa075406031019e4f0246b1
+  commit_message: 'fix: remove BLOCKED echo trap, use TASK_COMPLETE-only detection'
+  committed_by: messagesgoel-blip
+  worked_by: Codex
+  assigned_agent: Codex
+  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/ProviderAdapter.interface.ts;
+    /home/sanjay/cacheflow_work/lib/providers/types.ts; /home/sanjay/cacheflow_work/web/lib/providers/types.ts
+  git_file_locations: lib/providers/ProviderAdapter.interface.ts; lib/providers/types.ts;
+    web/lib/providers/types.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/ProviderAdapter.interface.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/types.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/providers/types.ts
+  file_checks:
+  - declared: /lib/providers/ProviderAdapter.interface.ts
+    normalized: lib/providers/ProviderAdapter.interface.ts
+    exists: true
+    resolved:
+    - lib/providers/ProviderAdapter.interface.ts
+  - declared: /lib/providers/types.ts
+    normalized: lib/providers/types.ts
+    exists: true
+    resolved:
+    - lib/providers/types.ts
+    - web/lib/providers/types.ts
+  acceptance_criteria:
+  - AUTH-1
+  - TRANSFER-1
+  - ZERODISK-1
+- seq: 2
+  module_id: '0.2'
+  task_key: 0.2@AUTH-1
+  sprint: 0
+  wave: 1
+  module_title: Define AppError taxonomy and ErrorCode enum
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.2.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:46:36+00:00'
+  timestamp_last_changed: '2026-03-03T16:26:18-05:00'
+  timestamp_committed: '2026-03-03T22:31:55-05:00'
+  commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
+  commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
+    via Sisyphus'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/errors/AppError.ts; /home/sanjay/cacheflow_work/lib/errors/ErrorCode.ts
+  git_file_locations: lib/errors/AppError.ts; lib/errors/ErrorCode.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/errors/AppError.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/errors/ErrorCode.ts
+  file_checks:
+  - declared: /lib/errors/AppError.ts
+    normalized: lib/errors/AppError.ts
+    exists: true
+    resolved:
+    - lib/errors/AppError.ts
+  - declared: /lib/errors/ErrorCode.ts
+    normalized: lib/errors/ErrorCode.ts
+    exists: true
+    resolved:
+    - lib/errors/ErrorCode.ts
+  acceptance_criteria:
+  - AUTH-1
+  - TRANSFER-1
+- seq: 3
+  module_id: '0.3'
+  task_key: 0.3@AUTH-2
+  sprint: 0
+  wave: 1
+  module_title: Define complete Prisma schema baseline — all tables, all relationships
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.3.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:46:36+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-03T22:31:55-05:00'
+  commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
+  commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
+    via Sisyphus'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/prisma/schema.prisma; /home/sanjay/cacheflow_work/docs/architecture/data-model.md
+  git_file_locations: prisma/schema.prisma; docs/architecture/data-model.md
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/schema.prisma;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/data-model.md
+  file_checks:
+  - declared: /prisma/schema.prisma
+    normalized: prisma/schema.prisma
+    exists: true
+    resolved:
+    - prisma/schema.prisma
+  - declared: /docs/architecture/data-model.md
+    normalized: docs/architecture/data-model.md
+    exists: true
+    resolved:
+    - docs/architecture/data-model.md
+  acceptance_criteria:
+  - AUTH-2
+  - TRANSFER-1
+  - VAULT-1
+- seq: 4
+  module_id: '0.4'
+  task_key: 0.4@SSE-1
+  sprint: 0
+  wave: 1
+  module_title: Allocate Redis namespaces — document and enforce db separation
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.4.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:46:36+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:31:55-05:00'
+  commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
+  commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
+    via Sisyphus'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/docs/architecture/redis-namespaces.md;
+    /home/sanjay/cacheflow_work/lib/redis/client.ts
+  git_file_locations: docs/architecture/redis-namespaces.md; lib/redis/client.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/redis-namespaces.md;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/redis/client.ts
+  file_checks:
+  - declared: /docs/architecture/redis-namespaces.md
+    normalized: docs/architecture/redis-namespaces.md
+    exists: true
+    resolved:
+    - docs/architecture/redis-namespaces.md
+  - declared: /lib/redis/client.ts
+    normalized: lib/redis/client.ts
+    exists: true
+    resolved:
+    - lib/redis/client.ts
+  acceptance_criteria:
+  - SSE-1
+  - TRANSFER-1
+- seq: 5
+  module_id: 0.4a
+  task_key: 0.4a@AUTH-1
+  sprint: 0
+  wave: 2
+  module_title: ErrorCode → UI action contract doc; map all ErrorCode enums to deterministic
+    UI behavior and default toast fallback
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.4a.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T14:19:39+00:00'
+  timestamp_last_changed: '2026-03-03T16:19:23-05:00'
+  timestamp_committed: '2026-03-05T09:02:34-05:00'
+  commit_hash: 2193d1859581
+  commit_message: 'feat: finalize sprint 5 work and stabilize gate specs'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/docs/contracts/errorcode-ui-actions.md
+  git_file_locations: docs/contracts/errorcode-ui-actions.md
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/contracts/errorcode-ui-actions.md
+  file_checks:
+  - declared: /docs/contracts/errorcode-ui-actions.md
+    normalized: docs/contracts/errorcode-ui-actions.md
+    exists: true
+    resolved:
+    - docs/contracts/errorcode-ui-actions.md
+  acceptance_criteria:
+  - AUTH-1
+  - TRANSFER-1
+- seq: 6
+  module_id: '0.5'
+  task_key: 0.5@TRANSFER-1
+  sprint: 0
+  wave: 1
+  module_title: Define streaming pipeline pattern — pipeline() + backpressure strategy
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.5.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:46:36+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:31:55-05:00'
+  commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
+  commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
+    via Sisyphus'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/streamPipeline.ts;
+    /home/sanjay/cacheflow_work/tests/unit/streamPipeline.test.ts
+  git_file_locations: lib/transfers/streamPipeline.ts; tests/unit/streamPipeline.test.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/streamPipeline.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/tests/unit/streamPipeline.test.ts
+  file_checks:
+  - declared: /lib/transfers/streamPipeline.ts
+    normalized: lib/transfers/streamPipeline.ts
+    exists: true
+    resolved:
+    - lib/transfers/streamPipeline.ts
+  - declared: /tests/unit/streamPipeline.test.ts
+    normalized: tests/unit/streamPipeline.test.ts
+    exists: true
+    resolved:
+    - tests/unit/streamPipeline.test.ts
+  acceptance_criteria:
+  - TRANSFER-1
+  - ZERODISK-1
+- seq: 7
+  module_id: '0.6'
+  task_key: 0.6@AUTH-4
+  sprint: 0
+  wave: 1
+  module_title: Define singleton refresh promise pattern — prevent concurrent token
+    refresh race
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.6.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:46:36+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:31:55-05:00'
+  commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
+  commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
+    via Sisyphus'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/auth/refreshGuard.ts; /home/sanjay/cacheflow_work/docs/architecture/auth-patterns.md;
+    /home/sanjay/cacheflow_work/tests/unit/refreshGuard.test.ts
+  git_file_locations: lib/auth/refreshGuard.ts; docs/architecture/auth-patterns.md;
+    tests/unit/refreshGuard.test.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/auth/refreshGuard.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/auth-patterns.md;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/tests/unit/refreshGuard.test.ts
+  file_checks:
+  - declared: /lib/auth/refreshGuard.ts
+    normalized: lib/auth/refreshGuard.ts
+    exists: true
+    resolved:
+    - lib/auth/refreshGuard.ts
+  - declared: /docs/architecture/auth-patterns.md
+    normalized: docs/architecture/auth-patterns.md
+    exists: true
+    resolved:
+    - docs/architecture/auth-patterns.md
+  - declared: /tests/unit/refreshGuard.test.ts
+    normalized: tests/unit/refreshGuard.test.ts
+    exists: true
+    resolved:
+    - tests/unit/refreshGuard.test.ts
+  acceptance_criteria:
+  - AUTH-4
+- seq: 8
+  module_id: '0.7'
+  task_key: 0.7@SSE-1
+  sprint: 0
+  wave: 1
+  module_title: Define BullMQ → SSE bridge via Redis pub/sub
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.7.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:46:36+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:31:55-05:00'
+  commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
+  commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
+    via Sisyphus'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/progressBridge.ts;
+    /home/sanjay/cacheflow_work/docs/architecture/sse-pattern.md
+  git_file_locations: lib/transfers/progressBridge.ts; docs/architecture/sse-pattern.md
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/progressBridge.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/sse-pattern.md
+  file_checks:
+  - declared: /lib/transfers/progressBridge.ts
+    normalized: lib/transfers/progressBridge.ts
+    exists: true
+    resolved:
+    - lib/transfers/progressBridge.ts
+  - declared: /docs/architecture/sse-pattern.md
+    normalized: docs/architecture/sse-pattern.md
+    exists: true
+    resolved:
+    - docs/architecture/sse-pattern.md
+  acceptance_criteria:
+  - SSE-1
+- seq: 9
+  module_id: '0.9'
+  task_key: 0.9@SSE-1
+  sprint: 0
+  wave: 1
+  module_title: Stateful deployment guard — enforce long-running runtime targets and
+    block serverless/edge deployment configs in CI
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.9.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:46:36+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:31:55-05:00'
+  commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
+  commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
+    via Sisyphus'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: Codex
+  local_file_locations: /home/sanjay/cacheflow_work/docs/architecture/deployment-constraints.md;
+    /home/sanjay/cacheflow_work/scripts/check-deployment-target.sh; /home/sanjay/cacheflow_work/.env.example
+  git_file_locations: docs/architecture/deployment-constraints.md; scripts/check-deployment-target.sh;
+    .env.example
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/deployment-constraints.md;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/scripts/check-deployment-target.sh;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/.env.example
+  file_checks:
+  - declared: /docs/architecture/deployment-constraints.md
+    normalized: docs/architecture/deployment-constraints.md
+    exists: true
+    resolved:
+    - docs/architecture/deployment-constraints.md
+  - declared: /scripts/check-deployment-target.sh
+    normalized: scripts/check-deployment-target.sh
+    exists: true
+    resolved:
+    - scripts/check-deployment-target.sh
+  - declared: /.env.example
+    normalized: .env.example
+    exists: true
+    resolved:
+    - .env.example
+  acceptance_criteria:
+  - SSE-1
+  - TRANSFER-1
+- seq: 10
+  module_id: '1.1'
+  task_key: 1.1@AUTH-1
+  sprint: 1
+  wave: 1
+  module_title: Create global HTTP interceptor for all /api/remotes proxy calls
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.1.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-02T21:27:53+00:00'
+  timestamp_last_changed: '2026-03-04T16:26:55-05:00'
+  timestamp_committed: '2026-03-02T16:17:26-05:00'
+  commit_hash: 9fe35b97ff937479a1f5a6dd2e4113bd79feabe9
+  commit_message: 'chore: compliance closeout and per-agent sprint prompts'
+  committed_by: Sanjay Goel
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/apiClient.ts; /home/sanjay/cacheflow_work/web/lib/apiClient.ts;
+    /home/sanjay/cacheflow_work/lib/interceptors/authInterceptor.ts; /home/sanjay/cacheflow_work/web/lib/interceptors/authInterceptor.ts
+  git_file_locations: lib/apiClient.ts; web/lib/apiClient.ts; lib/interceptors/authInterceptor.ts;
+    web/lib/interceptors/authInterceptor.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/apiClient.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/apiClient.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/interceptors/authInterceptor.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/interceptors/authInterceptor.ts
+  file_checks:
+  - declared: /lib/apiClient.ts
+    normalized: lib/apiClient.ts
+    exists: true
+    resolved:
+    - lib/apiClient.ts
+    - web/lib/apiClient.ts
+  - declared: /lib/interceptors/authInterceptor.ts
+    normalized: lib/interceptors/authInterceptor.ts
+    exists: true
+    resolved:
+    - lib/interceptors/authInterceptor.ts
+    - web/lib/interceptors/authInterceptor.ts
+  acceptance_criteria:
+  - AUTH-1
+  - AUTH-4
+- seq: 11
+  module_id: '1.2'
+  task_key: 1.2@AUTH-2
+  sprint: 1
+  wave: 1
+  module_title: Implement silent token refresh endpoint
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.2.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-02T21:20:31+00:00'
+  timestamp_last_changed: '2026-03-02T20:34:53-05:00'
+  timestamp_committed: '2026-03-02T16:17:26-05:00'
+  commit_hash: 9fe35b97ff937479a1f5a6dd2e4113bd79feabe9
+  commit_message: 'chore: compliance closeout and per-agent sprint prompts'
+  committed_by: Sanjay Goel
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/auth/refresh/route.ts
+  git_file_locations: web/app/api/auth/refresh/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/refresh/route.ts
+  file_checks:
+  - declared: /app/api/auth/refresh/route.ts
+    normalized: app/api/auth/refresh/route.ts
+    exists: true
+    resolved:
+    - web/app/api/auth/refresh/route.ts
+  acceptance_criteria:
+  - AUTH-2
+- seq: 12
+  module_id: '1.3'
+  task_key: 1.3@AUTH-3
+  sprint: 1
+  wave: 1
+  module_title: Migrate from localStorage TokenManager to HttpOnly cookies
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.3.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-02T21:20:31+00:00'
+  timestamp_last_changed: '2026-03-02T16:28:58-05:00'
+  timestamp_committed: '2026-03-02T16:17:26-05:00'
+  commit_hash: 9fe35b97ff937479a1f5a6dd2e4113bd79feabe9
+  commit_message: 'chore: compliance closeout and per-agent sprint prompts'
+  committed_by: Sanjay Goel
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/lib/tokenManager.ts; /home/sanjay/cacheflow_work/web/lib/auth/cookieAuth.ts
+  git_file_locations: web/lib/tokenManager.ts; web/lib/auth/cookieAuth.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/tokenManager.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/auth/cookieAuth.ts
+  file_checks:
+  - declared: /lib/tokenManager.ts
+    normalized: lib/tokenManager.ts
+    exists: true
+    resolved:
+    - web/lib/tokenManager.ts
+  - declared: /lib/auth/cookieAuth.ts
+    normalized: lib/auth/cookieAuth.ts
+    exists: true
+    resolved:
+    - web/lib/auth/cookieAuth.ts
+  acceptance_criteria:
+  - AUTH-3
+- seq: 13
+  module_id: '1.4'
+  task_key: 1.4@AUTH-2
+  sprint: 1
+  wave: 1
+  module_title: Token Vault v1 — encrypted at-rest provider credentials
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.4.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-02T20:59:03+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-02T15:58:58-05:00'
+  commit_hash: b1142283731bcff90df9612eb830148d8d811a5c
+  commit_message: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
+  committed_by: Sanjay Goel
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/vault/tokenVault.ts; /home/sanjay/cacheflow_work/web/lib/vault/tokenVault.ts;
+    /home/sanjay/cacheflow_work/prisma/migrations/001_token_vault
+  git_file_locations: lib/vault/tokenVault.ts; web/lib/vault/tokenVault.ts; prisma/migrations/001_token_vault
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/tokenVault.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/vault/tokenVault.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/001_token_vault
+  file_checks:
+  - declared: /lib/vault/tokenVault.ts
+    normalized: lib/vault/tokenVault.ts
+    exists: true
+    resolved:
+    - lib/vault/tokenVault.ts
+    - web/lib/vault/tokenVault.ts
+  - declared: /prisma/migrations/001_token_vault/
+    normalized: prisma/migrations/001_token_vault/
+    exists: true
+    resolved:
+    - prisma/migrations/001_token_vault
+  acceptance_criteria:
+  - AUTH-2
+  - SEC-1
+- seq: 14
+  module_id: '1.5'
+  task_key: 1.5@AUTH-1
+  sprint: 1
+  wave: 1
+  module_title: Multi-account schema — up to 3 accounts per provider
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.5.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-02T21:27:53+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-02T16:17:26-05:00'
+  commit_hash: 9fe35b97ff937479a1f5a6dd2e4113bd79feabe9
+  commit_message: 'chore: compliance closeout and per-agent sprint prompts'
+  committed_by: Sanjay Goel
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/prisma/migrations/002_multi_account;
+    /home/sanjay/cacheflow_work/lib/vault/tokenVault.ts; /home/sanjay/cacheflow_work/web/lib/vault/tokenVault.ts
+  git_file_locations: prisma/migrations/002_multi_account; lib/vault/tokenVault.ts;
+    web/lib/vault/tokenVault.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/002_multi_account;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/tokenVault.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/vault/tokenVault.ts
+  file_checks:
+  - declared: /prisma/migrations/002_multi_account/
+    normalized: prisma/migrations/002_multi_account/
+    exists: true
+    resolved:
+    - prisma/migrations/002_multi_account
+  - declared: /lib/vault/tokenVault.ts
+    normalized: lib/vault/tokenVault.ts
+    exists: true
+    resolved:
+    - lib/vault/tokenVault.ts
+    - web/lib/vault/tokenVault.ts
+  acceptance_criteria:
+  - AUTH-1
+- seq: 15
+  module_id: '1.6'
+  task_key: 1.6@AUTH-3
+  sprint: 1
+  wave: 2
+  module_title: Remove client-side token sync pattern entirely
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 0.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.6.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:25:16+00:00'
+  timestamp_last_changed: ''
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: ''
+  git_file_locations: ''
+  git_urls: ''
+  file_checks:
+  - declared: /app/api/auth/sync-token/
+    normalized: app/api/auth/sync-token/
+    exists: false
+    resolved:
+    - web/app/api/auth/sync-token/
+  - declared: /components/providers/**
+    normalized: components/providers/**
+    exists: false
+    resolved:
+    - web/components/providers/**
+  acceptance_criteria:
+  - AUTH-3
+- seq: 16
+  module_id: '1.7'
+  task_key: 1.7@AUTH-1
+  sprint: 1
+  wave: 2
+  module_title: Write Playwright token expiry test
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.7.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:25:16+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/tokenExpiry.spec.ts
+  git_file_locations: e2e/tests/tokenExpiry.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/tokenExpiry.spec.ts
+  file_checks:
+  - declared: /e2e/tests/tokenExpiry.spec.ts
+    normalized: e2e/tests/tokenExpiry.spec.ts
+    exists: true
+    resolved:
+    - e2e/tests/tokenExpiry.spec.ts
+  acceptance_criteria:
+  - AUTH-1
+- seq: 17
+  module_id: '1.8'
+  task_key: 1.8@MODAL-1
+  sprint: 1
+  wave: 2
+  module_title: Replace shared modal boolean with provider discriminator enum
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.8.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:25:16+00:00'
+  timestamp_last_changed: '2026-03-02T16:02:02-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/context/IntegrationContext.tsx;
+    /home/sanjay/cacheflow_work/web/components/modals/ConnectProviderModal.tsx
+  git_file_locations: web/context/IntegrationContext.tsx; web/components/modals/ConnectProviderModal.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/context/IntegrationContext.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/modals/ConnectProviderModal.tsx
+  file_checks:
+  - declared: /context/IntegrationContext.tsx
+    normalized: context/IntegrationContext.tsx
+    exists: true
+    resolved:
+    - web/context/IntegrationContext.tsx
+  - declared: /components/modals/ConnectProviderModal.tsx
+    normalized: components/modals/ConnectProviderModal.tsx
+    exists: true
+    resolved:
+    - web/components/modals/ConnectProviderModal.tsx
+  acceptance_criteria:
+  - MODAL-1
+- seq: 18
+  module_id: '1.9'
+  task_key: 1.9@MODAL-1
+  sprint: 1
+  wave: 2
+  module_title: Implement correct forms for WebDAV and VPS/SFTP modals
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.9.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:25:16+00:00'
+  timestamp_last_changed: '2026-03-04T05:44:04-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/modals/WebDAVModal.tsx;
+    /home/sanjay/cacheflow_work/web/components/modals/VPSModal.tsx
+  git_file_locations: web/components/modals/WebDAVModal.tsx; web/components/modals/VPSModal.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/modals/WebDAVModal.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/modals/VPSModal.tsx
+  file_checks:
+  - declared: /components/modals/WebDAVModal.tsx
+    normalized: components/modals/WebDAVModal.tsx
+    exists: true
+    resolved:
+    - web/components/modals/WebDAVModal.tsx
+  - declared: /components/modals/VPSModal.tsx
+    normalized: components/modals/VPSModal.tsx
+    exists: true
+    resolved:
+    - web/components/modals/VPSModal.tsx
+  acceptance_criteria:
+  - MODAL-1
+- seq: 19
+  module_id: '1.10'
+  task_key: 1.10@MODAL-1
+  sprint: 1
+  wave: 2
+  module_title: Clear modal state on close and provider switch
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.10.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:25:16+00:00'
+  timestamp_last_changed: '2026-03-02T16:02:02-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/context/IntegrationContext.tsx;
+    /home/sanjay/cacheflow_work/web/components/modals/ConnectProviderModal.tsx
+  git_file_locations: web/context/IntegrationContext.tsx; web/components/modals/ConnectProviderModal.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/context/IntegrationContext.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/modals/ConnectProviderModal.tsx
+  file_checks:
+  - declared: /context/IntegrationContext.tsx
+    normalized: context/IntegrationContext.tsx
+    exists: true
+    resolved:
+    - web/context/IntegrationContext.tsx
+  - declared: /components/modals/ConnectProviderModal.tsx
+    normalized: components/modals/ConnectProviderModal.tsx
+    exists: true
+    resolved:
+    - web/components/modals/ConnectProviderModal.tsx
+  acceptance_criteria:
+  - MODAL-1
+- seq: 20
+  module_id: '1.11'
+  task_key: 1.11@MODAL-1
+  sprint: 1
+  wave: 2
+  module_title: Write Playwright modal test — all 9 provider Connect buttons
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.11.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:25:16+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/providerModals.spec.ts
+  git_file_locations: e2e/tests/providerModals.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/providerModals.spec.ts
+  file_checks:
+  - declared: /e2e/tests/providerModals.spec.ts
+    normalized: e2e/tests/providerModals.spec.ts
+    exists: true
+    resolved:
+    - e2e/tests/providerModals.spec.ts
+  acceptance_criteria:
+  - MODAL-1
+- seq: 21
+  module_id: '1.12'
+  task_key: 1.12@UUID-1
+  sprint: 1
+  wave: 1
+  module_title: Audit upload pipeline — locate all UUID injection points
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.12.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:48:37+00:00'
+  timestamp_last_changed: '2026-03-04T18:26:37-05:00'
+  timestamp_committed: '2026-03-03T22:31:55-05:00'
+  commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
+  commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
+    via Sisyphus'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: Codex
+  local_file_locations: /home/sanjay/cacheflow_work/api/remotes; /home/sanjay/cacheflow_work/lib/providers;
+    /home/sanjay/cacheflow_work/lib/providers/dropbox; /home/sanjay/cacheflow_work/lib/providers/onedrive;
+    /home/sanjay/cacheflow_work/lib/providers/vps; /home/sanjay/cacheflow_work/lib/providers/pcloud;
+    /home/sanjay/cacheflow_work/lib/providers/box; /home/sanjay/cacheflow_work/lib/providers/yandex;
+    /home/sanjay/cacheflow_work/lib/providers/googleDrive; /home/sanjay/cacheflow_work/web/lib/providers;
+    /home/sanjay/cacheflow_work/web/lib/providers/__tests__; /home/sanjay/cacheflow_work/lib/uploads
+  git_file_locations: api/remotes; lib/providers; lib/providers/dropbox; lib/providers/onedrive;
+    lib/providers/vps; lib/providers/pcloud; lib/providers/box; lib/providers/yandex;
+    lib/providers/googleDrive; web/lib/providers; web/lib/providers/__tests__; lib/uploads
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/api/remotes;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers; https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/dropbox;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/onedrive;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/vps; https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/pcloud;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/box; https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/yandex;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/googleDrive;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/providers; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/providers/__tests__;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/uploads
+  file_checks:
+  - declared: /api/remotes/**
+    normalized: api/remotes/**
+    exists: true
+    resolved:
+    - api/remotes
+  - declared: /lib/providers/**
+    normalized: lib/providers/**
+    exists: true
+    resolved:
+    - lib/providers
+    - lib/providers/dropbox
+    - lib/providers/onedrive
+    - lib/providers/vps
+    - lib/providers/pcloud
+    - lib/providers/box
+    - lib/providers/yandex
+    - lib/providers/googleDrive
+    - web/lib/providers
+    - web/lib/providers/__tests__
+  - declared: /lib/uploads/**
+    normalized: lib/uploads/**
+    exists: true
+    resolved:
+    - lib/uploads
+  acceptance_criteria:
+  - UUID-1
+- seq: 22
+  module_id: '1.13'
+  task_key: 1.13@UUID-1
+  sprint: 1
+  wave: 1
+  module_title: Fix upload pipeline to preserve original File.name
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.13.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T03:59:37+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/googleDrive.ts;
+    /home/sanjay/cacheflow_work/web/lib/providers/googleDrive.ts; /home/sanjay/cacheflow_work/lib/providers/onedrive.ts;
+    /home/sanjay/cacheflow_work/lib/providers/dropbox.ts; /home/sanjay/cacheflow_work/web/lib/providers/dropbox.ts;
+    /home/sanjay/cacheflow_work/lib/uploads/uploadManager.ts
+  git_file_locations: lib/providers/googleDrive.ts; web/lib/providers/googleDrive.ts;
+    lib/providers/onedrive.ts; lib/providers/dropbox.ts; web/lib/providers/dropbox.ts;
+    lib/uploads/uploadManager.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/googleDrive.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/providers/googleDrive.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/onedrive.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/dropbox.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/providers/dropbox.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/uploads/uploadManager.ts
+  file_checks:
+  - declared: /lib/providers/googleDrive.ts
+    normalized: lib/providers/googleDrive.ts
+    exists: true
+    resolved:
+    - lib/providers/googleDrive.ts
+    - web/lib/providers/googleDrive.ts
+  - declared: /lib/providers/onedrive.ts
+    normalized: lib/providers/onedrive.ts
+    exists: true
+    resolved:
+    - lib/providers/onedrive.ts
+  - declared: /lib/providers/dropbox.ts
+    normalized: lib/providers/dropbox.ts
+    exists: true
+    resolved:
+    - lib/providers/dropbox.ts
+    - web/lib/providers/dropbox.ts
+  - declared: /lib/uploads/uploadManager.ts
+    normalized: lib/uploads/uploadManager.ts
+    exists: true
+    resolved:
+    - lib/uploads/uploadManager.ts
+  acceptance_criteria:
+  - UUID-1
+- seq: 23
+  module_id: '1.14'
+  task_key: 1.14@UUID-1
+  sprint: 1
+  wave: 1
+  module_title: Write and run migration script in staging
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.14.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-02T21:06:39+00:00'
+  timestamp_last_changed: '2026-03-04T16:26:55-05:00'
+  timestamp_committed: '2026-03-02T16:03:11-05:00'
+  commit_hash: 0e06e1fcf81dfaec1677db2561c318d0c5911798
+  commit_message: 'feat(1.10@MODAL-1): clear modal state on close and provider switch
+    (already implemented via IntegrationContext)'
+  committed_by: Sanjay Goel
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/scripts/migrate-files-no-uuid.js
+  git_file_locations: scripts/migrate-files-no-uuid.js
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/scripts/migrate-files-no-uuid.js
+  file_checks:
+  - declared: /scripts/migrate-files-no-uuid.js
+    normalized: scripts/migrate-files-no-uuid.js
+    exists: true
+    resolved:
+    - scripts/migrate-files-no-uuid.js
+  acceptance_criteria:
+  - UUID-1
+- seq: 24
+  module_id: '1.15'
+  task_key: 1.15@UUID-1
+  sprint: 1
+  wave: 1
+  module_title: Validate and apply migration to production
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.15.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:01:50+00:00'
+  timestamp_last_changed: '2026-03-04T16:26:55-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: Codex
+  assigned_agent: Codex
+  local_file_locations: /home/sanjay/cacheflow_work/scripts/migrate-files-no-uuid.js
+  git_file_locations: scripts/migrate-files-no-uuid.js
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/scripts/migrate-files-no-uuid.js
+  file_checks:
+  - declared: /scripts/migrate-files-no-uuid.js
+    normalized: scripts/migrate-files-no-uuid.js
+    exists: true
+    resolved:
+    - scripts/migrate-files-no-uuid.js
+  acceptance_criteria:
+  - UUID-1
+- seq: 25
+  module_id: '1.16'
+  task_key: 1.16@SYNC-1
+  sprint: 1
+  wave: 1
+  module_title: Connections page and sidebar read from single server state store
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.16.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:04:50+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/connections/route.ts;
+    /home/sanjay/cacheflow_work/web/components/Sidebar.tsx; /home/sanjay/cacheflow_work/web/app/connections/page.tsx
+  git_file_locations: web/app/api/connections/route.ts; web/components/Sidebar.tsx;
+    web/app/connections/page.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/connections/page.tsx
+  file_checks:
+  - declared: /app/api/connections/route.ts
+    normalized: app/api/connections/route.ts
+    exists: true
+    resolved:
+    - web/app/api/connections/route.ts
+  - declared: /components/Sidebar.tsx
+    normalized: components/Sidebar.tsx
+    exists: true
+    resolved:
+    - web/components/Sidebar.tsx
+  - declared: /app/connections/page.tsx
+    normalized: app/connections/page.tsx
+    exists: true
+    resolved:
+    - web/app/connections/page.tsx
+  acceptance_criteria:
+  - SYNC-1
+- seq: 26
+  module_id: '1.17'
+  task_key: 1.17@AUTH-1
+  sprint: 1
+  wave: 2
+  module_title: Replace SESSION_EXPIRED raw text with actionable component
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.17.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:25:16+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/SessionExpiredBanner.tsx;
+    /home/sanjay/cacheflow_work/web/components/Sidebar/AccountRow.tsx
+  git_file_locations: web/components/SessionExpiredBanner.tsx; web/components/Sidebar/AccountRow.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/SessionExpiredBanner.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar/AccountRow.tsx
+  file_checks:
+  - declared: /components/SessionExpiredBanner.tsx
+    normalized: components/SessionExpiredBanner.tsx
+    exists: true
+    resolved:
+    - web/components/SessionExpiredBanner.tsx
+  - declared: /components/Sidebar/AccountRow.tsx
+    normalized: components/Sidebar/AccountRow.tsx
+    exists: true
+    resolved:
+    - web/components/Sidebar/AccountRow.tsx
+  acceptance_criteria:
+  - AUTH-1
+- seq: 27
+  module_id: '1.18'
+  task_key: 1.18@AUTH-2
+  sprint: 1
+  wave: 1
+  module_title: Security baseline — remove defaults, harden secrets
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.18.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:08:03+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/auth; /home/sanjay/cacheflow_work/web/lib/auth;
+    /home/sanjay/cacheflow_work/web/lib/auth/__tests__; /home/sanjay/cacheflow_work/app/api/search/route.ts;
+    /home/sanjay/cacheflow_work/app/api/share/route.ts; /home/sanjay/cacheflow_work/app/api/jobs/route.ts;
+    /home/sanjay/cacheflow_work/app/api/vault/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy/route.ts;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/delete/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/move/route.ts;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download/route.ts;
+    /home/sanjay/cacheflow_work/app/api/share/[id]/revoke/route.ts; /home/sanjay/cacheflow_work/app/api/transfers/[id]/chunks/route.ts;
+    /home/sanjay/cacheflow_work/app/api/transfers/[id]/progress/route.ts; /home/sanjay/cacheflow_work/app/api/connections/vps/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/remote-upload/route.ts; /home/sanjay/cacheflow_work/web/app/api/rate-limits/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/transfers/route.ts; /home/sanjay/cacheflow_work/web/app/api/connections/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/jobs/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts; /home/sanjay/cacheflow_work/web/app/api/cleanup/duplicates/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/transfers/chunk/route.ts; /home/sanjay/cacheflow_work/web/app/api/connections/health/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/vault/[id]/unlock/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/refresh/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/status/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/disable/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/verify/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/setup/route.ts;
+    /home/sanjay/cacheflow_work/web/middleware.ts
+  git_file_locations: lib/auth; web/lib/auth; web/lib/auth/__tests__; app/api/search/route.ts;
+    app/api/share/route.ts; app/api/jobs/route.ts; app/api/vault/route.ts; app/api/remotes/[uuid]/proxy/route.ts;
+    app/api/remotes/[uuid]/actions/delete/route.ts; app/api/remotes/[uuid]/actions/move/route.ts;
+    app/api/remotes/[uuid]/actions/rename/route.ts; app/api/remotes/[uuid]/actions/download/route.ts;
+    app/api/share/[id]/revoke/route.ts; app/api/transfers/[id]/chunks/route.ts; app/api/transfers/[id]/progress/route.ts;
+    app/api/connections/vps/route.ts; web/app/api/remote-upload/route.ts; web/app/api/rate-limits/route.ts;
+    web/app/api/transfers/route.ts; web/app/api/connections/route.ts; web/app/api/jobs/route.ts;
+    web/app/api/remotes/[uuid]/upload/route.ts; web/app/api/remotes/[uuid]/proxy/route.ts;
+    web/app/api/cleanup/duplicates/route.ts; web/app/api/transfers/chunk/route.ts;
+    web/app/api/connections/health/route.ts; web/app/api/vault/[id]/unlock/route.ts;
+    web/app/api/auth/refresh/route.ts; web/app/api/auth/2fa/status/route.ts; web/app/api/auth/2fa/disable/route.ts;
+    web/app/api/auth/2fa/verify/route.ts; web/app/api/auth/2fa/setup/route.ts; web/middleware.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/auth; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/auth;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/auth/__tests__;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/search/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/share/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/jobs/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/vault/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/proxy/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/delete/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/move/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/rename/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/download/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/share/[id]/revoke/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/transfers/[id]/chunks/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/transfers/[id]/progress/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/connections/vps/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remote-upload/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/rate-limits/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/transfers/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/jobs/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/upload/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/proxy/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/cleanup/duplicates/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/transfers/chunk/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/health/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/vault/[id]/unlock/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/refresh/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/status/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/disable/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/verify/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/setup/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/middleware.ts
+  file_checks:
+  - declared: /lib/auth/**
+    normalized: lib/auth/**
+    exists: true
+    resolved:
+    - lib/auth
+    - web/lib/auth
+    - web/lib/auth/__tests__
+  - declared: /app/api/**/route.ts
+    normalized: app/api/**/route.ts
+    exists: true
+    resolved:
+    - app/api/search/route.ts
+    - app/api/share/route.ts
+    - app/api/jobs/route.ts
+    - app/api/vault/route.ts
+    - app/api/remotes/[uuid]/proxy/route.ts
+    - app/api/remotes/[uuid]/actions/delete/route.ts
+    - app/api/remotes/[uuid]/actions/move/route.ts
+    - app/api/remotes/[uuid]/actions/rename/route.ts
+    - app/api/remotes/[uuid]/actions/download/route.ts
+    - app/api/share/[id]/revoke/route.ts
+    - app/api/transfers/[id]/chunks/route.ts
+    - app/api/transfers/[id]/progress/route.ts
+    - app/api/connections/vps/route.ts
+    - web/app/api/remote-upload/route.ts
+    - web/app/api/rate-limits/route.ts
+    - web/app/api/transfers/route.ts
+    - web/app/api/connections/route.ts
+    - web/app/api/jobs/route.ts
+    - web/app/api/remotes/[uuid]/upload/route.ts
+    - web/app/api/remotes/[uuid]/proxy/route.ts
+    - web/app/api/cleanup/duplicates/route.ts
+    - web/app/api/transfers/chunk/route.ts
+    - web/app/api/connections/health/route.ts
+    - web/app/api/vault/[id]/unlock/route.ts
+    - web/app/api/auth/refresh/route.ts
+    - web/app/api/auth/2fa/status/route.ts
+    - web/app/api/auth/2fa/disable/route.ts
+    - web/app/api/auth/2fa/verify/route.ts
+    - web/app/api/auth/2fa/setup/route.ts
+  - declared: /middleware.ts
+    normalized: middleware.ts
+    exists: true
+    resolved:
+    - web/middleware.ts
+  acceptance_criteria:
+  - AUTH-2
+  - SEC-1
+- seq: 28
+  module_id: '1.19'
+  task_key: 1.19@AUTH-2
+  sprint: 1
+  wave: 2
+  module_title: Security audit test — verify no secrets in API responses
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.19.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T04:25:16+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-03T22:59:12-05:00'
+  commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
+  commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
+    changes'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/securityAudit.spec.ts
+  git_file_locations: e2e/tests/securityAudit.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/securityAudit.spec.ts
+  file_checks:
+  - declared: /e2e/tests/securityAudit.spec.ts
+    normalized: e2e/tests/securityAudit.spec.ts
+    exists: true
+    resolved:
+    - e2e/tests/securityAudit.spec.ts
+  acceptance_criteria:
+  - AUTH-2
+- seq: 29
+  module_id: '2.1'
+  task_key: 2.1@UPLOAD-1
+  sprint: 2
+  wave: 2
+  module_title: Add persistent Upload / New Folder / Refresh action bar
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.1.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/files/page.tsx; /home/sanjay/cacheflow_work/web/components/files/ActionBar.tsx
+  git_file_locations: web/app/files/page.tsx; web/components/files/ActionBar.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/files/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/ActionBar.tsx
+  file_checks:
+  - declared: /app/files/page.tsx
+    normalized: app/files/page.tsx
+    exists: true
+    resolved:
+    - web/app/files/page.tsx
+  - declared: /components/files/ActionBar.tsx
+    normalized: components/files/ActionBar.tsx
+    exists: true
+    resolved:
+    - web/components/files/ActionBar.tsx
+  acceptance_criteria:
+  - UPLOAD-1
+- seq: 30
+  module_id: '2.2'
+  task_key: 2.2@UPLOAD-1
+  sprint: 2
+  wave: 1
+  module_title: Implement file upload with progress and toast
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 0.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.2.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T11:15:36+00:00'
+  timestamp_last_changed: ''
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: ''
+  git_file_locations: ''
+  git_urls: ''
+  file_checks:
+  - declared: /app/api/remotes/[uuid]/upload/route.ts
+    normalized: app/api/remotes/[uuid]/upload/route.ts
+    exists: false
+    resolved:
+    - app/api/remotes/[uuid]/upload/route.ts
+  - declared: /lib/providers/*/upload.ts
+    normalized: lib/providers/*/upload.ts
+    exists: false
+    resolved:
+    - lib/providers/*/upload.ts
+  acceptance_criteria:
+  - UPLOAD-1
+- seq: 31
+  module_id: '2.3'
+  task_key: 2.3@ACTIONS-1
+  sprint: 2
+  wave: 2
+  module_title: 'File table: single click select + right panel, double click open'
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.3.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:24:31+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:16:16-05:00'
+  commit_hash: bc256cd43c5f78cd9494ab12e7be440855b218d7
+  commit_message: 'fix(orchestrator): use wrapper CLIs and resolve frontend paths
+    under web'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/files/FileTable.tsx;
+    /home/sanjay/cacheflow_work/web/components/files/FileDetailPanel.tsx
+  git_file_locations: web/components/files/FileTable.tsx; web/components/files/FileDetailPanel.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/FileTable.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/FileDetailPanel.tsx
+  file_checks:
+  - declared: /components/files/FileTable.tsx
+    normalized: components/files/FileTable.tsx
+    exists: true
+    resolved:
+    - web/components/files/FileTable.tsx
+  - declared: /components/files/FileDetailPanel.tsx
+    normalized: components/files/FileDetailPanel.tsx
+    exists: true
+    resolved:
+    - web/components/files/FileDetailPanel.tsx
+  acceptance_criteria:
+  - ACTIONS-1
+- seq: 32
+  module_id: '2.4'
+  task_key: 2.4@ACTIONS-1
+  sprint: 2
+  wave: 2
+  module_title: Three-dot row menu + right-click context menu (identical)
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.4.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:24:41+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:16:16-05:00'
+  commit_hash: bc256cd43c5f78cd9494ab12e7be440855b218d7
+  commit_message: 'fix(orchestrator): use wrapper CLIs and resolve frontend paths
+    under web'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/files/FileContextMenu.tsx;
+    /home/sanjay/cacheflow_work/web/components/files/MultiSelectToolbar.tsx
+  git_file_locations: web/components/files/FileContextMenu.tsx; web/components/files/MultiSelectToolbar.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/FileContextMenu.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/MultiSelectToolbar.tsx
+  file_checks:
+  - declared: /components/files/FileContextMenu.tsx
+    normalized: components/files/FileContextMenu.tsx
+    exists: true
+    resolved:
+    - web/components/files/FileContextMenu.tsx
+  - declared: /components/files/MultiSelectToolbar.tsx
+    normalized: components/files/MultiSelectToolbar.tsx
+    exists: true
+    resolved:
+    - web/components/files/MultiSelectToolbar.tsx
+  acceptance_criteria:
+  - ACTIONS-1
+- seq: 33
+  module_id: '2.5'
+  task_key: 2.5@ACTIONS-1
+  sprint: 2
+  wave: 2
+  module_title: Write E2E tests for all file action entry points
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.5.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/fileActions.spec.ts
+  git_file_locations: e2e/tests/fileActions.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/fileActions.spec.ts
+  file_checks:
+  - declared: /e2e/tests/fileActions.spec.ts
+    normalized: e2e/tests/fileActions.spec.ts
+    exists: true
+    resolved:
+    - e2e/tests/fileActions.spec.ts
+  acceptance_criteria:
+  - ACTIONS-1
+  - UPLOAD-1
+- seq: 34
+  module_id: '2.6'
+  task_key: 2.6@PREVIEW-1
+  sprint: 2
+  wave: 2
+  module_title: Fix preview panel mount — "Opening" toast must open a panel; enforce
+    CSP for image/PDF/text previews with Playwright zero-CSP-error verification
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 0.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.6.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: ''
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: ''
+  git_file_locations: ''
+  git_urls: ''
+  file_checks:
+  - declared: /components/files/PreviewPanel.tsx
+    normalized: components/files/PreviewPanel.tsx
+    exists: false
+    resolved:
+    - web/components/files/PreviewPanel.tsx
+  - declared: /components/files/previewTypes.ts
+    normalized: components/files/previewTypes.ts
+    exists: false
+    resolved:
+    - web/components/files/previewTypes.ts
+  acceptance_criteria:
+  - PREVIEW-1
+- seq: 35
+  module_id: '2.7'
+  task_key: 2.7@PREVIEW-1
+  sprint: 2
+  wave: 2
+  module_title: 'Unsupported file types: immediate Download CTA via server-proxied
+    /api/remotes/{uuid}/download/{fileId}; never expose raw provider URLs'
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 0.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.7.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: ''
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: ''
+  git_file_locations: ''
+  git_urls: ''
+  file_checks:
+  - declared: /components/files/PreviewPanel.tsx
+    normalized: components/files/PreviewPanel.tsx
+    exists: false
+    resolved:
+    - web/components/files/PreviewPanel.tsx
+  - declared: /lib/files/mimeTypes.ts
+    normalized: lib/files/mimeTypes.ts
+    exists: false
+    resolved:
+    - web/lib/files/mimeTypes.ts
+  acceptance_criteria:
+  - PREVIEW-1
+- seq: 36
+  module_id: '2.8'
+  task_key: 2.8@PREVIEW-1
+  sprint: 2
+  wave: 2
+  module_title: E2E preview tests — supported and unsupported types
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.8.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/filePreview.spec.ts
+  git_file_locations: e2e/tests/filePreview.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/filePreview.spec.ts
+  file_checks:
+  - declared: /e2e/tests/filePreview.spec.ts
+    normalized: e2e/tests/filePreview.spec.ts
+    exists: true
+    resolved:
+    - e2e/tests/filePreview.spec.ts
+  acceptance_criteria:
+  - PREVIEW-1
+- seq: 37
+  module_id: '2.9'
+  task_key: 2.9@NAV-1
+  sprint: 2
+  wave: 2
+  module_title: Merge Cloud Drives / Providers / Integrations → Connections
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 50.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.9.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/connections/page.tsx;
+    /home/sanjay/cacheflow_work/web/app/providers
+  git_file_locations: web/app/connections/page.tsx; web/app/providers
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/connections/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/providers
+  file_checks:
+  - declared: /app/connections/page.tsx
+    normalized: app/connections/page.tsx
+    exists: true
+    resolved:
+    - web/app/connections/page.tsx
+  - declared: /components/Sidebar/NavItems.tsx
+    normalized: components/Sidebar/NavItems.tsx
+    exists: false
+    resolved:
+    - web/components/Sidebar/NavItems.tsx
+  - declared: /app/providers/
+    normalized: app/providers/
+    exists: true
+    resolved:
+    - web/app/providers
+  - declared: /app/integrations/
+    normalized: app/integrations/
+    exists: false
+    resolved:
+    - web/app/integrations/
+  acceptance_criteria:
+  - NAV-1
+- seq: 38
+  module_id: '2.10'
+  task_key: 2.10@RESP-1
+  sprint: 2
+  wave: 2
+  module_title: File table visual polish — skeleton loaders, hover, separators
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.10.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:24:41+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:16:16-05:00'
+  commit_hash: bc256cd43c5f78cd9494ab12e7be440855b218d7
+  commit_message: 'fix(orchestrator): use wrapper CLIs and resolve frontend paths
+    under web'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/files/FileTable.tsx;
+    /home/sanjay/cacheflow_work/web/components/Sidebar/AccountRow.tsx; /home/sanjay/cacheflow_work/web/styles/files.css
+  git_file_locations: web/components/files/FileTable.tsx; web/components/Sidebar/AccountRow.tsx;
+    web/styles/files.css
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/FileTable.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar/AccountRow.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/styles/files.css
+  file_checks:
+  - declared: /components/files/FileTable.tsx
+    normalized: components/files/FileTable.tsx
+    exists: true
+    resolved:
+    - web/components/files/FileTable.tsx
+  - declared: /components/Sidebar/AccountRow.tsx
+    normalized: components/Sidebar/AccountRow.tsx
+    exists: true
+    resolved:
+    - web/components/Sidebar/AccountRow.tsx
+  - declared: /styles/files.css
+    normalized: styles/files.css
+    exists: true
+    resolved:
+    - web/styles/files.css
+  acceptance_criteria:
+  - RESP-1
+- seq: 39
+  module_id: '2.11'
+  task_key: 2.11@RESP-1
+  sprint: 2
+  wave: 2
+  module_title: Sidebar collapsible accordion per provider group
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.11.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:24:41+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:16:16-05:00'
+  commit_hash: bc256cd43c5f78cd9494ab12e7be440855b218d7
+  commit_message: 'fix(orchestrator): use wrapper CLIs and resolve frontend paths
+    under web'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/Sidebar/ProviderGroup.tsx
+  git_file_locations: web/components/Sidebar/ProviderGroup.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar/ProviderGroup.tsx
+  file_checks:
+  - declared: /components/Sidebar/ProviderGroup.tsx
+    normalized: components/Sidebar/ProviderGroup.tsx
+    exists: true
+    resolved:
+    - web/components/Sidebar/ProviderGroup.tsx
+  acceptance_criteria:
+  - RESP-1
+- seq: 40
+  module_id: '2.12'
+  task_key: 2.12@RESP-1
+  sprint: 2
+  wave: 2
+  module_title: Responsive layout pass — 375px viewport minimum
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.12.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:24:41+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T07:16:16-05:00'
+  commit_hash: bc256cd43c5f78cd9494ab12e7be440855b218d7
+  commit_message: 'fix(orchestrator): use wrapper CLIs and resolve frontend paths
+    under web'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/Sidebar; /home/sanjay/cacheflow_work/web/app/files/page.tsx;
+    /home/sanjay/cacheflow_work/web/app/connections/page.tsx; /home/sanjay/cacheflow_work/web/styles/layout.css
+  git_file_locations: web/components/Sidebar; web/app/files/page.tsx; web/app/connections/page.tsx;
+    web/styles/layout.css
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/files/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/connections/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/styles/layout.css
+  file_checks:
+  - declared: /components/Sidebar/**
+    normalized: components/Sidebar/**
+    exists: true
+    resolved:
+    - web/components/Sidebar
+  - declared: /app/files/page.tsx
+    normalized: app/files/page.tsx
+    exists: true
+    resolved:
+    - web/app/files/page.tsx
+  - declared: /app/connections/page.tsx
+    normalized: app/connections/page.tsx
+    exists: true
+    resolved:
+    - web/app/connections/page.tsx
+  - declared: /styles/layout.css
+    normalized: styles/layout.css
+    exists: true
+    resolved:
+    - web/styles/layout.css
+  acceptance_criteria:
+  - RESP-1
+- seq: 41
+  module_id: '2.13'
+  task_key: 2.13@2FA-1
+  sprint: 2
+  wave: 1
+  module_title: TOTP setup flow — QR generation, verification, backup codes
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.13.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T11:26:38+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/app/api/auth/2fa; /home/sanjay/cacheflow_work/web/app/api/auth/2fa;
+    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/status; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/disable;
+    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/verify; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/setup;
+    /home/sanjay/cacheflow_work/lib/auth/totp.ts; /home/sanjay/cacheflow_work/web/lib/auth/totp.ts;
+    /home/sanjay/cacheflow_work/prisma/migrations/003_2fa
+  git_file_locations: app/api/auth/2fa; web/app/api/auth/2fa; web/app/api/auth/2fa/status;
+    web/app/api/auth/2fa/disable; web/app/api/auth/2fa/verify; web/app/api/auth/2fa/setup;
+    lib/auth/totp.ts; web/lib/auth/totp.ts; prisma/migrations/003_2fa
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/auth/2fa;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/status;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/disable;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/verify;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/setup;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/auth/totp.ts; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/auth/totp.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/003_2fa
+  file_checks:
+  - declared: /app/api/auth/2fa/**
+    normalized: app/api/auth/2fa/**
+    exists: true
+    resolved:
+    - app/api/auth/2fa
+    - web/app/api/auth/2fa
+    - web/app/api/auth/2fa/status
+    - web/app/api/auth/2fa/disable
+    - web/app/api/auth/2fa/verify
+    - web/app/api/auth/2fa/setup
+  - declared: /lib/auth/totp.ts
+    normalized: lib/auth/totp.ts
+    exists: true
+    resolved:
+    - lib/auth/totp.ts
+    - web/lib/auth/totp.ts
+  - declared: /prisma/migrations/003_2fa/
+    normalized: prisma/migrations/003_2fa/
+    exists: true
+    resolved:
+    - prisma/migrations/003_2fa
+  acceptance_criteria:
+  - 2FA-1
+- seq: 42
+  module_id: '2.14'
+  task_key: 2.14@2FA-1
+  sprint: 2
+  wave: 2
+  module_title: TOTP login challenge UI
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.14.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-03T10:53:53-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/auth/2fa-challenge/page.tsx;
+    /home/sanjay/cacheflow_work/web/components/auth/TOTPInput.tsx
+  git_file_locations: web/app/auth/2fa-challenge/page.tsx; web/components/auth/TOTPInput.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/auth/2fa-challenge/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/auth/TOTPInput.tsx
+  file_checks:
+  - declared: /app/auth/2fa-challenge/page.tsx
+    normalized: app/auth/2fa-challenge/page.tsx
+    exists: true
+    resolved:
+    - web/app/auth/2fa-challenge/page.tsx
+  - declared: /components/auth/TOTPInput.tsx
+    normalized: components/auth/TOTPInput.tsx
+    exists: true
+    resolved:
+    - web/components/auth/TOTPInput.tsx
+  acceptance_criteria:
+  - 2FA-1
+- seq: 43
+  module_id: '2.15'
+  task_key: 2.15@2FA-1
+  sprint: 2
+  wave: 2
+  module_title: 'Settings: manage 2FA, backup codes, last-used timestamp'
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.15.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-03T10:56:05-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/settings/security/page.tsx;
+    /home/sanjay/cacheflow_work/web/components/settings/TwoFAPanel.tsx
+  git_file_locations: web/app/settings/security/page.tsx; web/components/settings/TwoFAPanel.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/settings/security/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/settings/TwoFAPanel.tsx
+  file_checks:
+  - declared: /app/settings/security/page.tsx
+    normalized: app/settings/security/page.tsx
+    exists: true
+    resolved:
+    - web/app/settings/security/page.tsx
+  - declared: /components/settings/TwoFAPanel.tsx
+    normalized: components/settings/TwoFAPanel.tsx
+    exists: true
+    resolved:
+    - web/components/settings/TwoFAPanel.tsx
+  acceptance_criteria:
+  - 2FA-1
+- seq: 44
+  module_id: '2.16'
+  task_key: 2.16@2FA-1
+  sprint: 2
+  wave: 2
+  module_title: E2E 2FA tests — full enable/use/disable cycle
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.16.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/twoFA.spec.ts
+  git_file_locations: e2e/tests/twoFA.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/twoFA.spec.ts
+  file_checks:
+  - declared: /e2e/tests/twoFA.spec.ts
+    normalized: e2e/tests/twoFA.spec.ts
+    exists: true
+    resolved:
+    - e2e/tests/twoFA.spec.ts
+  acceptance_criteria:
+  - 2FA-1
+- seq: 45
+  module_id: OPS-E2E-READY
+  task_key: OPS-E2E-READY@QA-1
+  sprint: 2
+  wave: 1
+  module_title: Add Playwright preflight wait-for-api on 127.0.0.1:8100
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/OPS-E2E-READY.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T11:27:09+00:00'
+  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/playwright.config.ts; /home/sanjay/cacheflow_work/web/e2e/fixtures/global-setup.ts;
+    /home/sanjay/cacheflow_work/web/e2e/fixtures/global-teardown.ts; /home/sanjay/cacheflow_work/web/e2e/fixtures/README.md
+  git_file_locations: web/playwright.config.ts; web/e2e/fixtures/global-setup.ts;
+    web/e2e/fixtures/global-teardown.ts; web/e2e/fixtures/README.md
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/playwright.config.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/fixtures/global-setup.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/fixtures/global-teardown.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/fixtures/README.md
+  file_checks:
+  - declared: /web/playwright.config.ts
+    normalized: web/playwright.config.ts
+    exists: true
+    resolved:
+    - web/playwright.config.ts
+  - declared: /web/e2e/fixtures/global-setup.ts
+    normalized: web/e2e/fixtures/global-setup.ts
+    exists: true
+    resolved:
+    - web/e2e/fixtures/global-setup.ts
+  - declared: /web/e2e/fixtures/global-teardown.ts
+    normalized: web/e2e/fixtures/global-teardown.ts
+    exists: true
+    resolved:
+    - web/e2e/fixtures/global-teardown.ts
+  - declared: /web/e2e/fixtures/README.md
+    normalized: web/e2e/fixtures/README.md
+    exists: true
+    resolved:
+    - web/e2e/fixtures/README.md
+  acceptance_criteria:
+  - QA-1
+- seq: 46
+  module_id: OPS-QA-WATCH
+  task_key: OPS-QA-WATCH@QA-1
+  sprint: 2
+  wave: 2
+  module_title: 'Run QA watcher loop: detect dependency unlocks, claim ready Gemini
+    E2E tasks, and emit blocker reports'
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/OPS-QA-WATCH.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e; /home/sanjay/cacheflow_work/web/e2e/tests;
+    /home/sanjay/cacheflow_work/web/e2e/fixtures; /home/sanjay/cacheflow_work/web/e2e/tests/providers;
+    /home/sanjay/cacheflow_work/monitoring/task_history.yaml; /home/sanjay/cacheflow_work/docs/prompts;
+    /home/sanjay/cacheflow_work/BLOCKER_QA_SEED.md
+  git_file_locations: web/e2e; web/e2e/tests; web/e2e/fixtures; web/e2e/tests/providers;
+    monitoring/task_history.yaml; docs/prompts; BLOCKER_QA_SEED.md
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/fixtures; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/monitoring/task_history.yaml;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/prompts; https://github.com/messagesgoel-blip/cacheflow/blob/main/BLOCKER_QA_SEED.md
+  file_checks:
+  - declared: /web/e2e/**
+    normalized: web/e2e/**
+    exists: true
+    resolved:
+    - web/e2e
+    - web/e2e/tests
+    - web/e2e/fixtures
+    - web/e2e/tests/providers
+  - declared: /monitoring/task_history.yaml
+    normalized: monitoring/task_history.yaml
+    exists: true
+    resolved:
+    - monitoring/task_history.yaml
+  - declared: /docs/prompts/**
+    normalized: docs/prompts/**
+    exists: true
+    resolved:
+    - docs/prompts
+  - declared: /BLOCKER_QA_SEED.md
+    normalized: BLOCKER_QA_SEED.md
+    exists: true
+    resolved:
+    - BLOCKER_QA_SEED.md
+  acceptance_criteria:
+  - QA-1
+- seq: 47
+  module_id: UI-P1-T01
+  task_key: UI-P1-T01@HOLD-UI-2026-03-02
+  sprint: 2
+  wave: 2
+  module_title: Fix Cloud Drives page empty or unclear connected state
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T01.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/Sidebar.tsx; /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx;
+    /home/sanjay/cacheflow_work/web/app/connections/page.tsx
+  git_file_locations: web/components/Sidebar.tsx; web/components/UnifiedFileBrowser.tsx;
+    web/app/connections/page.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/connections/page.tsx
+  file_checks:
+  - declared: /components/Sidebar.tsx
+    normalized: components/Sidebar.tsx
+    exists: true
+    resolved:
+    - web/components/Sidebar.tsx
+  - declared: /components/UnifiedFileBrowser.tsx
+    normalized: components/UnifiedFileBrowser.tsx
+    exists: true
+    resolved:
+    - web/components/UnifiedFileBrowser.tsx
+  - declared: /app/connections/page.tsx
+    normalized: app/connections/page.tsx
+    exists: true
+    resolved:
+    - web/app/connections/page.tsx
+  acceptance_criteria:
+  - HOLD-UI-2026-03-02
+- seq: 48
+  module_id: UI-P1-T02
+  task_key: UI-P1-T02@HOLD-UI-2026-03-02
+  sprint: 2
+  wave: 1
+  module_title: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 66.67
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T02.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T11:30:41+00:00'
+  timestamp_last_changed: '2026-03-04T16:26:55-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/apiClient.ts; /home/sanjay/cacheflow_work/web/lib/apiClient.ts;
+    /home/sanjay/cacheflow_work/lib/interceptors/authInterceptor.ts; /home/sanjay/cacheflow_work/web/lib/interceptors/authInterceptor.ts
+  git_file_locations: lib/apiClient.ts; web/lib/apiClient.ts; lib/interceptors/authInterceptor.ts;
+    web/lib/interceptors/authInterceptor.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/apiClient.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/apiClient.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/interceptors/authInterceptor.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/interceptors/authInterceptor.ts
+  file_checks:
+  - declared: /app/api/remotes/[uuid]/proxy/route.ts
+    normalized: app/api/remotes/[uuid]/proxy/route.ts
+    exists: false
+    resolved:
+    - app/api/remotes/[uuid]/proxy/route.ts
+  - declared: /lib/apiClient.ts
+    normalized: lib/apiClient.ts
+    exists: true
+    resolved:
+    - lib/apiClient.ts
+    - web/lib/apiClient.ts
+  - declared: /lib/interceptors/authInterceptor.ts
+    normalized: lib/interceptors/authInterceptor.ts
+    exists: true
+    resolved:
+    - lib/interceptors/authInterceptor.ts
+    - web/lib/interceptors/authInterceptor.ts
+  acceptance_criteria:
+  - HOLD-UI-2026-03-02
+- seq: 49
+  module_id: UI-P1-T03
+  task_key: UI-P1-T03@HOLD-UI-2026-03-02
+  sprint: 2
+  wave: 2
+  module_title: Fix preview panel open reliability from file rows and overflow Open
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T03.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:24:41+00:00'
+  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_committed: '2026-03-04T07:16:16-05:00'
+  commit_hash: bc256cd43c5f78cd9494ab12e7be440855b218d7
+  commit_message: 'fix(orchestrator): use wrapper CLIs and resolve frontend paths
+    under web'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/PreviewPanel.tsx;
+    /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx
+  git_file_locations: web/components/PreviewPanel.tsx; web/components/UnifiedFileBrowser.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/PreviewPanel.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx
+  file_checks:
+  - declared: /components/PreviewPanel.tsx
+    normalized: components/PreviewPanel.tsx
+    exists: true
+    resolved:
+    - web/components/PreviewPanel.tsx
+  - declared: /components/UnifiedFileBrowser.tsx
+    normalized: components/UnifiedFileBrowser.tsx
+    exists: true
+    resolved:
+    - web/components/UnifiedFileBrowser.tsx
+  acceptance_criteria:
+  - HOLD-UI-2026-03-02
+- seq: 50
+  module_id: UI-P1-T04
+  task_key: UI-P1-T04@HOLD-UI-2026-03-02
+  sprint: 2
+  wave: 1
+  module_title: Restore file actions path (rename/move/download/delete) for connected
+    drives
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 50.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T04.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T11:34:51+00:00'
+  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx
+  git_file_locations: web/components/UnifiedFileBrowser.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx
+  file_checks:
+  - declared: /components/UnifiedFileBrowser.tsx
+    normalized: components/UnifiedFileBrowser.tsx
+    exists: true
+    resolved:
+    - web/components/UnifiedFileBrowser.tsx
+  - declared: /app/api/remotes/[uuid]/**
+    normalized: app/api/remotes/[uuid]/**
+    exists: false
+    resolved:
+    - app/api/remotes/[uuid]/**
+  acceptance_criteria:
+  - HOLD-UI-2026-03-02
+- seq: 51
+  module_id: UI-P1-T05
+  task_key: UI-P1-T05@HOLD-UI-2026-03-02
+  sprint: 2
+  wave: 1
+  module_title: Add explicit UI error surfaces for failed sync/proxy/favorites requests
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T05.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T11:37:41+00:00'
+  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx;
+    /home/sanjay/cacheflow_work/web/lib/ui/toast.ts; /home/sanjay/cacheflow_work/web/app/api/connections/route.ts
+  git_file_locations: web/components/UnifiedFileBrowser.tsx; web/lib/ui/toast.ts;
+    web/app/api/connections/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/ui/toast.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/route.ts
+  file_checks:
+  - declared: /components/UnifiedFileBrowser.tsx
+    normalized: components/UnifiedFileBrowser.tsx
+    exists: true
+    resolved:
+    - web/components/UnifiedFileBrowser.tsx
+  - declared: /lib/ui/toast.ts
+    normalized: lib/ui/toast.ts
+    exists: true
+    resolved:
+    - web/lib/ui/toast.ts
+  - declared: /app/api/connections/route.ts
+    normalized: app/api/connections/route.ts
+    exists: true
+    resolved:
+    - web/app/api/connections/route.ts
+  acceptance_criteria:
+  - HOLD-UI-2026-03-02
+- seq: 52
+  module_id: UI-P1-T06
+  task_key: UI-P1-T06@HOLD-UI-2026-03-02
+  sprint: 2
+  wave: 2
+  module_title: Add clear loading, empty, and error state cards in file pane
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T06.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:16:04+00:00'
+  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_committed: '2026-03-04T05:51:46-05:00'
+  commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
+  commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
+    task dispatch'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx;
+    /home/sanjay/cacheflow_work/web/components/Sidebar.tsx
+  git_file_locations: web/components/UnifiedFileBrowser.tsx; web/components/Sidebar.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx
+  file_checks:
+  - declared: /components/UnifiedFileBrowser.tsx
+    normalized: components/UnifiedFileBrowser.tsx
+    exists: true
+    resolved:
+    - web/components/UnifiedFileBrowser.tsx
+  - declared: /components/Sidebar.tsx
+    normalized: components/Sidebar.tsx
+    exists: true
+    resolved:
+    - web/components/Sidebar.tsx
+  acceptance_criteria:
+  - HOLD-UI-2026-03-02
+- seq: 53
+  module_id: '3.1'
+  task_key: 3.1@TRANSFER-1
+  sprint: 3
+  wave: 2
+  module_title: Persistent Transfer Manager Tray — always visible when active
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.1.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T14:08:23+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/transfers/TransferTray.tsx;
+    /home/sanjay/cacheflow_work/web/components/transfers/TransferItem.tsx; /home/sanjay/cacheflow_work/web/context/TransferContext.tsx
+  git_file_locations: web/components/transfers/TransferTray.tsx; web/components/transfers/TransferItem.tsx;
+    web/context/TransferContext.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/transfers/TransferTray.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/transfers/TransferItem.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/context/TransferContext.tsx
+  file_checks:
+  - declared: /components/transfers/TransferTray.tsx
+    normalized: components/transfers/TransferTray.tsx
+    exists: true
+    resolved:
+    - web/components/transfers/TransferTray.tsx
+  - declared: /components/transfers/TransferItem.tsx
+    normalized: components/transfers/TransferItem.tsx
+    exists: true
+    resolved:
+    - web/components/transfers/TransferItem.tsx
+  - declared: /context/TransferContext.tsx
+    normalized: context/TransferContext.tsx
+    exists: true
+    resolved:
+    - web/context/TransferContext.tsx
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 54
+  module_id: '3.2'
+  task_key: 3.2@SSE-1
+  sprint: 3
+  wave: 1
+  module_title: Server-Sent Events (SSE) for real-time transfer progress
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 50.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.2.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:45:11+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/progressEmitter.ts
+  git_file_locations: lib/transfers/progressEmitter.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/progressEmitter.ts
+  file_checks:
+  - declared: /app/api/transfers/[id]/progress/route.ts
+    normalized: app/api/transfers/[id]/progress/route.ts
+    exists: false
+    resolved:
+    - app/api/transfers/[id]/progress/route.ts
+  - declared: /lib/transfers/progressEmitter.ts
+    normalized: lib/transfers/progressEmitter.ts
+    exists: true
+    resolved:
+    - lib/transfers/progressEmitter.ts
+  acceptance_criteria:
+  - SSE-1
+- seq: 55
+  module_id: '3.3'
+  task_key: 3.3@TRANSFER-1
+  sprint: 3
+  wave: 1
+  module_title: Every file operation produces tray entry + toast
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 50.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.3.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:52:36+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/transferRegistry.ts
+  git_file_locations: lib/transfers/transferRegistry.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/transferRegistry.ts
+  file_checks:
+  - declared: /lib/transfers/transferRegistry.ts
+    normalized: lib/transfers/transferRegistry.ts
+    exists: true
+    resolved:
+    - lib/transfers/transferRegistry.ts
+  - declared: /app/api/remotes/[uuid]/**/route.ts
+    normalized: app/api/remotes/[uuid]/**/route.ts
+    exists: false
+    resolved:
+    - app/api/remotes/[uuid]/**/route.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 56
+  module_id: '3.4'
+  task_key: 3.4@TRANSFER-1
+  sprint: 3
+  wave: 2
+  module_title: Tray E2E — entry survives navigation, retry works on failure
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.4.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T14:08:27+00:00'
+  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/transferTray.spec.ts
+  git_file_locations: web/e2e/tests/transferTray.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/transferTray.spec.ts
+  file_checks:
+  - declared: /e2e/tests/transferTray.spec.ts
+    normalized: e2e/tests/transferTray.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/transferTray.spec.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 57
+  module_id: '3.5'
+  task_key: 3.5@TRANSFER-1
+  sprint: 3
+  wave: 1
+  module_title: 'Chunked upload: files >50MB use provider resumable upload APIs'
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.5.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T12:57:05+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/googleDrive/chunkedUpload.ts;
+    /home/sanjay/cacheflow_work/lib/providers/onedrive/chunkedUpload.ts; /home/sanjay/cacheflow_work/lib/providers/dropbox/chunkedUpload.ts
+  git_file_locations: lib/providers/googleDrive/chunkedUpload.ts; lib/providers/onedrive/chunkedUpload.ts;
+    lib/providers/dropbox/chunkedUpload.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/googleDrive/chunkedUpload.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/onedrive/chunkedUpload.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/dropbox/chunkedUpload.ts
+  file_checks:
+  - declared: /lib/providers/googleDrive/chunkedUpload.ts
+    normalized: lib/providers/googleDrive/chunkedUpload.ts
+    exists: true
+    resolved:
+    - lib/providers/googleDrive/chunkedUpload.ts
+  - declared: /lib/providers/onedrive/chunkedUpload.ts
+    normalized: lib/providers/onedrive/chunkedUpload.ts
+    exists: true
+    resolved:
+    - lib/providers/onedrive/chunkedUpload.ts
+  - declared: /lib/providers/dropbox/chunkedUpload.ts
+    normalized: lib/providers/dropbox/chunkedUpload.ts
+    exists: true
+    resolved:
+    - lib/providers/dropbox/chunkedUpload.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 58
+  module_id: '3.6'
+  task_key: 3.6@TRANSFER-1
+  sprint: 3
+  wave: 1
+  module_title: 'Auto-resume: resume interrupted upload from last successful chunk'
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 50.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.6.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T13:00:42+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/chunkStateManager.ts
+  git_file_locations: lib/transfers/chunkStateManager.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/chunkStateManager.ts
+  file_checks:
+  - declared: /app/api/transfers/[id]/chunks/route.ts
+    normalized: app/api/transfers/[id]/chunks/route.ts
+    exists: false
+    resolved:
+    - app/api/transfers/[id]/chunks/route.ts
+  - declared: /lib/transfers/chunkStateManager.ts
+    normalized: lib/transfers/chunkStateManager.ts
+    exists: true
+    resolved:
+    - lib/transfers/chunkStateManager.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 59
+  module_id: '3.7'
+  task_key: 3.7@TRANSFER-1
+  sprint: 3
+  wave: 2
+  module_title: 'Tray: chunk-level progress for large files'
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.7.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T14:08:27+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/transfers/TransferItem.tsx
+  git_file_locations: web/components/transfers/TransferItem.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/transfers/TransferItem.tsx
+  file_checks:
+  - declared: /components/transfers/TransferItem.tsx
+    normalized: components/transfers/TransferItem.tsx
+    exists: true
+    resolved:
+    - web/components/transfers/TransferItem.tsx
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 60
+  module_id: '3.8'
+  task_key: 3.8@TRANSFER-1
+  sprint: 3
+  wave: 2
+  module_title: Auto-resume E2E test — network drop mid-transfer ⚠️ Human verify
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.8.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T14:27:22+00:00'
+  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/chunkedResume.spec.ts
+  git_file_locations: web/e2e/tests/chunkedResume.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/chunkedResume.spec.ts
+  file_checks:
+  - declared: /e2e/tests/chunkedResume.spec.ts
+    normalized: e2e/tests/chunkedResume.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/chunkedResume.spec.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 61
+  module_id: '3.9'
+  task_key: 3.9@ZERODISK-1
+  sprint: 3
+  wave: 1
+  module_title: Server streams source → CacheFlow → target without disk write
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.9.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T13:03:28+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/streamTransfer.ts
+  git_file_locations: lib/transfers/streamTransfer.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/streamTransfer.ts
+  file_checks:
+  - declared: /lib/transfers/streamTransfer.ts
+    normalized: lib/transfers/streamTransfer.ts
+    exists: true
+    resolved:
+    - lib/transfers/streamTransfer.ts
+  acceptance_criteria:
+  - ZERODISK-1
+- seq: 62
+  module_id: '3.10'
+  task_key: 3.10@SSE-1
+  sprint: 3
+  wave: 1
+  module_title: BullMQ background job queue for async transfers
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.10.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T13:08:09+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/queue/transferQueue.ts; /home/sanjay/cacheflow_work/lib/queue/workers/transferWorker.ts
+  git_file_locations: lib/queue/transferQueue.ts; lib/queue/workers/transferWorker.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/queue/transferQueue.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/queue/workers/transferWorker.ts
+  file_checks:
+  - declared: /lib/queue/transferQueue.ts
+    normalized: lib/queue/transferQueue.ts
+    exists: true
+    resolved:
+    - lib/queue/transferQueue.ts
+  - declared: /lib/queue/workers/transferWorker.ts
+    normalized: lib/queue/workers/transferWorker.ts
+    exists: true
+    resolved:
+    - lib/queue/workers/transferWorker.ts
+  acceptance_criteria:
+  - SSE-1
+  - TRANSFER-1
+- seq: 63
+  module_id: '3.11'
+  task_key: 3.11@TRANSFER-1
+  sprint: 3
+  wave: 2
+  module_title: Conflict resolution modal — shared component used everywhere
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.11.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T14:23:24+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/transfers/ConflictResolutionModal.tsx
+  git_file_locations: web/components/transfers/ConflictResolutionModal.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/transfers/ConflictResolutionModal.tsx
+  file_checks:
+  - declared: /components/transfers/ConflictResolutionModal.tsx
+    normalized: components/transfers/ConflictResolutionModal.tsx
+    exists: true
+    resolved:
+    - web/components/transfers/ConflictResolutionModal.tsx
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 64
+  module_id: '3.12'
+  task_key: 3.12@ZERODISK-1
+  sprint: 3
+  wave: 2
+  module_title: Zero-disk verification test + tab-close survival test ⚠️ Human verify
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.12.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T14:23:24+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/zeroDiskTransfer.spec.ts
+  git_file_locations: web/e2e/tests/zeroDiskTransfer.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/zeroDiskTransfer.spec.ts
+  file_checks:
+  - declared: /e2e/tests/zeroDiskTransfer.spec.ts
+    normalized: e2e/tests/zeroDiskTransfer.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/zeroDiskTransfer.spec.ts
+  acceptance_criteria:
+  - ZERODISK-1
+- seq: 65
+  module_id: '3.13'
+  task_key: 3.13@SCHED-1
+  sprint: 3
+  wave: 2
+  module_title: Storage pooling dashboard — promote aggregate to hero position
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.13.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T14:23:24+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/dashboard/page.tsx; /home/sanjay/cacheflow_work/web/components/dashboard/StorageHero.tsx;
+    /home/sanjay/cacheflow_work/web/components/dashboard/ProviderCapacityBar.tsx
+  git_file_locations: web/app/dashboard/page.tsx; web/components/dashboard/StorageHero.tsx;
+    web/components/dashboard/ProviderCapacityBar.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/dashboard/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/dashboard/StorageHero.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/dashboard/ProviderCapacityBar.tsx
+  file_checks:
+  - declared: /app/dashboard/page.tsx
+    normalized: app/dashboard/page.tsx
+    exists: true
+    resolved:
+    - web/app/dashboard/page.tsx
+  - declared: /components/dashboard/StorageHero.tsx
+    normalized: components/dashboard/StorageHero.tsx
+    exists: true
+    resolved:
+    - web/components/dashboard/StorageHero.tsx
+  - declared: /components/dashboard/ProviderCapacityBar.tsx
+    normalized: components/dashboard/ProviderCapacityBar.tsx
+    exists: true
+    resolved:
+    - web/components/dashboard/ProviderCapacityBar.tsx
+  acceptance_criteria:
+  - SCHED-1
+- seq: 66
+  module_id: '3.14'
+  task_key: 3.14@SYNC-1
+  sprint: 3
+  wave: 1
+  module_title: Provider health indicators — green means it actually works
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.14.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T13:16:21+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/healthCheck.ts;
+    /home/sanjay/cacheflow_work/web/app/api/connections/health/route.ts
+  git_file_locations: lib/providers/healthCheck.ts; web/app/api/connections/health/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/healthCheck.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/health/route.ts
+  file_checks:
+  - declared: /lib/providers/healthCheck.ts
+    normalized: lib/providers/healthCheck.ts
+    exists: true
+    resolved:
+    - lib/providers/healthCheck.ts
+  - declared: /app/api/connections/health/route.ts
+    normalized: app/api/connections/health/route.ts
+    exists: true
+    resolved:
+    - web/app/api/connections/health/route.ts
+  acceptance_criteria:
+  - SYNC-1
+- seq: 67
+  module_id: '3.15'
+  task_key: 3.15@TRANSFER-1
+  sprint: 3
+  wave: 1
+  module_title: Rate limit handling layer — per-provider request queue
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.15.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T13:20:01+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/rateLimitQueue.ts;
+    /home/sanjay/cacheflow_work/lib/apiClient.ts; /home/sanjay/cacheflow_work/web/lib/apiClient.ts
+  git_file_locations: lib/providers/rateLimitQueue.ts; lib/apiClient.ts; web/lib/apiClient.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/rateLimitQueue.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/apiClient.ts; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/apiClient.ts
+  file_checks:
+  - declared: /lib/providers/rateLimitQueue.ts
+    normalized: lib/providers/rateLimitQueue.ts
+    exists: true
+    resolved:
+    - lib/providers/rateLimitQueue.ts
+  - declared: /lib/apiClient.ts
+    normalized: lib/apiClient.ts
+    exists: true
+    resolved:
+    - lib/apiClient.ts
+    - web/lib/apiClient.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 68
+  module_id: '3.16'
+  task_key: 3.16@SYNC-1
+  sprint: 3
+  wave: 2
+  module_title: Dashboard + health E2E tests
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.16.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T14:23:24+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/storageDashboard.spec.ts
+  git_file_locations: web/e2e/tests/storageDashboard.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/storageDashboard.spec.ts
+  file_checks:
+  - declared: /e2e/tests/storageDashboard.spec.ts
+    normalized: e2e/tests/storageDashboard.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/storageDashboard.spec.ts
+  acceptance_criteria:
+  - SYNC-1
+- seq: 69
+  module_id: '4.1'
+  task_key: 4.1@AUTH-1
+  sprint: 4
+  wave: 1
+  module_title: Define provider parity checklist — every provider must pass all 5
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.1.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:08:40+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: Codex
+  assigned_agent: Codex
+  local_file_locations: /home/sanjay/cacheflow_work/docs/provider-parity.md; /home/sanjay/cacheflow_work/lib/providers/ProviderAdapter.interface.ts
+  git_file_locations: docs/provider-parity.md; lib/providers/ProviderAdapter.interface.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/provider-parity.md;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/ProviderAdapter.interface.ts
+  file_checks:
+  - declared: /docs/provider-parity.md
+    normalized: docs/provider-parity.md
+    exists: true
+    resolved:
+    - docs/provider-parity.md
+  - declared: /lib/providers/ProviderAdapter.interface.ts
+    normalized: lib/providers/ProviderAdapter.interface.ts
+    exists: true
+    resolved:
+    - lib/providers/ProviderAdapter.interface.ts
+  acceptance_criteria:
+  - AUTH-1
+- seq: 70
+  module_id: '4.2'
+  task_key: 4.2@AUTH-1
+  sprint: 4
+  wave: 1
+  module_title: Add 2–3 additional providers to reach 3–4 gold-standard total
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.2.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:16:00+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/box; /home/sanjay/cacheflow_work/lib/providers/pcloud;
+    /home/sanjay/cacheflow_work/lib/providers/yandex
+  git_file_locations: lib/providers/box; lib/providers/pcloud; lib/providers/yandex
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/box;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/pcloud;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/yandex
+  file_checks:
+  - declared: /lib/providers/box/**
+    normalized: lib/providers/box/**
+    exists: true
+    resolved:
+    - lib/providers/box
+  - declared: /lib/providers/pcloud/**
+    normalized: lib/providers/pcloud/**
+    exists: true
+    resolved:
+    - lib/providers/pcloud
+  - declared: /lib/providers/yandex/**
+    normalized: lib/providers/yandex/**
+    exists: true
+    resolved:
+    - lib/providers/yandex
+  acceptance_criteria:
+  - AUTH-1
+- seq: 71
+  module_id: '4.3'
+  task_key: 4.3@AUTH-1
+  sprint: 4
+  wave: 2
+  module_title: E2E parity tests for each new provider
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.3.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T16:04:02+00:00'
+  timestamp_last_changed: '2026-03-04T21:08:00-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/providers/box.spec.ts;
+    /home/sanjay/cacheflow_work/web/e2e/tests/providers/pcloud.spec.ts
+  git_file_locations: web/e2e/tests/providers/box.spec.ts; web/e2e/tests/providers/pcloud.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers/box.spec.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers/pcloud.spec.ts
+  file_checks:
+  - declared: /e2e/tests/providers/box.spec.ts
+    normalized: e2e/tests/providers/box.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/providers/box.spec.ts
+  - declared: /e2e/tests/providers/pcloud.spec.ts
+    normalized: e2e/tests/providers/pcloud.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/providers/pcloud.spec.ts
+  acceptance_criteria:
+  - AUTH-1
+- seq: 72
+  module_id: '4.4'
+  task_key: 4.4@SEC-1
+  sprint: 4
+  wave: 1
+  module_title: SSH2 connection manager with LRU session reuse
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.4.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:21:49+00:00'
+  timestamp_last_changed: '2026-03-04T13:30:39-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/vps/sshConnectionManager.ts;
+    /home/sanjay/cacheflow_work/lib/providers/vps/VPSAdapter.ts
+  git_file_locations: lib/providers/vps/sshConnectionManager.ts; lib/providers/vps/VPSAdapter.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/vps/sshConnectionManager.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/vps/VPSAdapter.ts
+  file_checks:
+  - declared: /lib/providers/vps/sshConnectionManager.ts
+    normalized: lib/providers/vps/sshConnectionManager.ts
+    exists: true
+    resolved:
+    - lib/providers/vps/sshConnectionManager.ts
+  - declared: /lib/providers/vps/VPSAdapter.ts
+    normalized: lib/providers/vps/VPSAdapter.ts
+    exists: true
+    resolved:
+    - lib/providers/vps/VPSAdapter.ts
+  acceptance_criteria:
+  - SEC-1
+- seq: 73
+  module_id: '4.5'
+  task_key: 4.5@SEC-1
+  sprint: 4
+  wave: 1
+  module_title: AES-256-GCM encrypted credential storage for VPS/WebDAV
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.5.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:28:56+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/vault/credentialVault.ts;
+    /home/sanjay/cacheflow_work/app/api/connections/vps/route.ts
+  git_file_locations: lib/vault/credentialVault.ts; app/api/connections/vps/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/credentialVault.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/connections/vps/route.ts
+  file_checks:
+  - declared: /lib/vault/credentialVault.ts
+    normalized: lib/vault/credentialVault.ts
+    exists: true
+    resolved:
+    - lib/vault/credentialVault.ts
+  - declared: /app/api/connections/vps/route.ts
+    normalized: app/api/connections/vps/route.ts
+    exists: true
+    resolved:
+    - app/api/connections/vps/route.ts
+  acceptance_criteria:
+  - SEC-1
+- seq: 74
+  module_id: '4.6'
+  task_key: 4.6@SEC-1
+  sprint: 4
+  wave: 2
+  module_title: VPS parity test + credential security test
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.6.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T16:04:10+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/providers/vps.spec.ts
+  git_file_locations: web/e2e/tests/providers/vps.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers/vps.spec.ts
+  file_checks:
+  - declared: /e2e/tests/providers/vps.spec.ts
+    normalized: e2e/tests/providers/vps.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/providers/vps.spec.ts
+  acceptance_criteria:
+  - SEC-1
+- seq: 75
+  module_id: '4.7'
+  task_key: 4.7@2FA-1
+  sprint: 4
+  wave: 1
+  module_title: Share link creation — enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md
+    (all links vs password-only)
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.7.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:33:15+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/app/api/share/route.ts; /home/sanjay/cacheflow_work/lib/share/shareLinkService.ts
+  git_file_locations: app/api/share/route.ts; lib/share/shareLinkService.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/share/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/share/shareLinkService.ts
+  file_checks:
+  - declared: /app/api/share/route.ts
+    normalized: app/api/share/route.ts
+    exists: true
+    resolved:
+    - app/api/share/route.ts
+  - declared: /lib/share/shareLinkService.ts
+    normalized: lib/share/shareLinkService.ts
+    exists: true
+    resolved:
+    - lib/share/shareLinkService.ts
+  acceptance_criteria:
+  - 2FA-1
+  - SHARE-1
+- seq: 76
+  module_id: '4.8'
+  task_key: 4.8@SHARE-1
+  sprint: 4
+  wave: 1
+  module_title: Share link proxy — hides underlying provider
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 0.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.8.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:34:18+00:00'
+  timestamp_last_changed: ''
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: ''
+  git_file_locations: ''
+  git_urls: ''
+  file_checks:
+  - declared: /app/s/[linkId]/route.ts
+    normalized: app/s/[linkId]/route.ts
+    exists: false
+    resolved:
+    - app/s/[linkId]/route.ts
+  acceptance_criteria:
+  - SHARE-1
+- seq: 77
+  module_id: '4.9'
+  task_key: 4.9@SHARE-1
+  sprint: 4
+  wave: 1
+  module_title: Abuse controls — rate limits, throttling, link access logging
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 50.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.9.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:39:02+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/share/abuseControls.ts
+  git_file_locations: lib/share/abuseControls.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/share/abuseControls.ts
+  file_checks:
+  - declared: /lib/share/abuseControls.ts
+    normalized: lib/share/abuseControls.ts
+    exists: true
+    resolved:
+    - lib/share/abuseControls.ts
+  - declared: /app/api/share/[id]/revoke/route.ts
+    normalized: app/api/share/[id]/revoke/route.ts
+    exists: false
+    resolved:
+    - app/api/share/[id]/revoke/route.ts
+  acceptance_criteria:
+  - SHARE-1
+- seq: 78
+  module_id: '4.10'
+  task_key: 4.10@2FA-1
+  sprint: 4
+  wave: 2
+  module_title: Share link UI — right-click → Get Share Link panel; 2FA prompt behavior
+    must match /docs/decisions/share-link-2fa-scope.md
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.10.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T16:04:10+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/share/ShareLinkPanel.tsx;
+    /home/sanjay/cacheflow_work/web/components/share/ShareLinkList.tsx
+  git_file_locations: web/components/share/ShareLinkPanel.tsx; web/components/share/ShareLinkList.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/share/ShareLinkPanel.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/share/ShareLinkList.tsx
+  file_checks:
+  - declared: /components/share/ShareLinkPanel.tsx
+    normalized: components/share/ShareLinkPanel.tsx
+    exists: true
+    resolved:
+    - web/components/share/ShareLinkPanel.tsx
+  - declared: /components/share/ShareLinkList.tsx
+    normalized: components/share/ShareLinkList.tsx
+    exists: true
+    resolved:
+    - web/components/share/ShareLinkList.tsx
+  acceptance_criteria:
+  - 2FA-1
+  - SHARE-1
+- seq: 79
+  module_id: '4.11'
+  task_key: 4.11@SHARE-1
+  sprint: 4
+  wave: 2
+  module_title: E2E share link tests — create, access, expire, revoke
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.11.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T16:04:10+00:00'
+  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/shareLinks.spec.ts
+  git_file_locations: web/e2e/tests/shareLinks.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/shareLinks.spec.ts
+  file_checks:
+  - declared: /e2e/tests/shareLinks.spec.ts
+    normalized: e2e/tests/shareLinks.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/shareLinks.spec.ts
+  acceptance_criteria:
+  - SHARE-1
+- seq: 80
+  module_id: '4.12'
+  task_key: 4.12@TRANSFER-1
+  sprint: 4
+  wave: 1
+  module_title: Remote upload v1 — HTTP/HTTPS URL to chosen provider
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.12.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:43:30+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/remote-upload/route.ts;
+    /home/sanjay/cacheflow_work/lib/transfers/remoteUpload.ts; /home/sanjay/cacheflow_work/web/lib/transfers/remoteUpload.ts
+  git_file_locations: web/app/api/remote-upload/route.ts; lib/transfers/remoteUpload.ts;
+    web/lib/transfers/remoteUpload.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remote-upload/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/remoteUpload.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/transfers/remoteUpload.ts
+  file_checks:
+  - declared: /app/api/remote-upload/route.ts
+    normalized: app/api/remote-upload/route.ts
+    exists: true
+    resolved:
+    - web/app/api/remote-upload/route.ts
+  - declared: /lib/transfers/remoteUpload.ts
+    normalized: lib/transfers/remoteUpload.ts
+    exists: true
+    resolved:
+    - lib/transfers/remoteUpload.ts
+    - web/lib/transfers/remoteUpload.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 81
+  module_id: '4.13'
+  task_key: 4.13@TRANSFER-1
+  sprint: 4
+  wave: 1
+  module_title: Smart auto-placement engine v1
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.13.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T15:46:34+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/placement/autoPlacementEngine.ts
+  git_file_locations: lib/placement/autoPlacementEngine.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/placement/autoPlacementEngine.ts
+  file_checks:
+  - declared: /lib/placement/autoPlacementEngine.ts
+    normalized: lib/placement/autoPlacementEngine.ts
+    exists: true
+    resolved:
+    - lib/placement/autoPlacementEngine.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 82
+  module_id: '4.14'
+  task_key: 4.14@TRANSFER-1
+  sprint: 4
+  wave: 2
+  module_title: Remote upload UI — dropdown in Upload action menu
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.14.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T16:04:10+00:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/files/ActionBar.tsx;
+    /home/sanjay/cacheflow_work/web/components/files/RemoteUploadModal.tsx
+  git_file_locations: web/components/files/ActionBar.tsx; web/components/files/RemoteUploadModal.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/ActionBar.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/RemoteUploadModal.tsx
+  file_checks:
+  - declared: /components/files/ActionBar.tsx
+    normalized: components/files/ActionBar.tsx
+    exists: true
+    resolved:
+    - web/components/files/ActionBar.tsx
+  - declared: /components/files/RemoteUploadModal.tsx
+    normalized: components/files/RemoteUploadModal.tsx
+    exists: true
+    resolved:
+    - web/components/files/RemoteUploadModal.tsx
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 83
+  module_id: '4.15'
+  task_key: 4.15@TRANSFER-1
+  sprint: 4
+  wave: 2
+  module_title: E2E remote upload + placement tests
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.15.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-04T16:04:10+00:00'
+  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_committed: '2026-03-04T07:38:26-05:00'
+  commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
+  commit_message: 'fix: gate fails on actual test failures not playwright exit code'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/remoteUpload.spec.ts
+  git_file_locations: web/e2e/tests/remoteUpload.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/remoteUpload.spec.ts
+  file_checks:
+  - declared: /e2e/tests/remoteUpload.spec.ts
+    normalized: e2e/tests/remoteUpload.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/remoteUpload.spec.ts
+  acceptance_criteria:
+  - TRANSFER-1
+- seq: 84
+  module_id: '5.1'
+  task_key: 5.1@SCHED-1
+  sprint: 5
+  wave: 1
+  module_title: Scheduled job data model and Schedules management UI
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.1.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T04:22:00+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/prisma/migrations/004_scheduled_jobs;
+    /home/sanjay/cacheflow_work/app/api/jobs/route.ts; /home/sanjay/cacheflow_work/web/app/api/jobs/route.ts;
+    /home/sanjay/cacheflow_work/lib/jobs/scheduledJobService.ts
+  git_file_locations: prisma/migrations/004_scheduled_jobs; app/api/jobs/route.ts;
+    web/app/api/jobs/route.ts; lib/jobs/scheduledJobService.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/004_scheduled_jobs;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/jobs/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/jobs/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/jobs/scheduledJobService.ts
+  file_checks:
+  - declared: /prisma/migrations/004_scheduled_jobs/
+    normalized: prisma/migrations/004_scheduled_jobs/
+    exists: true
+    resolved:
+    - prisma/migrations/004_scheduled_jobs
+  - declared: /app/api/jobs/route.ts
+    normalized: app/api/jobs/route.ts
+    exists: true
+    resolved:
+    - app/api/jobs/route.ts
+    - web/app/api/jobs/route.ts
+  - declared: /lib/jobs/scheduledJobService.ts
+    normalized: lib/jobs/scheduledJobService.ts
+    exists: true
+    resolved:
+    - lib/jobs/scheduledJobService.ts
+  acceptance_criteria:
+  - SCHED-1
+- seq: 85
+  module_id: '5.2'
+  task_key: 5.2@SCHED-1
+  sprint: 5
+  wave: 1
+  module_title: BullMQ cron worker — jobs run server-side, browser closed
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.2.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T04:28:00+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/queue/workers/scheduledJobWorker.ts;
+    /home/sanjay/cacheflow_work/lib/jobs/jobEngine.ts
+  git_file_locations: lib/queue/workers/scheduledJobWorker.ts; lib/jobs/jobEngine.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/queue/workers/scheduledJobWorker.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/jobs/jobEngine.ts
+  file_checks:
+  - declared: /lib/queue/workers/scheduledJobWorker.ts
+    normalized: lib/queue/workers/scheduledJobWorker.ts
+    exists: true
+    resolved:
+    - lib/queue/workers/scheduledJobWorker.ts
+  - declared: /lib/jobs/jobEngine.ts
+    normalized: lib/jobs/jobEngine.ts
+    exists: true
+    resolved:
+    - lib/jobs/jobEngine.ts
+  acceptance_criteria:
+  - SCHED-1
+- seq: 86
+  module_id: '5.3'
+  task_key: 5.3@SCHED-1
+  sprint: 5
+  wave: 2
+  module_title: Schedules page UI — create, edit, pause, delete jobs
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.3.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T05:04:26+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/schedules/page.tsx; /home/sanjay/cacheflow_work/web/components/schedules/JobCard.tsx;
+    /home/sanjay/cacheflow_work/web/components/schedules/CreateJobModal.tsx
+  git_file_locations: web/app/schedules/page.tsx; web/components/schedules/JobCard.tsx;
+    web/components/schedules/CreateJobModal.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/schedules/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/schedules/JobCard.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/schedules/CreateJobModal.tsx
+  file_checks:
+  - declared: /app/schedules/page.tsx
+    normalized: app/schedules/page.tsx
+    exists: true
+    resolved:
+    - web/app/schedules/page.tsx
+  - declared: /components/schedules/JobCard.tsx
+    normalized: components/schedules/JobCard.tsx
+    exists: true
+    resolved:
+    - web/components/schedules/JobCard.tsx
+  - declared: /components/schedules/CreateJobModal.tsx
+    normalized: components/schedules/CreateJobModal.tsx
+    exists: true
+    resolved:
+    - web/components/schedules/CreateJobModal.tsx
+  acceptance_criteria:
+  - SCHED-1
+- seq: 87
+  module_id: '5.4'
+  task_key: 5.4@SCHED-1
+  sprint: 5
+  wave: 2
+  module_title: E2E scheduled job test — runs with browser closed ⚠️ Human verify
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.4.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T05:11:55+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/scheduledJobs.spec.ts
+  git_file_locations: web/e2e/tests/scheduledJobs.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/scheduledJobs.spec.ts
+  file_checks:
+  - declared: /e2e/tests/scheduledJobs.spec.ts
+    normalized: e2e/tests/scheduledJobs.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/scheduledJobs.spec.ts
+  acceptance_criteria:
+  - SCHED-1
+- seq: 88
+  module_id: '5.5'
+  task_key: 5.5@VAULT-1
+  sprint: 5
+  wave: 1
+  module_title: Vault data model and enable/disable API
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.5.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T04:28:40+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/prisma/migrations/005_vault; /home/sanjay/cacheflow_work/app/api/vault/route.ts
+  git_file_locations: prisma/migrations/005_vault; app/api/vault/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/005_vault;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/vault/route.ts
+  file_checks:
+  - declared: /prisma/migrations/005_vault/
+    normalized: prisma/migrations/005_vault/
+    exists: true
+    resolved:
+    - prisma/migrations/005_vault
+  - declared: /app/api/vault/route.ts
+    normalized: app/api/vault/route.ts
+    exists: true
+    resolved:
+    - app/api/vault/route.ts
+  acceptance_criteria:
+  - VAULT-1
+- seq: 89
+  module_id: '5.6'
+  task_key: 5.6@VAULT-1
+  sprint: 5
+  wave: 1
+  module_title: Vault access gate — TOTP or PIN required to unlock
+  status: done
+  completeness: partial
+  completeness_score: 80.0
+  files_ok: false
+  files_score: 50.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.6.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T04:33:40+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/vault/vaultSession.ts
+  git_file_locations: lib/vault/vaultSession.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/vaultSession.ts
+  file_checks:
+  - declared: /app/api/vault/[id]/unlock/route.ts
+    normalized: app/api/vault/[id]/unlock/route.ts
+    exists: false
+    resolved:
+    - app/api/vault/[id]/unlock/route.ts
+  - declared: /lib/vault/vaultSession.ts
+    normalized: lib/vault/vaultSession.ts
+    exists: true
+    resolved:
+    - lib/vault/vaultSession.ts
+  acceptance_criteria:
+  - VAULT-1
+- seq: 90
+  module_id: '5.7'
+  task_key: 5.7@VAULT-1
+  sprint: 5
+  wave: 2
+  module_title: Vault UI — lock icon in sidebar, hidden from All Files; non-encryption
+    disclaimer at setup, unlock modal, and folder header; user-facing name follows
+    /docs/decisions/vault-naming-decision.md
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.7.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T05:11:55+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/Sidebar/VaultFolderRow.tsx;
+    /home/sanjay/cacheflow_work/web/components/vault/UnlockVaultModal.tsx; /home/sanjay/cacheflow_work/web/app/files/page.tsx
+  git_file_locations: web/components/Sidebar/VaultFolderRow.tsx; web/components/vault/UnlockVaultModal.tsx;
+    web/app/files/page.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar/VaultFolderRow.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/vault/UnlockVaultModal.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/files/page.tsx
+  file_checks:
+  - declared: /components/Sidebar/VaultFolderRow.tsx
+    normalized: components/Sidebar/VaultFolderRow.tsx
+    exists: true
+    resolved:
+    - web/components/Sidebar/VaultFolderRow.tsx
+  - declared: /components/vault/UnlockVaultModal.tsx
+    normalized: components/vault/UnlockVaultModal.tsx
+    exists: true
+    resolved:
+    - web/components/vault/UnlockVaultModal.tsx
+  - declared: /app/files/page.tsx
+    normalized: app/files/page.tsx
+    exists: true
+    resolved:
+    - web/app/files/page.tsx
+  acceptance_criteria:
+  - VAULT-1
+- seq: 91
+  module_id: '5.8'
+  task_key: 5.8@VAULT-1
+  sprint: 5
+  wave: 2
+  module_title: E2E vault tests — enable, lock, unlock, auto-lock
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.8.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T05:11:55+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/vault.spec.ts
+  git_file_locations: web/e2e/tests/vault.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/vault.spec.ts
+  file_checks:
+  - declared: /e2e/tests/vault.spec.ts
+    normalized: e2e/tests/vault.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/vault.spec.ts
+  acceptance_criteria:
+  - VAULT-1
+- seq: 92
+  module_id: '5.9'
+  task_key: 5.9@SEARCH-1
+  sprint: 5
+  wave: 1
+  module_title: Duplicate detection — filename + size cross-provider comparison
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.9.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T04:39:00+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/lib/cleanup/duplicateDetector.ts;
+    /home/sanjay/cacheflow_work/web/app/api/cleanup/duplicates/route.ts
+  git_file_locations: lib/cleanup/duplicateDetector.ts; web/app/api/cleanup/duplicates/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/cleanup/duplicateDetector.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/cleanup/duplicates/route.ts
+  file_checks:
+  - declared: /lib/cleanup/duplicateDetector.ts
+    normalized: lib/cleanup/duplicateDetector.ts
+    exists: true
+    resolved:
+    - lib/cleanup/duplicateDetector.ts
+  - declared: /app/api/cleanup/duplicates/route.ts
+    normalized: app/api/cleanup/duplicates/route.ts
+    exists: true
+    resolved:
+    - web/app/api/cleanup/duplicates/route.ts
+  acceptance_criteria:
+  - SEARCH-1
+- seq: 93
+  module_id: '5.10'
+  task_key: 5.10@SEARCH-1
+  sprint: 5
+  wave: 2
+  module_title: Stale file detection + cleanup UI
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.10.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T05:11:55+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/cleanup/page.tsx; /home/sanjay/cacheflow_work/web/components/cleanup/DuplicateGroup.tsx;
+    /home/sanjay/cacheflow_work/web/components/cleanup/StaleFileList.tsx
+  git_file_locations: web/app/cleanup/page.tsx; web/components/cleanup/DuplicateGroup.tsx;
+    web/components/cleanup/StaleFileList.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/cleanup/page.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/cleanup/DuplicateGroup.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/cleanup/StaleFileList.tsx
+  file_checks:
+  - declared: /app/cleanup/page.tsx
+    normalized: app/cleanup/page.tsx
+    exists: true
+    resolved:
+    - web/app/cleanup/page.tsx
+  - declared: /components/cleanup/DuplicateGroup.tsx
+    normalized: components/cleanup/DuplicateGroup.tsx
+    exists: true
+    resolved:
+    - web/components/cleanup/DuplicateGroup.tsx
+  - declared: /components/cleanup/StaleFileList.tsx
+    normalized: components/cleanup/StaleFileList.tsx
+    exists: true
+    resolved:
+    - web/components/cleanup/StaleFileList.tsx
+  acceptance_criteria:
+  - SEARCH-1
+- seq: 94
+  module_id: '5.11'
+  task_key: 5.11@SEARCH-1
+  sprint: 5
+  wave: 1
+  module_title: Global cross-provider search v1 — name/metadata, ephemeral cache
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: true
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.11.md
+  contract_exists: true
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T04:45:41+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: OpenCode
+  assigned_agent: OpenCode
+  local_file_locations: /home/sanjay/cacheflow_work/app/api/search/route.ts; /home/sanjay/cacheflow_work/lib/search/crossProviderSearch.ts
+  git_file_locations: app/api/search/route.ts; lib/search/crossProviderSearch.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/search/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/search/crossProviderSearch.ts
+  file_checks:
+  - declared: /app/api/search/route.ts
+    normalized: app/api/search/route.ts
+    exists: true
+    resolved:
+    - app/api/search/route.ts
+  - declared: /lib/search/crossProviderSearch.ts
+    normalized: lib/search/crossProviderSearch.ts
+    exists: true
+    resolved:
+    - lib/search/crossProviderSearch.ts
+  acceptance_criteria:
+  - SEARCH-1
+- seq: 95
+  module_id: '5.12'
+  task_key: 5.12@SEARCH-1
+  sprint: 5
+  wave: 2
+  module_title: Search UI + performance test
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.12.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T05:11:55+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: ClaudeCode
+  assigned_agent: ClaudeCode
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/search/GlobalSearchBar.tsx;
+    /home/sanjay/cacheflow_work/web/components/search/SearchResults.tsx
+  git_file_locations: web/components/search/GlobalSearchBar.tsx; web/components/search/SearchResults.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/search/GlobalSearchBar.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/search/SearchResults.tsx
+  file_checks:
+  - declared: /components/search/GlobalSearchBar.tsx
+    normalized: components/search/GlobalSearchBar.tsx
+    exists: true
+    resolved:
+    - web/components/search/GlobalSearchBar.tsx
+  - declared: /components/search/SearchResults.tsx
+    normalized: components/search/SearchResults.tsx
+    exists: true
+    resolved:
+    - web/components/search/SearchResults.tsx
+  acceptance_criteria:
+  - SEARCH-1
+- seq: 96
+  module_id: '5.13'
+  task_key: 5.13@SEARCH-1
+  sprint: 5
+  wave: 2
+  module_title: E2E search + duplicate detection tests
+  status: done
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
+  contract_required: false
+  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.13.md
+  contract_exists: false
+  contract_ok: true
+  done_logged: true
+  timestamp_done: '2026-03-05T05:11:55+00:00'
+  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_committed: '2026-03-04T23:14:40-05:00'
+  commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
+  commit_message: 'chore: update task history after sprint 4 gate pass'
+  committed_by: messagesgoel-blip
+  worked_by: Gemini
+  assigned_agent: Gemini
+  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/search.spec.ts;
+    /home/sanjay/cacheflow_work/web/e2e/tests/duplicateCleanup.spec.ts
+  git_file_locations: web/e2e/tests/search.spec.ts; web/e2e/tests/duplicateCleanup.spec.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/search.spec.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/duplicateCleanup.spec.ts
+  file_checks:
+  - declared: /e2e/tests/search.spec.ts
+    normalized: e2e/tests/search.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/search.spec.ts
+  - declared: /e2e/tests/duplicateCleanup.spec.ts
+    normalized: e2e/tests/duplicateCleanup.spec.ts
+    exists: true
+    resolved:
+    - web/e2e/tests/duplicateCleanup.spec.ts
+  acceptance_criteria:
+  - SEARCH-1

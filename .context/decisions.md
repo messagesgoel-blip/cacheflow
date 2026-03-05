@@ -104,4 +104,12 @@
 - commit: pending
 - agent: codex
 
+## 2026-03-05 — Add Sprint 0–5 module audit dataset + dedicated Grafana dashboard
+- decision: Generate `monitoring/cacheflow_module_audit.yaml/.csv` from manifest + orchestrator state + task history + git metadata, publish `cacheflow_module_audit_*` Prometheus metrics, and maintain a dedicated dashboard `cacheflow-module-audit`.
+- rationale: Sprint readiness needed per-module evidence (completeness checks, done/last-change/commit timestamps, local/git file locations, commit owner, worker owner) instead of aggregate-only sprint progress.
+- alternatives rejected: Reusing only `cacheflow_task_status` labels; this lacked file-location and commit-lineage details required for module-level audit.
+- files: scripts/generate_module_audit.py, scripts/push_cacheflow_metrics.py, scripts/refresh_cacheflow_metrics.sh, monitoring/grafana-cacheflow-module-audit.json
+- commit: pending
+- agent: codex
+
 - 2026-03-04T20:14:10Z mcp-cache-server: namespace resolution order is argument -> tags(repo/branch for set) -> MCP headers -> DEFAULT_NAMESPACE; cache_get uses semantic top-k=5 within namespace.

@@ -1,0 +1,263 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "cacheflow-module-audit",
+    "title": "CacheFlow Sprint 0-5 Module Audit",
+    "tags": [
+      "cacheflow",
+      "audit",
+      "sprint"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 42,
+    "version": 1,
+    "refresh": "1m",
+    "time": {
+      "from": "now-30d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "text",
+        "title": "Scope",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 24,
+          "h": 3
+        },
+        "options": {
+          "mode": "markdown",
+          "content": "# Sprint 0-5 Module Completeness Audit\nIncludes sequential index, completeness checks, done/last-changed/committed timestamps, local+git file locations, commit owner, and worker owner."
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Modules (0-5)",
+        "gridPos": {
+          "x": 0,
+          "y": 3,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "PBFA97CFB590B2093"
+            },
+            "expr": "cacheflow_module_audit_total{scope=\"sprints_0_5\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Complete",
+        "gridPos": {
+          "x": 6,
+          "y": 3,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "PBFA97CFB590B2093"
+            },
+            "expr": "cacheflow_module_audit_complete_total{scope=\"sprints_0_5\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Partial",
+        "gridPos": {
+          "x": 12,
+          "y": 3,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "PBFA97CFB590B2093"
+            },
+            "expr": "cacheflow_module_audit_partial_total{scope=\"sprints_0_5\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "Incomplete",
+        "gridPos": {
+          "x": 18,
+          "y": 3,
+          "w": 6,
+          "h": 3
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "PBFA97CFB590B2093"
+            },
+            "expr": "cacheflow_module_audit_incomplete_total{scope=\"sprints_0_5\"}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "type": "table",
+        "title": "Sprint 0-5 Module Audit Rows",
+        "gridPos": {
+          "x": 0,
+          "y": 6,
+          "w": 24,
+          "h": 14
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "PBFA97CFB590B2093"
+            },
+            "expr": "cacheflow_module_audit_score{sprint=~\"0|1|2|3|4|5\"}",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "seq",
+              "desc": false
+            }
+          ]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "cellOptions": {
+                "type": "auto"
+              },
+              "inspect": false
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "__name__"
+              },
+              "properties": []
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": []
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "job"
+              },
+              "properties": []
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Value"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "completeness_score"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "module_title"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 340
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "local_paths"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 400
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "git_urls"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 400
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "type": "table",
+        "title": "Exceptions (Not Complete)",
+        "gridPos": {
+          "x": 0,
+          "y": 20,
+          "w": 24,
+          "h": 8
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "PBFA97CFB590B2093"
+            },
+            "expr": "cacheflow_module_audit_score{sprint=~\"0|1|2|3|4|5\",completeness!=\"complete\"}",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showHeader": true
+        }
+      }
+    ]
+  },
+  "folderUid": "efbh1dj4oq134c",
+  "overwrite": true
+}
