@@ -121,3 +121,19 @@
 - agent: codex
 
 - 2026-03-04T20:14:10Z mcp-cache-server: namespace resolution order is argument -> tags(repo/branch for set) -> MCP headers -> DEFAULT_NAMESPACE; cache_get uses semantic top-k=5 within namespace.
+
+## 2026-03-05 — Add files-route schema compatibility for legacy databases
+- decision: `api/src/routes/files.js` now detects optional `files` columns (`error_reason`, `retry_count`, `immutable_until`, `updated_at`) via `information_schema` and dynamically shapes SELECT/UPDATE queries.
+- rationale: Production DB reset removed newer columns, causing `/files` hard 500 errors and broken file listing/deletion/retry flows.
+- alternatives rejected: Immediate destructive DB migration in production without staged validation; leaving route strict and failing on old schemas.
+- files: api/src/routes/files.js
+- commit: pending
+- agent: codex
+
+## 2026-03-05 — Default Playwright/gate traffic to existing app server on port 3000
+- decision: Default Playwright `baseURL` to `http://127.0.0.1:3000`, run dev webServer only when explicitly enabled, and reorder orchestrator gate probe candidates to prefer `3000/3010` before `4020`.
+- rationale: Auto-spawning Next dev on `4020` repeatedly caused heavy compile load, stale server selection, and unstable gate outcomes.
+- alternatives rejected: Keeping `4020` as first probe target; always spawning a fresh Next dev server during gate runs.
+- files: web/playwright.config.ts, scripts/orchestrate.ts, web/next.config.js
+- commit: pending
+- agent: codex

@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 interface BackendRemote {
   id: string;
@@ -133,7 +134,10 @@ function mapRemoteToConnection(remote: BackendRemote): ProviderConnection {
  */
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
+    const cookieStore = await cookies();
+    const tokenFromCookie = cookieStore.get('accessToken')?.value;
+    const authHeaderFromRequest = request.headers.get('authorization');
+    const authHeader = authHeaderFromRequest || (tokenFromCookie ? `Bearer ${tokenFromCookie}` : null);
     const cookieHeader = request.headers.get('cookie');
 
     if (!authHeader && !cookieHeader) {

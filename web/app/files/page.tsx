@@ -29,10 +29,36 @@ export default function FilesPage() {
   useEffect(() => {
     const t = localStorage.getItem('cf_token')
     const e = localStorage.getItem('cf_email')
-    if (t && e) {
+    if (t) {
       setToken(t)
-      setEmail(e)
+      setEmail(e || '')
+      return
     }
+
+    const hydrateFromCookieSession = async () => {
+      try {
+        const res = await fetch('/api/auth/session', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (!res.ok) return
+
+        const session = await res.json()
+        const accessToken = session?.accessToken
+        const sessionEmail = session?.user?.email || ''
+        if (!accessToken) return
+
+        setToken(accessToken)
+        setEmail(sessionEmail)
+        localStorage.setItem('cf_token', accessToken)
+        localStorage.setItem('cf_email', sessionEmail)
+      } catch (err) {
+        console.warn('Failed to hydrate session from cookies:', err)
+      }
+    }
+
+    hydrateFromCookieSession()
   }, [])
 
   // Fetch connected providers for sidebar

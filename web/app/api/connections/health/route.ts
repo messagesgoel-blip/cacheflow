@@ -9,8 +9,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
-import { probeProvider } from '../../../../../lib/providers/healthCheck'
-import type { HealthProbeResult } from '../../../../../lib/providers/healthCheck'
+import { probeProvider } from '@/lib/providers/healthCheck'
+import type { HealthProbeResult } from '@/lib/providers/healthCheck'
 
 interface JwtPayload {
   id: string
@@ -85,7 +85,9 @@ async function extractUserId(request: NextRequest): Promise<string | null> {
 
 async function fetchRemotes(request: NextRequest): Promise<BackendRemote[]> {
   const apiBase = resolveApiBase()
-  const authHeader = request.headers.get('authorization')
+  const cookieStore = await cookies()
+  const tokenFromCookie = cookieStore.get('accessToken')?.value
+  const authHeader = request.headers.get('authorization') ?? (tokenFromCookie ? `Bearer ${tokenFromCookie}` : null)
   const cookieHeader = request.headers.get('cookie')
 
   const res = await fetch(`${apiBase}/api/remotes`, {
@@ -112,7 +114,9 @@ async function probeRemoteViaExpressProxy(
   request: NextRequest,
 ): Promise<number> {
   const apiBase = resolveApiBase()
-  const authHeader = request.headers.get('authorization')
+  const cookieStore = await cookies()
+  const tokenFromCookie = cookieStore.get('accessToken')?.value
+  const authHeader = request.headers.get('authorization') ?? (tokenFromCookie ? `Bearer ${tokenFromCookie}` : null)
   const cookieHeader = request.headers.get('cookie')
 
   const res = await fetch(`${apiBase}/api/remotes/${remoteId}/proxy`, {

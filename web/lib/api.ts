@@ -28,7 +28,13 @@ export async function apiFetch(path: string, opts: RequestInit = {}, token?: str
 }
 
 export async function login(email: string, password: string) {
-  const res = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }, undefined, 8000)
+  // Route login through Next API so HttpOnly auth cookies are set consistently.
+  const res = await authInterceptor('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+    credentials: 'include',
+  })
   return res.json()
 }
 

@@ -163,8 +163,19 @@ export const apiClient = {
    */
   async getConnections(): Promise<ApiResponse<ProviderConnection[]>> {
     try {
-      // Use authFetch which handles cookies automatically (HttpOnly)
-      const response = await authFetch('/api/connections');
+      // Use cookie auth by default, with legacy bearer fallback for flows that still
+      // bootstrap from cf_token until full cookie migration completes.
+      const bearerToken =
+        typeof window !== 'undefined' ? localStorage.getItem('cf_token') : null;
+      const response = await authFetch('/api/connections', {
+        ...(bearerToken
+          ? {
+              headers: {
+                Authorization: `Bearer ${bearerToken}`,
+              },
+            }
+          : {}),
+      });
 
       if (!response.ok) {
         return {

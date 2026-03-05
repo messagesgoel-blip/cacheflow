@@ -1020,9 +1020,12 @@ async function runGate(
   const explicitBaseUrl = (process.env.PLAYWRIGHT_GATE_BASE_URL ?? "").trim();
   const baseUrlCandidates = [
     explicitBaseUrl,
-    "http://localhost:4020",
-    "http://localhost:3010",
+    "http://127.0.0.1:3000",
     "http://localhost:3000",
+    "http://127.0.0.1:3010",
+    "http://localhost:3010",
+    "http://127.0.0.1:4020",
+    "http://localhost:4020",
   ].filter(Boolean);
 
   let selectedBaseUrl = "";

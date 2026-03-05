@@ -15,6 +15,39 @@ const LOCAL_PATH = process.env.LOCAL_CACHE_PATH || '/mnt/local';
 const POOL_PATH  = process.env.POOL_PATH        || '/mnt/pool';
 const MAX_MB     = parseInt(process.env.MAX_FILE_SIZE_MB || '500', 10);
 
+let filesColumnSupportPromise = null;
+
+async function getFilesColumnSupport() {
+  if (!filesColumnSupportPromise) {
+    filesColumnSupportPromise = pool
+      .query(
+        `SELECT column_name
+         FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'files'`
+      )
+      .then((result) => {
+        const names = new Set(result.rows.map((row) => row.column_name));
+        return {
+          error_reason: names.has('error_reason'),
+          retry_count: names.has('retry_count'),
+          immutable_until: names.has('immutable_until'),
+          updated_at: names.has('updated_at'),
+        };
+      })
+      .catch((err) => {
+        console.error('[files] failed to detect files table columns:', err.message);
+        return {
+          error_reason: false,
+          retry_count: false,
+          immutable_until: false,
+          updated_at: false,
+        };
+      });
+  }
+
+  return filesColumnSupportPromise;
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(LOCAL_PATH, req.user.id);
@@ -38,8 +71,13 @@ function fileHash(filePath) {
 // GET /files
 router.get('/', async (req, res) => {
   try {
+    const cols = await getFilesColumnSupport();
+    const errorReasonExpr = cols.error_reason ? 'error_reason' : 'NULL::text AS error_reason';
+    const retryCountExpr = cols.retry_count ? 'retry_count' : '0::int AS retry_count';
+    const immutableUntilExpr = cols.immutable_until ? 'immutable_until' : 'NULL::timestamptz AS immutable_until';
+
     const result = await pool.query(
-      `SELECT id, path, size_bytes, hash, status, error_reason, retry_count, last_modified, synced_at, created_at, immutable_until
+      `SELECT id, path, size_bytes, hash, status, ${errorReasonExpr}, ${retryCountExpr}, last_modified, synced_at, created_at, ${immutableUntilExpr}
        FROM files WHERE user_id=$1 AND tenant_id=$2 AND status != 'deleted' ORDER BY created_at DESC`,
       [req.user.id, req.user.tenant_id]
     );
@@ -178,19 +216,23 @@ router.patch('/:id', async (req, res) => {
 // DELETE /files/:id (soft)
 router.delete('/:id', async (req, res) => {
   try {
-    // Check if file is immutable
-    const immutabilityCheck = await pool.query(
-      `SELECT immutable_until FROM files WHERE id=$1 AND user_id=$2 AND tenant_id=$3`,
-      [req.params.id, req.user.id, req.user.tenant_id]
-    );
+    const cols = await getFilesColumnSupport();
 
-    if (immutabilityCheck.rows.length > 0 && immutabilityCheck.rows[0].immutable_until) {
-      const immutableUntil = new Date(immutabilityCheck.rows[0].immutable_until);
-      if (immutableUntil > new Date()) {
-        return res.status(403).json({
-          error: 'File is immutable',
-          immutable_until: immutableUntil.toISOString()
-        });
+    // Check if file is immutable only when legacy schemas expose this column.
+    if (cols.immutable_until) {
+      const immutabilityCheck = await pool.query(
+        `SELECT immutable_until FROM files WHERE id=$1 AND user_id=$2 AND tenant_id=$3`,
+        [req.params.id, req.user.id, req.user.tenant_id]
+      );
+
+      if (immutabilityCheck.rows.length > 0 && immutabilityCheck.rows[0].immutable_until) {
+        const immutableUntil = new Date(immutabilityCheck.rows[0].immutable_until);
+        if (immutableUntil > new Date()) {
+          return res.status(403).json({
+            error: 'File is immutable',
+            immutable_until: immutableUntil.toISOString()
+          });
+        }
       }
     }
 
@@ -254,9 +296,20 @@ router.post('/:id/share', async (req, res) => {
 const MAX_RETRY_COUNT = 10;
 router.post('/:id/retry', async (req, res) => {
   try {
+    const cols = await getFilesColumnSupport();
+    const retryCountExpr = cols.retry_count ? 'retry_count' : '0::int AS retry_count';
+    const resetClauses = ["status='pending'"];
+    if (cols.error_reason) {
+      resetClauses.push('error_reason=NULL');
+    }
+    if (cols.updated_at) {
+      resetClauses.push('updated_at=NOW()');
+    }
+    const returningRetryExpr = cols.retry_count ? 'retry_count' : '0::int AS retry_count';
+
     // First check if file exists at all
     const check = await pool.query(
-      `SELECT id, status, retry_count FROM files WHERE id=$1 AND user_id=$2 AND status != 'deleted'`,
+      `SELECT id, status, ${retryCountExpr} FROM files WHERE id=$1 AND user_id=$2 AND status != 'deleted'`,
       [req.params.id, req.user.id]
     );
     if (!check.rows.length)
@@ -269,14 +322,14 @@ router.post('/:id/retry', async (req, res) => {
       return res.status(409).json({ error: `Cannot retry file with status '${file.status}'` });
 
     // 409 if retry cap exceeded
-    if (file.retry_count >= MAX_RETRY_COUNT)
+    if (parseInt(file.retry_count || 0, 10) >= MAX_RETRY_COUNT)
       return res.status(409).json({ error: `Retry limit reached (${MAX_RETRY_COUNT}). Manual intervention required.` });
 
     const result = await pool.query(
       `UPDATE files
-       SET status='pending', error_reason=NULL, updated_at=NOW()
+       SET ${resetClauses.join(', ')}
        WHERE id=$1 AND user_id=$2
-       RETURNING id, path, status, retry_count`,
+       RETURNING id, path, status, ${returningRetryExpr}`,
       [req.params.id, req.user.id]
     );
     res.json({ message: 'Queued for retry', file: result.rows[0] });
@@ -321,7 +374,8 @@ router.get('/usage', async (req, res) => {
 // Reads directly from disk at /mnt/local/{user_id}/{path}
 router.get('/browse', async (req, res) => {
   try {
-    const requestedPath = req.query.path || '/';
+    const rawPath = typeof req.query.path === 'string' ? req.query.path : '/';
+    const requestedPath = rawPath === 'root' ? '/' : rawPath;
     const normalizedPath = requestedPath === '/' ? '' : requestedPath.replace(/^\/+|\/+$/g, '');
 
     // Build the actual disk path

@@ -1,8 +1,8 @@
 import { defineConfig } from '@playwright/test'
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:4020'
-const skipWebServer = ['1', 'true', 'yes', 'on'].includes(
-  (process.env.PLAYWRIGHT_SKIP_WEBSERVER || '').toLowerCase(),
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3000'
+const useDevWebServer = ['1', 'true', 'yes', 'on'].includes(
+  (process.env.PLAYWRIGHT_USE_DEV_SERVER || '').toLowerCase(),
 )
 
 export default defineConfig({
@@ -22,16 +22,16 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   
-  ...(skipWebServer
-    ? {}
-    : {
+  ...(useDevWebServer
+    ? {
         webServer: {
-          command: 'npx next dev -p 4020',
-          url: 'http://127.0.0.1:4020',
+          command: 'npx next dev -p 3000',
+          url: 'http://127.0.0.1:3000',
           reuseExistingServer: true,
           timeout: 120000,
         },
-      }),
+      }
+    : {}),
   
   // Reporter configuration
   reporter: [

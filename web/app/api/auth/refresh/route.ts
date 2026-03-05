@@ -22,7 +22,8 @@ const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
 
 interface TokenPayload {
-  userId: string;
+  id?: string;
+  userId?: string;
   email: string;
   iat?: number;
   exp?: number;
@@ -95,15 +96,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userId = payload.id || payload.userId;
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid refresh token payload' },
+        { status: 401 }
+      );
+    }
+
     // Generate new access token
     const newAccessToken = generateAccessToken({
-      userId: payload.userId,
+      id: userId,
+      userId,
       email: payload.email,
     });
 
     // Generate new refresh token (rotation)
     const newRefreshToken = sign(
-      { userId: payload.userId, email: payload.email },
+      { id: userId, userId, email: payload.email },
       getJwtSecret(),
       { expiresIn: REFRESH_TOKEN_EXPIRY }
     );

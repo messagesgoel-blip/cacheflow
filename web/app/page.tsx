@@ -58,6 +58,14 @@ export default function Home() {
   function handleLogin(t: string, e: string) {
     setToken(t)
     setEmail(e)
+    // Legacy compatibility: several existing pages/providers still read cf_token/cf_email.
+    // TODO: remove once all consumers are migrated to cookie-only auth.
+    try {
+      localStorage.setItem('cf_token', t)
+      localStorage.setItem('cf_email', e)
+    } catch (err) {
+      console.warn('Failed to persist local session token:', err)
+    }
     window.location.href = '/files'
   }
 

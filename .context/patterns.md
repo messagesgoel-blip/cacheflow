@@ -36,3 +36,13 @@
 - do not deviate because: treating `[]` as glob classes causes false "missing files" and incorrect partial module reports.
 
 - 2026-03-04T20:14:10Z agent-coord: run cache invalidation hooks on task-claim (invalidate codebase-context on HEAD change; invalidate system-prompt on AGENTS/CORE checksum change).
+
+## Files Route Legacy Column Guard
+- use when: Backend route touches optional `files` columns that may not exist in older DB snapshots (`error_reason`, `retry_count`, `immutable_until`, `updated_at`).
+- example: Query `information_schema.columns` once, then build SQL expressions with fallbacks like `NULL::text AS error_reason` and `0::int AS retry_count`.
+- do not deviate because: direct references to missing columns hard-fail requests and block core file operations.
+
+## Playwright Existing-Server Default
+- use when: Running E2E or sprint gates on long-lived environments with app already running in Docker.
+- example: default `baseURL=http://127.0.0.1:3000`, only enable `webServer` when `PLAYWRIGHT_USE_DEV_SERVER=1`.
+- do not deviate because: auto-starting Next dev for every run increases CPU/memory churn and causes stale-port gate flakiness.
