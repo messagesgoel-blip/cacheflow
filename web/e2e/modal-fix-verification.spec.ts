@@ -38,7 +38,7 @@ test('Verification: Modal lifecycle and ActionLogger correlation', async ({ page
 
   await page.route('**/*', async (route) => {
     const url = route.request().url()
-    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) return route.continue()
+    if (url.includes('localhost:3000') || url.includes('127.0.0.1:3000')) return route.continue()
     if (url.includes('/proxy')) {
       if (route.request().method() === 'PATCH') {
         googleFiles = [{ id: 'g1', name: 'Renamed.txt', mimeType: 'text/plain', size: '1024', modifiedTime: new Date().toISOString() }]

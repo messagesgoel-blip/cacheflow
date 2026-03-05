@@ -35,7 +35,7 @@ test('Phase 5 Verification: Power-User Enhancements', async ({ page }) => {
   try {
     // 1. Login with stability
     const startLogin = Date.now()
-    await page.goto('http://localhost:3010/login')
+    await page.goto('http://localhost:3000/login')
     await page.evaluate(async () => {
       localStorage.clear()
       const dbs = await window.indexedDB.databases()

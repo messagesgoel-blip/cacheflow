@@ -9,7 +9,7 @@ export default defineConfig({
   globalTeardown: './e2e/fixtures/global-teardown.ts',
   
   use: {
-    baseURL: 'http://localhost:4010',
+    baseURL: 'http://localhost:3000',
     headless: true,
     // Capture screenshot on failure for debugging
     screenshot: 'only-on-failure',
@@ -18,10 +18,10 @@ export default defineConfig({
   },
   
   webServer: {
-    command: 'npm run dev -- -p 4010',
-    url: 'http://localhost:4010',
+    command: 'echo "Using existing server"',
+    url: 'http://127.0.0.1:3000',
     reuseExistingServer: true,
-    timeout: 120_000,
+    timeout: 10000,
   },
   
   // Reporter configuration

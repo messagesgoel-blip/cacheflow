@@ -34,7 +34,7 @@ test('Phase 3 Verification: Interaction Reliability & System Feedback', async ({
 
   try {
     // 1. Login
-    await page.goto('http://localhost:3010/login')
+    await page.goto('http://localhost:3000/login')
     await page.evaluate(async () => {
       localStorage.clear()
       const dbs = await window.indexedDB.databases()

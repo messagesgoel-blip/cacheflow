@@ -35,7 +35,7 @@ test('Phase 4 Verification: Information Architecture & Discoverability', async (
 
   try {
     // 1. Login
-    await page.goto('http://localhost:3010/login')
+    await page.goto('http://localhost:3000/login')
     await page.evaluate(async () => {
       localStorage.clear()
       const dbs = await window.indexedDB.databases()

@@ -39,7 +39,7 @@ test.describe('Task 4.3 - Box provider parity (AUTH-1)', () => {
   test('AUTH-1: Box passes all 5 provider parity checks', async () => {
     process.env.BOX_CLIENT_ID = 'box-client-id'
     process.env.BOX_CLIENT_SECRET = 'box-client-secret'
-    process.env.BOX_REDIRECT_URI = 'http://localhost:4010/providers/box/callback'
+    process.env.BOX_REDIRECT_URI = 'http://localhost:3000/providers/box/callback'
 
     const calls: Array<{ method: string; url: string }> = []
 

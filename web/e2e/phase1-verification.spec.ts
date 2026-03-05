@@ -26,7 +26,7 @@ test('Phase 1 Verification: Stabilization & Trust Corrections', async ({ page })
 
   try {
     // 1. Login
-    await page.goto('http://localhost:3010/login')
+    await page.goto('http://localhost:3000/login')
     await page.evaluate(async () => {
       localStorage.clear()
       const dbs = await window.indexedDB.databases()
@@ -77,7 +77,7 @@ test('Phase 1 Verification: Stabilization & Trust Corrections', async ({ page })
     }
 
     // 4. Verify About Copy Accuracy
-    await page.goto('http://localhost:3010/providers')
+    await page.goto('http://localhost:3000/providers')
     await page.waitForTimeout(2000)
     const googleAbout = page.locator('[data-testid="cf-provider-card-google"]').getByText(/Cloud storage by Google/i)
     if (await googleAbout.isVisible()) {

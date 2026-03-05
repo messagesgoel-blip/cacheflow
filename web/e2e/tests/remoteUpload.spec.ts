@@ -14,7 +14,7 @@ test.describe('Remote Upload + Auto Placement', () => {
         Cookie: 'accessToken=mock-jwt-token',
       },
       data: {
-        url: 'http://localhost:4010/manifest.json',
+        url: 'http://localhost:3000/manifest.json',
         provider: 'aws_s3',
         filename: 'manifest-copy.json',
         metadata: {

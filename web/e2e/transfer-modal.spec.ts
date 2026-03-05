@@ -36,7 +36,7 @@ test('copy between providers via transfer modal', async ({ page }, testInfo) => 
 
   await page.route('**/*', async (route) => {
     const url = route.request().url()
-    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) {
+    if (url.includes('localhost:3000') || url.includes('127.0.0.1:3000')) {
       await route.continue()
       return
     }

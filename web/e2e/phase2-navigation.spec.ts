@@ -25,7 +25,7 @@ test('Phase 2 Verification: Structural Navigation', async ({ page }) => {
 
   try {
     // 1. Login
-    await page.goto('http://localhost:3010/login')
+    await page.goto('http://localhost:3000/login')
     await page.evaluate(async () => {
       localStorage.clear()
       const dbs = await window.indexedDB.databases()
