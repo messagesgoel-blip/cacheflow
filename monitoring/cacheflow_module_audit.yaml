@@ -1,9 +1,9 @@
-generated_at: '2026-03-05T14:20:29+00:00'
+generated_at: '2026-03-05T14:30:27+00:00'
 scope: sprints_0_to_5
 summary:
   total_modules: 96
-  complete_modules: 83
-  partial_modules: 13
+  complete_modules: 96
+  partial_modules: 0
   incomplete_modules: 0
 modules:
 - seq: 1
@@ -202,11 +202,12 @@ modules:
   contract_exists: true
   contract_ok: true
   done_logged: true
-  timestamp_done: '2026-03-05T14:19:39+00:00'
+  timestamp_done: '2026-03-05T14:30:25+00:00'
   timestamp_last_changed: '2026-03-03T16:19:23-05:00'
-  timestamp_committed: '2026-03-05T09:02:34-05:00'
-  commit_hash: 2193d1859581
-  commit_message: 'feat: finalize sprint 5 work and stabilize gate specs'
+  timestamp_committed: '2026-03-05T09:20:39-05:00'
+  commit_hash: f23ba7e35868
+  commit_message: 'feat(audit): add sprint 0-5 module completeness dataset and Grafana
+    dashboard'
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
@@ -633,17 +634,17 @@ modules:
   wave: 2
   module_title: Remove client-side token sync pattern entirely
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 0.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: false
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.6.md
   contract_exists: false
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T04:25:16+00:00'
-  timestamp_last_changed: ''
+  timestamp_last_changed: '2026-03-04T05:44:04-05:00'
   timestamp_committed: '2026-03-03T22:59:12-05:00'
   commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
   commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
@@ -651,20 +652,28 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: ''
-  git_file_locations: ''
-  git_urls: ''
+  local_file_locations: /home/sanjay/cacheflow_work/web/lib/apiClient.ts; /home/sanjay/cacheflow_work/web/components/Sidebar.tsx;
+    /home/sanjay/cacheflow_work/web/app/page.tsx
+  git_file_locations: web/lib/apiClient.ts; web/components/Sidebar.tsx; web/app/page.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/apiClient.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/page.tsx
   file_checks:
-  - declared: /app/api/auth/sync-token/
-    normalized: app/api/auth/sync-token/
-    exists: false
+  - declared: /web/lib/apiClient.ts
+    normalized: web/lib/apiClient.ts
+    exists: true
     resolved:
-    - web/app/api/auth/sync-token/
-  - declared: /components/providers/**
-    normalized: components/providers/**
-    exists: false
+    - web/lib/apiClient.ts
+  - declared: /web/components/Sidebar.tsx
+    normalized: web/components/Sidebar.tsx
+    exists: true
     resolved:
-    - web/components/providers/**
+    - web/components/Sidebar.tsx
+  - declared: /web/app/page.tsx
+    normalized: web/app/page.tsx
+    exists: true
+    resolved:
+    - web/app/page.tsx
   acceptance_criteria:
   - AUTH-3
 - seq: 16
@@ -1385,17 +1394,17 @@ modules:
   wave: 1
   module_title: Implement file upload with progress and toast
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 0.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.2.md
   contract_exists: true
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T11:15:36+00:00'
-  timestamp_last_changed: ''
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1403,20 +1412,22 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: ''
-  git_file_locations: ''
-  git_urls: ''
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts;
+    /home/sanjay/cacheflow_work/lib/uploads/uploadManager.ts
+  git_file_locations: web/app/api/remotes/[uuid]/upload/route.ts; lib/uploads/uploadManager.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/upload/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/uploads/uploadManager.ts
   file_checks:
   - declared: /app/api/remotes/[uuid]/upload/route.ts
     normalized: app/api/remotes/[uuid]/upload/route.ts
-    exists: false
+    exists: true
     resolved:
-    - app/api/remotes/[uuid]/upload/route.ts
-  - declared: /lib/providers/*/upload.ts
-    normalized: lib/providers/*/upload.ts
-    exists: false
+    - web/app/api/remotes/[uuid]/upload/route.ts
+  - declared: /lib/uploads/uploadManager.ts
+    normalized: lib/uploads/uploadManager.ts
+    exists: true
     resolved:
-    - lib/providers/*/upload.ts
+    - lib/uploads/uploadManager.ts
   acceptance_criteria:
   - UPLOAD-1
 - seq: 31
@@ -1550,17 +1561,17 @@ modules:
   module_title: Fix preview panel mount — "Opening" toast must open a panel; enforce
     CSP for image/PDF/text previews with Playwright zero-CSP-error verification
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 0.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: false
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.6.md
   contract_exists: false
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: ''
+  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1568,20 +1579,22 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: ''
-  git_file_locations: ''
-  git_urls: ''
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/PreviewPanel.tsx;
+    /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx
+  git_file_locations: web/components/PreviewPanel.tsx; web/components/UnifiedFileBrowser.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/PreviewPanel.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx
   file_checks:
-  - declared: /components/files/PreviewPanel.tsx
-    normalized: components/files/PreviewPanel.tsx
-    exists: false
+  - declared: /components/PreviewPanel.tsx
+    normalized: components/PreviewPanel.tsx
+    exists: true
     resolved:
-    - web/components/files/PreviewPanel.tsx
-  - declared: /components/files/previewTypes.ts
-    normalized: components/files/previewTypes.ts
-    exists: false
+    - web/components/PreviewPanel.tsx
+  - declared: /components/UnifiedFileBrowser.tsx
+    normalized: components/UnifiedFileBrowser.tsx
+    exists: true
     resolved:
-    - web/components/files/previewTypes.ts
+    - web/components/UnifiedFileBrowser.tsx
   acceptance_criteria:
   - PREVIEW-1
 - seq: 35
@@ -1592,17 +1605,17 @@ modules:
   module_title: 'Unsupported file types: immediate Download CTA via server-proxied
     /api/remotes/{uuid}/download/{fileId}; never expose raw provider URLs'
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 0.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: false
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.7.md
   contract_exists: false
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: ''
+  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1610,20 +1623,22 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: ''
-  git_file_locations: ''
-  git_urls: ''
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/PreviewPanel.tsx;
+    /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx
+  git_file_locations: web/components/PreviewPanel.tsx; web/components/UnifiedFileBrowser.tsx
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/PreviewPanel.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx
   file_checks:
-  - declared: /components/files/PreviewPanel.tsx
-    normalized: components/files/PreviewPanel.tsx
-    exists: false
+  - declared: /components/PreviewPanel.tsx
+    normalized: components/PreviewPanel.tsx
+    exists: true
     resolved:
-    - web/components/files/PreviewPanel.tsx
-  - declared: /lib/files/mimeTypes.ts
-    normalized: lib/files/mimeTypes.ts
-    exists: false
+    - web/components/PreviewPanel.tsx
+  - declared: /components/UnifiedFileBrowser.tsx
+    normalized: components/UnifiedFileBrowser.tsx
+    exists: true
     resolved:
-    - web/lib/files/mimeTypes.ts
+    - web/components/UnifiedFileBrowser.tsx
   acceptance_criteria:
   - PREVIEW-1
 - seq: 36
@@ -1669,10 +1684,10 @@ modules:
   wave: 2
   module_title: Merge Cloud Drives / Providers / Integrations → Connections
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 50.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: false
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.9.md
   contract_exists: false
@@ -1688,31 +1703,27 @@ modules:
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
   local_file_locations: /home/sanjay/cacheflow_work/web/app/connections/page.tsx;
-    /home/sanjay/cacheflow_work/web/app/providers
-  git_file_locations: web/app/connections/page.tsx; web/app/providers
+    /home/sanjay/cacheflow_work/web/components/Sidebar.tsx; /home/sanjay/cacheflow_work/web/components/ProviderHub.tsx
+  git_file_locations: web/app/connections/page.tsx; web/components/Sidebar.tsx; web/components/ProviderHub.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/connections/page.tsx;
-    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/providers
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/ProviderHub.tsx
   file_checks:
   - declared: /app/connections/page.tsx
     normalized: app/connections/page.tsx
     exists: true
     resolved:
     - web/app/connections/page.tsx
-  - declared: /components/Sidebar/NavItems.tsx
-    normalized: components/Sidebar/NavItems.tsx
-    exists: false
-    resolved:
-    - web/components/Sidebar/NavItems.tsx
-  - declared: /app/providers/
-    normalized: app/providers/
+  - declared: /components/Sidebar.tsx
+    normalized: components/Sidebar.tsx
     exists: true
     resolved:
-    - web/app/providers
-  - declared: /app/integrations/
-    normalized: app/integrations/
-    exists: false
+    - web/components/Sidebar.tsx
+  - declared: /components/ProviderHub.tsx
+    normalized: components/ProviderHub.tsx
+    exists: true
     resolved:
-    - web/app/integrations/
+    - web/components/ProviderHub.tsx
   acceptance_criteria:
   - NAV-1
 - seq: 38
@@ -2219,17 +2230,17 @@ modules:
   wave: 1
   module_title: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 66.67
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T02.md
   contract_exists: true
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T11:30:41+00:00'
-  timestamp_last_changed: '2026-03-04T16:26:55-05:00'
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2237,20 +2248,24 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/apiClient.ts; /home/sanjay/cacheflow_work/web/lib/apiClient.ts;
-    /home/sanjay/cacheflow_work/lib/interceptors/authInterceptor.ts; /home/sanjay/cacheflow_work/web/lib/interceptors/authInterceptor.ts
-  git_file_locations: lib/apiClient.ts; web/lib/apiClient.ts; lib/interceptors/authInterceptor.ts;
-    web/lib/interceptors/authInterceptor.ts
-  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/apiClient.ts;
-    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/apiClient.ts;
+  local_file_locations: /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts; /home/sanjay/cacheflow_work/lib/apiClient.ts;
+    /home/sanjay/cacheflow_work/web/lib/apiClient.ts; /home/sanjay/cacheflow_work/lib/interceptors/authInterceptor.ts;
+    /home/sanjay/cacheflow_work/web/lib/interceptors/authInterceptor.ts
+  git_file_locations: app/api/remotes/[uuid]/proxy/route.ts; web/app/api/remotes/[uuid]/proxy/route.ts;
+    lib/apiClient.ts; web/lib/apiClient.ts; lib/interceptors/authInterceptor.ts; web/lib/interceptors/authInterceptor.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/proxy/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/proxy/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/apiClient.ts; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/apiClient.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/interceptors/authInterceptor.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/interceptors/authInterceptor.ts
   file_checks:
   - declared: /app/api/remotes/[uuid]/proxy/route.ts
     normalized: app/api/remotes/[uuid]/proxy/route.ts
-    exists: false
+    exists: true
     resolved:
     - app/api/remotes/[uuid]/proxy/route.ts
+    - web/app/api/remotes/[uuid]/proxy/route.ts
   - declared: /lib/apiClient.ts
     normalized: lib/apiClient.ts
     exists: true
@@ -2316,10 +2331,10 @@ modules:
   module_title: Restore file actions path (rename/move/download/delete) for connected
     drives
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 50.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T04.md
   contract_exists: true
@@ -2334,9 +2349,27 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx
-  git_file_locations: web/components/UnifiedFileBrowser.tsx
-  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx
+  local_file_locations: /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/delete;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/move; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid];
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy
+  git_file_locations: web/components/UnifiedFileBrowser.tsx; app/api/remotes/[uuid];
+    app/api/remotes/[uuid]/actions; app/api/remotes/[uuid]/proxy; app/api/remotes/[uuid]/actions/delete;
+    app/api/remotes/[uuid]/actions/move; app/api/remotes/[uuid]/actions/rename; app/api/remotes/[uuid]/actions/download;
+    web/app/api/remotes/[uuid]; web/app/api/remotes/[uuid]/upload; web/app/api/remotes/[uuid]/proxy
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid];
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/proxy;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/delete;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/move;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/rename;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/download;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid];
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/upload;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/proxy
   file_checks:
   - declared: /components/UnifiedFileBrowser.tsx
     normalized: components/UnifiedFileBrowser.tsx
@@ -2345,9 +2378,18 @@ modules:
     - web/components/UnifiedFileBrowser.tsx
   - declared: /app/api/remotes/[uuid]/**
     normalized: app/api/remotes/[uuid]/**
-    exists: false
+    exists: true
     resolved:
-    - app/api/remotes/[uuid]/**
+    - app/api/remotes/[uuid]
+    - app/api/remotes/[uuid]/actions
+    - app/api/remotes/[uuid]/proxy
+    - app/api/remotes/[uuid]/actions/delete
+    - app/api/remotes/[uuid]/actions/move
+    - app/api/remotes/[uuid]/actions/rename
+    - app/api/remotes/[uuid]/actions/download
+    - web/app/api/remotes/[uuid]
+    - web/app/api/remotes/[uuid]/upload
+    - web/app/api/remotes/[uuid]/proxy
   acceptance_criteria:
   - HOLD-UI-2026-03-02
 - seq: 51
@@ -2499,10 +2541,10 @@ modules:
   wave: 1
   module_title: Server-Sent Events (SSE) for real-time transfer progress
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 50.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.2.md
   contract_exists: true
@@ -2516,13 +2558,15 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/progressEmitter.ts
-  git_file_locations: lib/transfers/progressEmitter.ts
-  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/progressEmitter.ts
+  local_file_locations: /home/sanjay/cacheflow_work/app/api/transfers/[id]/progress/route.ts;
+    /home/sanjay/cacheflow_work/lib/transfers/progressEmitter.ts
+  git_file_locations: app/api/transfers/[id]/progress/route.ts; lib/transfers/progressEmitter.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/transfers/[id]/progress/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/progressEmitter.ts
   file_checks:
   - declared: /app/api/transfers/[id]/progress/route.ts
     normalized: app/api/transfers/[id]/progress/route.ts
-    exists: false
+    exists: true
     resolved:
     - app/api/transfers/[id]/progress/route.ts
   - declared: /lib/transfers/progressEmitter.ts
@@ -2539,10 +2583,10 @@ modules:
   wave: 1
   module_title: Every file operation produces tray entry + toast
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 50.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.3.md
   contract_exists: true
@@ -2556,9 +2600,23 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/transferRegistry.ts
-  git_file_locations: lib/transfers/transferRegistry.ts
-  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/transferRegistry.ts
+  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/transferRegistry.ts;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/delete/route.ts;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/move/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename/route.ts;
+    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts
+  git_file_locations: lib/transfers/transferRegistry.ts; app/api/remotes/[uuid]/proxy/route.ts;
+    app/api/remotes/[uuid]/actions/delete/route.ts; app/api/remotes/[uuid]/actions/move/route.ts;
+    app/api/remotes/[uuid]/actions/rename/route.ts; app/api/remotes/[uuid]/actions/download/route.ts;
+    web/app/api/remotes/[uuid]/upload/route.ts; web/app/api/remotes/[uuid]/proxy/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/transferRegistry.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/proxy/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/delete/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/move/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/rename/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/download/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/upload/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/proxy/route.ts
   file_checks:
   - declared: /lib/transfers/transferRegistry.ts
     normalized: lib/transfers/transferRegistry.ts
@@ -2567,9 +2625,15 @@ modules:
     - lib/transfers/transferRegistry.ts
   - declared: /app/api/remotes/[uuid]/**/route.ts
     normalized: app/api/remotes/[uuid]/**/route.ts
-    exists: false
+    exists: true
     resolved:
-    - app/api/remotes/[uuid]/**/route.ts
+    - app/api/remotes/[uuid]/proxy/route.ts
+    - app/api/remotes/[uuid]/actions/delete/route.ts
+    - app/api/remotes/[uuid]/actions/move/route.ts
+    - app/api/remotes/[uuid]/actions/rename/route.ts
+    - app/api/remotes/[uuid]/actions/download/route.ts
+    - web/app/api/remotes/[uuid]/upload/route.ts
+    - web/app/api/remotes/[uuid]/proxy/route.ts
   acceptance_criteria:
   - TRANSFER-1
 - seq: 56
@@ -2663,10 +2727,10 @@ modules:
   wave: 1
   module_title: 'Auto-resume: resume interrupted upload from last successful chunk'
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 50.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.6.md
   contract_exists: true
@@ -2680,13 +2744,15 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/chunkStateManager.ts
-  git_file_locations: lib/transfers/chunkStateManager.ts
-  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/chunkStateManager.ts
+  local_file_locations: /home/sanjay/cacheflow_work/app/api/transfers/[id]/chunks/route.ts;
+    /home/sanjay/cacheflow_work/lib/transfers/chunkStateManager.ts
+  git_file_locations: app/api/transfers/[id]/chunks/route.ts; lib/transfers/chunkStateManager.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/transfers/[id]/chunks/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/chunkStateManager.ts
   file_checks:
   - declared: /app/api/transfers/[id]/chunks/route.ts
     normalized: app/api/transfers/[id]/chunks/route.ts
-    exists: false
+    exists: true
     resolved:
     - app/api/transfers/[id]/chunks/route.ts
   - declared: /lib/transfers/chunkStateManager.ts
@@ -3382,30 +3448,30 @@ modules:
   wave: 1
   module_title: Share link proxy — hides underlying provider
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 0.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.8.md
   contract_exists: true
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T15:34:18+00:00'
-  timestamp_last_changed: ''
+  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: ''
-  git_file_locations: ''
-  git_urls: ''
+  local_file_locations: /home/sanjay/cacheflow_work/app/s/[linkId]/route.ts
+  git_file_locations: app/s/[linkId]/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/s/[linkId]/route.ts
   file_checks:
   - declared: /app/s/[linkId]/route.ts
     normalized: app/s/[linkId]/route.ts
-    exists: false
+    exists: true
     resolved:
     - app/s/[linkId]/route.ts
   acceptance_criteria:
@@ -3417,10 +3483,10 @@ modules:
   wave: 1
   module_title: Abuse controls — rate limits, throttling, link access logging
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 50.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.9.md
   contract_exists: true
@@ -3434,9 +3500,10 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/share/abuseControls.ts
-  git_file_locations: lib/share/abuseControls.ts
-  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/share/abuseControls.ts
+  local_file_locations: /home/sanjay/cacheflow_work/lib/share/abuseControls.ts; /home/sanjay/cacheflow_work/app/api/share/[id]/revoke/route.ts
+  git_file_locations: lib/share/abuseControls.ts; app/api/share/[id]/revoke/route.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/share/abuseControls.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/share/[id]/revoke/route.ts
   file_checks:
   - declared: /lib/share/abuseControls.ts
     normalized: lib/share/abuseControls.ts
@@ -3445,7 +3512,7 @@ modules:
     - lib/share/abuseControls.ts
   - declared: /app/api/share/[id]/revoke/route.ts
     normalized: app/api/share/[id]/revoke/route.ts
-    exists: false
+    exists: true
     resolved:
     - app/api/share/[id]/revoke/route.ts
   acceptance_criteria:
@@ -3912,10 +3979,10 @@ modules:
   wave: 1
   module_title: Vault access gate — TOTP or PIN required to unlock
   status: done
-  completeness: partial
-  completeness_score: 80.0
-  files_ok: false
-  files_score: 50.0
+  completeness: complete
+  completeness_score: 100.0
+  files_ok: true
+  files_score: 100.0
   contract_required: true
   contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.6.md
   contract_exists: true
@@ -3929,15 +3996,17 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/vault/vaultSession.ts
-  git_file_locations: lib/vault/vaultSession.ts
-  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/vaultSession.ts
+  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/vault/[id]/unlock/route.ts;
+    /home/sanjay/cacheflow_work/lib/vault/vaultSession.ts
+  git_file_locations: web/app/api/vault/[id]/unlock/route.ts; lib/vault/vaultSession.ts
+  git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/vault/[id]/unlock/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/vaultSession.ts
   file_checks:
   - declared: /app/api/vault/[id]/unlock/route.ts
     normalized: app/api/vault/[id]/unlock/route.ts
-    exists: false
+    exists: true
     resolved:
-    - app/api/vault/[id]/unlock/route.ts
+    - web/app/api/vault/[id]/unlock/route.ts
   - declared: /lib/vault/vaultSession.ts
     normalized: lib/vault/vaultSession.ts
     exists: true

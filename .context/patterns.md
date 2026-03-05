@@ -30,4 +30,9 @@
 - example: `python3 scripts/generate_module_audit.py && ./scripts/refresh_cacheflow_metrics.sh` then query `cacheflow_module_audit_score`.
 - do not deviate because: ad-hoc manual checks miss stale/missing module files and do not provide consistent Grafana-ready lineage columns.
 
+## Dynamic Route Path Checking in Audit
+- use when: A manifest `files` entry includes Next.js folder segments like `[id]`, `[uuid]`, `[linkId]`, especially with `**` globs.
+- example: Resolve `/app/api/remotes/[uuid]/**/route.ts` by escaping bracket segments to literal before glob matching.
+- do not deviate because: treating `[]` as glob classes causes false "missing files" and incorrect partial module reports.
+
 - 2026-03-04T20:14:10Z agent-coord: run cache invalidation hooks on task-claim (invalidate codebase-context on HEAD change; invalidate system-prompt on AGENTS/CORE checksum change).

@@ -165,25 +165,30 @@ def resolve_patterns(agent: str, raw_path: str) -> tuple[list[str], bool]:
     if not normalized:
         return ([], False)
 
-    candidates = [normalized]
-    if not normalized.startswith("web/"):
-        candidates.append(f"web/{normalized}")
+    if normalized.startswith("web/"):
+        candidates = [normalized]
+    elif should_prefer_web(agent, normalized):
+        candidates = [f"web/{normalized}", normalized]
+    else:
+        candidates = [normalized, f"web/{normalized}"]
 
-    is_glob = any(ch in normalized for ch in ["*", "?", "["])
+    is_glob = any(ch in normalized for ch in ["*", "?"])
     found: list[str] = []
     for candidate in candidates:
         abs_candidate = BASE / candidate
-        if is_glob:
-            for path_obj in BASE.glob(candidate):
-                if path_obj.exists():
-                    rel = str(path_obj.relative_to(BASE)).replace("\\", "/")
-                    if rel not in found:
-                        found.append(rel)
-            continue
         if abs_candidate.exists():
             rel = str(abs_candidate.relative_to(BASE)).replace("\\", "/")
             if rel not in found:
                 found.append(rel)
+        if is_glob:
+            # Next.js dynamic route segments use literal folder names like [id].
+            # Escape brackets so glob treats them as literals while preserving * and ?.
+            escaped_candidate = re.sub(r"\[([^\]/]+)\]", r"[[]\1[]]", candidate)
+            for path_obj in BASE.glob(escaped_candidate):
+                if path_obj.exists():
+                    rel = str(path_obj.relative_to(BASE)).replace("\\", "/")
+                    if rel not in found:
+                        found.append(rel)
 
     if found:
         return (found, True)

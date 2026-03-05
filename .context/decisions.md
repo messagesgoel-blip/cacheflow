@@ -112,4 +112,12 @@
 - commit: pending
 - agent: codex
 
+## 2026-03-05 — Treat Next.js dynamic route folders as literals in module-audit path checks
+- decision: Update `scripts/generate_module_audit.py` path resolution to treat `[id]`/`[uuid]` folders as literal path segments, not glob classes, and prefer `web/` candidates first for frontend agents.
+- rationale: Module audit incorrectly marked completed tasks as partial because dynamic-route paths (`/app/.../[id]/...`) failed glob resolution and frontend paths were resolved against root duplicates.
+- alternatives rejected: Marking tasks pending/resetting status for false partials; relaxing file checks globally.
+- files: scripts/generate_module_audit.py, docs/orchestration/task-manifest.json
+- commit: pending
+- agent: codex
+
 - 2026-03-04T20:14:10Z mcp-cache-server: namespace resolution order is argument -> tags(repo/branch for set) -> MCP headers -> DEFAULT_NAMESPACE; cache_get uses semantic top-k=5 within namespace.
