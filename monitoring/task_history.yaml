@@ -2785,3 +2785,15 @@
   - '4.14'
   - '4.15'
   - '4.6'
+- timestamp: '2026-03-05T02:55:29+00:00'
+  commit: aee2ca07d2163dcfdafe44e265f5a22b5c216094
+  message: 'fix: repoint Playwright to port 3010 (CacheFlow), add auth mocks to aggregation
+    spec'
+  changed:
+  - task_key: 5.1@SCHED-1
+    id: '5.1'
+    gate: SCHED-1
+    from: planned
+    to: running
+  done_task_keys: []
+  done_tasks: []
