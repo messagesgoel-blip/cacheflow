@@ -37,7 +37,7 @@ test('prod diagnostic: duplicate folders with 4 drives and nested files', async 
 
   await page.route('**/*', async (route) => {
     const url = route.request().url()
-    if (url.includes('localhost:3000') || url.includes('127.0.0.1:3000')) return route.continue()
+    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) return route.continue()
     
     if (url.includes('/proxy')) {
       const req = route.request()

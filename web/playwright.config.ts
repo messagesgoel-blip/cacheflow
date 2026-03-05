@@ -9,7 +9,7 @@ export default defineConfig({
   globalTeardown: './e2e/fixtures/global-teardown.ts',
   
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3010',
     headless: true,
     // Capture screenshot on failure for debugging
     screenshot: 'only-on-failure',
@@ -19,7 +19,7 @@ export default defineConfig({
   
   webServer: {
     command: 'echo "Using existing server"',
-    url: 'http://127.0.0.1:3000',
+    url: 'http://127.0.0.1:3010',
     reuseExistingServer: true,
     timeout: 10000,
   },

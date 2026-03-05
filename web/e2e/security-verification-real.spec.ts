@@ -42,7 +42,7 @@ test('Real Clean Session Security Verification', async ({ page }) => {
   })
 
   // 1. Clear State
-  await page.goto('http://localhost:3000/login')
+  await page.goto('http://localhost:3010/login')
   await page.evaluate(async () => {
     localStorage.clear()
     const dbs = await window.indexedDB.databases()
@@ -60,7 +60,7 @@ test('Real Clean Session Security Verification', async ({ page }) => {
 
   // Wait for login to complete and navigate explicitly if needed
   await page.waitForTimeout(3000)
-  await page.goto('http://localhost:3000/files')
+  await page.goto('http://localhost:3010/files')
   
   // Wait for sidebar and load
   await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })

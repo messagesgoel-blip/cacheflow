@@ -56,6 +56,26 @@ test.describe('Provider Aggregation', () => {
       });
     });
 
+    // Add accessToken cookie so middleware and client auth both pass
+    await page.context().addCookies([
+      {
+        name: 'accessToken',
+        value: 'mock-access-token-for-e2e',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: false,
+        secure: false,
+      },
+      {
+        name: 'next-auth.session-token',
+        value: 'mock-session-token-for-e2e',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: false,
+        secure: false,
+      }
+    ]);
+
     // Navigate directly to files page (bypasses login UI)
     await page.goto('/files');
     await page.waitForLoadState('domcontentloaded');

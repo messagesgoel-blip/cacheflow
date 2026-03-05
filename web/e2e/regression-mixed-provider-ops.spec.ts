@@ -37,7 +37,7 @@ test('regression: mixed providers date fallback + copy/move semantics', async ({
 
   await page.route('**/*', async (route) => {
     const url = route.request().url()
-    if (url.includes('localhost:3000') || url.includes('127.0.0.1:3000')) {
+    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) {
       await route.continue()
       return
     }

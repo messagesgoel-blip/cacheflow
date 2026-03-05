@@ -18,7 +18,7 @@ test('Observability: Correlation ID Persistence Diagnostic', async ({ page }) =>
   })
 
   // 1. Login
-  await page.goto('http://localhost:3000/login')
+  await page.goto('http://localhost:3010/login')
   await page.fill('input[placeholder="Email"]', 'sup@goels.in')
   await page.fill('input[placeholder="Password"]', '123password')
   await page.click('button[type="submit"]')

@@ -40,7 +40,7 @@ test.describe('Task 4.3 - pCloud provider parity (AUTH-1)', () => {
   test('AUTH-1: pCloud passes all 5 provider parity checks', async () => {
     process.env.PCLOUD_CLIENT_ID = 'pcloud-client-id'
     process.env.PCLOUD_CLIENT_SECRET = 'pcloud-client-secret'
-    process.env.PCLOUD_REDIRECT_URI = 'http://localhost:3000/providers/pcloud/callback'
+    process.env.PCLOUD_REDIRECT_URI = 'http://localhost:3010/providers/pcloud/callback'
 
     const calls: Array<{ method: string; url: string }> = []
 
