@@ -8,25 +8,40 @@ import { AutoPlacementEngine } from '../../../lib/placement/autoPlacementEngine'
  */
 
 test.describe('Remote Upload + Auto Placement', () => {
-  test('TRANSFER-1: remote upload succeeds with local source URL and provider target', async ({ request }) => {
-    const response = await request.post('/api/remote-upload', {
-      headers: {
-        Cookie: 'accessToken=mock-jwt-token',
+  test.beforeEach(async ({ page }) => {
+    await page.context().addCookies([
+      {
+        name: 'accessToken',
+        value: 'mock-jwt-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        secure: false,
       },
-      data: {
-        url: 'http://localhost:3010/manifest.json',
-        provider: 'aws_s3',
-        filename: 'manifest-copy.json',
-        metadata: {
-          task: '4.15',
-          flow: 'e2e',
-        },
-      },
+    ]);
+  });
+
+  test('TRANSFER-1: remote upload succeeds with local source URL and provider target', async ({ page }) => {
+    await page.goto('/files');
+    const result = await page.evaluate(async () => {
+      const res = await fetch('/api/remote-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: `${window.location.origin}/manifest.json`,
+          provider: 'aws_s3',
+          filename: 'manifest-copy.json',
+          metadata: {
+            task: '4.15',
+            flow: 'e2e',
+          },
+        }),
+      });
+      return { status: res.status, body: await res.json() };
     });
 
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
+    expect(result.status).toBe(200);
+    const body = result.body as Record<string, any>;
     expect(body.success).toBe(true);
     expect(body.provider).toBe('aws_s3');
     expect(body.fileId).toContain('s3://');
@@ -37,20 +52,22 @@ test.describe('Remote Upload + Auto Placement', () => {
     expect(Number.isNaN(Date.parse(body.uploadedAt))).toBe(false);
   });
 
-  test('TRANSFER-1: remote upload rejects malformed URL input', async ({ request }) => {
-    const response = await request.post('/api/remote-upload', {
-      headers: {
-        Cookie: 'accessToken=mock-jwt-token',
-      },
-      data: {
-        url: 'not-a-valid-url',
-        provider: 'aws_s3',
-      },
+  test('TRANSFER-1: remote upload rejects malformed URL input', async ({ page }) => {
+    await page.goto('/files');
+    const result = await page.evaluate(async () => {
+      const res = await fetch('/api/remote-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: 'not-a-valid-url',
+          provider: 'aws_s3',
+        }),
+      });
+      return { status: res.status, body: await res.json() };
     });
 
-    expect(response.status()).toBe(400);
-
-    const body = await response.json();
+    expect(result.status).toBe(400);
+    const body = result.body as Record<string, any>;
     expect(body).toEqual({ error: 'Invalid URL format' });
   });
 

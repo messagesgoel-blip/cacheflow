@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 /**
  * Task 3.4: Tray E2E — entry survives navigation, retry works on failure
- * Gate: TRANSFER-1
+ * Legacy coverage spec (non-gate)
  */
 
 test.describe('Transfer Tray / Queue Panel', () => {

@@ -58,8 +58,14 @@ test.describe('2.16@2FA-1: Two-Factor Authentication', () => {
   test('should allow a user to setup, verify, and disable 2FA', async ({ page }) => {
     // Navigate to settings
     await page.getByTestId('cf-sidebar-user-menu').click();
-    await page.getByTestId('cf-sidebar-user-settings').click();
-    await expect(page).toHaveURL(/.*\/settings/);
+    await Promise.all([
+      page.waitForURL(/.*\/settings(\/security)?/, { timeout: 10000 }),
+      page.getByTestId('cf-sidebar-user-settings').click(),
+    ]);
+    if (!/\/settings(\/security)?/.test(page.url())) {
+      await page.goto('/settings/security');
+    }
+    await expect(page).toHaveURL(/.*\/settings(\/security)?/);
 
     // Find the 2FA panel and click the enable button
     const twoFactorPanel = page.locator('[data-testid="cf-2fa-panel"]');

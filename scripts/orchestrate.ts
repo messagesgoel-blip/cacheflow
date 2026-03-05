@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { createWriteStream, existsSync } from "node:fs";
 import { mkdir, readFile, rm, stat, writeFile, appendFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import type { Agent, OrchestratorState, Task, TaskManifest } from "./lib/types";
 import { buildAgentPrompt } from "./lib/buildAgentPrompt";
@@ -15,6 +16,7 @@ const CONFLICT_RESOLVED_FLAG = path.join(LOG_DIR, "conflict-resolved.flag");
 const GATE_RESULTS_PATH = path.join(LOG_DIR, "gate-results.json");
 const GATE_FAILURE_DIR = path.join(LOG_DIR, "gate-failures");
 const TASK_LOG_DIR = path.join(LOG_DIR, "tasks");
+const ORCHESTRATOR_LOCK_PATH = path.join(LOG_DIR, "orchestrator.lock");
 const DASHBOARD_SYNC_SCRIPT = path.join(ROOT, "scripts", "refresh_cacheflow_metrics.sh");
 
 const WAVE2_TIMEOUT_MS = 45 * 60 * 1000;
@@ -23,6 +25,13 @@ const CONTRACT_POLL_MS = 30 * 1000;
 const DASHBOARD_SYNC_TIMEOUT_MS = 3 * 60 * 1000;
 const DASHBOARD_SYNC_MIN_INTERVAL_MS =
   Number.parseInt(process.env.DASHBOARD_SYNC_MIN_INTERVAL_MS ?? "", 10) || 10_000;
+const PLAYWRIGHT_MAX_FAILURES = Number.parseInt(process.env.PLAYWRIGHT_MAX_FAILURES ?? "", 10) || 5;
+const LOAD_GUARD_ENABLED = !["0", "false", "no", "off"].includes(
+  (process.env.LOAD_GUARD_ENABLED ?? "1").trim().toLowerCase(),
+);
+const LOAD_GUARD_MAX_1M = Number.parseFloat(process.env.LOAD_GUARD_MAX_1M ?? "8");
+const LOAD_GUARD_POLL_MS = Number.parseInt(process.env.LOAD_GUARD_POLL_MS ?? "", 10) || 5_000;
+const LOAD_GUARD_MAX_WAIT_MS = Number.parseInt(process.env.LOAD_GUARD_MAX_WAIT_MS ?? "", 10) || 5 * 60 * 1000;
 const GEMINI_CODEX_B_COMMAND = "codex-b";
 
 interface AuditEvent {
@@ -65,6 +74,7 @@ interface WriteStateOptions {
 let dashboardSyncInFlight: Promise<void> | null = null;
 let lastDashboardSyncAt = 0;
 let agentCliCommands: Partial<Record<Agent, string>> = {};
+let orchestratorLockHeld = false;
 
 const AGENT_CLI_CANDIDATES: Record<Agent, string[]> = {
   opencode: ["OC", "opencode"],
@@ -149,6 +159,66 @@ async function ensureLogs(): Promise<void> {
   await mkdir(TASK_LOG_DIR, { recursive: true });
 }
 
+function isProcessAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) {
+    return false;
+  }
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function acquireOrchestratorLock(): Promise<void> {
+  if (orchestratorLockHeld) {
+    return;
+  }
+
+  if (existsSync(ORCHESTRATOR_LOCK_PATH)) {
+    try {
+      const raw = await readFile(ORCHESTRATOR_LOCK_PATH, "utf8");
+      const parsed = JSON.parse(raw) as { pid?: number; started_at?: string };
+      if (typeof parsed.pid === "number" && isProcessAlive(parsed.pid)) {
+        throw new Error(
+          `Another orchestrator instance is running (pid=${parsed.pid}, started_at=${parsed.started_at ?? "unknown"})`,
+        );
+      }
+    } finally {
+      await rm(ORCHESTRATOR_LOCK_PATH, { force: true });
+    }
+  }
+
+  const payload = {
+    pid: process.pid,
+    started_at: nowIso(),
+    root: ROOT,
+  };
+  await writeFile(ORCHESTRATOR_LOCK_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  orchestratorLockHeld = true;
+}
+
+async function releaseOrchestratorLock(): Promise<void> {
+  if (!orchestratorLockHeld) {
+    return;
+  }
+
+  try {
+    if (existsSync(ORCHESTRATOR_LOCK_PATH)) {
+      const raw = await readFile(ORCHESTRATOR_LOCK_PATH, "utf8");
+      const parsed = JSON.parse(raw) as { pid?: number };
+      if (parsed.pid === process.pid) {
+        await rm(ORCHESTRATOR_LOCK_PATH, { force: true });
+      }
+    }
+  } catch {
+    await rm(ORCHESTRATOR_LOCK_PATH, { force: true });
+  } finally {
+    orchestratorLockHeld = false;
+  }
+}
+
 async function readJsonFile<T>(filePath: string): Promise<T> {
   const raw = await readFile(filePath, "utf8");
   return JSON.parse(raw) as T;
@@ -184,6 +254,58 @@ async function notify(message: string): Promise<void> {
   } catch (error) {
     await appendFile(NOTIFICATIONS_PATH, `${tsLine} | slack_exception=${String(error)}\n`, "utf8");
   }
+}
+
+function currentLoad1m(): number {
+  const [load1m] = os.loadavg();
+  return load1m;
+}
+
+async function waitForLoadBudget(sprint: number, phase: string): Promise<void> {
+  if (!LOAD_GUARD_ENABLED || !Number.isFinite(LOAD_GUARD_MAX_1M) || LOAD_GUARD_MAX_1M <= 0) {
+    return;
+  }
+
+  const initial = currentLoad1m();
+  if (initial <= LOAD_GUARD_MAX_1M) {
+    return;
+  }
+
+  await appendAudit({
+    ts: nowIso(),
+    event: "warning",
+    sprint,
+    task: phase,
+    agent: "codex",
+    detail: `load_guard_wait:start load1m=${initial.toFixed(2)} threshold=${LOAD_GUARD_MAX_1M.toFixed(2)}`,
+  });
+
+  const started = Date.now();
+  while (Date.now() - started < LOAD_GUARD_MAX_WAIT_MS) {
+    await sleep(LOAD_GUARD_POLL_MS);
+    const load = currentLoad1m();
+    if (load <= LOAD_GUARD_MAX_1M) {
+      await appendAudit({
+        ts: nowIso(),
+        event: "dispatch",
+        sprint,
+        task: phase,
+        agent: "codex",
+        detail: `load_guard_recovered load1m=${load.toFixed(2)} threshold=${LOAD_GUARD_MAX_1M.toFixed(2)}`,
+      });
+      return;
+    }
+  }
+
+  const loadAfterWait = currentLoad1m();
+  await appendAudit({
+    ts: nowIso(),
+    event: "warning",
+    sprint,
+    task: phase,
+    agent: "codex",
+    detail: `load_guard_timeout proceeding load1m=${loadAfterWait.toFixed(2)} threshold=${LOAD_GUARD_MAX_1M.toFixed(2)}`,
+  });
 }
 
 function isRealtimeDashboardSyncEnabled(): boolean {
@@ -895,10 +1017,37 @@ async function runGate(
 
   await rm(GATE_RESULTS_PATH, { force: true });
 
+  const explicitBaseUrl = (process.env.PLAYWRIGHT_GATE_BASE_URL ?? "").trim();
+  const baseUrlCandidates = [
+    explicitBaseUrl,
+    "http://localhost:4020",
+    "http://localhost:3010",
+    "http://localhost:3000",
+  ].filter(Boolean);
+
+  let selectedBaseUrl = "";
+  for (const candidate of baseUrlCandidates) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2_500);
+      const probe = await fetch(candidate, { method: "GET", signal: controller.signal });
+      clearTimeout(timer);
+      if (probe.status > 0 && probe.status < 500) {
+        selectedBaseUrl = candidate;
+        break;
+      }
+    } catch {
+      // Try next candidate.
+    }
+  }
+
   const matchedSpecArgs = runnableSpecFiles
     .map((specPath) => `"${path.join(ROOT, specPath)}"`)
     .join(" ");
-  const gateCommand = `cd "${playwrightRoot}" && npx playwright test --reporter=json ${matchedSpecArgs} > "${GATE_RESULTS_PATH}"`;
+  const gateEnvPrefix = selectedBaseUrl
+    ? `PLAYWRIGHT_BASE_URL="${selectedBaseUrl}" PLAYWRIGHT_SKIP_WEBSERVER=1`
+    : "";
+  const gateCommand = `cd "${playwrightRoot}" && ${gateEnvPrefix} npx playwright test --reporter=json --workers=1 --max-failures=${PLAYWRIGHT_MAX_FAILURES} ${matchedSpecArgs} > "${GATE_RESULTS_PATH}"`;
   const result = await runProcess("bash", ["-lc", gateCommand], 90 * 60 * 1000, {
     killProcessGroup: true,
   });
@@ -943,10 +1092,14 @@ async function runGate(
     warnings.push(`playwright_exit_without_failures(exit=${result.code})`);
   }
   const warningSuffix = warnings.length > 0 ? `; warning=${warnings.join(" | ")}` : "";
+  const runtimeDetail = selectedBaseUrl
+    ? `base_url=${selectedBaseUrl}; web_server=skipped`
+    : `base_url=local_default; web_server=managed_by_playwright`;
+  const detailSuffix = `; ${runtimeDetail}`;
 
   const detail = pass
-    ? `Playwright gate passed; failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${runnableSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}; timed_out=${timedOutLabel}${warningSuffix}`
-    : `Playwright failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${runnableSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}; timed_out=${timedOutLabel}; unmatched_criteria=${unmatchedLabel}`;
+    ? `Playwright gate passed; failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${runnableSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}; timed_out=${timedOutLabel}${warningSuffix}${detailSuffix}`
+    : `Playwright failures=${parsed.failedCount}; failed_criteria=${failedCriteriaLabel}; criteria=${criteria.join(", ")}; matched_specs=${runnableSpecFiles.length}; exit=${result.code}; required_missing_specs=${requiredMissingLabel}; timed_out=${timedOutLabel}; unmatched_criteria=${unmatchedLabel}${detailSuffix}`;
 
   return {
     pass,
@@ -1077,6 +1230,7 @@ async function dispatchWave2(
   state: OrchestratorState,
   sprint: number,
 ): Promise<void> {
+  await waitForLoadBudget(sprint, "wave2");
   state.current_wave = 2;
   state.current_state = "dispatching_wave2";
   await writeState(state, { syncDashboard: true, syncReason: "wave2:running" });
@@ -1159,6 +1313,7 @@ async function dispatchWave2(
 
 async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, sprint: number): Promise<void> {
   ensureSprintGateReady(manifest, state, sprint);
+  await waitForLoadBudget(sprint, "gate");
 
   const sprintMeta = manifest.sprints[String(sprint)] as
     | {
@@ -1258,71 +1413,76 @@ async function runSprint(manifest: TaskManifest, state: OrchestratorState, sprin
 
 async function main(): Promise<void> {
   await ensureLogs();
+  await acquireOrchestratorLock();
 
-  if (!existsSync(MANIFEST_PATH)) {
-    throw new Error(`Missing manifest at ${MANIFEST_PATH}`);
-  }
-
-  const manifest = await readJsonFile<TaskManifest>(MANIFEST_PATH);
-  await ensureAgentClisAvailable(manifest);
-  const state = await loadState(manifest);
-  const argv = process.argv.slice(2);
-  const gateOnly = process.argv.includes("--gate-only");
-  const sprintArg = parseOptionalSprintArg(argv);
-  const sprintLimitEnv = process.env.SPRINT_LIMIT;
-  const sprintLimit = sprintLimitEnv === undefined ? null : Number(sprintLimitEnv);
-
-  if (sprintLimitEnv !== undefined && !Number.isFinite(sprintLimit)) {
-    throw new Error(`Invalid SPRINT_LIMIT: ${sprintLimitEnv}`);
-  }
-
-  if (gateOnly) {
-    const sprint = sprintArg ?? state.current_sprint - 1;
-    if (sprint < 0) {
-      throw new Error(
-        `Cannot determine gate-only sprint from current_sprint=${state.current_sprint}; provide --sprint <N>`,
-      );
-    }
-    const sprintMeta = manifest.sprints[String(sprint)];
-    if (!sprintMeta) {
-      throw new Error(`Cannot run --gate-only: sprint ${sprint} not found in manifest`);
+  try {
+    if (!existsSync(MANIFEST_PATH)) {
+      throw new Error(`Missing manifest at ${MANIFEST_PATH}`);
     }
 
-    console.log(`Gate-only mode for sprint ${sprint}`);
-    await runSprintGate(manifest, state, sprint);
-    state.current_state = "idle";
-    state.current_wave = 0;
-    await writeState(state);
-    return;
-  }
+    const manifest = await readJsonFile<TaskManifest>(MANIFEST_PATH);
+    await ensureAgentClisAvailable(manifest);
+    const state = await loadState(manifest);
+    const argv = process.argv.slice(2);
+    const gateOnly = process.argv.includes("--gate-only");
+    const sprintArg = parseOptionalSprintArg(argv);
+    const sprintLimitEnv = process.env.SPRINT_LIMIT;
+    const sprintLimit = sprintLimitEnv === undefined ? null : Number(sprintLimitEnv);
 
-  while (true) {
-    const sprint = await findNextRunnableSprint(manifest, state);
-    if (sprint === null) {
+    if (sprintLimitEnv !== undefined && !Number.isFinite(sprintLimit)) {
+      throw new Error(`Invalid SPRINT_LIMIT: ${sprintLimitEnv}`);
+    }
+
+    if (gateOnly) {
+      const sprint = sprintArg ?? state.current_sprint - 1;
+      if (sprint < 0) {
+        throw new Error(
+          `Cannot determine gate-only sprint from current_sprint=${state.current_sprint}; provide --sprint <N>`,
+        );
+      }
+      const sprintMeta = manifest.sprints[String(sprint)];
+      if (!sprintMeta) {
+        throw new Error(`Cannot run --gate-only: sprint ${sprint} not found in manifest`);
+      }
+
+      console.log(`Gate-only mode for sprint ${sprint}`);
+      await runSprintGate(manifest, state, sprint);
       state.current_state = "idle";
       state.current_wave = 0;
       await writeState(state);
-      console.log("All manifest tasks are done.");
-      break;
+      return;
     }
 
-    if (sprintLimit !== null && sprint > sprintLimit) {
-      state.current_state = "idle";
-      state.current_wave = 0;
-      await writeState(state);
-      console.log(`Sprint limit ${sprintLimit} reached. Stopping before sprint ${sprint}.`);
-      break;
-    }
+    while (true) {
+      const sprint = await findNextRunnableSprint(manifest, state);
+      if (sprint === null) {
+        state.current_state = "idle";
+        state.current_wave = 0;
+        await writeState(state);
+        console.log("All manifest tasks are done.");
+        break;
+      }
 
-    await runSprint(manifest, state, sprint);
+      if (sprintLimit !== null && sprint > sprintLimit) {
+        state.current_state = "idle";
+        state.current_wave = 0;
+        await writeState(state);
+        console.log(`Sprint limit ${sprintLimit} reached. Stopping before sprint ${sprint}.`);
+        break;
+      }
 
-    if (sprintLimit !== null && sprint >= sprintLimit) {
-      state.current_state = "idle";
-      state.current_wave = 0;
-      await writeState(state);
-      console.log(`Sprint ${sprint} gate passed. Sprint limit ${sprintLimit} reached; stopping.`);
-      break;
+      await runSprint(manifest, state, sprint);
+
+      if (sprintLimit !== null && sprint >= sprintLimit) {
+        state.current_state = "idle";
+        state.current_wave = 0;
+        await writeState(state);
+        console.log(`Sprint ${sprint} gate passed. Sprint limit ${sprintLimit} reached; stopping.`);
+        break;
+      }
     }
+  } finally {
+    await releaseOrchestratorLock();
   }
 }
 

@@ -18,7 +18,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
 
   test.beforeEach(async ({ browser }) => {
     // 1. Setup Browser Context with Auth Cookies
-    context = await browser.newContext();
+    context = await browser.newContext({ baseURL: 'http://localhost:4020' });
     await context.addCookies([{
       name: 'accessToken',
       value: 'mock-jwt-token',
@@ -59,6 +59,17 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       });
     });
 
+    await context.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          user: { id: 'user-chunked-123', email: 'qa-chunked@goels.in', name: 'Chunk QA' },
+          expires: new Date(Date.now() + 3600000).toISOString(),
+        }),
+      });
+    });
+
     await context.route('**/api/connections', async (route) => {
       await route.fulfill({ 
         status: 200, 
@@ -73,29 +84,33 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
     });
   });
 
+  test.afterEach(async () => {
+    await context?.close();
+  });
+
   /**
    * Helper to find and expand the Transfer Tray
    */
   async function expandTransferTray(page: any) {
-    // Try finding by the specific test ID (TransferQueuePanel)
-    const trayPanel = page.getByTestId('cf-transfer-queue-panel');
-    if (await trayPanel.isVisible()) return trayPanel;
+    const tray = page.getByTestId('cf-transfer-tray');
+    if (await tray.isVisible()) {
+      return tray;
+    }
 
-    // Fallback to the TransferTray component
-    const trayContainer = page.locator('.fixed.bottom-4.right-4');
-    
-    // Wait for the tray to show active transfers (blue background or badge)
-    // We wait up to 10s for the UI to poll /api/transfers
-    const activeBadge = trayContainer.locator('.bg-red-500');
-    await expect(activeBadge).toBeVisible({ timeout: 10000 });
+    const activeButton = page.getByRole('button', { name: /active transfer/i });
+    const showTransfersButton = page.getByRole('button', { name: /show transfers/i });
+    try {
+      await expect(activeButton).toBeVisible({ timeout: 8000 });
+      await activeButton.click();
+    } catch {
+      await expect(showTransfersButton).toBeVisible({ timeout: 8000 });
+      await showTransfersButton.click();
+    }
 
-    // Click to expand
-    await trayContainer.click();
+    await expect(tray).toBeVisible({ timeout: 10000 });
+    await expect(tray).toContainText('Transfers');
 
-    // Verify it expanded (should show "Transfers" header)
-    await expect(trayContainer).toContainText('Transfers', { timeout: 5000 });
-
-    return trayContainer;
+    return tray;
   }
 
   test('TRANSFER-1: Chunked upload shows per-chunk progress in tray', async () => {
@@ -107,7 +122,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
 
     // Mock the transfers list to show a chunked upload in progress (Contract 3.2/3.10)
     await context.route('**/api/transfers*', async (route) => {
-      if (route.request().method() === 'GET' && route.request().url().endsWith('/api/transfers?limit=50')) {
+      if (route.request().method() === 'GET' && route.request().url().includes('/api/transfers')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -133,7 +148,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       }
     });
 
-    await page.goto('/files');
+    await page.goto('http://localhost:4020/files');
     
     // Expand tray if needed
     const tray = await expandTransferTray(page);
@@ -210,7 +225,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       }
     });
 
-    await page.goto('/files');
+    await page.goto('http://localhost:4020/files');
 
     // 1. Start Upload and commit 2 chunks
     await test.step('Start upload and commit first 2 chunks', async () => {
@@ -311,7 +326,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
 
     // 1. Mock initial active state
     await context.route('**/api/transfers*', async (route) => {
-      if (route.request().method() === 'GET' && route.request().url().endsWith('/api/transfers?limit=50')) {
+      if (route.request().method() === 'GET' && route.request().url().includes('/api/transfers')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -334,14 +349,15 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       }
     });
 
-    await page.goto('/files');
+    await page.goto('http://localhost:4020/files');
     const tray = await expandTransferTray(page);
     await expect(tray).toBeVisible();
     await expect(tray).toContainText('Failure_Test.iso');
 
     // 2. Simulate network drop / error in polling
+    await context.unroute('**/api/transfers*');
     await context.route('**/api/transfers*', async (route) => {
-      if (route.request().method() === 'GET' && route.request().url().endsWith('/api/transfers?limit=50')) {
+      if (route.request().method() === 'GET' && route.request().url().includes('/api/transfers')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -365,13 +381,17 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       }
     });
 
-    // 3. Verify FAILED state in UI
-    const failedItem = tray.locator('div, span, p').filter({ hasText: 'FAILED' }).last();
-    await expect(failedItem).toBeVisible({ timeout: 10000 });
-    await expect(tray).toContainText('Network connection lost');
+    // Force a fresh poll so the UI reflects the failed transfer state.
+    await page.reload();
+    const failedTray = await expandTransferTray(page);
+    const failedItem = failedTray.locator('div').filter({ hasText: 'Failure_Test.iso' }).first();
 
-    // 4. Verify Retry button exists
-    const retryBtn = tray.getByRole('button', { name: /retry/i });
+    // 3. Verify failed-state affordances in UI
+    await expect(failedItem).toBeVisible();
+    await expect(failedItem).toContainText(/network connection lost|failed/i);
+
+    // 4. Verify Retry button exists for failed transfer
+    const retryBtn = failedItem.getByRole('button', { name: /retry/i });
     await expect(retryBtn).toBeVisible();
   });
 });

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page, Route } from '@playwright/test';
 
 /**
  * Task 4.11: E2E share link tests — create, access, expire, revoke
@@ -6,13 +6,107 @@ import { test, expect } from '@playwright/test';
  * Contracts: 4.7, 4.8, 4.9, 4.12, 4.13
  */
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function shareBackendRoute(token: string): RegExp {
+  return new RegExp(`/share/${escapeRegex(token)}$`);
+}
+
+async function fulfillShareApiRoute(
+  page: Page,
+  token: string,
+  handler: (route: Route) => Promise<void>
+): Promise<void> {
+  await page.route(shareBackendRoute(token), async (route) => {
+    if (route.request().resourceType() === 'document') {
+      await route.continue();
+      return;
+    }
+    await handler(route);
+  });
+}
+
+async function bootstrapAuthenticatedPage(page: Page): Promise<void> {
+  await page.context().addCookies([
+    {
+      name: 'accessToken',
+      value: 'mock-jwt-token',
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      secure: false,
+    },
+    {
+      name: 'next-auth.session-token',
+      value: 'mock-session-token',
+      domain: 'localhost',
+      path: '/',
+      httpOnly: false,
+      secure: false,
+    },
+  ]);
+
+  await page.route('**/api/auth/session', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        user: { id: 'user-share-123', email: 'qa-share@goels.in', name: 'Share QA' },
+        expires: new Date(Date.now() + 3600000).toISOString(),
+      }),
+    });
+  });
+
+  await page.route('**/api/connections', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: [
+          {
+            id: 'remote-share-google',
+            provider: 'google',
+            accountEmail: 'qa-share@goels.in',
+            accountName: 'Share QA Google',
+            status: 'connected',
+            accountKey: 'share-g1',
+            remoteId: 'remote-share-google',
+          },
+        ],
+      }),
+    });
+  });
+
+  await page.route('**/api/files**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        files: [],
+        nextPageToken: null,
+      }),
+    });
+  });
+
+  await page.route('**/api/remotes**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        remotes: [],
+      }),
+    });
+  });
+}
+
 test.describe('Share Links (Task 4.11)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cf_token', 'mock-jwt-token');
-      localStorage.setItem('cf_email', 'qa-share@goels.in');
-      localStorage.setItem('cf_user_id', 'user-share-123');
-    });
+    await bootstrapAuthenticatedPage(page);
   });
 
   test('SHARE-1: create share link enforces 2FA then succeeds', async ({ page }) => {
@@ -48,6 +142,7 @@ test.describe('Share Links (Task 4.11)', () => {
     });
 
     await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
 
     const firstAttempt = await page.evaluate(async () => {
       const res = await fetch('/api/share', {
@@ -98,7 +193,7 @@ test.describe('Share Links (Task 4.11)', () => {
     const token = 'share-token-access-1';
     let downloadCount = 0;
 
-    await page.route(`http://localhost:8100/share/${token}`, async (route) => {
+    await fulfillShareApiRoute(page, token, async (route) => {
       const method = route.request().method();
 
       if (method !== 'GET') {
@@ -170,7 +265,7 @@ test.describe('Share Links (Task 4.11)', () => {
   test('SHARE-1: expired share link shows unavailable state', async ({ page }) => {
     const expiredToken = 'share-token-expired-1';
 
-    await page.route(`http://localhost:8100/share/${expiredToken}`, async (route) => {
+    await fulfillShareApiRoute(page, expiredToken, async (route) => {
       await route.fulfill({
         status: 410,
         contentType: 'application/json',
@@ -191,7 +286,7 @@ test.describe('Share Links (Task 4.11)', () => {
     let revoked = false;
     let revokeAttempts = 0;
 
-    await page.route(`http://localhost:8100/share/${token}`, async (route) => {
+    await fulfillShareApiRoute(page, token, async (route) => {
       if (revoked) {
         await route.fulfill({
           status: 410,

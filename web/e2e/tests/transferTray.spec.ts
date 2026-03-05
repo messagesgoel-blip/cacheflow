@@ -61,7 +61,7 @@ test.describe('Transfer Tray', () => {
     });
 
     // 4. Mock Transfers API (Default empty)
-    await page.route('**/api/transfers?limit=50', async (route) => {
+    await page.route('**/api/transfers*', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -81,7 +81,7 @@ test.describe('Transfer Tray', () => {
 
   test('transfer entry survives navigation', async ({ page }) => {
     // 1. Mock transfers list to return active transfer
-    await page.route('**/api/transfers?limit=50', async (route) => {
+    await page.route('**/api/transfers*', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -159,7 +159,7 @@ test.describe('Transfer Tray', () => {
 
   test('retry works on failure', async ({ page }) => {
     // 1. Mock transfers list to return failed transfer
-    await page.route('**/api/transfers?limit=50', async (route) => {
+    await page.route('**/api/transfers*', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
