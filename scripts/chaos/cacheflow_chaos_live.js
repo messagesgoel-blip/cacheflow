@@ -356,20 +356,20 @@ async function main() {
       await clickIfVisible(page.getByTestId('files-refresh').first(), 1500);
       const search = page.getByTestId('cf-global-search-input').first();
       if (await search.count()) {
-        await search.fill(`chaos-${i}`);
+        await search.fill(`chaos-${i}`, { timeout: 3000 }).catch(() => {});
         await page.waitForTimeout(350);
-        await search.fill('');
+        await search.fill('', { timeout: 3000 }).catch(() => {});
       }
       const grouped = page.getByTestId('cf-allproviders-view-toggle-grouped').first();
       const flat = page.getByTestId('cf-allproviders-view-toggle-flat').first();
-      if (await grouped.count()) await grouped.click().catch(() => {});
-      if (await flat.count()) await flat.click().catch(() => {});
+      if (await grouped.count()) await grouped.click({ timeout: 3000 }).catch(() => {});
+      if (await flat.count()) await flat.click({ timeout: 3000 }).catch(() => {});
 
       const firstRow = page.locator('tbody tr').first();
       if (await firstRow.count()) {
-        await firstRow.click().catch(() => {});
+        await firstRow.click({ timeout: 3000 }).catch(() => {});
         const closePreview = page.getByTestId('cf-preview-close').first();
-        if (await closePreview.count()) await closePreview.click().catch(() => {});
+        if (await closePreview.count()) await closePreview.click({ timeout: 3000 }).catch(() => {});
       }
       await screenshot(page, `chaos-loop-${i}`);
     }
