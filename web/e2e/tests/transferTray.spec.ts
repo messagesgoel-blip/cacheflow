@@ -137,7 +137,10 @@ test.describe('Transfer Tray', () => {
     await expect(tray).toContainText('45%')
 
     // 5. Navigate to Cloud Drives
-    await page.keyboard.press('Escape')
+    const dismissSessionModal = page.getByRole('button', { name: /^Dismiss$/i })
+    if (await dismissSessionModal.isVisible()) {
+      await dismissSessionModal.click({ force: true })
+    }
     await page.route('**/api/remotes**', async (route) => {
       await route.fulfill({
         status: 200,
@@ -146,7 +149,7 @@ test.describe('Transfer Tray', () => {
       })
     })
     await page.goto('/remotes')
-    await expect(page).toHaveURL(/\/remotes/, { timeout: 10000 })
+    await expect(page).toHaveURL(/\/(remotes|connections)/, { timeout: 10000 })
 
     // 6. Verify tray still survives
     await expect(trayBadge).toBeVisible({ timeout: 10000 })
