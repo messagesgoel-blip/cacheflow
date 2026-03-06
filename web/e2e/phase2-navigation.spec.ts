@@ -1,12 +1,42 @@
 import { test, expect } from '@playwright/test'
 import * as fs from 'fs'
 import * as path from 'path'
-import { gotoFilesAndWait, primeQaSession } from './helpers/mockRuntime'
+import { gotoFilesAndWait, installMockRuntime, primeQaSession, type MockConnection } from './helpers/mockRuntime'
 
 const SHOTS_DIR = '/srv/storage/screenshots/cacheflow'
 const REPORT_PATH = path.join(SHOTS_DIR, 'phase2-report.json')
 
 test('Phase 2 Verification: Structural Navigation', async ({ page, request }) => {
+  const connections: MockConnection[] = [
+    {
+      id: 'g1',
+      remoteId: 'g1',
+      provider: 'google',
+      accountKey: 'g1',
+      accountEmail: 'username@gmail.com',
+      accountLabel: 'Google Drive A',
+    },
+  ]
+
+  const files = [
+    {
+      id: 'g-file-1',
+      name: 'File from GOOGLE A.txt',
+      mimeType: 'text/plain',
+      size: '1024',
+      modifiedTime: new Date().toISOString(),
+      createdTime: new Date().toISOString(),
+    },
+    {
+      id: 'g-folder-1',
+      name: 'Folder from GOOGLE A',
+      mimeType: 'application/vnd.google-apps.folder',
+      size: '0',
+      modifiedTime: new Date().toISOString(),
+      createdTime: new Date().toISOString(),
+    },
+  ]
+
   const results = {
     sections: {
       sidebarVisibility: 'PENDING',
@@ -30,6 +60,29 @@ test('Phase 2 Verification: Structural Navigation', async ({ page, request }) =>
 
   try {
     await primeQaSession(page, request)
+    await installMockRuntime(page, connections, async ({ url }) => {
+      if (url.includes('about?fields=storageQuota')) {
+        return {
+          json: {
+            storageQuota: {
+              usage: '1024',
+              limit: '1048576',
+            },
+          },
+        }
+      }
+
+      if (url.includes('drive/v3/files?') && !url.includes('fields=size,mimeType') && !url.includes('alt=media')) {
+        return {
+          json: {
+            files,
+            nextPageToken: null,
+          },
+        }
+      }
+
+      return { json: {} }
+    })
     await gotoFilesAndWait(page)
 
     await expect(page.getByTestId('cf-sidebar-node-all-files')).toBeVisible()
@@ -38,6 +91,7 @@ test('Phase 2 Verification: Structural Navigation', async ({ page, request }) =>
     await page.screenshot({ path: path.join(SHOTS_DIR, shotSidebar) })
     results.screenshots.push(shotSidebar)
 
+    await expect(page.getByTestId('cf-sidebar-account-g1')).toBeVisible({ timeout: 15000 })
     await page.getByTestId('cf-sidebar-account-g1').click()
     await expect(page.getByTestId('cf-breadcrumb')).toBeVisible({ timeout: 15000 })
     await expect(page.getByTestId('cf-breadcrumb')).toContainText('Google Drive A')
