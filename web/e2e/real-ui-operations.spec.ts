@@ -127,7 +127,7 @@ async function copyMoveBetweenProviders(page: any, worker: number) {
     const select = page.locator('select[aria-label="Target provider"]').first()
     if (await select.count()) {
       const options = await select.locator('option').allTextContents()
-      const target = options.find(o => o && !/select/i.test(o))
+      const target = options.find((o: string) => o && !/select/i.test(o))
       if (target) await select.selectOption({ label: target }).catch(async () => {
         const vals = await select.locator('option').evaluateAll((ops: any) => ops.map((o: any) => o.value))
         if (vals[1]) await select.selectOption(vals[1])

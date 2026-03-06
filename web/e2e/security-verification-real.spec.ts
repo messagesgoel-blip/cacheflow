@@ -134,7 +134,7 @@ test('Real Clean Session Security Verification', async ({ page }) => {
       }
       request.onerror = () => resolve([])
     })
-  }) as string[]
+  }) as unknown as string[]
 
   console.log('IndexedDB Keys:', dbKeys)
   

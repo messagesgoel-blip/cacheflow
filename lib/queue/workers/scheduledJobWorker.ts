@@ -1,4 +1,4 @@
-import { Worker, QueueScheduler, Job, Queue } from 'bullmq';
+import { Worker, Job, Queue } from 'bullmq';
 import { getRedisClient } from '../../redis/client';
 import { executeJob } from '../../jobs/jobEngine';
 
@@ -12,18 +12,16 @@ interface ScheduledJobData {
 
 class ScheduledJobWorker {
   private worker: Worker;
-  private scheduler: QueueScheduler;
   private queue: Queue;
 
   constructor(queueName: string = 'scheduled-jobs') {
     const redisConnection = getRedisClient('workers');
-    this.queue = new Queue(queueName, { connection: redisConnection });
-    this.scheduler = new QueueScheduler(queueName, { connection: redisConnection });
+    this.queue = new Queue(queueName, { connection: redisConnection as any });
     this.worker = new Worker(
       queueName,
       this.processJob.bind(this),
-      { 
-        connection: redisConnection,
+      {
+        connection: redisConnection as any,
         concurrency: 5, // Handle up to 5 concurrent jobs
       }
     );
@@ -144,7 +142,7 @@ class ScheduledJobWorker {
   }
 
   public async getJob(jobId: string): Promise<Job | null> {
-    return await this.queue.getJob(jobId);
+    return (await this.queue.getJob(jobId)) ?? null;
   }
 
   public async removeJob(jobId: string): Promise<boolean> {
@@ -183,10 +181,7 @@ class ScheduledJobWorker {
   }
 
   public async close(): Promise<void> {
-    await Promise.all([
-      this.worker.close(),
-      this.scheduler.close()
-    ]);
+    await this.worker.close();
     console.log('[ScheduledJobWorker] Scheduled job worker closed');
   }
 }

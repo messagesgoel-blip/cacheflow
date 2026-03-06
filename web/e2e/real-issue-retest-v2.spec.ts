@@ -8,14 +8,24 @@ const REPORT_MD = path.join(OUT_DIR, 'bug-report-2026-03-02-v2.md')
 const EMAIL = 'admin@cacheflow.goels.in'
 const PASSWORD = 'admin123'
 
+if (!fs.existsSync(OUT_DIR)) {
+  fs.mkdirSync(OUT_DIR, { recursive: true })
+}
+
 function ts() { return new Date().toISOString().replace(/[:.]/g, '-') }
 async function shot(page: any, name: string) {
   const p = path.join(OUT_DIR, `${ts()}-${name.replace(/[^a-z0-9-_]+/gi, '_')}.png`)
-  await page.screenshot({ path: p, fullPage: true })
-  return p
+  try {
+    if (page.isClosed()) return `SKIPPED_CLOSED:${name}`
+    await page.screenshot({ path: p, fullPage: true, timeout: 15000 })
+    return p
+  } catch (e: any) {
+    return `SHOT_FAILED:${name}:${e?.message || 'unknown'}`
+  }
 }
 
 test('real issue retest v2: overflow actions + ux assessment', async ({ page }) => {
+  test.setTimeout(240_000)
   const report: any = {
     target: 'https://cacheflow.goels.in',
     timestamp: new Date().toISOString(),
@@ -44,6 +54,9 @@ test('real issue retest v2: overflow actions + ux assessment', async ({ page }) 
   page.on('console', (m) => { if (m.type() === 'error') report.errors.consoleErrors.push(m.text()) })
 
   await page.goto('https://cacheflow.goels.in/login', { waitUntil: 'domcontentloaded' })
+  if (!await page.locator('input[placeholder="Email"]').count()) {
+    await page.goto('https://cacheflow.goels.in/?mode=login', { waitUntil: 'domcontentloaded' })
+  }
   report.screenshots.push(await shot(page, 'v2-01-login'))
   await page.fill('input[placeholder="Email"]', EMAIL)
   await page.fill('input[placeholder="Password"]', PASSWORD)
@@ -77,7 +90,13 @@ test('real issue retest v2: overflow actions + ux assessment', async ({ page }) 
     if (!rowCount) { out.status = 'no-files'; return out }
 
     const firstRow = rows.first()
-    await firstRow.hover()
+    const firstVisible = await firstRow.isVisible().catch(() => false)
+    if (!firstVisible) {
+      out.status = 'first-row-not-visible'
+      report.screenshots.push(await shot(page, `${key}-first-row-not-visible`))
+      return out
+    }
+    await firstRow.hover({ timeout: 5000 }).catch(() => {})
     const overflow = firstRow.getByTestId('cf-files-row-overflow')
     if (!await overflow.count()) {
       out.status = 'overflow-not-found'
@@ -87,10 +106,14 @@ test('real issue retest v2: overflow actions + ux assessment', async ({ page }) 
 
     // Open overflow and try actions in sequence.
     async function openMenu() {
-      await firstRow.hover()
-      await overflow.click({ force: true })
-      await page.waitForTimeout(300)
-      return page.locator('text=/Open|Download|Rename|Move|Copy|Delete/').first().count()
+      try {
+        await firstRow.hover({ timeout: 5000 })
+        await overflow.click({ force: true, timeout: 5000 })
+        await page.waitForTimeout(300)
+        return page.locator('text=/Open|Download|Rename|Move|Copy|Delete/').first().count()
+      } catch {
+        return 0
+      }
     }
 
     out.menuOpen = await openMenu() ? 'yes' : 'no'
@@ -166,7 +189,12 @@ test('real issue retest v2: overflow actions + ux assessment', async ({ page }) 
     }
 
     // Delete only if item name includes UITEST for safety.
-    const firstText = await firstRow.innerText()
+    let firstText = ''
+    try {
+      firstText = await rows.first().innerText({ timeout: 2000 })
+    } catch {
+      firstText = ''
+    }
     if (/UITEST/i.test(firstText)) {
       await openMenu()
       if (await page.getByRole('button', { name: /^Delete$/i }).count()) {

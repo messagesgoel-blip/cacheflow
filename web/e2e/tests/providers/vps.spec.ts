@@ -54,7 +54,7 @@ test.describe('Task 4.6 - VPS Parity + Credential Security (SEC-1)', () => {
 
     for (const check of PROVIDER_PARITY_CHECKLIST) {
       for (const method of check.requiredMethods) {
-        const candidate = (vpsAdapter as AnyObject)[method as string];
+        const candidate = (vpsAdapter as unknown as AnyObject)[method as string];
         if (typeof candidate !== 'function') {
           missing.push(`${check.id}:${String(method)}`);
         }

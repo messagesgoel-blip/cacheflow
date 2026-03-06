@@ -397,16 +397,16 @@ test.describe('Storage Dashboard and Health Indicators', () => {
     expect(body.success).toBe(true);
     expect(body.connections).toHaveLength(6);
     
-    const google = body.connections.find(c => c.id === 'remote-google-1');
+    const google = body.connections.find((c: any) => c.id === 'remote-google-1');
     expect(google.probe.status).toBe('healthy');
     expect(google.probe.message).toBe('Provider reachable and credentials valid');
     expect(google.probe.latencyMs).toBeGreaterThan(0);
 
-    const dropbox = body.connections.find(c => c.id === 'remote-dropbox-1');
+    const dropbox = body.connections.find((c: any) => c.id === 'remote-dropbox-1');
     expect(dropbox.probe.status).toBe('needs_reauth');
     expect(dropbox.probe.httpStatus).toBe(401);
 
-    const yandex = body.connections.find(c => c.id === 'remote-yandex-1');
+    const yandex = body.connections.find((c: any) => c.id === 'remote-yandex-1');
     expect(yandex.probe.status).toBe('degraded');
     expect(yandex.probe.httpStatus).toBe(429);
     expect(yandex.probe.message).toContain('rate-limiting');

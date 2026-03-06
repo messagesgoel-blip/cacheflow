@@ -435,4 +435,5 @@ class AutoPlacementEngine {
   }
 }
 
-export { AutoPlacementEngine, Resource, Node, PlacementResult, AutoPlacementConfig };
+export { AutoPlacementEngine };
+export type { Resource, Node, PlacementResult, AutoPlacementConfig };

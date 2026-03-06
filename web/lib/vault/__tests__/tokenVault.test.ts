@@ -5,9 +5,15 @@
  * Task: 1.5@AUTH-1
  */
 
+let lastEncryptedPlaintext: string = '';
 jest.mock('../../utils/crypto', () => ({
-  encrypt: jest.fn().mockResolvedValue({ ciphertext: 'encrypted', iv: 'iv' }),
-  decrypt: jest.fn().mockResolvedValue('{"token":"test-token"}'),
+  encrypt: jest.fn().mockImplementation(async (_key: unknown, plaintext: string) => {
+    lastEncryptedPlaintext = plaintext;
+    return { ciphertext: 'encrypted', iv: 'iv' };
+  }),
+  decrypt: jest.fn().mockImplementation(async () => {
+    return lastEncryptedPlaintext || '{"entries":[],"version":1}';
+  }),
 }));
 
 import { loadVault, addAccount, getAccount, getProviderAccounts, removeAccount, getVaultStats } from '../tokenVault';
@@ -16,12 +22,15 @@ import { encrypt, decrypt } from '../../utils/crypto';
 const mockEncrypt = encrypt as jest.MockedFunction<typeof encrypt>;
 const mockDecrypt = decrypt as jest.MockedFunction<typeof decrypt>;
 
-const localStorageMock = {
-  store: {} as Record<string, string>,
-  getItem: jest.fn((key: string) => this.store[key] || null),
-  setItem: jest.fn((key: string, value: string) => { this.store[key] = value; }),
-  removeItem: jest.fn((key: string) => { delete this.store[key]; }),
-};
+const localStorageMock = (() => {
+  const store: Record<string, string> = {};
+  return {
+    store,
+    getItem: jest.fn((key: string): string | null => store[key] || null),
+    setItem: jest.fn((key: string, value: string): void => { store[key] = value; }),
+    removeItem: jest.fn((key: string): void => { delete store[key]; }),
+  };
+})();
 
 Object.defineProperty(global, 'localStorage', { value: localStorageMock });
 
@@ -38,6 +47,7 @@ describe('tokenVault', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorageMock.store = {};
+    lastEncryptedPlaintext = '';
   });
 
   describe('loadVault', () => {

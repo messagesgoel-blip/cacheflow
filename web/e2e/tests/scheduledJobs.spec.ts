@@ -49,7 +49,7 @@ test.describe('Scheduled Jobs Management', () => {
 
   test('Schedules Page: should allow creating a new job', async ({ page }) => {
     // Mock jobs list
-    const jobs = [];
+    const jobs: Record<string, unknown>[] = [];
     
     await page.route('**/api/jobs', async (route) => {
       if (route.request().method() === 'GET') {

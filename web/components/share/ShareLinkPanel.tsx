@@ -12,7 +12,7 @@ interface ShareLinkPanelProps {
   userHas2FA?: boolean
 }
 
-interface ShareLink {
+export interface ShareLink {
   id: string
   token: string
   url: string

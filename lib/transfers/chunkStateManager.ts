@@ -264,9 +264,9 @@ class ChunkStateManager {
     const rawMembers = await this.redis.smembers(dKey);
 
     const committedChunks = rawMembers
-      .map((m) => parseInt(m, 10))
-      .filter((n) => !isNaN(n))
-      .sort((a, b) => a - b);
+      .map((m: string) => parseInt(m, 10))
+      .filter((n: number) => !isNaN(n))
+      .sort((a: number, b: number) => a - b);
 
     // nextChunkIndex = smallest non-negative integer not in committedChunks.
     const committed = new Set(committedChunks);

@@ -35,7 +35,7 @@ test.describe('Provider Connection Modals', () => {
   for (const provider of PROVIDERS) {
     test(`Verify ${provider.name} connect modal`, async ({ page }) => {
       // Find the card for the provider
-      const card = page.locator('div', { has: page.locator('h3', { hasText: provider.name, exact: true }) })
+      const card = page.locator('div', { has: page.getByRole('heading', { name: provider.name, exact: true, level: 3 }) })
         .filter({ has: page.getByRole('button', { name: /connect|manage/i }) })
         .last() // The card might be nested
       

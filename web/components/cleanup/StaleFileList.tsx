@@ -14,6 +14,7 @@ interface StaleFile {
   lastAccessedAt?: string
   status: 'stale' | 'error' | 'orphan'
   errorMessage?: string
+  webUrl?: string
 }
 
 interface StaleFileListProps {

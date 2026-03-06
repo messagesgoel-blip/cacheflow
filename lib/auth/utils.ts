@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
+// @ts-ignore - next types only available in web context
 import { NextApiRequest } from 'next';
+// @ts-ignore - db client from api service
 import pool from '../../api/src/db/client'; // Using the existing DB client
 
 export interface AuthenticatedUser {

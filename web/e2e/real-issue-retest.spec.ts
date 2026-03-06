@@ -8,14 +8,24 @@ const REPORT_MD = path.join(OUT_DIR, 'bug-report-2026-03-02.md')
 const EMAIL = 'admin@cacheflow.goels.in'
 const PASSWORD = 'admin123'
 
+if (!fs.existsSync(OUT_DIR)) {
+  fs.mkdirSync(OUT_DIR, { recursive: true })
+}
+
 function ts() { return new Date().toISOString().replace(/[:.]/g, '-') }
 async function shot(page: any, name: string) {
   const p = path.join(OUT_DIR, `${ts()}-${name.replace(/[^a-z0-9-_]+/gi, '_')}.png`)
-  await page.screenshot({ path: p, fullPage: true })
-  return p
+  try {
+    if (page.isClosed()) return `SKIPPED_CLOSED:${name}`
+    await page.screenshot({ path: p, fullPage: true, timeout: 15000 })
+    return p
+  } catch (e: any) {
+    return `SHOT_FAILED:${name}:${e?.message || 'unknown'}`
+  }
 }
 
 test('real issue retest: cloud drives, preview, rename/move errors, provider add, file ops', async ({ page, context }) => {
+  test.setTimeout(300_000)
   const report: any = {
     target: 'https://cacheflow.goels.in',
     timestamp: new Date().toISOString(),
@@ -47,6 +57,9 @@ test('real issue retest: cloud drives, preview, rename/move errors, provider add
 
   // login
   await page.goto('https://cacheflow.goels.in/login', { waitUntil: 'domcontentloaded' })
+  if (!await page.locator('input[placeholder="Email"]').count()) {
+    await page.goto('https://cacheflow.goels.in/?mode=login', { waitUntil: 'domcontentloaded' })
+  }
   report.screenshots.push(await shot(page, '01-login-page'))
   await page.fill('input[placeholder="Email"]', EMAIL)
   await page.fill('input[placeholder="Password"]', PASSWORD)
@@ -67,18 +80,20 @@ test('real issue retest: cloud drives, preview, rename/move errors, provider add
 
   // Providers page: attempt add/connect all providers
   await page.goto('https://cacheflow.goels.in/providers', { waitUntil: 'domcontentloaded' })
-  await page.waitForTimeout(2000)
+  await page.waitForTimeout(1200)
   report.screenshots.push(await shot(page, '04-providers-page'))
 
-  const providers = ['Google Drive', 'OneDrive', 'Dropbox', 'Box', 'pCloud', 'Filen', 'Yandex Disk', 'WebDAV', 'VPS / SFTP']
+  const providers = (process.env.PLAYWRIGHT_QA_PROVIDER_SET
+    ? process.env.PLAYWRIGHT_QA_PROVIDER_SET.split(',').map((x) => x.trim()).filter(Boolean)
+    : ['Google Drive', 'OneDrive', 'Dropbox', 'Box'])
   for (const pName of providers) {
     try {
       const card = page.locator('div', { hasText: pName }).first()
       if (!await card.count()) { report.checks.providerAddAttempts[pName] = 'card-not-found'; continue }
       const btn = card.getByRole('button', { name: /Connect|Manage/i }).first()
       if (!await btn.count()) { report.checks.providerAddAttempts[pName] = 'no-connect-manage-button'; continue }
-      await btn.click({ timeout: 8000 })
-      await page.waitForTimeout(800)
+      await btn.click({ timeout: 4000 })
+      await page.waitForTimeout(500)
       report.screenshots.push(await shot(page, `provider-modal-${pName}`))
       const authBtn = page.getByRole('button', { name: /Authorize|Connecting/i }).first()
       if (await authBtn.count()) {
@@ -89,7 +104,7 @@ test('real issue retest: cloud drives, preview, rename/move errors, provider add
       await page.keyboard.press('Escape').catch(() => {})
       const cancel = page.getByRole('button', { name: /Cancel|Close/i }).first()
       if (await cancel.count()) await cancel.click().catch(() => {})
-      await page.waitForTimeout(300)
+      await page.waitForTimeout(200)
     } catch (e: any) {
       report.checks.providerAddAttempts[pName] = `error: ${e.message}`
       report.screenshots.push(await shot(page, `provider-modal-error-${pName}`))

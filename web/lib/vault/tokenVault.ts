@@ -20,6 +20,7 @@ export interface VaultEntry {
   accountOrder: number;
   isDefault: boolean;
   encryptedCredentials: string;
+  iv?: string;
   remoteId?: string;
   createdAt: number;
   updatedAt: number;
@@ -34,6 +35,7 @@ export interface VaultData {
 export interface VaultAccount {
   provider: string;
   accountLabel: string;
+  accountOrder?: number;
   credentials: Record<string, any>;
   remoteId?: string;
   isDefault: boolean;
@@ -205,7 +207,7 @@ export async function getProviderAccounts(provider: string): Promise<VaultAccoun
     }
   }
 
-  return accounts.sort((a, b) => a.accountOrder - b.accountOrder);
+  return accounts.sort((a, b) => (a.accountOrder ?? 0) - (b.accountOrder ?? 0));
 }
 
 /**

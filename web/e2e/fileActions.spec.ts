@@ -122,14 +122,15 @@ test.describe('File Action Entry Points', () => {
     const uploadBtn = page.getByTestId('cf-action-upload');
     const newFolderBtn = page.getByTestId('cf-action-new-folder');
     
-    // We expect these to fail if not yet implemented, or we use a "soft" check
-    const hasActionBar = await uploadBtn.isVisible().catch(() => false);
-    if (hasActionBar) {
-      await expect(uploadBtn).toBeVisible();
-      await expect(newFolderBtn).toBeVisible();
-    } else {
-      console.log('Action Bar (Upload/New Folder) not yet found - Task 2.1 pending');
+    await expect(uploadBtn).toBeVisible();
+
+    const hasNewFolder = await newFolderBtn.isVisible().catch(() => false);
+    if (!hasNewFolder) {
+      console.log('New Folder action is still a placeholder in UnifiedFileBrowser');
+      return;
     }
+
+    await expect(newFolderBtn).toBeVisible();
   });
 
   test('Task 2.3: Single-click select and Right Panel', async ({ page }) => {

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useMemo, useRef, useState } from 'react'
 
-type BannerKind = 'info' | 'success' | 'error' | 'progress'
+type BannerKind = 'info' | 'success' | 'error' | 'progress' | 'warning'
 
 type Banner = {
   id: string

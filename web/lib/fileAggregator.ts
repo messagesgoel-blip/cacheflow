@@ -4,6 +4,7 @@
  */
 
 import type { FileMetadata, ProviderId } from './providers/types'
+export type { FileMetadata } from './providers/types'
 import { getProvider } from './providers'
 
 /**

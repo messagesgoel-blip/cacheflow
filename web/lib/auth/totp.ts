@@ -30,7 +30,7 @@ export function generateSecret(): string {
 /**
  * Generate TOTP code from secret and timestamp
  */
-export function generateTOTP(secret: string, timestamp: number = Date.now()): string {
+export async function generateTOTP(secret: string, timestamp: number = Date.now()): Promise<string> {
   const period = 30; // 30 second period
   const digits = 6;
   
@@ -48,7 +48,7 @@ export function generateTOTP(secret: string, timestamp: number = Date.now()): st
   
   return crypto.subtle.importKey(
     'raw',
-    keyData,
+    keyData as unknown as BufferSource,
     { name: 'HMAC', hash: 'SHA-1' },
     false,
     ['sign']

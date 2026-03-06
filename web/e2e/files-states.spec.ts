@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { gotoFilesAndWait, installMockRuntime, primeQaSession, type MockConnection } from './helpers/mockRuntime'
 
 const SHOTS_DIR = '/srv/storage/screenshots/cacheflow'
 
@@ -11,93 +12,82 @@ function shotPath(id: string, name: string): string {
   return `${SHOTS_DIR}/${id}_${safe}.png`
 }
 
-test('files page loading/empty/loaded screenshots', async ({ page }, testInfo) => {
+test('files page loading/empty/loaded screenshots', async ({ page, request }, testInfo) => {
   const id = runId(testInfo.workerIndex)
+  const connections: MockConnection[] = [
+    {
+      id: 'g1',
+      remoteId: 'g1',
+      provider: 'google',
+      accountKey: 'g1',
+      accountEmail: 'username@gmail.com',
+      accountLabel: 'Google Drive A',
+    },
+  ]
 
-  await page.addInitScript(() => {
-    localStorage.setItem('cf_token', 'test-token')
-    localStorage.setItem('cf_email', 'test@example.com')
+  const loadedFiles = [
+    {
+      id: 'g-file-1',
+      name: 'Hello.txt',
+      mimeType: 'text/plain',
+      size: '5',
+      modifiedTime: new Date().toISOString(),
+      createdTime: new Date().toISOString(),
+    },
+  ]
 
-    localStorage.setItem('cacheflow_tokens_google', JSON.stringify([
-      {
-        provider: 'google',
-        accessToken: 'google-access',
-        refreshToken: 'google-refresh',
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-        accountEmail: 'username@gmail.com',
-        displayName: 'User Google',
-        accountId: 'g1',
-        accountKey: 'g1',
-        disabled: false,
-      },
-    ]))
-  })
+  let mode: 'loaded' | 'empty' = 'loaded'
 
-  // Route Google list files with a deliberate delay first (to capture loading)
-  let mode: 'delayed-empty' | 'loaded' = 'delayed-empty'
-
-  await page.route('**/*', async (route) => {
-    const url = route.request().url()
-    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) {
-      await route.continue()
-      return
+  await primeQaSession(page, request)
+  await installMockRuntime(page, connections, async ({ url }) => {
+    if (url.includes('about?fields=storageQuota')) {
+      return {
+        json: {
+          storageQuota: {
+            usage: '1024',
+            limit: '1048576',
+          },
+        },
+      }
     }
-    // Handle Google Drive proxy
-    if (url.includes('/proxy')) {
-      if (mode === 'delayed-empty') {
-        await new Promise((r) => setTimeout(r, 2000))
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ files: [], nextPageToken: null }),
-        })
-        mode = 'loaded'
-        return
+
+    if (url.includes('drive/v3/files?') && !url.includes('fields=size,mimeType') && !url.includes('alt=media')) {
+      if (mode === 'empty') {
+        return {
+          delayMs: 2000,
+          json: {
+            files: [],
+            nextPageToken: null,
+          },
+        }
       }
 
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          files: [
-            {
-              id: 'g-file-1',
-              name: 'Hello.txt',
-              mimeType: 'text/plain',
-              size: '5',
-              modifiedTime: new Date().toISOString(),
-              createdTime: new Date().toISOString(),
-            },
-          ],
+      return {
+        json: {
+          files: loadedFiles,
           nextPageToken: null,
-        }),
-      })
-      return
+        },
+      }
     }
-    
-    if (url.startsWith('https://www.googleapis.com/')) {
-      await route.fulfill({ status: 200, body: '{}' })
-      return
-    }
-    await route.abort()
+
+    return { json: {} }
   })
 
-  // 1. Loading state screenshot
-  await page.goto('/files')
-  await page.waitForSelector('[data-testid="cf-sidebar-root"]')
-  
-  // Navigate to Google Drive A to trigger the proxied request
-  await page.getByTestId('cf-sidebar-account-g1').click()
-  
+  mode = 'empty'
+  const loadingNavigation = page.goto('/files')
   await page.waitForTimeout(500)
   await page.screenshot({ path: shotPath(id, 'files_loading_state'), fullPage: true })
+  await loadingNavigation
+  await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
+  await page.getByTestId('cf-sidebar-account-g1').click()
 
-  // 2. Empty state screenshot
-  await expect(page.getByText('This folder is empty')).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText('This folder is empty')).toBeVisible({ timeout: 10000 })
   await page.screenshot({ path: shotPath(id, 'files_empty_state'), fullPage: true })
 
-  // 3. Loaded state screenshot (after refresh)
-  await page.getByTestId('files-refresh').click()
-  await expect(page.getByText('Hello.txt').first()).toBeVisible({ timeout: 10_000 })
+  mode = 'loaded'
+  await page.reload()
+  await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
+  await page.getByTestId('cf-sidebar-account-g1').click()
+  await expect(page.getByText('Hello.txt').first()).toBeVisible({ timeout: 10000 })
   await page.screenshot({ path: shotPath(id, 'files_loaded_state'), fullPage: true })
 })

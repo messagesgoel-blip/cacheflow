@@ -254,7 +254,7 @@ function mapSFTPError(err: Error & { code?: number }, path: string): AppError {
 
 function fileEntryToProviderFile(entry: FileEntry, dir: string): ProviderFile {
   const fullPath = dir === '/' ? `/${entry.filename}` : `${dir}/${entry.filename}`;
-  const isFolder = entry.attrs.isDirectory();
+  const isFolder = (entry.attrs.mode & 0o170000) === 0o040000;
   return {
     id: fullPath,
     name: entry.filename,

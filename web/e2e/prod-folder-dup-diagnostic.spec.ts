@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import fs from 'node:fs'
+import { gotoFilesAndWait, installMockRuntime, primeQaSession, type MockConnection } from './helpers/mockRuntime'
 
 const SHOTS_DIR = '/srv/storage/screenshots/cacheflow'
 
@@ -12,103 +12,141 @@ function shotPath(id: string, name: string): string {
   return `${SHOTS_DIR}/${id}_${safe}.png`
 }
 
-test('prod diagnostic: duplicate folders with 4 drives and nested files', async ({ page }, testInfo) => {
-  page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`))
+test('prod diagnostic: duplicate folders with 4 drives and nested files', async ({ page, request }, testInfo) => {
   const id = runId(testInfo.workerIndex)
-  const cors = {
-    'access-control-allow-origin': '*',
-    'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-    'access-control-allow-headers': 'authorization,content-type',
-  }
+  const connections: MockConnection[] = [
+    { id: 'g1', remoteId: 'g1', provider: 'google', accountKey: 'g1', accountEmail: 'g1@example.com', accountLabel: 'Google A' },
+    { id: 'g2', remoteId: 'g2', provider: 'google', accountKey: 'g2', accountEmail: 'g2@example.com', accountLabel: 'Google B' },
+    { id: 'd1', remoteId: 'd1', provider: 'dropbox', accountKey: 'd1', accountEmail: 'd1@example.com', accountLabel: 'Dropbox A' },
+    { id: 'd2', remoteId: 'd2', provider: 'dropbox', accountKey: 'd2', accountEmail: 'd2@example.com', accountLabel: 'Dropbox B' },
+  ]
 
-  await page.addInitScript(() => {
-    localStorage.setItem('cf_token', 'test-token')
-    localStorage.setItem('cf_email', 'test@example.com')
-    
-    localStorage.setItem('cacheflow_tokens_google', JSON.stringify([
-      { provider: 'google', accessToken: 'g1', accountEmail: 'g1@example.com', displayName: 'Google A', accountKey: 'g1' },
-      { provider: 'google', accessToken: 'g2', accountEmail: 'g2@example.com', displayName: 'Google B', accountKey: 'g2' },
-    ]))
-    localStorage.setItem('cacheflow_tokens_dropbox', JSON.stringify([
-      { provider: 'dropbox', accessToken: 'd1', accountEmail: 'd1@example.com', displayName: 'Dropbox A', accountKey: 'd1' },
-      { provider: 'dropbox', accessToken: 'd2', accountEmail: 'd2@example.com', displayName: 'Dropbox B', accountKey: 'd2' },
-    ]))
-  })
-
-  await page.route('**/*', async (route) => {
-    const url = route.request().url()
-    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) return route.continue()
-    
-    if (url.includes('/proxy')) {
-      const req = route.request()
-      const body = req.postDataJSON()
-      const auth = req.headers()['authorization']
-      const proxyUrl = body.url || ''
-      const remoteId = url.split('/').slice(-2)[0]
-      
-      const provider = proxyUrl.includes('dropbox') ? 'dropbox' : 'google'
-      
-      if (provider === 'google') {
-        const account = remoteId === 'g1' || proxyUrl.includes('accessToken=g1') ? 'g1' : 'g2'
-        const files = proxyUrl.includes('docs') 
-          ? [{ id: `${account}-f1`, name: `${account}-file.txt`, mimeType: 'text/plain', size: '100' }]
-          : [{ id: `${account}-docs`, name: 'Documents', mimeType: 'application/vnd.google-apps.folder' }]
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ files }) })
-      } else {
-        const account = remoteId === 'd1' || proxyUrl.includes('accessToken=d1') ? 'd1' : 'd2'
-        const entries = (proxyUrl.includes('docs') || proxyUrl.includes('list_folder/continue'))
-          ? [{ '.tag': 'file', id: `id:${account}-f1`, name: `${account}-file.txt`, size: 100 }]
-          : [{ '.tag': 'folder', id: `id:${account}-docs`, name: 'Documents', path_lower: `/${account}-docs` }]
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ entries, has_more: false, cursor: 'c' }) })
+  await primeQaSession(page, request)
+  await installMockRuntime(page, connections, async ({ remoteId, url, jsonBody }) => {
+    if (url.includes('about?fields=storageQuota')) {
+      return {
+        json: {
+          storageQuota: {
+            usage: '1024',
+            limit: '10485760',
+          },
+        },
       }
-      return
     }
 
-    if (url.startsWith('https://')) return route.fulfill({ status: 200, body: '{}' })
-    return route.continue()
+    if (url.includes('/users/get_space_usage')) {
+      return {
+        json: {
+          allocation: { allocated: 10485760 },
+          used: 1024,
+        },
+      }
+    }
+
+    if (url.includes('drive/v3/files?')) {
+      const folderId = remoteId.endsWith('2') ? `${remoteId}-docs` : `${remoteId}-docs`
+      if (url.includes(encodeURIComponent(`'${folderId}' in parents`))) {
+        return {
+          json: {
+            files: [
+              {
+                id: `${remoteId}-f1`,
+                name: `${remoteId}-file.txt`,
+                mimeType: 'text/plain',
+                size: '100',
+                modifiedTime: new Date().toISOString(),
+                createdTime: new Date().toISOString(),
+              },
+            ],
+            nextPageToken: null,
+          },
+        }
+      }
+
+      return {
+        json: {
+          files: [
+            {
+              id: `${remoteId}-docs`,
+              name: 'Documents',
+              mimeType: 'application/vnd.google-apps.folder',
+              modifiedTime: new Date().toISOString(),
+              createdTime: new Date().toISOString(),
+            },
+          ],
+          nextPageToken: null,
+        },
+      }
+    }
+
+    if (url.includes('/files/list_folder')) {
+      const payload = (jsonBody as { path?: string }) || {}
+      const folderPath = payload.path || ''
+      if (folderPath === `/${remoteId}-docs`) {
+        return {
+          json: {
+            entries: [
+              {
+                '.tag': 'file',
+                id: `id:${remoteId}-f1`,
+                name: `${remoteId}-file.txt`,
+                path_lower: `/${remoteId}-docs/${remoteId}-file.txt`,
+                path_display: `/${remoteId}-docs/${remoteId}-file.txt`,
+                size: 100,
+                client_modified: new Date().toISOString(),
+                server_modified: new Date().toISOString(),
+              },
+            ],
+            has_more: false,
+            cursor: 'mock-cursor',
+          },
+        }
+      }
+
+      return {
+        json: {
+          entries: [
+            {
+              '.tag': 'folder',
+              id: `id:${remoteId}-docs`,
+              name: 'Documents',
+              path_lower: `/${remoteId}-docs`,
+              path_display: `/${remoteId}-docs`,
+            },
+          ],
+          has_more: false,
+          cursor: 'mock-cursor',
+        },
+      }
+    }
+
+    return { json: {} }
   })
 
-  await page.goto('/files')
-  await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
+  await gotoFilesAndWait(page)
   await page.getByTestId('cf-sidebar-node-all-files').click()
-  await expect(page.getByText('Documents').first()).toBeVisible({ timeout: 20_000 })
+  const rootDocsRows = page.locator('[data-testid="cf-file-row"][data-file-name="Documents"]')
+  await expect(rootDocsRows.first()).toBeVisible({ timeout: 20000 })
 
-  const rootDocsCount = await page.locator('tr', { hasText: 'Documents' }).count()
-  console.log(`[TEST] rootDocsCount: ${rootDocsCount}`)
+  const rootDocsCount = await rootDocsRows.count()
   await page.screenshot({ path: shotPath(id, 'root_duplicates'), fullPage: true })
 
   const probes = [
-    { key: 'google_g2_docs', rowHas: ['Documents', /Google B|g2/i], sidebarId: 'cf-sidebar-account-g2' },
-    { key: 'google_g1_docs', rowHas: ['Documents', /Google A|g1/i], sidebarId: 'cf-sidebar-account-g1' },
-    { key: 'dropbox_d2_docs', rowHas: ['Documents', /Dropbox B|d2/i], sidebarId: 'cf-sidebar-account-d2' },
-    { key: 'dropbox_d1_docs', rowHas: ['Documents', /Dropbox A|d1/i], sidebarId: 'cf-sidebar-account-d1' },
+    { key: 'g2', sidebarId: 'cf-sidebar-account-g2', expectedFile: 'g2-file.txt' },
+    { key: 'g1', sidebarId: 'cf-sidebar-account-g1', expectedFile: 'g1-file.txt' },
+    { key: 'd2', sidebarId: 'cf-sidebar-account-d2', expectedFile: 'd2-file.txt' },
+    { key: 'd1', sidebarId: 'cf-sidebar-account-d1', expectedFile: 'd1-file.txt' },
   ]
 
-  const outcomes: any[] = []
-
   for (const probe of probes) {
-    console.log(`[TEST] Probing ${probe.key}...`)
     await page.getByTestId('cf-sidebar-node-all-files').click()
-    let row = page.locator('tr', { hasText: probe.rowHas[0] })
-    for (const h of probe.rowHas.slice(1)) { row = row.filter({ hasText: h }) }
-    
-    await expect(row.first()).toBeVisible({ timeout: 10000 })
-    await row.first().click()
-    await page.waitForTimeout(2000)
-
-    // Sidebar should highlight the correct account
+    const row = page.locator(`[data-testid="cf-file-row"][data-account-key="${probe.key}"]`).filter({ hasText: 'Documents' }).first()
+    await expect(row).toBeVisible({ timeout: 10000 })
+    await row.click()
     await expect(page.getByTestId(probe.sidebarId)).toHaveClass(/bg-blue-50/)
-    
-    const fileRows = await page.locator('tbody tr').count().catch(() => 0)
-    console.log(`[TEST] ${probe.key} fileRows=${fileRows}`)
-
-    outcomes.push({ probe: probe.key, found: true, fileRows })
-    await page.screenshot({ path: shotPath(id, `after_click_${probe.key}`), fullPage: true })
+    await expect(page.getByText(probe.expectedFile).first()).toBeVisible({ timeout: 10000 })
+    await page.screenshot({ path: shotPath(id, `after_click_${probe.key}_documents`), fullPage: true })
   }
 
   expect(rootDocsCount).toBeGreaterThan(1)
-  for (const outcome of outcomes) {
-    expect(outcome.found).toBe(true)
-    expect(outcome.fileRows).toBeGreaterThan(0)
-  }
 })

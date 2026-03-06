@@ -1,28 +1,25 @@
-import { authenticator } from 'otplib';
+import { TOTP } from 'otplib';
 import QRCode from 'qrcode';
 
 // Configure TOTP settings
-authenticator.options = {
-  // 30 seconds default period
+const totp = new TOTP({
   period: 30,
-  // 6 digits
   digits: 6,
-  // SHA-1 algorithm
-  algorithm: 'SHA1',
-};
+  algorithm: 'sha1',
+});
 
 /**
  * Generate a new TOTP secret for a user
  */
 export function generateTOTPSecret(): string {
-  return authenticator.generateSecret();
+  return totp.generateSecret();
 }
 
 /**
  * Generate a TOTP key URI for QR code generation
  */
 export function generateTOTPKeyURI(secret: string, email: string, issuer: string = 'CacheFlow'): string {
-  return authenticator.keyuri(email, issuer, secret);
+  return totp.toURI({ issuer, label: email, secret });
 }
 
 /**
@@ -32,17 +29,18 @@ export async function generateQRCode(totpUri: string): Promise<string> {
   try {
     const qrCodeUrl = await QRCode.toDataURL(totpUri);
     return qrCodeUrl;
-  } catch (error) {
-    throw new Error(`Failed to generate QR code: ${error.message}`);
+  } catch (error: unknown) {
+    throw new Error(`Failed to generate QR code: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
 /**
  * Verify a TOTP token against a secret
  */
-export function verifyTOTPToken(token: string, secret: string): boolean {
+export async function verifyTOTPToken(token: string, secret: string): Promise<boolean> {
   try {
-    return authenticator.check(token, secret);
+    const result = await totp.verify(token, { secret });
+    return !!result;
   } catch (error) {
     console.error('TOTP verification error:', error);
     return false;

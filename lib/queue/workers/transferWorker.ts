@@ -219,22 +219,22 @@ export const transferWorker = new Worker<TransferJobData, TransferJobResult>(
 // Worker event handlers
 // ---------------------------------------------------------------------------
 
-transferWorker.on('completed', (job, result) => {
+transferWorker.on('completed', (job: Job | undefined, result: any) => {
   console.log(
     `[TransferWorker] Job ${job?.id} → ${result?.success ? 'success' : 'fail'} ` +
     `"${result?.fileName}" (${result?.duration}ms)`,
   );
 });
 
-transferWorker.on('failed', (job, err) => {
+transferWorker.on('failed', (job: Job | undefined, err: Error) => {
   console.error(`[TransferWorker] Job ${job?.id} failed: ${err.message}`);
 });
 
-transferWorker.on('progress', (job, progress) => {
+transferWorker.on('progress', (job: Job | undefined, progress: any) => {
   console.log(`[TransferWorker] Job ${job?.id} progress: ${progress}%`);
 });
 
-transferWorker.on('error', (err) => {
+transferWorker.on('error', (err: Error) => {
   console.error(`[TransferWorker] Worker-level error: ${err.message}`);
 });
 
@@ -247,7 +247,7 @@ export async function getWorkerStats(): Promise<{
   runningJobs: number;
 }> {
   const isPaused = await transferWorker.isPaused();
-  const runningJobs = await transferWorker.getActiveCount();
+  const runningJobs = (transferWorker as any).running?.size ?? 0;
   return { isPaused, runningJobs };
 }
 

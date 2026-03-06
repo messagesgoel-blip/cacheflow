@@ -236,7 +236,7 @@ export class YandexAdapter implements ProviderAdapter {
     return {
       account: {
         accountId,
-        email: (profile['default_email'] ?? profile['emails']?.[0]) as string | undefined,
+        email: (profile['default_email'] ?? (profile['emails'] as string[] | undefined)?.[0]) as string | undefined,
         displayName: profile['real_name'] as string | undefined,
         avatarUrl: profile['default_avatar_id']
           ? `https://avatars.yandex.net/get-yapic/${profile['default_avatar_id']}/islands-75`
