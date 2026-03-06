@@ -237,6 +237,9 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         })
       }
 
+      // FIX-06: Enforce stable sort by connectedAt or displayName
+      connected.sort((a, b) => (a.connectedAt || 0) - (b.connectedAt || 0) || a.displayName.localeCompare(b.displayName))
+
       setConnectedProviders(connected)
       setLoadingProviders(loadingIds)
     }
@@ -370,8 +373,27 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
     async function loadAllFiles() {
       if (searchQuery.trim()) { performSearch(); return }
-      setFiles([]); setLoading(true); setError(null)
-      if (['recent', 'starred', 'activity'].includes(selectedProvider)) { setLoading(false); return }
+      
+      // If we already have files and are just refreshing, don't clear the list (avoids flash of loading spinner)
+      const isRefreshing = files.length > 0;
+      if (!isRefreshing) setFiles([]); 
+      
+      setLoading(true); 
+      setError(null);
+
+      const REFETCH_TIMEOUT = 8000;
+      const timeoutId = setTimeout(() => {
+        if (!isStale) {
+          setLoading(false);
+          actions.notify({ kind: 'warning', title: 'Still loading...', message: 'File list may be out of date — Refresh' });
+        }
+      }, REFETCH_TIMEOUT);
+
+      if (['recent', 'starred', 'activity'].includes(selectedProvider)) { 
+        clearTimeout(timeoutId);
+        setLoading(false); 
+        return; 
+      }
 
       // Use aggregated mode when viewing all providers
       if (isAggregatedView && selectedProvider === 'all') {
@@ -452,53 +474,61 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             setError(`Aggregation failed: ${err.message}`)
           }
         } finally {
+          clearTimeout(timeoutId)
           if (!isStale) setLoading(false)
         }
         return
       }
 
       // Standard single-provider or non-aggregated mode
-      const allFiles: FileMetadata[] = []
-      const errors: string[] = []
-      const pids = selectedProvider === 'all' ? loadingProviders : [selectedProvider as ProviderId]
+      try {
+        const allFiles: FileMetadata[] = []
+        const errors: string[] = []
+        const pids = selectedProvider === 'all' ? loadingProviders : [selectedProvider as ProviderId]
 
-      for (const pid of pids) {
-        if (isStale) return
-        const tokens = selectedProvider === 'all' ? tokenManager.getTokens(pid).filter(t => !t.disabled) : [tokenManager.getToken(pid, activeAccountKey)]
-        for (const t of tokens) {
-          if (!t || isStale) continue
-          const provider = getProvider(pid); if (!provider) continue
-          const key = t.accountKey || t.accountEmail || ''; if (key) tokenManager.setActiveToken(pid, key)
-          provider.remoteId = (t as any).remoteId
-          const folderId = currentPath === '/' ? rootFolderId(pid) : currentPath
-          let resultFiles: FileMetadata[] = []
-          const cached = await metadataCache.getCachedFiles(pid, key, folderId)
-          if (cached) resultFiles = cached
-          else {
-            try { const result = await provider.listFiles({ folderId }); resultFiles = result.files; await metadataCache.cacheFiles(pid, key, folderId, resultFiles) }
-            catch (err: any) { errors.push(`${pid}: ${err.message}`); continue }
-          }
-          if (isStale) return
-          allFiles.push(
-            ...resultFiles.map((file) =>
-              normalizeFileMetadata(
-                {
-                  ...file,
-                  provider: pid,
-                  providerName: PROVIDERS.find((p) => p.id === pid)?.name || pid,
-                  accountKey: key,
-                  sourceLabel: (t as any).displayName || (t as any).accountEmail || pid,
-                  remoteId: (t as any).remoteId,
-                } as any,
-                { fallbackName: (file as any)?.name || (file as any)?.title || 'untitled' },
+        for (const pid of pids) {
+          if (isStale) break
+          const tokens = selectedProvider === 'all' ? tokenManager.getTokens(pid).filter(t => !t.disabled) : [tokenManager.getToken(pid, activeAccountKey)]
+          for (const t of tokens) {
+            if (!t || isStale) continue
+            const provider = getProvider(pid); if (!provider) continue
+            const key = t.accountKey || t.accountEmail || ''; if (key) tokenManager.setActiveToken(pid, key)
+            provider.remoteId = (t as any).remoteId
+            const folderId = currentPath === '/' ? rootFolderId(pid) : currentPath
+            let resultFiles: FileMetadata[] = []
+            const cached = await metadataCache.getCachedFiles(pid, key, folderId)
+            if (cached) resultFiles = cached
+            else {
+              try { const result = await provider.listFiles({ folderId }); resultFiles = result.files; await metadataCache.cacheFiles(pid, key, folderId, resultFiles) }
+              catch (err: any) { errors.push(`${pid}: ${err.message}`); continue }
+            }
+            if (isStale) break
+            allFiles.push(
+              ...resultFiles.map((file) =>
+                normalizeFileMetadata(
+                  {
+                    ...file,
+                    provider: pid,
+                    providerName: PROVIDERS.find((p) => p.id === pid)?.name || pid,
+                    accountKey: key,
+                    sourceLabel: (t as any).displayName || (t as any).accountEmail || pid,
+                    remoteId: (t as any).remoteId,
+                  } as any,
+                  { fallbackName: (file as any)?.name || (file as any)?.title || 'untitled' },
+                ),
               ),
-            ),
-          )
+            )
+          }
         }
+        if (isStale) return
+        if (errors.length > 0) setError(`Failed to load: ${errors.join(', ')}`)
+        setFiles(allFiles); setSelectedFiles(new Set())
+      } catch (err: any) {
+        if (!isStale) setError(`Load failed: ${err.message}`)
+      } finally {
+        clearTimeout(timeoutId)
+        if (!isStale) setLoading(false)
       }
-      if (isStale) return
-      if (errors.length > 0) setError(`Failed to load: ${errors.join(', ')}`)
-      setFiles(allFiles); setSelectedFiles(new Set()); setLoading(false)
     }
     const timer = setTimeout(() => { if (searchQuery.trim()) performSearch(); else loadAllFiles() }, searchQuery.trim() ? 500 : 0)
     return () => { isStale = true; clearTimeout(timer) }
@@ -538,12 +568,56 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const handleFileDownload = async (file: FileMetadata) => {
     const safeName = file.name || 'untitled'
     const task = actions.startTask({ key: 'file-action', title: 'Downloading', message: safeName, progress: null })
+    const safetyTimer = setTimeout(() => task.fail('Download timed out'), 15000)
     try {
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider); if (!provider) throw new Error('Provider not available')
       provider.remoteId = (file as any).remoteId
-      const blob = await provider.downloadFile(file.id); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = safeName; a.click(); window.URL.revokeObjectURL(url); task.succeed(safeName)
+      const blob = await provider.downloadFile(file.id)
+      clearTimeout(safetyTimer)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = safeName
+      a.click()
+      window.URL.revokeObjectURL(url)
+      task.succeed(safeName)
     } catch (err: any) {
+      clearTimeout(safetyTimer)
+      const message = err?.message || 'Download failed'
+      task.fail(message)
+      actions.notify({ kind: 'error', title: 'Download failed', message })
+    }
+  }
+
+  const handleFileOpen = async (file: FileMetadata) => {
+    if (file.isFolder) { handleFolderClick(file); return }
+    const safeName = file.name || 'untitled'
+    const isInlinePreview = isTextPreviewEligible({ size: file.size }) || file.mimeType?.startsWith('image/')
+    const task = actions.startTask({ 
+      key: 'file-action', 
+      title: isInlinePreview ? 'Previewing' : 'Opening', 
+      message: safeName, 
+      progress: null 
+    })
+    const safetyTimer = setTimeout(() => task.fail('Open timed out'), 10000)
+    
+    try {
+      if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
+      const provider = getProvider(file.provider); if (!provider) throw new Error('Provider not available')
+      provider.remoteId = (file as any).remoteId
+      const blob = await provider.downloadFile(file.id)
+      const url = window.URL.createObjectURL(blob)
+      const type = resolvePreviewType({ mimeType: file.mimeType, fileName: safeName })
+      let textContent: string | undefined
+      if (type === 'text' && isTextPreviewEligible({ size: file.size })) {
+        textContent = await blob.text()
+      }
+      setPreviewPanelFile({ file: normalizeFileMetadata(file, { fallbackName: safeName }), url, type, textContent })
+      clearTimeout(safetyTimer)
+      task.succeed(safeName)
+    } catch (err: any) {
+      clearTimeout(safetyTimer)
       const message = err?.message || 'Could not load preview'
       setPreviewPanelFile({
         file: normalizeFileMetadata(file, { fallbackName: safeName }),
@@ -552,33 +626,11 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         previewError: message,
       })
       task.fail(message)
-    }
-  }
-
-  const handleFileOpen = async (file: FileMetadata) => {
-    if (file.isFolder) { handleFolderClick(file); return }
-    const safeName = file.name || 'untitled'
-    actions.notify({ key: 'file-action', kind: 'info', title: 'Opening', message: safeName, ttlMs: 1500 })
-    try {
-      if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
-      const provider = getProvider(file.provider); if (!provider) throw new Error('Provider not available')
-      provider.remoteId = (file as any).remoteId
-      const blob = await provider.downloadFile(file.id); const url = window.URL.createObjectURL(blob)
-      const type = resolvePreviewType({ mimeType: file.mimeType, fileName: safeName })
-      let textContent: string | undefined
-      if (type === 'text' && isTextPreviewEligible({ size: file.size })) {
-        textContent = await blob.text()
+      if (err?.status === 404) {
+        actions.notify({ kind: 'error', title: 'File not found', message: 'It may have been deleted' })
+      } else {
+        actions.notify({ key: 'file-action', kind: 'error', title: 'Could not open', message, ttlMs: 4000 })
       }
-      setPreviewPanelFile({ file: normalizeFileMetadata(file, { fallbackName: safeName }), url, type, textContent })
-    } catch (err: any) {
-      const message = err?.message || 'Could not load preview'
-      setPreviewPanelFile({
-        file: normalizeFileMetadata(file, { fallbackName: safeName }),
-        url: null,
-        type: resolvePreviewType({ mimeType: file.mimeType, fileName: safeName }),
-        previewError: message,
-      })
-      actions.notify({ key: 'file-action', kind: 'error', title: 'Could not open', message, ttlMs: 4000 })
     }
   }
 
@@ -691,9 +743,18 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     if (!ok) return
 
     const task = actions.startTask({ key: 'file-action', title: 'Deleting', message: safeName, progress: null })
-    const previousFile = file
+    const safetyTimer = setTimeout(() => task.fail('Delete timed out'), 10000)
+    
+    // Optimistic removal
+    const previousFiles = [...files]
     setFiles((prev) => prev.filter((item) => item.id !== file.id))
     setPreviewPanelFile((prev) => (prev?.file?.id === file.id ? null : prev))
+    setSelectedFiles(prev => {
+      const next = new Set(prev)
+      next.delete(file.id)
+      return next
+    })
+
     try {
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider)
@@ -701,10 +762,14 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       provider.remoteId = (file as any).remoteId
       await provider.deleteFile(file.id)
       await metadataCache.invalidateCache(file.provider as any, (file as any).accountKey)
-      setRefreshKey((k) => k + 1)
+      clearTimeout(safetyTimer)
       task.succeed(safeName)
+      
+      // Refresh without clearing the list (loading=false will be set by the effect)
+      setRefreshKey((k) => k + 1)
     } catch (err: any) {
-      setFiles((prev) => (prev.some((item) => item.id === previousFile.id) ? prev : [previousFile, ...prev]))
+      clearTimeout(safetyTimer)
+      setFiles(previousFiles) // Restore on failure
       const message = err?.message || 'Delete failed'
       task.fail(message)
       actions.notify({ kind: 'error', title: 'Delete failed', message })
@@ -744,7 +809,38 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           data-testid="cf-action-upload-input"
         />
         {transferModal.open && transferModal.file && <TransferModal isOpen={transferModal.open} mode={transferModal.mode} file={transferModal.file} connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))} onClose={() => setTransferModal({ open: false, mode: 'copy', file: null })} onSubmit={async (args) => { addTransfer({ type: transferModal.mode, file: transferModal.file!, ...args }); setTransferModal({ open: false, mode: 'copy', file: null }); setSelectedFiles(new Set()) }} />}
-        {renameModal.open && renameModal.file && <RenameModal isOpen={renameModal.open} title="Rename" initialValue={renameModal.file?.name || ''} onClose={() => setRenameModal({ open: false, file: null })} onSubmit={async (newName) => { const f = renameModal.file!; const p = getProvider(f.provider)!; p.remoteId = (f as any).remoteId; const task = actions.startTask({ key: 'file-action', title: 'Renaming', message: f.name || 'file', progress: null }); try { await p.renameFile(f.id, newName); await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); const renamedFile = applyRenamedMetadata(f, newName); setFiles((prev) => prev.map((item) => item.id === f.id ? { ...item, ...renamedFile } : item)); setPreviewPanelFile((prev) => prev?.file?.id === f.id ? { ...prev, file: { ...prev.file, ...renamedFile } } : prev); task.succeed(newName) } catch (err: any) { const message = err?.message || 'Rename failed'; task.fail(message); actions.notify({ kind: 'error', title: 'Rename failed', message }) } finally { setRenameModal({ open: false, file: null }); setRefreshKey(k => k + 1) } }} />}
+        {renameModal.open && renameModal.file && <RenameModal isOpen={renameModal.open} title="Rename" initialValue={renameModal.file?.name || ''} onClose={() => setRenameModal({ open: false, file: null })} onSubmit={async (newName) => { 
+          const f = renameModal.file!; 
+          const p = getProvider(f.provider)!; 
+          p.remoteId = (f as any).remoteId; 
+          const task = actions.startTask({ key: 'file-action', title: 'Renaming', message: f.name || 'file', progress: null }); 
+          const safetyTimer = setTimeout(() => task.fail('Rename timed out'), 10000);
+          
+          // Optimistic update
+          const renamedFile = applyRenamedMetadata(f, newName);
+          setFiles((prev) => prev.map((item) => item.id === f.id ? { ...item, ...renamedFile } : item));
+          setPreviewPanelFile((prev) => prev?.file?.id === f.id ? { ...prev, file: { ...prev.file, ...renamedFile } } : prev);
+
+          try { 
+            await p.renameFile(f.id, newName); 
+            await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); 
+            clearTimeout(safetyTimer);
+            task.succeed(newName);
+            
+            // To avoid ghost rows, filter out the old ID BEFORE refetching 
+            // if the provider might return a new ID for the renamed file
+            setFiles(prev => prev.filter(item => item.id !== f.id || item.name === newName));
+            setRefreshKey(k => k + 1);
+          } catch (err: any) { 
+            clearTimeout(safetyTimer);
+            const message = err?.message || 'Rename failed'; 
+            task.fail(message); 
+            actions.notify({ kind: 'error', title: 'Rename failed', message });
+            setRefreshKey(k => k + 1); // Restore from server
+          } finally { 
+            setRenameModal({ open: false, file: null }); 
+          } 
+        }} />}
         {showShortcutHelp && <ShortcutHelp onClose={() => setShowShortcutHelp(false)} />}
 
         <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex flex-wrap items-center justify-between gap-4">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Sidebar from '@/components/Sidebar'
 import SidebarNav from '@/components/Sidebar/SidebarNav'
@@ -52,53 +53,13 @@ const STATUS_COLOR: Record<string, string> = {
 }
 
 export default function ConnectionsPage() {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [sessionReady, setSessionReady] = useState(false)
-  const [email, setEmail] = useState('')
+  const router = useRouter()
   const [connections, setConnections] = useState<ServerConnection[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedProvider, setSelectedProvider] = useState<ProviderId | 'all' | 'recent' | 'starred' | 'activity'>('all')
   const [activeAccountKey, setActiveAccountKey] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
-
-  useEffect(() => {
-    let isMounted = true
-
-    const hydrateSession = async () => {
-      try {
-        const res = await fetch('/api/auth/session', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store',
-        })
-        if (!res.ok) {
-          if (isMounted) {
-            setAuthenticated(false)
-            setEmail('')
-            setSessionReady(true)
-          }
-          return
-        }
-        const session = (await res.json()) as SessionResponse
-        if (!isMounted) return
-        setAuthenticated(Boolean(session.authenticated))
-        setEmail(session.user?.email || '')
-        setSessionReady(true)
-      } catch {
-        if (isMounted) {
-          setAuthenticated(false)
-          setEmail('')
-          setSessionReady(true)
-        }
-      }
-    }
-
-    hydrateSession()
-    return () => {
-      isMounted = false
-    }
-  }, [])
 
   const fetchConnections = useCallback(async () => {
     setLoading(true)
@@ -108,28 +69,28 @@ export default function ConnectionsPage() {
         credentials: 'include',
         cache: 'no-store',
       })
-      if (res.status === 401) {
-        window.location.href = '/login?reason=session_expired'
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push('/login?reason=session_expired')
+          return
+        }
+        const body = await res.json().catch(() => ({}))
+        setError(body.error || 'Failed to load connections. Try refreshing.')
+        setLoading(false)
         return
       }
       const body = await res.json()
-      if (!body.success) {
-        setError(body.error || 'Failed to load connections')
-        return
-      }
       setConnections(body.data ?? [])
     } catch {
-      setError('Network error — could not reach server')
+      setError('Network error — could not reach server. Try refreshing.')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [router])
 
   useEffect(() => {
-    if (authenticated) {
-      fetchConnections()
-    }
-  }, [authenticated, fetchConnections])
+    fetchConnections()
+  }, [fetchConnections])
 
   const handleNavigate = (
     providerId: ProviderId | 'all' | 'vault' | 'recent' | 'starred' | 'activity',
@@ -139,30 +100,6 @@ export default function ConnectionsPage() {
     if (accountKey) setActiveAccountKey(accountKey)
   }
 
-  if (!sessionReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-600 dark:text-gray-400">Loading connections…</p>
-      </div>
-    )
-  }
-
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Please log in to view your connections</p>
-          <a
-            href="/login"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Log In
-          </a>
-        </div>
-      </div>
-    )
-  }
-
   const connectedProviders: ConnectedProvider[] = connections
     .filter((c) => c.status === 'connected')
     .map(toConnectedProvider)
@@ -170,9 +107,9 @@ export default function ConnectionsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
       <Navbar
-        email={email}
+        email="Account"
         onLogout={() => {
-          window.location.href = '/login'
+          router.push('/login')
         }}
       />
 

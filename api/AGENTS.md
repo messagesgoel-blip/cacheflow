@@ -1,49 +1,11 @@
-# API KNOWLEDGE BASE
+# API — Quick Sheet
 
-**Generated:** 2026-03-04
-**Commit:** N/A
-**Branch:** N/A
+Purpose: Express API on port 8100 for auth, provider connections, file ops, sync hooks.
 
-## OVERVIEW
-Express.js API server for CacheFlow (runs on port 8100). Handles file operations, cloud provider integrations, authentication, and sync operations.
+Layout: src/routes, src/services, src/middleware, src/utils; tests/ for unit/integration.
 
-## STRUCTURE
-```
-./api/
-├── src/
-│   ├── routes/       # Express route handlers
-│   ├── services/     # Business logic services
-│   ├── middleware/   # Express middleware
-│   └── utils/        # API-specific utilities
-├── tests/            # API unit/integration tests
-├── Dockerfile        # Container configuration
-└── package.json      # API dependencies
-```
+Hot spots: routes/files.ts (file ops), routes/remotes.ts (provider OAuth), routes/auth.ts (login/refresh), routes/health.ts.
 
-## WHERE TO LOOK
-| Task | Location | Notes |
-|------|----------|-------|
-| File Ops | routes/files.js | Browse, upload, download, move operations |
-| Cloud Providers | routes/remotes.js | OAuth flows, provider connections |
-| Auth | routes/auth.js | Login, session management |
-| Health Checks | routes/health.js | Service status endpoints |
-| Business Logic | src/services/ | Core operations implementation |
-| Tests | tests/ | API-specific test suites |
+Standards: Prisma for DB; express-validator for inputs; JWT refresh + access; rate-limit per IP/user; sanitize responses (no raw records or credentials).
 
-## CONVENTIONS
-- Express.js route handlers with structured error responses
-- JWT authentication with refresh tokens
-- Input validation with express-validator
-- Database operations with Prisma ORM
-- Rate limiting per IP and per-user
-
-## ANTI-PATTERNS (THIS PROJECT)
-- Never expose raw database records directly - sanitize responses
-- Avoid long-running operations in request handlers
-- Don't store sensitive data in plain text
-
-## UNIQUE STYLES
-- Dual approach for cloud providers: direct API vs rclone
-- Comprehensive OAuth flow with multiple provider types
-- File operation immutability with version tracking
-- Real-time progress updates via SSE
+Rules: keep handlers short and non-blocking; use structured errors; never store secrets/plaintext or leak vault data; prefer service layer over route logic.

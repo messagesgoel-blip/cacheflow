@@ -1,50 +1,17 @@
-# CacheFlow — Agent Context
+# CacheFlow — Agent Quick Sheet
 
-## Project
-Multi-cloud file management platform. Next.js/TypeScript 
-frontend, Node.js API, PostgreSQL + Redis.
-Hosted at cacheflow.goels.in. Admin: admin@cacheflow.goels.in.
+Project: multi‑cloud file manager (Next.js frontend, Node API, Postgres + Redis). Prod host: cacheflow.goels.in.
 
-## Repository Structure
-- web/          Next.js frontend (port 3010 in dev, 3000 in Docker)
-- api/          Express backend (port 8100)
-- worker/       BullMQ job workers
-- lib/          Shared utilities and provider adapters
-- docs/contracts/  API shape contracts — READ BEFORE IMPLEMENTING
-- docs/orchestration/  Sprint manifests and state
-- logs/         Audit logs and task logs
+Layout: web/ (Next.js), api/ (Express), worker/ (BullMQ), lib/ (shared adapters), docs/contracts/ (API contracts), docs/orchestration/ (sprint state).
 
-## Auth Rules (CRITICAL)
-- HttpOnly cookies ONLY. Never write tokens to localStorage.
-- Token vault: lib/vault/tokenVault.ts
-- Never expose raw tokens in API responses
-- Client JS must never read or write auth tokens
+Auth: HttpOnly cookies only; token vault in lib/vault/tokenVault.ts; never expose tokens or write them to client storage.
 
-## Storage Providers
-Google Drive, OneDrive, Box, Dropbox, Filen, WebDAV, VPS/SFTP.
-All provider adapters in lib/providers/.
-Credentials never returned in API responses after save.
+Providers: Google Drive, OneDrive, Box, Dropbox, Filen, WebDAV, VPS/SFTP; adapters live in lib/providers/; never return stored credentials.
 
-## Sprint System
-- Current sprint: see logs/orchestrator-state.json
-- Task manifest: docs/orchestration/task-manifest.json  
-- Contracts: docs/contracts/{task-id}.md
-- Always read the relevant contract before implementing a task
-- Always run: cd web && npx tsc --noEmit before committing
+Sprints & contracts: see logs/orchestrator-state.json and docs/orchestration/task-manifest.json. Every cross-agent output needs docs/contracts/{task-id}.md. Type-check before commit: cd web && npx tsc --noEmit.
 
-## Testing
-- Playwright E2E in web/e2e/
-- Always run tests from web/ directory
-- All E2E tests mock API calls — never hit real providers
-- Run gate: SPRINT_LIMIT=N npx ts-node scripts/orchestrate.ts --gate-only --sprint N
+Tests: Playwright in web/e2e (run from web/). Gate command: SPRINT_LIMIT=N npx ts-node scripts/orchestrate.ts --gate-only --sprint N.
 
-## Commit Rules
-- Use --no-verify flag: git commit --no-verify
-- Never commit .next/, node_modules/, coverage/
-- Monitoring files are gitignored (docs/sprints-task-dashboard.md, monitoring/*.yaml)
+Commits: git commit --no-verify; do not commit .next/, node_modules/, coverage/, monitoring/*.yaml.
 
-## Agent Roles in This Repo
-- OpenCode/Hephaestus: backend API, lib/, worker/ tasks
-- ClaudeCode: frontend web/ tasks, components, pages
-- Gemini: QA, Playwright tests, infra
-- Sisyphus: orchestration, planning, coordination
+Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.

@@ -195,6 +195,13 @@ export async function GET(request: NextRequest) {
     const remotes = extractRemotes(payload);
     const connections = remotes.map(mapRemoteToConnection);
 
+    // FIX-06: Enforce stable sort
+    connections.sort((a, b) => {
+      const timeA = a.lastSyncAt ? new Date(a.lastSyncAt).getTime() : 0;
+      const timeB = b.lastSyncAt ? new Date(b.lastSyncAt).getTime() : 0;
+      return timeA - timeB || a.id.localeCompare(b.id);
+    });
+
     return NextResponse.json({
       success: true,
       data: connections,

@@ -1,34 +1,13 @@
-# CacheFlow Web — Agent Context
+# CacheFlow Web — Quick Sheet
 
-## Stack
-Next.js 14, TypeScript, Tailwind CSS, React.
-App Router (app/ directory). No Pages Router.
+Stack: Next.js 14 + TS + Tailwind, App Router only.
 
-## Key Directories
-- app/           Next.js pages and API routes
-- components/    React components
-- context/       React context providers (TransferContext, etc.)
-- lib/           Client-side utilities and provider clients
-- e2e/           Playwright tests
-- public/        Static assets
+Directories: app/ (routes + API), components/, context/, lib/ (client utils), e2e/, public/.
 
-## API Routes
-All in app/api/. Proxy to backend at http://127.0.0.1:8100.
-Never use Docker service names (api:8100) — always 127.0.0.1:8100.
+API proxy: app/api/* should hit backend at http://127.0.0.1:8100 (never docker service names).
 
-## Auth Pattern
-- Session via NextAuth at /api/auth/
-- HttpOnly cookies set by server
-- apiClient.ts uses fetch with credentials: 'include'
-- Never use localStorage for auth tokens
+Auth: NextAuth at /api/auth; HttpOnly cookies; apiClient fetches with credentials: 'include'; never use localStorage for tokens.
 
-## Component Rules  
-- Use existing ui/ primitives before creating new ones
-- data-testid attributes required on interactive elements
-- Tailwind only — no custom CSS files
+Components: prefer components/ui primitives; add data-testid to interactive elements; Tailwind only (no css files).
 
-## Testing
-- Config: playwright.config.ts (testDir: ./e2e)
-- Run: npx playwright test from web/ directory
-- Auth bypass in tests: mock /api/auth/session, use page.goto('/files')
-- Always mock /api/connections, /api/files, /api/remotes in E2E tests
+Tests: run from web/: npx playwright test. Mock /api/auth/session plus /api/connections, /api/files, /api/remotes; start pages via page.goto('/files').

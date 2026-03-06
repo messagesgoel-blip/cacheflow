@@ -1,55 +1,9 @@
-# WEB APP ROUTES KNOWLEDGE BASE
+# WEB APP ROUTES — Quick Sheet
 
-**Generated:** 2026-03-04
-**Commit:** N/A
-**Branch:** N/A
+Scope: Next.js App Router pages and API routes in web/app/.
 
-## OVERVIEW
-Next.js App Router pages for the CacheFlow web application. Defines all route structures and page-level components.
+Key files: layout.tsx, page.tsx, globals.css, api/, dashboard/, files/, settings/, providers/, middleware as needed.
 
-## STRUCTURE
-```
-./web/app/
-├── layout.tsx           # Root layout
-├── page.tsx             # Home/dashboard page
-├── globals.css          # Global styles
-├── api/                 # Next.js API routes
-│   ├── auth/           # Authentication endpoints
-│   │   ├── 2fa/       # Two-factor authentication
-│   │   └── [...auth]   # OAuth and session management
-│   └── remotes/        # Cloud provider API routes
-│       └── [uuid]/     # Dynamic provider routes
-├── dashboard/          # Dashboard pages
-├── files/              # File browser pages
-├── settings/           # User settings pages
-├── providers/          # Provider configuration pages
-└── [...more routes]    # Additional page routes
-```
+Rules: server components by default; client components only for interactivity; route handlers for API work; keep TypeScript strict; avoid heavy work in server components; never leak sensitive data to the client.
 
-## WHERE TO LOOK
-| Task | Location | Notes |
-|------|----------|-------|
-| Main Dashboard | page.tsx | Home screen and overview |
-| File Browser | /files | File browsing interface |
-| Auth Flow | /api/auth | Next.js API routes for auth |
-| Provider Setup | /providers | Connect cloud accounts |
-| Settings | /settings | User preferences |
-| API Routes | /api | Server-side operations |
-
-## CONVENTIONS
-- Next.js 13+ App Router pattern
-- Server Components by default for data fetching
-- Client Components only when interactivity required
-- Route handlers for API endpoints
-- TypeScript strict mode
-
-## ANTI-PATTERNS (THIS PROJECT)
-- Don't perform heavy operations in Server Components
-- Avoid client-side navigation when server actions are appropriate
-- Never expose sensitive data in client components
-
-## UNIQUE STYLES
-- Server Actions for mutations
-- Streaming responses for large datasets
-- Route handlers for API operations
-- Middleware for authentication
+Patterns: server actions for mutations, streaming for large lists, API routes proxy to backend.

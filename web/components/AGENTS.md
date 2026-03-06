@@ -1,52 +1,9 @@
-# COMPONENTS KNOWLEDGE BASE
+# COMPONENTS — Quick Sheet
 
-**Generated:** 2026-03-04
-**Commit:** N/A
-**Branch:** N/A
+Scope: React components for the web UI (file browser, provider setup, shared UI).
 
-## OVERVIEW
-React UI components for the CacheFlow web application. Includes file browser, provider configuration, and common UI elements.
+Key areas: files/, providers/, ui/, layout/, errors/, Sidebar/, FileBrowser/, ProviderCard/, FileActions/, hooks/.
 
-## STRUCTURE
-```
-./web/components/
-├── files/                # File browser related components
-├── providers/            # Cloud provider configuration UI
-├── ui/                   # Common UI primitives
-├── layout/               # Layout components
-├── errors/               # Error display components
-├── Sidebar/              # Navigation sidebar
-├── FileBrowser/          # Main file browser component
-├── ProviderCard/         # Cloud provider cards
-├── FileActions/          # File operation buttons
-├── hooks/                # Component-specific hooks
-└── [...more components]  # Additional UI components
-```
+Rules: TypeScript strict; Tailwind for styling; ensure ARIA/accessibility; minimize prop drilling (prefer context/hooks); client components only when interactive; keep render work light.
 
-## WHERE TO LOOK
-| Task | Location | Notes |
-|------|----------|-------|
-| File Browser | FileBrowser/ | Main file browsing interface |
-| Provider Setup | providers/ | UI for connecting cloud accounts |
-| File Operations | FileActions/ | Upload, download, delete operations |
-| Error Handling | errors/ | Error display components |
-| Layout | layout/ | Page structure components |
-| Common UI | ui/ | Buttons, modals, inputs |
-
-## CONVENTIONS
-- Client Components for interactive elements
-- Server Components for data fetching where possible
-- TypeScript strict mode
-- Responsive design with Tailwind CSS
-- Accessible UI with proper ARIA attributes
-
-## ANTI-PATTERNS (THIS PROJECT)
-- Don't put heavy computations in render methods
-- Avoid prop drilling - use Context API appropriately
-- Never expose credentials in client components
-
-## UNIQUE STYLES
-- Server Components for initial data loading
-- Client Components only when interactivity required
-- Composition pattern for complex UI elements
-- Tailwind CSS for styling with custom components
+Security: never expose credentials or tokens in UI; prefer fetching via server components when possible.

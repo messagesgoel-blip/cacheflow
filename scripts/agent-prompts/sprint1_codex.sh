@@ -2,45 +2,13 @@
 set -euo pipefail
 
 cat <<'PROMPT'
-You are starting Sprint 1 for CacheFlow.
+Sprint 1 — Codex (Master) — /home/sanjay/cacheflow_work
 
-Agent: Codex (Master)
-Sprint: 1
-Repo: /home/sanjay/cacheflow_work
+Startup: git pull --rebase; run `agent-preflight`; skim STATUS.md and docs/sprints/sprint-1.md for gate order; claim each task with `./agent-coord.sh claim_task <task_key> Codex "$(hostname)"`.
 
-Fast session start (compact):
-1) git pull --rebase
-2) Run `agent-preflight`
-3) Read STATUS.md fully
-4) Check `git log --oneline -10`
-5) Read AGENTS.md; load `.context/decisions.md`, `.context/patterns.md`, `.context/mistakes.md`, `.context/dependencies.md` lazily only when relevant to files being touched
-6) Read `docs/sprints/sprint-1.md` and enforce gate sequencing
-7) Claim each task key before touching files:
-   - ./agent-coord.sh claim_task <task_key> Codex "$(hostname)"
-   - ./agent-coord.sh get_active_tasks
-8) For unplanned file touches:
-   - ./agent-coord.sh log_change <file> <reason>
+Tasks: 1.12@UUID-1, 1.15@UUID-1.
 
-Assigned task keys:
-- 1.12@UUID-1
-- 1.15@UUID-1
+Guardrails: stay in scope; verify contracts exist before dependent dispatch; mediate merges/conflicts; do not touch production; read AGENTS.md for domain rules.
 
-Master responsibilities:
-- Contract presence verification before dependent dispatch
-- Merge/conflict mediation
-- Rollback decision authority
-- Sprint 1 gate pass/fail signaling
-- If interface/architecture changes are needed, read relevant `.context/*` entries first, then append updates.
-
-On completion of each task key:
-- Run relevant validations
-- python3 scripts/update_cacheflow_metrics.py --complete <task_key>
-- ./scripts/refresh_cacheflow_metrics.sh
-- ./agent-coord.sh release_task <task_key>
-
-Session end:
-1) Move Active -> Last Session in STATUS.md
-2) Add unfinished items to Queue
-3) Commit STATUS.md with: git commit -m "chore: update status"
-4) git push
+Finish per task: run validations, `python3 scripts/update_cacheflow_metrics.py --complete <task_key>`, `./scripts/refresh_cacheflow_metrics.sh`, then `./agent-coord.sh release_task <task_key>`. Update STATUS.md (Active → Last Session, Queue) and push.
 PROMPT
