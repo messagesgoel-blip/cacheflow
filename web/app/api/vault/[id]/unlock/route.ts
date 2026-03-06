@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { VaultSessionManager, VaultSession, getVaultById, validateVaultTOTP, validateVaultPIN } from '../../../../../../lib/vault/vaultSession';
+import { VaultSessionManager, getVaultById, validateVaultTOTP, validateVaultPIN } from '@/lib/vault/vaultSession';
 
 interface UnlockRequestBody {
   totp_code?: string;
@@ -8,10 +8,10 @@ interface UnlockRequestBody {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const vaultId = params.id;
+    const { id: vaultId } = await params;
 
     // Validate vault ID format
     if (!vaultId || typeof vaultId !== 'string') {

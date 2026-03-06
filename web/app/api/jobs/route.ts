@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { scheduledJobService } from '../../../lib/jobs/scheduledJobService';
+import { scheduledJobService } from '@/lib/jobs/scheduledJobService';
 
 export async function GET(request: NextRequest) {
   try {

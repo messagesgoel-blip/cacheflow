@@ -95,3 +95,9 @@
 - why it failed: The chaos flow intentionally created duplicates via copy+move, so a correct delete can reduce row count without removing every exact-name match.
 - do not attempt: Do not verify delete by total disappearance when duplicate exact-name rows can exist; compare exact-match count before and after confirm instead.
 - agent: codex
+
+## 2026-03-06 — Clean deploy exposed web build dependence on untracked helper files
+- what was tried: Hard-cleaning the live repo to match `origin/main` and rebuilding `web` without first ensuring all web runtime helpers were committed.
+- why it failed: Several routes depended on helper modules that only existed as untracked files in the dirty live repo, so the clean build immediately failed with module-not-found errors.
+- do not attempt: Do not treat a dirty live deploy as proof the repo is deployable; always validate a clean `web` build from git-tracked files before declaring source/runtime parity.
+- agent: codex

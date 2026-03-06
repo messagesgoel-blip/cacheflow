@@ -185,3 +185,11 @@
 - files: web/components/TransferQueueProvider.tsx, web/components/UnifiedFileBrowser.tsx
 - commit: pending
 - agent: codex
+
+## 2026-03-06 — Keep web runtime self-contained inside `web/`
+- decision: Any Next.js route or helper used by the `web` build must import from `web/lib/**` or local app files only; legacy references to root-level `lib/**` are not allowed in deployable web code.
+- rationale: Clean deploys reset untracked files, and the web Docker build context does not include ad-hoc root helpers that were never committed under `web/`.
+- alternatives rejected: Relying on dirty live repos with extra helper files; importing root runtime modules from web-only builds.
+- files: web/app/api/remotes/[uuid]/upload/route.ts, web/app/api/jobs/route.ts, web/app/api/vault/[id]/unlock/route.ts, web/lib/jobs/scheduledJobService.ts, web/lib/providers/healthCheck.ts, web/lib/vault/vaultSession.ts
+- commit: pending
+- agent: codex
