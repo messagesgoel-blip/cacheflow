@@ -201,3 +201,11 @@
 - files: web/app/api/auth/session/route.ts
 - commit: pending
 - agent: codex
+
+## 2026-03-06 — Files view must not synthesize a `local` provider from the auth session token
+- decision: `UnifiedFileBrowser` now uses only server-backed provider connections and explicitly removes stale `local` provider tokens from `tokenManager` when hydrating the Files view.
+- rationale: Treating the app auth token as a `local` storage provider created a ghost fifth account, surfaced stale local rows ahead of real remotes, and routed file actions through `/api/files/download` with invalid non-UUID IDs.
+- alternatives rejected: Leaving the synthetic `local` provider in place and masking server errors; adding more fallback behavior to `/api/files/download` for malformed remote IDs.
+- files: web/components/UnifiedFileBrowser.tsx
+- commit: pending
+- agent: codex

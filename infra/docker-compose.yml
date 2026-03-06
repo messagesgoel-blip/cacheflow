@@ -90,6 +90,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://cacheflow-api.goels.in}
+        - API_URL=${API_URL:-http://api:8100}
     container_name: cacheflow-web
     restart: always
     ports:

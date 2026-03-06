@@ -1,0 +1,24 @@
+'use client'
+
+import Login from '@/components/Login'
+
+export default function HomeEntry({
+  initialMode = 'login',
+}: {
+  initialMode?: 'login' | 'register'
+}) {
+  return (
+    <Login
+      initialMode={initialMode}
+      onLogin={(token, email) => {
+        try {
+          localStorage.setItem('cf_token', token)
+          localStorage.setItem('cf_email', email)
+        } catch (error) {
+          console.warn('Failed to persist local session token:', error)
+        }
+        window.location.href = '/files'
+      }}
+    />
+  )
+}

@@ -1,5 +1,20 @@
 const path = require('path');
 
+function resolveInternalApiUrl() {
+  const explicit =
+    process.env.API_URL ||
+    process.env.API_INTERNAL_URL ||
+    process.env.CACHEFLOW_API_INTERNAL_URL;
+
+  if (explicit) return explicit.replace(/\/+$/, '');
+
+  return process.env.NODE_ENV === 'production'
+    ? 'http://api:8100'
+    : 'http://127.0.0.1:8100';
+}
+
+const internalApiUrl = resolveInternalApiUrl();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
@@ -11,20 +26,15 @@ const nextConfig = {
     // Existing codebase contains legacy TS issues; do not block deploy builds.
     ignoreBuildErrors: true,
   },
-  env: {
-    API_URL: process.env.API_URL || 'http://127.0.0.1:8100',
-  },
   async rewrites() {
-    const apiUrl = process.env.API_URL || 'http://127.0.0.1:8100';
     return [
-      { source: '/health', destination: `${apiUrl}/health` },
-      { source: '/cache', destination: `${apiUrl}/cache` },
-      { source: '/cache/:path*', destination: `${apiUrl}/cache/:path*` },
-      { source: '/transfer/:path*', destination: `${apiUrl}/transfer/:path*` },
-      { source: '/api/:path*', destination: `${apiUrl}/api/:path*` },
-      { source: '/auth/:path*', destination: `${apiUrl}/auth/:path*` },
-      { source: '/files/:path*', destination: `${apiUrl}/files/:path*` },
-      { source: '/tokens/:path*', destination: `${apiUrl}/tokens/:path*` },
+      { source: '/health', destination: `${internalApiUrl}/health` },
+      { source: '/cache', destination: `${internalApiUrl}/cache` },
+      { source: '/cache/:path*', destination: `${internalApiUrl}/cache/:path*` },
+      { source: '/transfer/:path*', destination: `${internalApiUrl}/transfer/:path*` },
+      { source: '/auth/:path*', destination: `${internalApiUrl}/auth/:path*` },
+      { source: '/files/:path*', destination: `${internalApiUrl}/files/:path*` },
+      { source: '/tokens/:path*', destination: `${internalApiUrl}/tokens/:path*` },
     ];
   },
 }

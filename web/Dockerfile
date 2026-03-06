@@ -5,7 +5,9 @@ RUN npm ci --only=production=false
 
 FROM base AS builder
 ARG NEXT_PUBLIC_API_URL=http://localhost:8100
+ARG API_URL=http://api:8100
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV API_URL=$API_URL
 COPY . .
 RUN npm run build
 

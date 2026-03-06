@@ -145,16 +145,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   // Load connected providers - SYNC-1: fetch from server state API
   useEffect(() => {
     let tokensChanged = false
-    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav', 'local']
+    const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav']
 
-    if (token && !tokenManager.hasToken('local')) {
-      tokenManager.saveToken('local', {
-        provider: 'local',
-        accessToken: token,
-        accountEmail: 'local-storage',
-        displayName: 'Local Storage',
-        expiresAt: null,
-      })
+    if (tokenManager.getTokens('local').length > 0) {
+      tokenManager.removeToken('local')
       tokensChanged = true
     }
 
@@ -933,7 +927,7 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, onSelect, 
   const providerCount = file.providers?.length || 1
   const resolvedFileName = file.name || '[unnamed]'
   return (
-    <tr draggable={!file.isFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={resolvedFileName} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'} ${focused ? 'ring-2 ring-blue-500/50 ring-inset z-10' : ''}`} onClick={() => file.isFolder ? onFolderClick(file) : onOpen(file)}>
+    <tr draggable={!file.isFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={resolvedFileName} data-provider-id={file.provider || ''} data-account-key={(file as any).accountKey || ''} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'} ${focused ? 'ring-2 ring-blue-500/50 ring-inset z-10' : ''}`} onClick={() => file.isFolder ? onFolderClick(file) : onOpen(file)}>
       <td className="px-4 py-3">
         <input
           type="checkbox"

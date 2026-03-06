@@ -81,3 +81,8 @@
 - use when: A transfer/copy/move action changes file placement across providers or accounts.
 - example: Invalidate source and target metadata caches, emit `cacheflow:transfer-complete`, and have the Files view clear stale preview/selection before refetch.
 - do not deviate because: queue success without file-list invalidation leaves the UI out of sync with provider state and breaks follow-up actions like delete.
+
+## Server-Backed Files Provider List Only
+- use when: Hydrating `UnifiedFileBrowser` or other live multi-provider views from `/api/connections`.
+- example: Build visible provider accounts from server connections + remoteId hydration only; do not create a `local` provider entry from the app auth cookie/token.
+- do not deviate because: synthetic local-provider entries can surface stale local files in the live table and route actions through the wrong backend contract.

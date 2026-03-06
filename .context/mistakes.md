@@ -107,3 +107,9 @@
 - why it failed: Clean production-like web containers can authenticate via backend-issued bearer tokens without exposing the signing secret to the Next.js runtime, so session checks broke immediately after login.
 - do not attempt: Do not require web-runtime JWT secret presence for session confirmation when backend `/auth/me` can authoritatively validate the token.
 - agent: codex
+
+## 2026-03-06 — Reusing the auth session token as a `local` provider credential
+- what was tried: Auto-saving the app auth token into `tokenManager` as a `local` provider whenever the Files page loaded.
+- why it failed: The Files view showed a ghost local account and local rows with synthetic IDs like `cf_seed_e2e.txt:cf_seed_e2e.txt`, which triggered `/api/files/download` 500s during live file actions.
+- do not attempt: Do not synthesize provider entries from the auth session token; only hydrate visible providers from server-backed `/api/connections` state or explicit provider credentials.
+- agent: codex
