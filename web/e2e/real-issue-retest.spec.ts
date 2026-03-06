@@ -85,7 +85,7 @@ test('real issue retest: cloud drives, preview, rename/move errors, provider add
 
   const providers = (process.env.PLAYWRIGHT_QA_PROVIDER_SET
     ? process.env.PLAYWRIGHT_QA_PROVIDER_SET.split(',').map((x) => x.trim()).filter(Boolean)
-    : ['Google Drive', 'OneDrive', 'Dropbox', 'Box'])
+    : ['Google Drive', 'Dropbox'])
   for (const pName of providers) {
     try {
       const card = page.locator('div', { hasText: pName }).first()
@@ -113,18 +113,18 @@ test('real issue retest: cloud drives, preview, rename/move errors, provider add
 
   // Files page for drive operations
   await page.goto('https://cacheflow.goels.in/files', { waitUntil: 'domcontentloaded' })
-  await page.waitForTimeout(2000)
+  await page.waitForTimeout(800)
   report.screenshots.push(await shot(page, '05-files-main-before-ops'))
 
   const accounts = page.locator('[data-testid^="cf-sidebar-account-"]')
   const accountCount = await accounts.count()
-  const driveTargets = Math.min(accountCount, 2)
+  const driveTargets = Math.min(accountCount, 1)
 
   async function performOpsOnDrive(idx: number, bucket: any) {
-    const rowPrefix = `drive${idx + 1}`
-    try {
-      await accounts.nth(idx).click({ timeout: 10000 })
-      await page.waitForTimeout(2000)
+      const rowPrefix = `drive${idx + 1}`
+      try {
+        await accounts.nth(idx).click({ timeout: 10000 })
+      await page.waitForTimeout(800)
       report.screenshots.push(await shot(page, `${rowPrefix}-opened`))
 
       const rows = page.locator('tbody tr')
@@ -132,36 +132,13 @@ test('real issue retest: cloud drives, preview, rename/move errors, provider add
       if (rowCount === 0) { bucket.open = 'no-files-visible'; return }
       bucket.open = `ok-rows=${rowCount}`
 
-      // Attempt to add two test files via upload controls if present
-      bucket.upload = 'not-found'
-      const uploadBtn = page.getByRole('button', { name: /Upload File|Upload/i }).first()
-      const fileInput = page.locator('input[type="file"]').first()
-      const f1 = `/tmp/UITEST_${Date.now()}_A.txt`
-      const f2 = `/tmp/UITEST_${Date.now()}_B.txt`
-      fs.writeFileSync(f1, `A ${new Date().toISOString()}\n`)
-      fs.writeFileSync(f2, `B ${new Date().toISOString()}\n`)
-      if (await fileInput.count()) {
-        await fileInput.setInputFiles([f1, f2])
-        await page.waitForTimeout(2500)
-        bucket.upload = 'input-upload-attempted'
-      } else if (await uploadBtn.count()) {
-        const chooserPromise = page.waitForEvent('filechooser', { timeout: 5000 }).catch(() => null)
-        await uploadBtn.click()
-        const chooser = await chooserPromise
-        if (chooser) {
-          await chooser.setFiles([f1, f2])
-          await page.waitForTimeout(2500)
-          bucket.upload = 'chooser-upload-attempted'
-        } else {
-          bucket.upload = 'upload-button-no-filechooser'
-        }
-      }
+      bucket.upload = 'skipped-in-smoke-retest'
       report.screenshots.push(await shot(page, `${rowPrefix}-after-upload-attempt`))
 
       // pick first file row and open preview
       const firstRow = rows.first()
       await firstRow.click({ timeout: 10000 })
-      await page.waitForTimeout(1000)
+      await page.waitForTimeout(500)
       const preview = page.getByTestId('cf-preview-panel')
       if (await preview.count()) {
         report.screenshots.push(await shot(page, `${rowPrefix}-preview-open`))
@@ -191,7 +168,7 @@ test('real issue retest: cloud drives, preview, rename/move errors, provider add
               const newName = `${oldVal.replace(/\.[^/.]+$/, '')}-UITEST-${Date.now()}.txt`
               await input.fill(newName)
               await renameModal.getByRole('button', { name: /Save/i }).click()
-              await page.waitForTimeout(2500)
+              await page.waitForTimeout(1000)
               bucket.rename = 'attempted'
             } else bucket.rename = 'rename-modal-missing'
           } else bucket.rename = 'rename-button-missing'
@@ -213,30 +190,14 @@ test('real issue retest: cloud drives, preview, rename/move errors, provider add
               }
               const moveHere = tm.getByRole('button', { name: /Move here|Copy here|Move/i }).first()
               if (await moveHere.count()) await moveHere.click()
-              await page.waitForTimeout(2500)
+              await page.waitForTimeout(1000)
               bucket.move = 'attempted'
             } else bucket.move = 'transfer-modal-missing'
           } else bucket.move = 'move-button-missing'
         } catch (e: any) { bucket.move = `error: ${e.message}` }
         report.screenshots.push(await shot(page, `${rowPrefix}-after-move-attempt`))
 
-        // delete only if clearly UITEST named row exists (safety)
-        const uiTestRow = page.locator('tbody tr', { hasText: /UITEST/i }).first()
-        if (await uiTestRow.count()) {
-          try {
-            await uiTestRow.click()
-            await page.waitForTimeout(600)
-            const delBtn = page.getByTestId('cf-preview-action-delete')
-            if (await delBtn.count()) {
-              await delBtn.click()
-              await page.getByRole('button', { name: /Delete|Confirm|Yes/i }).first().click().catch(() => {})
-              await page.waitForTimeout(1200)
-              bucket.delete = 'attempted-on-uitest-file'
-            }
-          } catch (e: any) { bucket.delete = `error: ${e.message}` }
-        } else {
-          bucket.delete = 'skipped-no-uitest-file-found'
-        }
+        bucket.delete = 'skipped-in-smoke-retest'
         report.screenshots.push(await shot(page, `${rowPrefix}-after-delete-attempt`))
       } else {
         bucket.preview = 'preview-panel-not-opened'

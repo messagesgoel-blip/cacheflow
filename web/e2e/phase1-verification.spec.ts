@@ -26,7 +26,7 @@ test('Phase 1 Verification: Stabilization & Trust Corrections', async ({ page })
 
   try {
     // 1. Login
-    await page.goto('http://localhost:3010/login')
+    await page.goto('/login')
     await page.evaluate(async () => {
       localStorage.clear()
       const dbs = await window.indexedDB.databases()
@@ -42,11 +42,11 @@ test('Phase 1 Verification: Stabilization & Trust Corrections', async ({ page })
 
     // 2. Verify Google Folder Browser in Transfer Modal
     await page.getByTestId('cf-sidebar-node-all-files').click()
-    const fileRow = page.locator('tr').filter({ hasText: 'GOOGLE A.txt' }).first()
+    const fileRow = page.getByTestId('cf-file-row').first()
     await expect(fileRow).toBeVisible({ timeout: 10000 })
     
     await fileRow.locator('[data-testid="cf-files-row-overflow"]').click({ force: true })
-    await page.getByText('Copy').click()
+    await page.getByRole('button', { name: '📄 Copy' }).click()
     await expect(page.getByTestId('transfer-modal-content')).toBeVisible()
     
     await page.selectOption('select[aria-label="Target provider"]', 'google')
@@ -77,7 +77,7 @@ test('Phase 1 Verification: Stabilization & Trust Corrections', async ({ page })
     }
 
     // 4. Verify About Copy Accuracy
-    await page.goto('http://localhost:3010/providers')
+    await page.goto('/providers')
     await page.waitForTimeout(2000)
     const googleAbout = page.locator('[data-testid="cf-provider-card-google"]').getByText(/Cloud storage by Google/i)
     if (await googleAbout.isVisible()) {

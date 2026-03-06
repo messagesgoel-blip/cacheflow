@@ -29,6 +29,7 @@ test('files page loading/empty/loaded screenshots', async ({ page, request }, te
     {
       id: 'g-file-1',
       name: 'Hello.txt',
+      parents: ['root'],
       mimeType: 'text/plain',
       size: '5',
       modifiedTime: new Date().toISOString(),
@@ -85,9 +86,18 @@ test('files page loading/empty/loaded screenshots', async ({ page, request }, te
   await page.screenshot({ path: shotPath(id, 'files_empty_state'), fullPage: true })
 
   mode = 'loaded'
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve) => {
+      const request = indexedDB.deleteDatabase('CacheFlowMetadata')
+      request.onsuccess = () => resolve()
+      request.onerror = () => resolve()
+      request.onblocked = () => resolve()
+    })
+  })
   await page.reload()
   await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
   await page.getByTestId('cf-sidebar-account-g1').click()
-  await expect(page.getByText('Hello.txt').first()).toBeVisible({ timeout: 10000 })
+  await page.getByTestId('files-refresh').click()
+  await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 10000 })
   await page.screenshot({ path: shotPath(id, 'files_loaded_state'), fullPage: true })
 })

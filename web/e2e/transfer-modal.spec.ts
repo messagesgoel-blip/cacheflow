@@ -25,17 +25,47 @@ test('copy between providers via transfer modal', async ({ page }, testInfo) => 
     localStorage.setItem('cacheflow_tokens_google', JSON.stringify([{
       provider: 'google', accessToken: 'google-access', refreshToken: 'google-refresh',
       expiresAt: Date.now() + 24 * 60 * 60 * 1000, accountEmail: 'g1@example.com',
-      displayName: 'Google One', accountId: 'g1', accountKey: 'g1', disabled: false,
+      displayName: 'Google One', accountId: 'g1', accountKey: 'g1', disabled: false, remoteId: 'remote-g1',
     }]))
     localStorage.setItem('cacheflow_tokens_dropbox', JSON.stringify([{
       provider: 'dropbox', accessToken: 'dropbox-access', refreshToken: 'dropbox-refresh',
       expiresAt: Date.now() + 24 * 60 * 60 * 1000, accountEmail: 'd1@example.com',
-      displayName: 'Dropbox One', accountId: 'd1', accountKey: 'd1', disabled: false,
+      displayName: 'Dropbox One', accountId: 'd1', accountKey: 'd1', disabled: false, remoteId: 'remote-d1',
     }]))
   })
 
   await page.route('**/*', async (route) => {
     const url = route.request().url()
+    if (url.includes('/api/connections')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [
+            {
+              id: 'remote-g1',
+              provider: 'google',
+              accountKey: 'g1',
+              accountEmail: 'g1@example.com',
+              accountLabel: 'Google One',
+              remoteId: 'remote-g1',
+              status: 'connected',
+            },
+            {
+              id: 'remote-d1',
+              provider: 'dropbox',
+              accountKey: 'd1',
+              accountEmail: 'd1@example.com',
+              accountLabel: 'Dropbox One',
+              remoteId: 'remote-d1',
+              status: 'connected',
+            },
+          ],
+        }),
+      })
+      return
+    }
     if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) {
       await route.continue()
       return
@@ -66,12 +96,12 @@ test('copy between providers via transfer modal', async ({ page }, testInfo) => 
   await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
   
   await page.getByTestId('cf-sidebar-account-g1').click()
-  await expect(page.getByText('Budget 2026.xlsx').first()).toBeVisible({ timeout: 15_000 })
+  const budgetRow = page.getByTestId('cf-file-row').filter({ hasText: 'Budget 2026.xlsx' }).first()
+  await expect(budgetRow).toBeVisible({ timeout: 15_000 })
 
-  const budgetRow = page.locator('tr', { hasText: 'Budget 2026.xlsx' })
   await budgetRow.locator('input[type="checkbox"]').click({ force: true })
   
-  await page.getByText('Copy').click()
+  await page.getByTestId('cf-selection-toolbar').getByRole('button', { name: 'Copy' }).click({ force: true })
   await expect(page.getByText('Copy file')).toBeVisible()
   
   await page.selectOption('select[aria-label="Target provider"]', 'dropbox')

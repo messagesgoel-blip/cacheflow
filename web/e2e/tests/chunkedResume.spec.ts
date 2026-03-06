@@ -18,7 +18,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
 
   test.beforeEach(async ({ browser }) => {
     // 1. Setup Browser Context with Auth Cookies
-    context = await browser.newContext({ baseURL: 'http://localhost:4020' });
+    context = await browser.newContext();
     await context.addCookies([{
       name: 'accessToken',
       value: 'mock-jwt-token',
@@ -148,7 +148,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       }
     });
 
-    await page.goto('http://localhost:4020/files');
+    await page.goto('/files');
     
     // Expand tray if needed
     const tray = await expandTransferTray(page);
@@ -225,7 +225,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       }
     });
 
-    await page.goto('http://localhost:4020/files');
+    await page.goto('/files');
 
     // 1. Start Upload and commit 2 chunks
     await test.step('Start upload and commit first 2 chunks', async () => {
@@ -349,7 +349,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       }
     });
 
-    await page.goto('http://localhost:4020/files');
+    await page.goto('/files');
     const tray = await expandTransferTray(page);
     await expect(tray).toBeVisible();
     await expect(tray).toContainText('Failure_Test.iso');

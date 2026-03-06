@@ -35,16 +35,16 @@ test.describe('Provider Connection Modals', () => {
   for (const provider of PROVIDERS) {
     test(`Verify ${provider.name} connect modal`, async ({ page }) => {
       // Find the card for the provider
-      const card = page.locator('div', { has: page.getByRole('heading', { name: provider.name, exact: true, level: 3 }) })
-        .filter({ has: page.getByRole('button', { name: /connect|manage/i }) })
-        .last() // The card might be nested
+      const heading = page.getByRole('heading', { name: provider.name, exact: true, level: 3 })
+      const card = heading.locator('xpath=ancestor::div[contains(@class,"rounded-xl")][1]')
       
       await card.getByRole('button', { name: /connect|manage/i }).click()
 
       // Check modal
-      const modal = page.locator('div.fixed.inset-0')
-      await expect(modal).toBeVisible()
-      await expect(modal).toContainText(provider.name)
+      const escapedName = provider.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const modalHeading = page.getByRole('heading', { name: new RegExp(`Connect\\s+${escapedName}`, 'i') })
+      await expect(modalHeading).toBeVisible()
+      const modal = page.locator('div.fixed.inset-0').filter({ has: modalHeading })
 
       // Close
       const closeBtn = modal.locator('button:has-text("Cancel"), button:has-text("Close"), .absolute.top-4.right-4 button').first()

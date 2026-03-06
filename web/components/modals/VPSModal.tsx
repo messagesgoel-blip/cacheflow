@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useActionCenter } from '@/components/ActionCenterProvider'
 import { useIntegration } from '@/context/IntegrationContext'
 import { authFetch } from '@/lib/apiClient'
@@ -84,7 +84,7 @@ export default function VPSModal() {
     }
   }
 
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     setPassword('')
     setPrivateKey('')
     setPassphrase('')
@@ -92,7 +92,7 @@ export default function VPSModal() {
     setUsername('')
     setPort('22')
     closeModal()
-  }, [closeModal])
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

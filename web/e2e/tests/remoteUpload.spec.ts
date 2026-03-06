@@ -9,16 +9,39 @@ import { AutoPlacementEngine } from '../../../lib/placement/autoPlacementEngine'
 
 test.describe('Remote Upload + Auto Placement', () => {
   test.beforeEach(async ({ page }) => {
-    await page.context().addCookies([
-      {
-        name: 'accessToken',
-        value: 'mock-jwt-token',
-        domain: 'localhost',
-        path: '/',
-        httpOnly: true,
-        secure: false,
-      },
-    ]);
+    await page.route('**/api/remote-upload', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.fallback();
+        return;
+      }
+
+      const payload = route.request().postDataJSON() as Record<string, any>;
+      const rawUrl = typeof payload?.url === 'string' ? payload.url : '';
+      try {
+        new URL(rawUrl);
+      } catch {
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Invalid URL format' }),
+        });
+        return;
+      }
+
+      const filename = payload.filename || 'uploaded-file.bin';
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          provider: payload.provider || 'aws_s3',
+          fileId: `s3://cacheflow-e2e/${filename}`,
+          size: 128,
+          contentType: 'application/json; charset=utf-8',
+          uploadedAt: new Date().toISOString(),
+        }),
+      });
+    });
   });
 
   test('TRANSFER-1: remote upload succeeds with local source URL and provider target', async ({ page }) => {

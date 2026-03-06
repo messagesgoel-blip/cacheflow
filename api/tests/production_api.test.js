@@ -6,6 +6,7 @@ const path = require('path');
 
 process.env.JWT_SECRET = 'test-secret';
 process.env.LOCAL_CACHE_PATH = '/tmp/cacheflow-test-local';
+process.env.DATABASE_URL = 'postgres://cacheflow:cacheflow@localhost:5432/cacheflow';
 
 const mockQuery = jest.fn();
 
@@ -24,7 +25,8 @@ jest.mock('../src/middleware/auth', () => (req, res, next) => {
 });
 
 jest.mock('../src/middleware/audit', () => ({
-  auditLog: jest.fn().mockResolvedValue(undefined)
+  auditLog: jest.fn().mockResolvedValue(undefined),
+  auditMiddleware: jest.fn((req, _res, next) => next())
 }));
 
 const app = require('../src/app');

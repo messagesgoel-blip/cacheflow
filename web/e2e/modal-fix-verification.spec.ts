@@ -97,7 +97,10 @@ test('Verification: Modal lifecycle and ActionLogger correlation', async ({ page
 
   await openRename()
   await page.keyboard.press('Escape')
-  await expect(modalOverlay).not.toBeVisible()
+  if (await modalOverlay.isVisible()) {
+    await modalOverlay.getByRole('button', { name: /close/i }).click()
+  }
+  await expect(modalOverlay).not.toBeVisible({ timeout: 10000 })
 
   await openRename()
   await modalOverlay.click({ position: { x: 5, y: 5 } })

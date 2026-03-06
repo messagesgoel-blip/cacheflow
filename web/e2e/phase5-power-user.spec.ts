@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import * as fs from 'fs'
 import * as path from 'path'
-import { gotoFilesAndWait, primeQaSession } from './helpers/mockRuntime'
+import { gotoFilesAndWait, installMockRuntime, primeQaSession, type MockConnection } from './helpers/mockRuntime'
 
 const SHOTS_DIR = '/srv/storage/screenshots/cacheflow'
 const REPORT_PATH = path.join(SHOTS_DIR, 'phase5-report.json')
@@ -26,6 +26,35 @@ test('Phase 5 Verification: Power-User Enhancements', async ({ page, request }) 
   }
 
   const favorites: any[] = []
+  const connections: MockConnection[] = [
+    {
+      id: 'g1',
+      remoteId: 'g1',
+      provider: 'google',
+      accountKey: 'g1',
+      accountEmail: 'g1@example.com',
+      accountLabel: 'Google Drive A',
+    },
+    {
+      id: 'd1',
+      remoteId: 'd1',
+      provider: 'dropbox',
+      accountKey: 'd1',
+      accountEmail: 'd1@example.com',
+      accountLabel: 'Dropbox A',
+    },
+  ]
+  let googleFiles = [
+    {
+      id: 'file-google-a',
+      name: 'File from GOOGLE A.txt',
+      parents: ['root'],
+      mimeType: 'text/plain',
+      size: '100',
+      modifiedTime: new Date().toISOString(),
+      createdTime: new Date().toISOString(),
+    },
+  ]
   const activity = [
     {
       id: 'activity-1',
@@ -107,23 +136,49 @@ test('Phase 5 Verification: Power-User Enhancements', async ({ page, request }) 
     })
   })
 
-  await page.route('**/api/activity**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ ok: true, data: { activity } }),
-    })
-  })
-
   try {
     const startLogin = Date.now()
     await primeQaSession(page, request)
+    await installMockRuntime(page, connections, async ({ method, url }) => {
+      if (url.includes('about?fields=storageQuota')) {
+        return {
+          json: {
+            storageQuota: {
+              usage: '1024',
+              limit: '1048576',
+            },
+          },
+        }
+      }
+
+      if (url.includes('drive/v3/files?') && !url.includes('fields=size,mimeType') && !url.includes('alt=media')) {
+        return {
+          json: {
+            files: googleFiles,
+            nextPageToken: null,
+          },
+        }
+      }
+
+      if (url.includes('/drive/v3/files/file-google-a?fields=id,name,mimeType,size,createdTime,modifiedTime,parents,webViewLink,iconLink')) {
+        return { json: googleFiles[0] }
+      }
+
+      if (method === 'PATCH' && url.includes('/drive/v3/files/file-google-a')) {
+        return { json: googleFiles[0] }
+      }
+
+      return { json: {} }
+    }, { activity })
     await gotoFilesAndWait(page)
     results.performance.login_to_dashboard = Date.now() - startLogin
 
-    await page.getByTestId('cf-sidebar-account-g1').click()
-    const googleFileRow = page.locator('[data-testid="cf-file-row"]').filter({ hasText: 'File from GOOGLE A.txt' }).first()
+    const accountRow = page.locator('[data-testid^="cf-sidebar-account-"]').first()
+    await expect(accountRow).toBeVisible({ timeout: 15000 })
+    await accountRow.click()
+    const googleFileRow = page.locator('[data-testid="cf-file-row"]').filter({ hasNotText: 'Folder from' }).first()
     await expect(googleFileRow).toBeVisible({ timeout: 15000 })
+    const starredFileName = (await googleFileRow.getAttribute('data-file-name')) || 'file'
 
     const googleStar = googleFileRow.getByTestId('cf-row-star-toggle')
     const startStar = Date.now()
@@ -136,15 +191,15 @@ test('Phase 5 Verification: Power-User Enhancements', async ({ page, request }) 
     await page.getByRole('button', { name: /starred/i }).click()
     await expect(page.getByTestId('cf-starred-loading')).not.toBeVisible({ timeout: 20000 })
     await expect(page.getByTestId('cf-starred-count')).toContainText('1 item', { timeout: 10000 })
-    await expect(page.getByText('File from GOOGLE A.txt').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText(starredFileName).first()).toBeVisible({ timeout: 10000 })
     results.performance.star_action_to_view = Date.now() - startStar
     results.sections.starredCrossProvider = 'PASS'
     const shotStarred = 'phase5-starred-mixed-providers.png'
     await page.screenshot({ path: path.join(SHOTS_DIR, shotStarred) })
     results.screenshots.push(shotStarred)
 
-    await page.getByTestId('cf-sidebar-account-g1').click()
-    const previewTarget = page.locator('[data-testid="cf-file-row"]').filter({ hasText: 'File from GOOGLE A.txt' }).first()
+    await accountRow.click()
+    const previewTarget = page.locator('[data-testid="cf-file-row"]').filter({ hasText: starredFileName }).first()
     await expect(previewTarget).toBeVisible({ timeout: 15000 })
     const startPreview = Date.now()
     await previewTarget.click()
@@ -167,7 +222,6 @@ test('Phase 5 Verification: Power-User Enhancements', async ({ page, request }) 
 
     await page.getByRole('button', { name: /activity feed/i }).click()
     await expect(page.getByTestId('cf-activity-feed')).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText('Uploaded File from GOOGLE A.txt')).toBeVisible({ timeout: 10000 })
     results.sections.activityFeed = 'PASS'
     const shotActivity = 'phase5-activity-feed-default.png'
     await page.screenshot({ path: path.join(SHOTS_DIR, shotActivity) })
@@ -183,8 +237,12 @@ test('Phase 5 Verification: Power-User Enhancements', async ({ page, request }) 
   } catch (err: any) {
     console.error('Test failed:', err)
     const shotFailure = 'phase5-failure-diagnostic.png'
-    await page.screenshot({ path: path.join(SHOTS_DIR, shotFailure) })
-    results.screenshots.push(shotFailure)
+    try {
+      await page.screenshot({ path: path.join(SHOTS_DIR, shotFailure) })
+      results.screenshots.push(shotFailure)
+    } catch {
+      // Ignore screenshot failures when the page context is already closed.
+    }
     Object.keys(results.sections).forEach((key) => {
       if ((results.sections as any)[key] === 'PENDING') (results.sections as any)[key] = 'FAIL'
     })

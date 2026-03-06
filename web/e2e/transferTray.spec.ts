@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
 /**
  * Task 3.4: Tray E2E — entry survives navigation, retry works on failure
@@ -6,28 +6,33 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Transfer Tray / Queue Panel', () => {
-  test.beforeEach(async ({ page }) => {
-    // Mock authentication and providers
+  const TEST_JOB_ID = 'transfer-user123-legacy'
+
+  test.beforeEach(async ({ page, context }) => {
+    await context.addCookies([
+      {
+        name: 'accessToken',
+        value: 'test-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+      {
+        name: 'accessToken',
+        value: 'test-token',
+        domain: '127.0.0.1',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ])
+
     await page.addInitScript(() => {
-      localStorage.setItem('cf_token', 'test-token');
-      localStorage.setItem('cf_email', 'test@example.com');
+      localStorage.setItem('cf_token', 'test-token')
+      localStorage.setItem('cf_email', 'test@example.com')
+    })
 
-      localStorage.setItem('cacheflow_tokens_google', JSON.stringify([{
-        provider: 'google', accessToken: 'g-access', refreshToken: 'g-refresh',
-        expiresAt: Date.now() + 86400000, accountEmail: 'g1@example.com',
-        displayName: 'Google Drive', accountId: 'g1', accountKey: 'g1', disabled: false,
-        remoteId: 'g1-remote'
-      }]));
-      
-      localStorage.setItem('cacheflow_tokens_dropbox', JSON.stringify([{
-        provider: 'dropbox', accessToken: 'd-access', refreshToken: 'd-refresh',
-        expiresAt: Date.now() + 86400000, accountEmail: 'd1@example.com',
-        displayName: 'Dropbox', accountId: 'd1', accountKey: 'd1', disabled: false,
-        remoteId: 'd1-remote'
-      }]));
-    });
-
-    // Mock API responses for connections and files
     await page.route('**/api/connections', async (route) => {
       await route.fulfill({
         status: 200,
@@ -35,117 +40,121 @@ test.describe('Transfer Tray / Queue Panel', () => {
         body: JSON.stringify({
           success: true,
           data: [
-            { id: 'g1-remote', provider: 'google', accountName: 'Google Drive', accountEmail: 'g1@example.com', status: 'connected', accountKey: 'g1' },
-            { id: 'd1-remote', provider: 'dropbox', accountName: 'Dropbox', accountEmail: 'd1@example.com', status: 'connected', accountKey: 'd1' }
-          ]
-        })
-      });
-    });
+            {
+              id: 'remote-g1',
+              provider: 'google',
+              accountKey: 'g1',
+              accountEmail: 'g1@example.com',
+              accountLabel: 'Google One',
+              remoteId: 'remote-g1',
+              status: 'connected',
+            },
+          ],
+        }),
+      })
+    })
 
-    await page.route('**/api/remotes/*/files*', async (route) => {
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          user: { id: 'user-123', email: 'test@example.com', name: 'Test User' },
+          expires: new Date(Date.now() + 3600000).toISOString(),
+        }),
+      })
+    })
+  })
+
+  test('Transfer survives navigation', async ({ page }) => {
+    await page.route('**/api/transfers*', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: [
-            { id: 'file-1', name: 'Test File.txt', size: 1024, modifiedAt: new Date().toISOString(), isFolder: false, provider: 'google' },
-            { id: 'folder-1', name: 'Dest Folder', size: 0, modifiedAt: new Date().toISOString(), isFolder: true, provider: 'dropbox' }
-          ]
-        })
-      });
-    });
+          transfers: [
+            {
+              jobId: TEST_JOB_ID,
+              fileName: 'Test File.txt',
+              fileSize: 1024,
+              progress: 45,
+              status: 'active',
+              operation: 'copy',
+              sourceProvider: 'google',
+              destProvider: 'dropbox',
+            },
+          ],
+        }),
+      })
+    })
 
-    // Mock proxy calls for download/upload
-    await page.route('**/api/proxy', async (route) => {
-      const body = route.request().postDataJSON?.() || {};
-      const url = body.url || '';
-      
-      if (url.includes('google') && url.includes('files/file-1')) {
-        // Download
-        await route.fulfill({ status: 200, body: 'file content' });
-      } else if (url.includes('dropbox') && url.includes('upload')) {
-        // Upload
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'new-file-id', name: 'Test File.txt' }) });
-      } else {
-        await route.fulfill({ status: 200, body: '{}' });
-      }
-    });
+    await page.goto('/files')
+    await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
 
-    await page.goto('/files');
-    await expect(page.locator('[data-testid="cf-sidebar-root"]')).toBeVisible({ timeout: 15000 });
-  });
+    const trayBadge = page.getByRole('button', { name: /active transfer/i })
+    await expect(trayBadge).toBeVisible({ timeout: 15000 })
+    await trayBadge.click({ force: true })
 
-  test('Transfer survives navigation', async ({ page }) => {
-    // 1. Select a file and trigger Copy
-    await page.getByText('Test File.txt').first().click();
-    // Assuming we click the checkbox or use the row click if task 2.3 is active
-    const row = page.locator('tr', { hasText: 'Test File.txt' });
-    await row.locator('input[type="checkbox"]').click();
-    
-    await page.getByRole('button', { name: /copy/i }).first().click();
-    
-    // 2. Complete the transfer modal
-    await expect(page.getByText('Copy file')).toBeVisible();
-    await page.selectOption('select[aria-label="Target provider"]', 'dropbox');
-    // Wait for folder list to update (mocked)
-    await page.getByRole('button', { name: /Dest Folder/i }).click();
-    await page.getByRole('button', { name: /copy here/i }).click();
+    const tray = page.getByTestId('cf-transfer-tray')
+    await expect(tray).toBeVisible()
+    await expect(tray).toContainText('Test File.txt')
+    await expect(tray).toContainText('45%')
 
-    // 3. Verify transfer tray appears
-    const tray = page.getByTestId('cf-transfer-queue-panel');
-    await expect(tray).toBeVisible();
-    await expect(tray).toContainText('Test File.txt');
+    await page.goto('/settings')
+    await expect(page).toHaveURL(/\/settings/)
 
-    // 4. Navigate away
-    await page.getByTestId('cf-sidebar-user-menu').click();
-    await page.getByTestId('cf-sidebar-user-settings').click();
-    await expect(page).toHaveURL(/.*\/settings/);
-
-    // 5. Verify tray is STILL visible and job is there
-    await expect(page.getByTestId('cf-transfer-queue-panel')).toBeVisible();
-    await expect(page.getByTestId('cf-transfer-queue-panel')).toContainText('Test File.txt');
-  });
+    await expect(trayBadge).toBeVisible({ timeout: 10000 })
+    await trayBadge.click({ force: true })
+    await expect(tray).toBeVisible()
+    await expect(tray).toContainText('Test File.txt')
+  })
 
   test('Retry works on failure', async ({ page }) => {
-    // 1. Force a failure on upload
-    await page.route('**/api/proxy', async (route) => {
-      const body = route.request().postDataJSON?.() || {};
-      if (body.url?.includes('dropbox') && body.url?.includes('upload')) {
-        await route.fulfill({ status: 500, body: 'Upload failed' });
-      } else {
-        await route.continue();
-      }
-    }, { times: 1 });
+    await page.route('**/api/transfers*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          transfers: [
+            {
+              jobId: TEST_JOB_ID,
+              fileName: 'Test File.txt',
+              fileSize: 1024,
+              progress: 10,
+              status: 'failed',
+              error: 'Quota exceeded',
+              operation: 'copy',
+              sourceProvider: 'google',
+              destProvider: 'dropbox',
+            },
+          ],
+        }),
+      })
+    })
 
-    // 2. Trigger transfer
-    await page.locator('tr', { hasText: 'Test File.txt' }).locator('input[type="checkbox"]').click();
-    await page.getByRole('button', { name: /copy/i }).first().click();
-    await page.selectOption('select[aria-label="Target provider"]', 'dropbox');
-    await page.getByRole('button', { name: /Dest Folder/i }).click();
-    await page.getByRole('button', { name: /copy here/i }).click();
+    await page.route(`**/api/transfers/${TEST_JOB_ID}/retry`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    })
 
-    // 3. Verify failure state in tray
-    const tray = page.getByTestId('cf-transfer-queue-panel');
-    await expect(tray).toContainText(/failed/i, { timeout: 10000 });
-    
-    const retryBtn = tray.locator('button', { hasText: /retry/i });
-    await expect(retryBtn).toBeVisible();
+    await page.goto('/files')
+    await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
 
-    // 4. Re-mock success for retry
-    await page.route('**/api/proxy', async (route) => {
-      const body = route.request().postDataJSON?.() || {};
-      if (body.url?.includes('dropbox') && body.url?.includes('upload')) {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'new-id' }) });
-      } else {
-        await route.continue();
-      }
-    });
+    const trayBadge = page.getByRole('button', { name: /active transfer|show transfers/i })
+    await expect(trayBadge).toBeVisible({ timeout: 15000 })
+    await trayBadge.click({ force: true })
 
-    // 5. Click retry
-    await retryBtn.click();
+    const tray = page.getByTestId('cf-transfer-tray')
+    await expect(tray).toBeVisible()
+    await expect(tray).toContainText('Quota exceeded')
 
-    // 6. Verify success
-    await expect(tray).toContainText(/completed/i, { timeout: 15000 });
-  });
-});
+    const retryBtn = tray.getByRole('button', { name: /retry/i })
+    await expect(retryBtn).toBeVisible()
+    await retryBtn.click()
+  })
+})

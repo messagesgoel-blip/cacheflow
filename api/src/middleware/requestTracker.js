@@ -1,10 +1,10 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 /**
  * Middleware to track requests and correlation IDs
  */
 module.exports = (req, res, next) => {
-  const requestId = uuidv4();
+  const requestId = randomUUID();
   const correlationId = req.headers['x-correlation-id'] || req.headers['x-request-id'] || requestId;
   
   req.requestId = requestId;

@@ -59,14 +59,11 @@ export async function GET(request: NextRequest): Promise<NextResponse<any>> {
 }
 
 /**
- * POST /api/rate-limits/:jobId/retry
+ * POST /api/rate-limits
  * 
  * Manually retry a failed rate-limited job.
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { jobId: string } }
-): Promise<NextResponse<any>> {
+export async function POST(request: NextRequest): Promise<NextResponse<any>> {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
@@ -78,7 +75,14 @@ export async function POST(
       );
     }
 
-    const { jobId } = params;
+    const payload = await request.json().catch(() => ({}));
+    const jobId = typeof payload?.jobId === 'string' ? payload.jobId : '';
+    if (!jobId) {
+      return NextResponse.json(
+        { success: false, error: 'jobId is required' },
+        { status: 400 }
+      );
+    }
 
     const job = await retryTransferJob(jobId);
 
@@ -109,14 +113,11 @@ export async function POST(
 }
 
 /**
- * DELETE /api/rate-limits/:provider
+ * DELETE /api/rate-limits?provider={provider}
  * 
  * Clear rate limit queue for a provider.
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { provider: string } }
-): Promise<NextResponse<any>> {
+export async function DELETE(request: NextRequest): Promise<NextResponse<any>> {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
@@ -128,7 +129,14 @@ export async function DELETE(
       );
     }
 
-    const { provider } = params;
+    const { searchParams } = new URL(request.url);
+    const provider = searchParams.get('provider') || '';
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, error: 'provider is required' },
+        { status: 400 }
+      );
+    }
     const removed = await clearProviderQueue(provider);
 
     const response = withSecurityScan({

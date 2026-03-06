@@ -51,8 +51,9 @@ describe('API app', () => {
       const res = await request(app).get('/health');
 
       expect(res.status).toBe(200);
-      expect(res.body.status).toBe('ok');
-      expect(res.body.db).toBe('connected');
+      expect(res.body.ok).toBe(true);
+      expect(res.body.data.status).toBe('ok');
+      expect(res.body.data.db).toBe('connected');
     });
 
     test('returns 503 when db query fails', async () => {
@@ -61,8 +62,8 @@ describe('API app', () => {
       const res = await request(app).get('/health');
 
       expect(res.status).toBe(503);
-      expect(res.body.status).toBe('error');
-      expect(res.body.db).toBe('disconnected');
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/db disconnected/i);
     });
   });
 
@@ -187,6 +188,9 @@ describe('API app', () => {
 
   describe('authenticated route behavior', () => {
     test('GET /files returns list for authenticated user', async () => {
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ column_name: 'error_reason' }, { column_name: 'retry_count' }, { column_name: 'immutable_until' }]
+      });
       mockQuery.mockResolvedValueOnce({
         rows: [{ id: 'f-1', path: 'docs/a.txt', size_bytes: 123, status: 'synced' }]
       });

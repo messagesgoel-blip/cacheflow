@@ -43,31 +43,33 @@ test('Server-side remotes: persistence and isolation on clean session', async ({
       return
     }
 
-    if (url.match(/\/api\/remotes$/) && method === 'GET') {
+    if (url.includes('/api/connections') && method === 'GET') {
       const response = {
-        ok: true,
-        data: {
-          remotes: [
-            {
-              id: 'remote-google-a',
-              provider: 'google',
-              account_key: 'g1',
-              account_email: 'g1@example.com',
-              display_name: 'Google Drive A',
-              expires_at: new Date(Date.now() + 3600000).toISOString(),
-              disabled: false
-            },
-            {
-              id: 'remote-google-b',
-              provider: 'google',
-              account_key: 'g2',
-              account_email: 'g2@example.com',
-              display_name: 'Google Drive B',
-              expires_at: new Date(Date.now() + 3600000).toISOString(),
-              disabled: false
-            }
-          ]
-        }
+        success: true,
+        data: [
+          {
+            id: 'remote-google-a',
+            provider: 'google',
+            accountKey: 'g1',
+            remoteId: 'remote-google-a',
+            accountName: 'Google Drive A',
+            accountEmail: 'g1@example.com',
+            accountLabel: 'Google Drive A',
+            isDefault: false,
+            status: 'connected',
+          },
+          {
+            id: 'remote-google-b',
+            provider: 'google',
+            accountKey: 'g2',
+            remoteId: 'remote-google-b',
+            accountName: 'Google Drive B',
+            accountEmail: 'g2@example.com',
+            accountLabel: 'Google Drive B',
+            isDefault: false,
+            status: 'connected',
+          },
+        ],
       }
       await route.fulfill({
         status: 200,
@@ -136,8 +138,8 @@ test('Server-side remotes: persistence and isolation on clean session', async ({
   await page.getByTestId('cf-sidebar-node-all-files').click()
   
   await page.screenshot({ path: shotPath(id, 'after_all_files_select') })
-  await expect(page.getByText('Google Drive A').first()).toBeVisible({ timeout: 15000 })
-  await expect(page.getByText('Google Drive B').first()).toBeVisible({ timeout: 15000 })
+  await expect(page.getByTestId('cf-sidebar-account-g1')).toBeVisible({ timeout: 15000 })
+  await expect(page.getByTestId('cf-sidebar-account-g2')).toBeVisible({ timeout: 15000 })
   
   await expect(page.getByText('File from Google Drive A.txt').first()).toBeVisible()
   await expect(page.getByText('File from Google Drive B.txt').first()).toBeVisible()
