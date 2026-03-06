@@ -29,7 +29,7 @@ Options:
 
 If agent is omitted, detection order is:
 1) CACHEFLOW_AGENT
-2) current TTY mapping written by CCLI/GCLI/OC/codex-a/codex-b wrappers
+2) current TTY mapping written by CCLI/GCLI/OC/codex-a/codex-b/codex-c wrappers
 USAGE
 }
 

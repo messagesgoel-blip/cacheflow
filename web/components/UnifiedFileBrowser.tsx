@@ -55,6 +55,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [isFavoriting, setIsFavoriting] = useState<Set<string>>(new Set())
+  const [recentRenameBlocklist, setRecentRenameBlocklist] = useState<Map<string, string>>(new Map())
   const [showShortcutHelp, setShowShortcutHelp] = useState(false)
   const [previewPanelFile, setPreviewPanelFile] = useState<{
     file: FileMetadata
@@ -527,7 +528,15 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         }
         if (isStale) return
         if (errors.length > 0) setError(`Failed to load: ${errors.join(', ')}`)
-        setFiles(allFiles); setSelectedFiles(new Set())
+        
+        // FIX-03: Robust ghost row prevention - only block the OLD name for this ID
+        const filteredFromRenames = allFiles.filter(f => {
+          const blockedName = recentRenameBlocklist.get(f.id);
+          return blockedName !== f.name;
+        });
+        
+        setFiles(filteredFromRenames); 
+        setSelectedFiles(new Set())
       } catch (err: any) {
         if (!isStale) setError(`Load failed: ${err.message}`)
       } finally {
@@ -818,21 +827,37 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           const f = renameModal.file!; 
           const p = getProvider(f.provider)!; 
           p.remoteId = (f as any).remoteId; 
+          const oldName = f.name;
           
-          const toastId = showToast({ title: "Renaming", message: f.name || "file" });
+          const toastId = showToast({ title: "Renaming", message: oldName || "file" });
           const safety = setTimeout(() => dismissToast(toastId), 5000);
           
           // FIX-03: Remove old row immediately to prevent ghost row
           setFiles(prev => prev.filter(item => item.id !== f.id));
           setAggregatedFiles(prev => prev.filter(item => item.id !== f.id));
+          
+          // FIX-03: Track this ID as renamed with its OLD name to hide stale entries
+          setRecentRenameBlocklist(prev => {
+            const next = new Map(prev);
+            next.set(f.id, oldName);
+            return next;
+          });
+          // Clear block after 10s
+          setTimeout(() => {
+            setRecentRenameBlocklist(prev => {
+              const next = new Map(prev);
+              next.delete(f.id);
+              return next;
+            });
+          }, 10000);
 
           try { 
-            await p.renameFile(f.id, newName); 
-            await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); 
-            
             // FIX-04: Update detail panel immediately
             const renamedFile = applyRenamedMetadata(f, newName);
             setPreviewPanelFile(prev => prev?.file?.id === f.id ? { ...prev, file: renamedFile } : prev);
+
+            await p.renameFile(f.id, newName); 
+            await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); 
             
             clearTimeout(safety);
             dismissToast(toastId);
@@ -843,6 +868,13 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             clearTimeout(safety);
             dismissToast(toastId);
             showErrorToast("Rename failed: " + err.message);
+            
+            // Restore if failed
+            setRecentRenameBlocklist(prev => {
+              const next = new Map(prev);
+              next.delete(f.id);
+              return next;
+            });
             setRefreshKey(k => k + 1); // Restore from server
           } finally { 
             setRenameModal({ open: false, file: null }); 

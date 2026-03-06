@@ -6,7 +6,7 @@ All P0/P1 chaos bugs from Sprint 5 have been resolved and verified.
 ## Sprint 5 Gate Pass
 - **Date:** 2026-03-05
 - **Status:** PASSED
-- **Chaos Run:** 20260305_223108_chaos
+- **Chaos Run:** 20260305_225058_chaos
 - **Key Fixes:**
   - FIX-01: Toast lifecycle management (no frozen toasts)
   - FIX-02: Connections page unified auth and loading
