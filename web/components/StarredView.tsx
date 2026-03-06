@@ -27,11 +27,11 @@ export default function StarredView({ onFileClick, onRemoveFavorite }: StarredVi
   useEffect(() => {
     async function fetchFavorites() {
       const token = localStorage.getItem('cf_token')
-      if (!token) return
 
       try {
         const res = await fetch('/api/favorites', {
-          headers: { Authorization: `Bearer ${token}` }
+          credentials: 'include',
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         })
         const body = await res.json()
         if (body.ok) {

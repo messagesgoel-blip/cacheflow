@@ -473,7 +473,20 @@ export class DropboxProvider extends StorageProvider {
       throw new Error(`Dropbox API error: ${response.statusText}`)
     }
 
-    return response.json()
+    const payload = await response.json()
+    if (
+      payload &&
+      typeof payload === 'object' &&
+      'success' in payload &&
+      'data' in payload &&
+      !('entries' in payload) &&
+      !('files' in payload) &&
+      !('matches' in payload) &&
+      !('storageQuota' in payload)
+    ) {
+      return (payload as any).data
+    }
+    return payload
   }
 
   private async makeContentRequest(endpoint: string, metadata?: any, body?: Blob | File): Promise<Response> {

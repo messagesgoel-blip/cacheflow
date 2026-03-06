@@ -5,6 +5,7 @@ import { TransferJob, FileMetadata, ProviderId } from '@/lib/providers/types'
 import { transferFileBetweenProviders } from '@/lib/transfer/crossProvider'
 import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
+import { metadataCache } from '@/lib/metadataCache'
 import { useActionCenter } from './ActionCenterProvider'
 
 interface TransferQueueContextType {
@@ -77,6 +78,25 @@ export function TransferQueueProvider({ children }: { children: React.ReactNode 
       })
 
       updateJob(job.id, { status: 'completed', progress: 100, completedAt: Date.now() })
+
+      const sourceAccountKey = (job.sourceFile as any).accountKey || ''
+      await Promise.allSettled([
+        metadataCache.invalidateCache(job.sourceProvider, sourceAccountKey),
+        metadataCache.invalidateCache(job.targetProvider, targetAccountKey),
+      ])
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cacheflow:transfer-complete', {
+          detail: {
+            jobId: job.id,
+            sourceProvider: job.sourceProvider,
+            targetProvider: job.targetProvider,
+            sourceAccountKey,
+            targetAccountKey,
+            type: job.type,
+            fileId: job.sourceFile.id,
+          },
+        }))
+      }
       
       // Auto-dismiss completed after 60s
       setTimeout(() => {

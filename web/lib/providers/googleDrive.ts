@@ -323,6 +323,7 @@ export class GoogleDriveProvider extends StorageProvider {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
+        'X-CacheFlow-File-Name': fileName,
       },
       body: form,
     })

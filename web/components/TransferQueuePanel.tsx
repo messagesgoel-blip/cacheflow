@@ -1,12 +1,42 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTransferQueue } from './TransferQueueProvider'
 import { PROVIDERS, formatBytes } from '@/lib/providers/types'
 
 export default function TransferQueuePanel() {
   const { queue, retryTransfer, dismissTransfer, clearCompleted } = useTransferQueue()
   const [isMinimized, setIsCollapsed] = useState(false)
+  const [previewPanelOpen, setPreviewPanelOpen] = useState(false)
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined
+
+    const syncPreviewPanel = () => {
+      setPreviewPanelOpen(Boolean(document.querySelector('[data-testid="cf-preview-panel"]')))
+    }
+
+    syncPreviewPanel()
+
+    const observer = new MutationObserver(syncPreviewPanel)
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-testid', 'class'],
+    })
+
+    window.addEventListener('resize', syncPreviewPanel)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', syncPreviewPanel)
+    }
+  }, [])
+
+  const panelStyle = {
+    right: previewPanelOpen ? '25rem' : '2rem',
+  }
 
   if (queue.length === 0) return null
 
@@ -17,7 +47,8 @@ export default function TransferQueuePanel() {
   return (
     <div 
       data-testid="cf-transfer-queue-panel"
-      className={`fixed bottom-0 right-8 z-[1100] w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl rounded-t-xl transition-all duration-300 ${isMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}
+      style={panelStyle}
+      className={`fixed bottom-0 z-[1100] w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl rounded-t-xl transition-all duration-300 ${isMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}
     >
       {/* Header */}
       <div 

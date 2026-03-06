@@ -66,8 +66,15 @@ async function clickIfVisible(locator, timeout = 3000) {
 async function findRowByName(page, name, timeout = 15000) {
   const start = Date.now();
   while (Date.now() - start < timeout) {
-    const row = page.locator('tbody tr', { hasText: name }).first();
-    if (await row.count()) return row;
+    const rows = page.locator('tbody tr');
+    const count = await rows.count();
+    for (let i = 0; i < count; i += 1) {
+      const row = rows.nth(i);
+      const fileName = await row.getAttribute('data-file-name');
+      if (fileName === name) return row;
+    }
+    const rowByText = page.locator('tbody tr', { hasText: name }).first();
+    if (await rowByText.count()) return rowByText;
     await page.waitForTimeout(500);
   }
   return null;
@@ -84,6 +91,177 @@ async function findLikelyFileRow(page) {
     }
   }
   return count > 0 ? rows.first() : null;
+}
+
+async function waitForNameCountBelow(page, name, threshold, timeout = 10000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const matches = await collectFileMatches(page, name);
+    if (matches.length < threshold) return true;
+    await page.waitForTimeout(500);
+  }
+  return false;
+}
+
+function normalizeText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function providerKeywords(providerId, providerLabel) {
+  const explicit = normalizeText(providerLabel).toUpperCase();
+  const byId = {
+    google: ['GOOGLE', 'GOOGLE DRIVE'],
+    onedrive: ['ONEDRIVE', 'ONE DRIVE'],
+    dropbox: ['DROPBOX'],
+    box: ['BOX'],
+    pcloud: ['PCLOUD', 'P CLOUD'],
+    filen: ['FILEN'],
+    yandex: ['YANDEX'],
+    webdav: ['WEBDAV'],
+    vps: ['VPS', 'SFTP'],
+    local: ['LOCAL'],
+  };
+  return Array.from(new Set([explicit, ...(byId[providerId] || [])].filter(Boolean)));
+}
+
+async function collectFileMatches(page, name) {
+  return page.locator('tbody tr').evaluateAll((rows, expectedName) => {
+    return rows.flatMap((row) => {
+      const fileName = row.getAttribute('data-file-name');
+      if (fileName !== expectedName) return [];
+
+      const cells = Array.from(row.querySelectorAll('td'))
+        .map((cell) => (cell.textContent || '').replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+      const section = row.closest('section[data-testid^="cf-allproviders-group-section-"]');
+      const sectionLabel = section?.querySelector('h3')?.textContent?.replace(/\s+/g, ' ').trim() || '';
+
+      return [{
+        fileId: row.getAttribute('data-file-id') || '',
+        fileName,
+        sectionLabel,
+        rowText: (row.textContent || '').replace(/\s+/g, ' ').trim(),
+        providerCell: cells.length >= 7 ? cells[3] || '' : '',
+      }];
+    });
+  }, name);
+}
+
+function countMatchesForProvider(matches, providerId, providerLabel) {
+  const keywords = providerKeywords(providerId, providerLabel);
+  return matches.filter((match) => {
+    const haystack = `${match.sectionLabel} ${match.providerCell} ${match.rowText}`.toUpperCase();
+    return keywords.some((keyword) => haystack.includes(keyword));
+  }).length;
+}
+
+function countMatchesForLocation(matches, locationKey) {
+  if (!locationKey) return 0;
+  return matches.filter((match) => match.sectionLabel === locationKey).length;
+}
+
+function describeMatches(matches) {
+  return matches.map((match) => ({
+    section: match.sectionLabel || 'n/a',
+    providerCell: match.providerCell || 'n/a',
+    fileId: match.fileId || 'n/a',
+  }));
+}
+
+async function refreshAllFilesView(page) {
+  await clickIfVisible(page.getByTestId('cf-sidebar-node-all-files').first(), 1500);
+  const grouped = page.getByTestId('cf-allproviders-view-toggle-grouped').first();
+  if (await grouped.count()) {
+    const isPressed = (await grouped.getAttribute('aria-pressed').catch(() => 'false')) === 'true';
+    if (!isPressed) {
+      await grouped.click({ timeout: 2000 }).catch(() => {});
+    }
+  }
+  await clickIfVisible(page.getByTestId('files-refresh').first(), 1500);
+  await page.waitForTimeout(1500);
+}
+
+async function waitForQueueTerminalState(page, fileName, timeout = 45000) {
+  const panel = page.getByTestId('cf-transfer-queue-panel');
+  const start = Date.now();
+
+  while (Date.now() - start < timeout) {
+    const item = panel.locator('[data-testid^="cf-transfer-queue-item-"]', { hasText: fileName }).last();
+    if (await item.count()) {
+      const text = normalizeText(await item.textContent().catch(() => ''));
+      if (/FAILED/i.test(text)) return { state: 'failed', text };
+      if (/COMPLETED/i.test(text)) return { state: 'completed', text };
+    }
+    await page.waitForTimeout(1000);
+  }
+
+  return { state: 'timeout', text: '' };
+}
+
+async function waitForDistribution(page, { name, timeout = 20000, predicate }) {
+  const start = Date.now();
+  let lastMatches = [];
+  while (Date.now() - start < timeout) {
+    await refreshAllFilesView(page);
+    lastMatches = await collectFileMatches(page, name);
+    if (predicate(lastMatches)) {
+      return { ok: true, matches: lastMatches };
+    }
+    await page.waitForTimeout(1000);
+  }
+  return { ok: false, matches: lastMatches };
+}
+
+async function reopenPreviewForFile(page, name, preferredSectionLabel = '') {
+  await refreshAllFilesView(page);
+  const rows = page.locator('tbody tr');
+  const count = await rows.count();
+
+  for (let i = 0; i < count; i += 1) {
+    const row = rows.nth(i);
+    const fileName = await row.getAttribute('data-file-name');
+    if (fileName !== name) continue;
+
+    if (preferredSectionLabel) {
+      const sectionLabel = await row.evaluate((element) => {
+        const section = element.closest('section[data-testid^="cf-allproviders-group-section-"]');
+        return section?.querySelector('h3')?.textContent?.replace(/\s+/g, ' ').trim() || '';
+      }).catch(() => '');
+      if (sectionLabel && sectionLabel !== preferredSectionLabel) continue;
+    }
+
+    await row.click({ timeout: 3000 }).catch(() => {});
+    const visible = await page.getByTestId('cf-preview-panel').waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    if (visible) return true;
+  }
+
+  return false;
+}
+
+async function ensureTransferTarget(modal, options = {}) {
+  const { excludeValues = [] } = options;
+  const select = modal.locator('select[aria-label="Target provider"]').first();
+  if (!(await select.count())) return null;
+
+  const choices = await select.locator('option').evaluateAll((ops) =>
+    ops.map((o) => ({ value: o.value, text: o.textContent || '' }))
+  );
+  const currentValue = await select.inputValue().catch(() => '');
+  let selected = choices.find((option) => option.value === currentValue) || null;
+
+  if (!selected || excludeValues.includes(selected.value) || !selected.value) {
+    const target = choices.find((option) => option.value && !excludeValues.includes(option.value) && !/select/i.test(option.text));
+    if (!target) return null;
+    await select.selectOption(target.value).catch(() => {});
+    selected = target;
+  }
+
+  return {
+    value: selected.value,
+    label: normalizeText(selected.text),
+  };
 }
 
 async function main() {
@@ -184,30 +362,41 @@ async function main() {
       }
     }
     report.actions.upload = uploadDone ? 'attempted' : 'failed-no-uploader';
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(5000);
     await screenshot(page, '03-after-upload-attempt');
 
     let targetRow = null;
-    for (let attempt = 0; attempt < 8 && !targetRow; attempt += 1) {
+    for (let attempt = 0; attempt < 12 && !targetRow; attempt += 1) {
       targetRow = await findRowByName(page, originalName, 2500);
       if (!targetRow) {
+        const uploadBanner = page.getByText(/uploading/i).first();
+        if (await uploadBanner.count()) {
+          await page.waitForTimeout(1000);
+        }
         await clickIfVisible(page.getByTestId('files-refresh').first(), 1500);
         await page.waitForTimeout(1000);
       }
     }
+    const uploadedRow = targetRow;
     if (!targetRow) {
       report.notes.push('Uploaded file row not found; continuing with first available row.');
       targetRow = await findLikelyFileRow(page);
     }
 
     if (!targetRow) throw new Error('No file rows available to continue file actions');
+    report.actions.upload = uploadedRow ? 'success' : 'failed-row-missing';
 
     // preview
     await targetRow.click();
     const previewPanel = page.getByTestId('cf-preview-panel');
-    if (await previewPanel.count()) {
-      await previewPanel.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
-      report.actions.preview = 'attempted';
+    const previewVisible = await previewPanel.waitFor({ state: 'visible', timeout: 10000 }).then(() => true).catch(() => false);
+    if (previewVisible) {
+      const textPreviewVisible = await previewPanel.getByText(/CacheFlow QA mock file/i).first()
+        .waitFor({ state: 'visible', timeout: 5000 })
+        .then(() => true)
+        .catch(() => false);
+      const previewFailed = await previewPanel.getByText(/preview not available|could not load preview/i).first().count().catch(() => 0);
+      report.actions.preview = textPreviewVisible ? 'success' : (previewFailed ? 'failed' : 'panel-only');
     } else {
       report.actions.preview = 'not-available';
     }
@@ -243,7 +432,6 @@ async function main() {
         const saveBtn = modal.getByRole('button', { name: /save|rename/i }).first();
         await saveBtn.click().catch(async () => { await page.keyboard.press('Enter').catch(() => {}); });
         await page.waitForTimeout(2000);
-        report.actions.rename = 'attempted';
       } else {
         report.actions.rename = 'failed-modal-missing';
       }
@@ -253,102 +441,164 @@ async function main() {
     await screenshot(page, '06-rename-attempt');
 
     // refresh row reference after rename
-    let rowAfterRename = await findRowByName(page, renamedName, 5000);
+    const renamedRowExact = await findRowByName(page, renamedName, 5000);
+    let rowAfterRename = renamedRowExact;
+    report.actions.rename = renamedRowExact ? 'success' : 'failed-row-missing';
     if (!rowAfterRename) rowAfterRename = await findRowByName(page, originalName, 5000);
     if (!rowAfterRename) rowAfterRename = await findLikelyFileRow(page);
     if (!rowAfterRename) rowAfterRename = page.locator('tbody tr').first();
 
-    // copy + move through overflow menu
-    await rowAfterRename.hover().catch(() => {});
-    const overflow = rowAfterRename.getByTestId('cf-files-row-overflow').first();
-    if (await overflow.count()) {
-      await overflow.click({ force: true }).catch(() => {});
-      const copyBtn = page.getByRole('button', { name: /copy/i }).first();
-      if (await copyBtn.count()) {
-        await copyBtn.click().catch(() => {});
-        const tm = page.getByTestId('transfer-modal-content');
-        if (await tm.count()) {
-          const select = tm.locator('select[aria-label="Target provider"]').first();
-          if (await select.count()) {
-            const options = await select.locator('option').evaluateAll((ops) => ops.map((o) => ({v: o.value, t: o.textContent || ''})));
-            const target = options.find((o) => o.v && !/select/i.test(o.t));
-            if (target) await select.selectOption(target.v).catch(() => {});
-          }
-          const act = tm.getByRole('button', { name: /copy here|copy/i }).first();
-          await act.click().catch(() => {});
-          await page.waitForTimeout(2000);
-          report.actions.copy = 'attempted';
-        } else {
-          report.actions.copy = 'failed-transfer-modal-missing';
-        }
-      } else {
-        report.actions.copy = 'not-available';
-      }
+    await refreshAllFilesView(page);
+    const sourceMatchesBeforeTransfer = await collectFileMatches(page, renamedName);
+    const sourceLocationKey = sourceMatchesBeforeTransfer[0]?.sectionLabel || '';
 
-      await rowAfterRename.hover().catch(() => {});
-      await overflow.click({ force: true }).catch(() => {});
-      const moveBtn = page.getByRole('button', { name: /move/i }).first();
-      if (await moveBtn.count()) {
-        await moveBtn.click().catch(() => {});
-        const tm2 = page.getByTestId('transfer-modal-content');
-        if (await tm2.count()) {
-          const select2 = tm2.locator('select[aria-label="Target provider"]').first();
-          if (await select2.count()) {
-            const options2 = await select2.locator('option').evaluateAll((ops) => ops.map((o) => ({v: o.value, t: o.textContent || ''})));
-            const target2 = options2.find((o) => o.v && !/select/i.test(o.t));
-            if (target2) await select2.selectOption(target2.v).catch(() => {});
-          }
-          const act2 = tm2.getByRole('button', { name: /move here|move/i }).first();
-          await act2.click().catch(() => {});
-          await page.waitForTimeout(2000);
-          report.actions.move = 'attempted';
+    // copy + move from preview panel actions
+    const copyAction = page.getByTestId('cf-preview-action-copy').first();
+    if (await copyAction.count()) {
+      const copyMatchesBefore = await collectFileMatches(page, renamedName);
+      await copyAction.scrollIntoViewIfNeeded().catch(() => {});
+      await copyAction.click({ force: true }).catch(() => {});
+      const tm = page.getByTestId('transfer-modal-content');
+      const opened = await tm.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+      if (opened) {
+        const copyTarget = await ensureTransferTarget(tm, { excludeValues: [(rowAfterRename && (await rowAfterRename.getAttribute('data-provider-id').catch(() => ''))) || ''] });
+        const act = tm.getByRole('button', { name: /copy here|copy/i }).first();
+        await act.click().catch(() => {});
+        const closed = await tm.waitFor({ state: 'hidden', timeout: 10000 }).then(() => true).catch(() => false);
+        if (!closed || !copyTarget) {
+          report.actions.copy = closed ? 'failed-target-missing' : 'failed-modal-stuck';
         } else {
-          report.actions.move = 'failed-transfer-modal-missing';
+          const targetCountBefore = countMatchesForProvider(copyMatchesBefore, copyTarget.value, copyTarget.label);
+          const sourceCountBefore = countMatchesForLocation(copyMatchesBefore, sourceLocationKey);
+          const distribution = await waitForDistribution(page, {
+            name: renamedName,
+            timeout: 20000,
+            predicate: (matches) => {
+              const targetCount = countMatchesForProvider(matches, copyTarget.value, copyTarget.label);
+              const sourceCount = countMatchesForLocation(matches, sourceLocationKey);
+              return targetCount > targetCountBefore && sourceCount >= sourceCountBefore;
+            },
+          });
+          const queueState = distribution.ok
+            ? await waitForQueueTerminalState(page, renamedName, 5000)
+            : await waitForQueueTerminalState(page, renamedName, 20000);
+
+          if (distribution.ok) {
+            report.actions.copy = 'success';
+            if (queueState.state !== 'completed') {
+              report.notes.push(`Copy verified by file placement but queue terminal state was ${queueState.state || 'missing'} for ${renamedName}`);
+            }
+          } else if (queueState.state === 'failed') {
+            report.actions.copy = 'failed-transfer';
+            report.notes.push(`Copy transfer failed for ${renamedName}: ${JSON.stringify({ queueState, before: describeMatches(copyMatchesBefore), after: describeMatches(distribution.matches), target: copyTarget })}`);
+          } else {
+            report.actions.copy = queueState.state === 'timeout' ? 'failed-timeout' : 'failed-verification';
+            report.notes.push(`Copy verification mismatch for ${renamedName}: ${JSON.stringify({
+              queueState,
+              before: describeMatches(copyMatchesBefore),
+              after: describeMatches(distribution.matches),
+              target: copyTarget,
+            })}`);
+          }
         }
       } else {
-        report.actions.move = 'not-available';
+        report.actions.copy = 'failed-transfer-modal-missing';
       }
     } else {
-      report.actions.copy = 'failed-overflow-missing';
-      report.actions.move = 'failed-overflow-missing';
+      report.actions.copy = 'not-available';
+    }
+
+    let moveAction = page.getByTestId('cf-preview-action-move').first();
+    if (!(await moveAction.count())) {
+      await reopenPreviewForFile(page, renamedName, sourceLocationKey);
+      moveAction = page.getByTestId('cf-preview-action-move').first();
+    }
+    if (await moveAction.count()) {
+      const moveMatchesBefore = await collectFileMatches(page, renamedName);
+      await moveAction.scrollIntoViewIfNeeded().catch(() => {});
+      await moveAction.click({ force: true }).catch(() => {});
+      const tm2 = page.getByTestId('transfer-modal-content');
+      const opened = await tm2.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+      if (opened) {
+        const moveTarget = await ensureTransferTarget(tm2);
+        const act2 = tm2.getByRole('button', { name: /move here|move/i }).first();
+        await act2.click().catch(() => {});
+        const closed = await tm2.waitFor({ state: 'hidden', timeout: 10000 }).then(() => true).catch(() => false);
+        if (!closed || !moveTarget) {
+          report.actions.move = closed ? 'failed-target-missing' : 'failed-modal-stuck';
+        } else {
+          const targetCountBefore = countMatchesForProvider(moveMatchesBefore, moveTarget.value, moveTarget.label);
+          const sourceCountBefore = countMatchesForLocation(moveMatchesBefore, sourceLocationKey);
+          const distribution = await waitForDistribution(page, {
+            name: renamedName,
+            timeout: 20000,
+            predicate: (matches) => {
+              const targetCount = countMatchesForProvider(matches, moveTarget.value, moveTarget.label);
+              const sourceCount = countMatchesForLocation(matches, sourceLocationKey);
+              return targetCount > targetCountBefore && sourceCount < sourceCountBefore;
+            },
+          });
+          const queueState = distribution.ok
+            ? await waitForQueueTerminalState(page, renamedName, 5000)
+            : await waitForQueueTerminalState(page, renamedName, 20000);
+
+          if (distribution.ok) {
+            report.actions.move = 'success';
+            if (queueState.state !== 'completed') {
+              report.notes.push(`Move verified by file placement but queue terminal state was ${queueState.state || 'missing'} for ${renamedName}`);
+            }
+          } else if (queueState.state === 'failed') {
+            report.actions.move = 'failed-transfer';
+            report.notes.push(`Move transfer failed for ${renamedName}: ${JSON.stringify({ queueState, before: describeMatches(moveMatchesBefore), after: describeMatches(distribution.matches), target: moveTarget, sourceLocationKey })}`);
+          } else {
+            report.actions.move = queueState.state === 'timeout' ? 'failed-timeout' : 'failed-verification';
+            report.notes.push(`Move verification mismatch for ${renamedName}: ${JSON.stringify({
+              queueState,
+              before: describeMatches(moveMatchesBefore),
+              after: describeMatches(distribution.matches),
+              target: moveTarget,
+              sourceLocationKey,
+            })}`);
+          }
+        }
+      } else {
+        report.actions.move = 'failed-transfer-modal-missing';
+      }
+    } else {
+      report.actions.move = 'not-available';
     }
     await screenshot(page, '07-copy-move-attempts');
 
-    // delete only test-created files
-    const deleteCandidates = [renamedName, originalName];
-    let deleted = false;
-    for (const name of deleteCandidates) {
-      const row = await findRowByName(page, name, 3000);
-      if (!row) continue;
-      await row.hover().catch(() => {});
-      const ov = row.getByTestId('cf-files-row-overflow').first();
-      if (!(await ov.count())) continue;
-      await ov.click({ force: true }).catch(() => {});
-      const delBtn = page.getByRole('button', { name: /^delete$/i }).first();
-      if (await delBtn.count()) {
-        await delBtn.click().catch(() => {});
-        const confirm = page.getByRole('button', { name: /delete|confirm|yes/i }).first();
-        if (await confirm.count()) await confirm.click().catch(() => {});
-        await page.waitForTimeout(2000);
-        deleted = true;
-      }
+    // delete from preview panel so the confirm selector is unambiguous
+    const currentName = renamedRowExact ? renamedName : originalName;
+    let deleteAction = page.getByTestId('cf-preview-action-delete').first();
+    if (!(await deleteAction.count())) {
+      await reopenPreviewForFile(page, renamedName);
+      deleteAction = page.getByTestId('cf-preview-action-delete').first();
     }
-    if (!deleted && rowAfterRename && await rowAfterRename.count()) {
-      await rowAfterRename.hover().catch(() => {});
-      const ov = rowAfterRename.getByTestId('cf-files-row-overflow').first();
-      if (await ov.count()) {
-        await ov.click({ force: true }).catch(() => {});
-        const delBtn = page.getByRole('button', { name: /^delete$/i }).first();
-        if (await delBtn.count()) {
-          await delBtn.click().catch(() => {});
-          const confirm = page.getByRole('button', { name: /delete|confirm|yes/i }).first();
-          if (await confirm.count()) await confirm.click().catch(() => {});
-          await page.waitForTimeout(2000);
-          deleted = true;
+    if (await deleteAction.count()) {
+      const deleteMatchesBefore = await collectFileMatches(page, currentName);
+      await deleteAction.click().catch(() => {});
+      const confirmModal = page.getByTestId('cf-confirm-modal');
+      const confirmVisible = await confirmModal.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+      if (confirmVisible) {
+        await page.getByTestId('cf-confirm-confirm').click().catch(() => {});
+        const modalClosed = await confirmModal.waitFor({ state: 'hidden', timeout: 10000 }).then(() => true).catch(() => false);
+        const rowRemoved = await waitForNameCountBelow(page, currentName, deleteMatchesBefore.length, 10000);
+        report.actions.delete = modalClosed && rowRemoved ? 'success' : 'failed-persisted';
+        if (!rowRemoved) {
+          const deleteMatchesAfter = await collectFileMatches(page, currentName);
+          report.notes.push(`Delete verification mismatch for ${currentName}: ${JSON.stringify({
+            before: describeMatches(deleteMatchesBefore),
+            after: describeMatches(deleteMatchesAfter),
+          })}`);
         }
+      } else {
+        report.actions.delete = 'failed-confirm-missing';
       }
+    } else {
+      report.actions.delete = 'not-available';
     }
-    report.actions.delete = deleted ? 'attempted' : 'not-found-or-failed';
     await screenshot(page, '08-delete-attempt');
 
     // chaos loop (non-destructive)

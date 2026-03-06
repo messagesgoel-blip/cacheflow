@@ -100,7 +100,10 @@ export default function ActionCenterProvider({ children }: { children: React.Rea
     function notify(input: NotifyInput) {
       const id = nextId('banner')
       const ttlMs = input.ttlMs ?? (input.kind === 'error' ? 5000 : 2500)
-      setBanners((prev) => [...prev, { ...input, id, ttlMs }])
+      setBanners((prev) => {
+        const withoutExisting = input.key ? prev.filter((b) => b.key !== input.key) : prev
+        return [...withoutExisting, { ...input, id, ttlMs }]
+      })
       window.setTimeout(() => {
         setBanners((prev) => prev.filter((b) => b.id !== id))
       }, ttlMs)
@@ -175,12 +178,19 @@ export default function ActionCenterProvider({ children }: { children: React.Rea
 
       {/* Confirm modal */}
       {confirmState.open && (
-        <div className="fixed inset-0 z-[1100] bg-black/50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl p-5">
-            <div className="text-base font-semibold text-gray-900 dark:text-gray-100">{confirmState.title}</div>
+        <div data-testid="cf-confirm-modal-overlay" className="fixed inset-0 z-[1100] bg-black/50 flex items-center justify-center p-4">
+          <div
+            data-testid="cf-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cf-confirm-title"
+            className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl p-5"
+          >
+            <div id="cf-confirm-title" className="text-base font-semibold text-gray-900 dark:text-gray-100">{confirmState.title}</div>
             {confirmState.message && <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">{confirmState.message}</div>}
             <div className="mt-5 flex gap-2 justify-end">
               <button
+                data-testid="cf-confirm-cancel"
                 onClick={() => {
                   confirmState.resolve?.(false)
                   setConfirmState({ open: false, title: '' })
@@ -190,6 +200,7 @@ export default function ActionCenterProvider({ children }: { children: React.Rea
                 {confirmState.cancelText || 'Cancel'}
               </button>
               <button
+                data-testid="cf-confirm-confirm"
                 onClick={() => {
                   confirmState.resolve?.(true)
                   setConfirmState({ open: false, title: '' })

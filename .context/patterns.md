@@ -76,3 +76,8 @@
 - use when: Merging provider responses into shared file table/preview components.
 - example: map every file through a normalization helper ensuring `id,name,path,pathDisplay,mimeType,isFolder,modifiedTime` are always present before storing in UI state.
 - do not deviate because: partial provider payloads or optimistic updates can render blank name cells and break downstream actions that require stable file identity fields.
+
+## Transfer Completion UI Refresh
+- use when: A transfer/copy/move action changes file placement across providers or accounts.
+- example: Invalidate source and target metadata caches, emit `cacheflow:transfer-complete`, and have the Files view clear stale preview/selection before refetch.
+- do not deviate because: queue success without file-list invalidation leaves the UI out of sync with provider state and breaks follow-up actions like delete.

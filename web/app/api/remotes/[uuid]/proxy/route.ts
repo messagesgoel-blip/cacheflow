@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { withSecurityScan } from '../../../../../lib/auth/securityAudit';
+import { resolveServerApiBase } from '@/lib/auth/serverApiBase';
 
 interface ProxyRequest {
   method: string;
@@ -19,43 +19,16 @@ interface ProxyRequest {
   body?: any;
 }
 
-interface ProxyResponse {
-  success: boolean;
-  data?: any;
-  error?: string;
-  requiresReauth?: boolean;
-}
+function buildForwardHeaders(request: NextRequest, tokenFromCookie?: string | null): HeadersInit {
+  const authHeaderFromRequest = request.headers.get('authorization');
+  const authHeader = authHeaderFromRequest || (tokenFromCookie ? `Bearer ${tokenFromCookie}` : null);
+  const cookieHeader = request.headers.get('cookie');
 
-/**
- * Singleton refresh promise - prevents concurrent refresh loops
- */
-let refreshPromise: Promise<string> | null = null;
-
-async function refreshAuthToken(): Promise<string> {
-  if (refreshPromise) {
-    return refreshPromise;
-  }
-
-  refreshPromise = (async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'}/api/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Refresh failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.accessToken;
-    } finally {
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
+  return {
+    ...(authHeader ? { Authorization: authHeader } : {}),
+    ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+    'Content-Type': request.headers.get('content-type') || 'application/json',
+  };
 }
 
 /**
@@ -67,16 +40,17 @@ async function refreshAuthToken(): Promise<string> {
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ uuid: string }> }
-): Promise<NextResponse<ProxyResponse>> {
+): Promise<NextResponse> {
   const { uuid } = await params;
 
   try {
     const cookieStore = await cookies();
-    let accessToken = cookieStore.get('accessToken')?.value;
+    const accessToken = cookieStore.get('accessToken')?.value;
+    const apiBase = resolveServerApiBase();
 
     // Parse proxy request
     const proxyReq: ProxyRequest = await request.json();
-    const { method, url, headers, body } = proxyReq;
+    const { url } = proxyReq;
 
     if (!url) {
       return NextResponse.json(
@@ -85,53 +59,31 @@ export async function POST(
       );
     }
 
-    // First attempt with current token
-    let response = await makeProxyRequest(url, method, headers, body, accessToken);
+    const response = await fetch(`${apiBase}/api/remotes/${uuid}/proxy`, {
+      method: 'POST',
+      headers: buildForwardHeaders(request, accessToken),
+      body: JSON.stringify(proxyReq),
+      cache: 'no-store',
+    });
 
-    // Handle 401 - single refresh+retry
-    if (response.status === 401) {
-      try {
-        // Refresh token once
-        accessToken = await refreshAuthToken();
-        
-        // Retry with new token
-        response = await makeProxyRequest(url, method, headers, body, accessToken);
+    const contentType = response.headers.get('content-type') || 'application/octet-stream';
 
-        // Still 401 after refresh - require re-auth
-        if (response.status === 401) {
-          return NextResponse.json({
-            success: false,
-            error: 'Authentication expired. Please sign in again.',
-            requiresReauth: true,
-          }, { status: 401 });
-        }
-      } catch (refreshError) {
-        // Refresh failed - require re-auth
-        console.error('Token refresh failed:', refreshError);
-        return NextResponse.json({
-          success: false,
-          error: 'Session expired. Please sign in again.',
-          requiresReauth: true,
-        }, { status: 401 });
-      }
+    if (!contentType.includes('application/json')) {
+      const bodyBuffer = await response.arrayBuffer();
+      return new NextResponse(bodyBuffer, {
+        status: response.status,
+        headers: {
+          'Content-Type': contentType,
+          ...(response.headers.get('content-disposition')
+            ? { 'Content-Disposition': response.headers.get('content-disposition') as string }
+            : {}),
+        },
+      });
     }
 
-    // Parse response
-    let responseData;
-    try {
-      responseData = await response.json();
-    } catch {
-      responseData = await response.text();
-    }
-
-    // Security scan
-    const safeResponse = withSecurityScan({
-      success: response.ok,
-      data: responseData,
-    }, `/api/remotes/${uuid}/proxy`);
-
-    return NextResponse.json(safeResponse, {
-      status: response.ok ? 200 : response.status,
+    const responseData = await response.json();
+    return NextResponse.json(responseData, {
+      status: response.status,
     });
   } catch (error) {
     console.error('Proxy error:', error);
@@ -143,35 +95,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
-
-/**
- * Make the actual proxy request to external API
- */
-async function makeProxyRequest(
-  url: string,
-  method: string,
-  headers: Record<string, string> = {},
-  body: any,
-  accessToken?: string
-): Promise<Response> {
-  const proxyHeaders: Record<string, string> = {
-    ...headers,
-  };
-
-  // Add auth header if token provided
-  if (accessToken) {
-    proxyHeaders['Authorization'] = `Bearer ${accessToken}`;
-  }
-
-  const fetchOptions: RequestInit = {
-    method,
-    headers: proxyHeaders,
-  };
-
-  if (body && method !== 'GET' && method !== 'HEAD') {
-    fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
-  }
-
-  return fetch(url, fetchOptions);
 }

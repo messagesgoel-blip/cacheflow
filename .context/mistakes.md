@@ -89,3 +89,9 @@
 - why it failed: Public/login routes produced repeated 401 responses and inflated error/load signals during chaos runs.
 - do not attempt: Do not start transfer polling before `/api/auth/session` confirms authenticated state.
 - agent: codex
+
+## 2026-03-05 — Delete verifier assumed total disappearance after copy+move
+- what was tried: Marking delete successful only when zero exact-name matches remained in the grouped file table.
+- why it failed: The chaos flow intentionally created duplicates via copy+move, so a correct delete can reduce row count without removing every exact-name match.
+- do not attempt: Do not verify delete by total disappearance when duplicate exact-name rows can exist; compare exact-match count before and after confirm instead.
+- agent: codex

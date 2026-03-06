@@ -117,12 +117,18 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
   // Load favorites
   useEffect(() => {
-    if (token) {
-      fetch('/api/favorites', { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => res.json())
-        .then(body => { if (body.ok) setFavorites(new Set(body.data.favorites.map((f: any) => f.file_id))) })
-        .catch(err => { console.error('Failed to fetch favorites:', err); setError('Failed to load favorites'); })
-    }
+    fetch('/api/favorites', {
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+      .then(res => res.json())
+      .then(body => {
+        if (body?.ok) {
+          const items = Array.isArray(body.data?.favorites) ? body.data.favorites : []
+          setFavorites(new Set(items.map((f: any) => f.file_id)))
+        }
+      })
+      .catch(err => { console.warn('[UnifiedFileBrowser] Failed to fetch favorites:', err) })
   }, [token])
 
   // Load UI preferences
@@ -293,6 +299,38 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [focusedIndex, sortedFiles, clipboard, currentPath, breadcrumbStack, selectedProvider, activeAccountKey, showShortcutHelp, previewPanelFile])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const handleTransferComplete = (event: Event) => {
+      const detail = (event as CustomEvent<{ fileId?: string; type?: 'copy' | 'move' }>).detail
+      setRefreshKey((k) => k + 1)
+
+      if (!detail?.fileId) return
+
+      setSelectedFiles((prev) => {
+        if (!prev.has(detail.fileId!)) return prev
+        const next = new Set(prev)
+        next.delete(detail.fileId!)
+        return next
+      })
+
+      setPreviewPanelFile((prev) => {
+        if (!prev || prev.file.id !== detail.fileId) return prev
+        return null
+      })
+
+      if (detail.type === 'move') {
+        setFiles((prev) => prev.filter((item) => item.id !== detail.fileId))
+      }
+    }
+
+    window.addEventListener('cacheflow:transfer-complete', handleTransferComplete)
+    return () => {
+      window.removeEventListener('cacheflow:transfer-complete', handleTransferComplete)
+    }
+  }, [])
 
   // Fetch logic
   useEffect(() => {
@@ -484,7 +522,15 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     const isFav = favorites.has(file.id); const method = isFav ? 'DELETE' : 'POST'
     const url = isFav ? `/api/favorites/${file.id}?provider=${file.provider}&accountKey=${(file as any).accountKey}` : '/api/favorites'
     try {
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: isFav ? undefined : JSON.stringify({ provider: file.provider, accountKey: (file as any).accountKey, fileId: file.id, fileName: file.name, mimeType: file.mimeType, isFolder: file.isFolder, path: file.path }) })
+      const res = await fetch(url, {
+        method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: isFav ? undefined : JSON.stringify({ provider: file.provider, accountKey: (file as any).accountKey, fileId: file.id, fileName: file.name, mimeType: file.mimeType, isFolder: file.isFolder, path: file.path }),
+      })
       const body = await res.json(); 
       if (body.ok) {
         setFavorites(prev => { const n = new Set(prev); if (isFav) n.delete(file.id); else n.add(file.id); return n })
@@ -518,7 +564,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const handleFileOpen = async (file: FileMetadata) => {
     if (file.isFolder) { handleFolderClick(file); return }
     const safeName = file.name || 'untitled'
-    const task = actions.startTask({ key: 'file-action', title: 'Opening', message: safeName, progress: null })
+    actions.notify({ key: 'file-action', kind: 'info', title: 'Opening', message: safeName, ttlMs: 1500 })
     try {
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider); if (!provider) throw new Error('Provider not available')
@@ -530,8 +576,16 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         textContent = await blob.text()
       }
       setPreviewPanelFile({ file: normalizeFileMetadata(file, { fallbackName: safeName }), url, type, textContent })
-      task.succeed(safeName)
-    } catch (err: any) { task.fail(err.message) }
+    } catch (err: any) {
+      const message = err?.message || 'Could not load preview'
+      setPreviewPanelFile({
+        file: normalizeFileMetadata(file, { fallbackName: safeName }),
+        url: null,
+        type: resolvePreviewType({ mimeType: file.mimeType, fileName: safeName }),
+        previewError: message,
+      })
+      actions.notify({ key: 'file-action', kind: 'error', title: 'Could not open', message, ttlMs: 4000 })
+    }
   }
 
   const handleFileMove = (file: FileMetadata) => setTransferModal({ open: true, mode: 'move', file })
@@ -696,7 +750,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           data-testid="cf-action-upload-input"
         />
         {transferModal.open && transferModal.file && <TransferModal isOpen={transferModal.open} mode={transferModal.mode} file={transferModal.file} connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))} onClose={() => setTransferModal({ open: false, mode: 'copy', file: null })} onSubmit={async (args) => { addTransfer({ type: transferModal.mode, file: transferModal.file!, ...args }); setTransferModal({ open: false, mode: 'copy', file: null }); setSelectedFiles(new Set()) }} />}
-        {renameModal.open && renameModal.file && <RenameModal isOpen={renameModal.open} title="Rename" initialValue={renameModal.file?.name || ''} onClose={() => setRenameModal({ open: false, file: null })} onSubmit={async (newName) => { const f = renameModal.file!; const p = getProvider(f.provider)!; p.remoteId = (f as any).remoteId; await p.renameFile(f.id, newName); await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); setRenameModal({ open: false, file: null }); setRefreshKey(k => k + 1) }} />}
+        {renameModal.open && renameModal.file && <RenameModal isOpen={renameModal.open} title="Rename" initialValue={renameModal.file?.name || ''} onClose={() => setRenameModal({ open: false, file: null })} onSubmit={async (newName) => { const f = renameModal.file!; const p = getProvider(f.provider)!; p.remoteId = (f as any).remoteId; const task = actions.startTask({ key: 'file-action', title: 'Renaming', message: f.name || 'file', progress: null }); try { await p.renameFile(f.id, newName); await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); const renamedFile = applyRenamedMetadata(f, newName); setFiles((prev) => prev.map((item) => item.id === f.id ? { ...item, ...renamedFile } : item)); setPreviewPanelFile((prev) => prev?.file?.id === f.id ? { ...prev, file: { ...prev.file, ...renamedFile } } : prev); task.succeed(newName) } catch (err: any) { const message = err?.message || 'Rename failed'; task.fail(message); actions.notify({ kind: 'error', title: 'Rename failed', message }) } finally { setRenameModal({ open: false, file: null }); setRefreshKey(k => k + 1) } }} />}
         {showShortcutHelp && <ShortcutHelp onClose={() => setShowShortcutHelp(false)} />}
 
         <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex flex-wrap items-center justify-between gap-4">
@@ -849,7 +903,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               </div>
             )}
           </div>
-          {previewPanelFile && <PreviewPanel file={previewPanelFile.file} url={previewPanelFile.url} type={previewPanelFile.type} onClose={() => setPreviewPanelFile(null)} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} />}
+          {previewPanelFile && <PreviewPanel file={previewPanelFile.file} url={previewPanelFile.url} type={previewPanelFile.type} textContent={previewPanelFile.textContent} previewError={previewPanelFile.previewError} onClose={() => setPreviewPanelFile(null)} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} />}
         </div>
         <SelectionToolbar selectedFiles={selectedFileObjects} onOpen={handleFileOpen} onDownload={(fs) => fs.length === 1 ? handleFileDownload(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Download', message: 'Coming soon!' })} onRename={handleFileRename} onMove={(fs) => setTransferModal({ open: true, mode: 'move', file: fs[0] })} onCopy={(fs) => setTransferModal({ open: true, mode: 'copy', file: fs[0] })} onDelete={(fs) => fs.length === 1 ? handleFileDelete(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Delete', message: 'Coming soon!' })} onClearSelection={() => setSelectedFiles(new Set())} />
         <TransferQueuePanel />
@@ -952,6 +1006,25 @@ function normalizeFileMetadata(
     modifiedTime: file?.modifiedTime || file?.modified_at || new Date().toISOString(),
     providerName: file?.providerName || file?.provider || 'provider',
   } as FileMetadata
+}
+
+function renameFilePath(pathValue: string | undefined, nextName: string): string | undefined {
+  if (!pathValue) return pathValue
+  const normalized = String(pathValue)
+  if (!normalized) return normalized
+  const lastSlash = normalized.lastIndexOf('/')
+  if (lastSlash === -1) return nextName
+  return `${normalized.slice(0, lastSlash + 1)}${nextName}`
+}
+
+function applyRenamedMetadata(file: FileMetadata, nextName: string): FileMetadata {
+  return normalizeFileMetadata({
+    ...file,
+    name: nextName,
+    path: renameFilePath(file.path, nextName) || file.path,
+    pathDisplay: renameFilePath(file.pathDisplay || file.path, nextName) || file.pathDisplay || file.path,
+    modifiedTime: new Date().toISOString(),
+  })
 }
 
 export function getFileIcon(mimeType: string): string {

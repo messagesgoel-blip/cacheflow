@@ -25,7 +25,6 @@ interface SessionResponse {
   user?: {
     email?: string
   }
-  accessToken?: string
 }
 
 function toConnectedProvider(conn: ServerConnection): ConnectedProvider {
@@ -53,7 +52,8 @@ const STATUS_COLOR: Record<string, string> = {
 }
 
 export default function ConnectionsPage() {
-  const [token, setToken] = useState<string | null>(null)
+  const [authenticated, setAuthenticated] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
   const [email, setEmail] = useState('')
   const [connections, setConnections] = useState<ServerConnection[]>([])
   const [loading, setLoading] = useState(false)
@@ -66,16 +66,6 @@ export default function ConnectionsPage() {
     let isMounted = true
 
     const hydrateSession = async () => {
-      const localToken = localStorage.getItem('cf_token')
-      const localEmail = localStorage.getItem('cf_email') || ''
-      if (localToken) {
-        if (isMounted) {
-          setToken(localToken)
-          setEmail(localEmail)
-        }
-        return
-      }
-
       try {
         const res = await fetch('/api/auth/session', {
           method: 'GET',
@@ -84,31 +74,22 @@ export default function ConnectionsPage() {
         })
         if (!res.ok) {
           if (isMounted) {
-            setToken(null)
+            setAuthenticated(false)
             setEmail('')
+            setSessionReady(true)
           }
           return
         }
         const session = (await res.json()) as SessionResponse
         if (!isMounted) return
-        if (session.authenticated && session.accessToken) {
-          setToken(session.accessToken)
-          setEmail(session.user?.email || '')
-          localStorage.setItem('cf_token', session.accessToken)
-          localStorage.setItem('cf_email', session.user?.email || '')
-        } else if (session.user && session.accessToken) {
-          setToken(session.accessToken)
-          setEmail(session.user?.email || '')
-          localStorage.setItem('cf_token', session.accessToken)
-          localStorage.setItem('cf_email', session.user?.email || '')
-        } else {
-          setToken(null)
-          setEmail('')
-        }
+        setAuthenticated(Boolean(session.authenticated))
+        setEmail(session.user?.email || '')
+        setSessionReady(true)
       } catch {
         if (isMounted) {
-          setToken(null)
+          setAuthenticated(false)
           setEmail('')
+          setSessionReady(true)
         }
       }
     }
@@ -145,10 +126,10 @@ export default function ConnectionsPage() {
   }, [])
 
   useEffect(() => {
-    if (token) {
+    if (authenticated) {
       fetchConnections()
     }
-  }, [token, fetchConnections])
+  }, [authenticated, fetchConnections])
 
   const handleNavigate = (
     providerId: ProviderId | 'all' | 'vault' | 'recent' | 'starred' | 'activity',
@@ -158,7 +139,15 @@ export default function ConnectionsPage() {
     if (accountKey) setActiveAccountKey(accountKey)
   }
 
-  if (!token) {
+  if (!sessionReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <p className="text-gray-600 dark:text-gray-400">Loading connections…</p>
+      </div>
+    )
+  }
+
+  if (!authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
@@ -183,8 +172,6 @@ export default function ConnectionsPage() {
       <Navbar
         email={email}
         onLogout={() => {
-          localStorage.removeItem('cf_token')
-          localStorage.removeItem('cf_email')
           window.location.href = '/login'
         }}
       />
@@ -201,14 +188,16 @@ export default function ConnectionsPage() {
       </button>
 
       {/* Mobile sidebar */}
-      <SidebarNav
-        connectedProviders={connectedProviders}
-        selectedProvider={selectedProvider}
-        activeAccountKey={activeAccountKey}
-        onNavigate={handleNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+      <div className="md:hidden">
+        <SidebarNav
+          connectedProviders={connectedProviders}
+          selectedProvider={selectedProvider}
+          activeAccountKey={activeAccountKey}
+          onNavigate={handleNavigate}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+      </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop sidebar - hidden on mobile */}

@@ -177,3 +177,11 @@
 - files: web/components/ActionCenterProvider.tsx, web/components/UnifiedFileBrowser.tsx
 - commit: pending
 - agent: codex
+
+## 2026-03-05 — Invalidate file-browser state on transfer completion
+- decision: On cross-provider copy/move completion, invalidate metadata cache for both source and target accounts and broadcast a browser `cacheflow:transfer-complete` event so the Files view refreshes immediately.
+- rationale: Queue completion alone left grouped file lists and preview state stale, causing successful transfers to look like failures and leaving follow-up actions bound to the wrong file context.
+- alternatives rejected: Poll transfer queue only; refresh only the queue panel; rely on manual user refresh.
+- files: web/components/TransferQueueProvider.tsx, web/components/UnifiedFileBrowser.tsx
+- commit: pending
+- agent: codex

@@ -38,6 +38,36 @@ export const TransferTray: React.FC = () => {
   } = useTransferContext();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [previewPanelOpen, setPreviewPanelOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+
+    const syncPreviewPanel = () => {
+      setPreviewPanelOpen(Boolean(document.querySelector('[data-testid="cf-preview-panel"]')));
+    };
+
+    syncPreviewPanel();
+
+    const observer = new MutationObserver(syncPreviewPanel);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-testid', 'class'],
+    });
+
+    window.addEventListener('resize', syncPreviewPanel);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', syncPreviewPanel);
+    };
+  }, []);
+
+  const trayStyle = {
+    right: previewPanelOpen ? '25rem' : '1rem',
+  };
 
   // Separate active and completed transfers
   const { activeTransfers, completedTransfers } = useMemo(() => {
@@ -81,7 +111,8 @@ export const TransferTray: React.FC = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 p-3 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors z-50"
+        style={trayStyle}
+        className="fixed bottom-4 p-3 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors z-50"
         aria-label="Show transfers"
       >
         <span className="text-lg">📁</span>
@@ -94,7 +125,8 @@ export const TransferTray: React.FC = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 p-2 bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 transition-colors z-50"
+        style={trayStyle}
+        className="fixed bottom-4 p-2 bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 transition-colors z-50"
         aria-label={`${activeCount} active transfer${activeCount > 1 ? 's' : ''}`}
       >
         <div className="relative">
@@ -113,7 +145,8 @@ export const TransferTray: React.FC = () => {
   return (
     <div 
       data-testid="cf-transfer-tray"
-      className="fixed bottom-4 right-4 w-80 max-h-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+      style={trayStyle}
+      className="fixed bottom-4 w-80 max-h-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50">
