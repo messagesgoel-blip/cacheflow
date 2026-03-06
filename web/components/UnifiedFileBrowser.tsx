@@ -568,24 +568,24 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const handleFileDownload = async (file: FileMetadata) => {
     const safeName = file.name || 'untitled'
     const task = actions.startTask({ key: 'file-action', title: 'Downloading', message: safeName, progress: null })
-    const safetyTimer = setTimeout(() => task.fail('Download timed out'), 15000)
+    const safetyTimer = setTimeout(() => task.dismiss(), 5000)
     try {
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider); if (!provider) throw new Error('Provider not available')
       provider.remoteId = (file as any).remoteId
       const blob = await provider.downloadFile(file.id)
       clearTimeout(safetyTimer)
+      task.dismiss()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
       a.download = safeName
       a.click()
       window.URL.revokeObjectURL(url)
-      task.succeed(safeName)
     } catch (err: any) {
       clearTimeout(safetyTimer)
+      task.dismiss()
       const message = err?.message || 'Download failed'
-      task.fail(message)
       actions.notify({ kind: 'error', title: 'Download failed', message })
     }
   }
@@ -600,7 +600,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       message: safeName, 
       progress: null 
     })
-    const safetyTimer = setTimeout(() => task.fail('Open timed out'), 10000)
+    const safetyTimer = setTimeout(() => task.dismiss(), 5000)
     
     try {
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
@@ -615,9 +615,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       }
       setPreviewPanelFile({ file: normalizeFileMetadata(file, { fallbackName: safeName }), url, type, textContent })
       clearTimeout(safetyTimer)
-      task.succeed(safeName)
+      task.dismiss()
     } catch (err: any) {
       clearTimeout(safetyTimer)
+      task.dismiss()
       const message = err?.message || 'Could not load preview'
       setPreviewPanelFile({
         file: normalizeFileMetadata(file, { fallbackName: safeName }),
@@ -625,7 +626,6 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         type: resolvePreviewType({ mimeType: file.mimeType, fileName: safeName }),
         previewError: message,
       })
-      task.fail(message)
       if (err?.status === 404) {
         actions.notify({ kind: 'error', title: 'File not found', message: 'It may have been deleted' })
       } else {
@@ -743,7 +743,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     if (!ok) return
 
     const task = actions.startTask({ key: 'file-action', title: 'Deleting', message: safeName, progress: null })
-    const safetyTimer = setTimeout(() => task.fail('Delete timed out'), 10000)
+    const safetyTimer = setTimeout(() => task.dismiss(), 5000)
     
     // Optimistic removal
     const previousFiles = [...files]
@@ -763,15 +763,15 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       await provider.deleteFile(file.id)
       await metadataCache.invalidateCache(file.provider as any, (file as any).accountKey)
       clearTimeout(safetyTimer)
-      task.succeed(safeName)
+      task.dismiss()
       
       // Refresh without clearing the list (loading=false will be set by the effect)
       setRefreshKey((k) => k + 1)
     } catch (err: any) {
       clearTimeout(safetyTimer)
+      task.dismiss()
       setFiles(previousFiles) // Restore on failure
       const message = err?.message || 'Delete failed'
-      task.fail(message)
       actions.notify({ kind: 'error', title: 'Delete failed', message })
     }
   }
@@ -814,7 +814,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           const p = getProvider(f.provider)!; 
           p.remoteId = (f as any).remoteId; 
           const task = actions.startTask({ key: 'file-action', title: 'Renaming', message: f.name || 'file', progress: null }); 
-          const safetyTimer = setTimeout(() => task.fail('Rename timed out'), 10000);
+          const safetyTimer = setTimeout(() => task.dismiss(), 5000);
           
           // Optimistic update
           const renamedFile = applyRenamedMetadata(f, newName);
@@ -825,16 +825,18 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             await p.renameFile(f.id, newName); 
             await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); 
             clearTimeout(safetyTimer);
-            task.succeed(newName);
+            task.dismiss();
             
-            // To avoid ghost rows, filter out the old ID BEFORE refetching 
-            // if the provider might return a new ID for the renamed file
-            setFiles(prev => prev.filter(item => item.id !== f.id || item.name === newName));
+            // FIX-03: Filter out OLD ID before refetching to ensure no ghost rows
+            // FIX-04: Re-apply preview panel update to ensure it sticks after refetch
+            setFiles(prev => prev.filter(item => item.id !== f.id));
+            setPreviewPanelFile(prev => prev?.file?.id === f.id ? { ...prev, file: renamedFile } : prev);
+            
             setRefreshKey(k => k + 1);
           } catch (err: any) { 
             clearTimeout(safetyTimer);
+            task.dismiss();
             const message = err?.message || 'Rename failed'; 
-            task.fail(message); 
             actions.notify({ kind: 'error', title: 'Rename failed', message });
             setRefreshKey(k => k + 1); // Restore from server
           } finally { 

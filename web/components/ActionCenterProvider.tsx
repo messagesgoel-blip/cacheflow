@@ -41,10 +41,12 @@ type TaskHandle = {
   update: (patch: { title?: string; message?: string; progress?: number | null }) => void
   succeed: (message?: string) => void
   fail: (message?: string) => void
+  dismiss: () => void
 }
 
 type ActionCenterApi = {
   notify: (input: NotifyInput) => void
+  dismissBanner: (id: string) => void
   startTask: (input: { title: string; message?: string; progress?: number | null; key?: string }) => TaskHandle
   confirm: (input: { title: string; message?: string; confirmText?: string; cancelText?: string }) => Promise<boolean>
   prompt: (input: { title: string; message?: string; initial?: string; placeholder?: string; confirmText?: string; cancelText?: string }) => Promise<string | null>
@@ -109,6 +111,10 @@ export default function ActionCenterProvider({ children }: { children: React.Rea
       }, ttlMs)
     }
 
+    function dismissBanner(id: string) {
+      setBanners((prev) => prev.filter((b) => b.id !== id))
+    }
+
     function startTask(input: { title: string; message?: string; progress?: number | null; key?: string }): TaskHandle {
       const id = nextId('task')
       setBanners((prev) => {
@@ -142,6 +148,7 @@ export default function ActionCenterProvider({ children }: { children: React.Rea
         update,
         succeed: (message?: string) => done('success', message),
         fail: (message?: string) => done('error', message),
+        dismiss: () => dismissBanner(id)
       }
     }
 
@@ -158,7 +165,7 @@ export default function ActionCenterProvider({ children }: { children: React.Rea
       })
     }
 
-    return { notify, startTask, confirm, prompt }
+    return { notify, dismissBanner, startTask, confirm, prompt }
   }, [])
 
   return (

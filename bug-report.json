@@ -1,0 +1,60 @@
+{
+  "startedAt": "2026-03-06T03:11:11.128Z",
+  "baseUrl": "https://cacheflow.goels.in",
+  "runDir": "/srv/storage/local/screenshot/20260305_221109_chaos",
+  "login": {
+    "success": true,
+    "passwordUsed": "admin123",
+    "error": null
+  },
+  "preconditions": {
+    "sidebarAccounts": 4,
+    "fileRows": 6,
+    "ready": true,
+    "reason": null
+  },
+  "actions": {
+    "upload": "success",
+    "preview": "success",
+    "download": "success",
+    "rename": "success",
+    "copy": "success",
+    "move": "success",
+    "delete": "success",
+    "chaosLoop": "completed"
+  },
+  "artifacts": {
+    "screenshots": [
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-11-610Z-01-login-page.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-15-271Z-02-after-login-files.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-20-360Z-03-after-upload-attempt.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-20-576Z-04-preview-attempt.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-20-768Z-05-download-attempt.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-22-977Z-06-rename-attempt.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-30-044Z-07-copy-move-attempts.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-31-951Z-08-delete-attempt.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-32-598Z-chaos-loop-1.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-33-316Z-chaos-loop-2.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-33-965Z-chaos-loop-3.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-34-682Z-chaos-loop-4.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-35-333Z-chaos-loop-5.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-36-048Z-chaos-loop-6.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-36-698Z-chaos-loop-7.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-37-431Z-chaos-loop-8.png",
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-37-596Z-09-remotes-final.png"
+    ],
+    "filesCreated": [
+      "/tmp/CHAOS_E2E_1772766675337.txt"
+    ],
+    "filesDownloaded": [
+      "/srv/storage/local/screenshot/20260305_221109_chaos/2026-03-06T03-11-20-764Z-CHAOS_E2E_1772766675337.txt"
+    ]
+  },
+  "errors": {
+    "network4xx5xx": [],
+    "consoleErrors": [],
+    "uncaught": []
+  },
+  "notes": [],
+  "finishedAt": "2026-03-06T03:11:37.798Z"
+}
