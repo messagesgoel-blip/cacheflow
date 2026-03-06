@@ -193,3 +193,11 @@
 - files: web/app/api/remotes/[uuid]/upload/route.ts, web/app/api/jobs/route.ts, web/app/api/vault/[id]/unlock/route.ts, web/lib/jobs/scheduledJobService.ts, web/lib/providers/healthCheck.ts, web/lib/vault/vaultSession.ts
 - commit: pending
 - agent: codex
+
+## 2026-03-06 — Web session route must fall back to backend auth when local JWT verification is unavailable
+- decision: `/web/app/api/auth/session` first verifies locally when `JWT_SECRET` is present, otherwise it validates the access token against backend `/auth/me` and only uses `userData` cookie as a last-resort compatibility fallback.
+- rationale: The web container does not always carry the backend JWT signing secret in production-like deployments, but session checks still need to confirm authenticated state after login.
+- alternatives rejected: Hard-failing session checks when `JWT_SECRET` is absent; returning the raw access token to the browser for client-side verification.
+- files: web/app/api/auth/session/route.ts
+- commit: pending
+- agent: codex

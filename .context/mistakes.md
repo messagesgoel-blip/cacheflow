@@ -101,3 +101,9 @@
 - why it failed: Several routes depended on helper modules that only existed as untracked files in the dirty live repo, so the clean build immediately failed with module-not-found errors.
 - do not attempt: Do not treat a dirty live deploy as proof the repo is deployable; always validate a clean `web` build from git-tracked files before declaring source/runtime parity.
 - agent: codex
+
+## 2026-03-06 — Assuming the web runtime always has JWT_SECRET
+- what was tried: Treating local JWT verification inside `/api/auth/session` as mandatory for every deployment.
+- why it failed: Clean production-like web containers can authenticate via backend-issued bearer tokens without exposing the signing secret to the Next.js runtime, so session checks broke immediately after login.
+- do not attempt: Do not require web-runtime JWT secret presence for session confirmation when backend `/auth/me` can authoritatively validate the token.
+- agent: codex
