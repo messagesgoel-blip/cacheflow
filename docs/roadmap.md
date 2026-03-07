@@ -3,7 +3,7 @@
 Canonical roadmap for product planning and orchestration.
 
 - Canonical since: `2026-03-07`
-- Replaces: `docs/roadmap-v4.3.md`, `docs/sprints/sprint-6.md`, and the external duplicate roadmap JSX snapshots as live planning sources
+- Replaces: `docs/roadmap-v4.3.md`, the legacy launch-only Sprint 6 plan, and the external duplicate roadmap JSX snapshots as live planning sources
 - Scope split:
   - `Version 1`: merged Phase 1 + Phase 1.5
   - `Version 2`: former Phase 2 roadmap only
@@ -168,6 +168,7 @@ Version 2 starts only after Version 1 is green and complete.
 
 - Product roadmap: `docs/roadmap.md`
 - GTM / Commercial backlog: `docs/gtm-commercial-backlog.md`
+- Sprint specs: `docs/sprints/`
 - Orchestration manifest: `docs/orchestration/task-manifest.json`
 - Dashboard: `docs/sprints-task-dashboard.md`
 - Runtime state: `logs/orchestrator-state.json`

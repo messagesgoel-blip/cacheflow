@@ -19,12 +19,11 @@
 - Version 2 is the former Phase 2 roadmap only.
 - The old launch-only Sprint 6 is retired from the core product roadmap.
 - The old `6.8A` option is absorbed into Version 1 stage `6.5`.
+- `docs/sprints/sprint-6.md` now points at the canonical Version 1 Sprint 6 spec.
 
 ## Retired Files
 
-- `/docs/roadmap-v4.3.md`
-- `/docs/sprints/sprint-6.md`
-- `/docs/CacheFlow_AgentRoadmap_v4_3.docx`
+- Legacy roadmap files and duplicate external snapshots are removed from live planning use.
 
 ## Invariants
 

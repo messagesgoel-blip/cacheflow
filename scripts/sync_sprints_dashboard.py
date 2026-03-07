@@ -39,6 +39,26 @@ def load_state() -> dict:
     return raw if isinstance(raw, dict) else {}
 
 
+def find_task_record(state: dict, task_key: str, task_id: str, sprint: int):
+    direct = state.get(task_key)
+    if isinstance(direct, dict):
+        return direct
+
+    matches = []
+    for rec in state.values():
+        if not isinstance(rec, dict):
+            continue
+        if str(rec.get("id", "")).strip() != task_id:
+            continue
+        if int(rec.get("sprint", 0) or 0) != sprint:
+            continue
+        matches.append(rec)
+
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
 def sprint_stats(state: dict) -> dict[int, dict]:
     rows: dict[int, list] = {}
     for rec in state.values():
@@ -113,7 +133,7 @@ def sync_dashboard() -> int:
                 gate_match = re.search(r"\(Gate ([^)]+)\)", desc)
                 if gate_match:
                     task_key = f"{task_id}@{gate_match.group(1)}"
-                    rec = state.get(task_key)
+                    rec = find_task_record(state, task_key, task_id, current_sprint or 0)
                     if isinstance(rec, dict):
                         status_raw = str(rec.get("status", "planned")).lower()
                         status = STATUS_LABEL.get(status_raw, "Planned")

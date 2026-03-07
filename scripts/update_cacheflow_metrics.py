@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import subprocess
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -23,7 +22,7 @@ def resolve_base() -> Path:
 
 
 BASE = resolve_base()
-ROADMAP = BASE / "docs" / "roadmap-v4.3.md"
+MANIFEST_FILE = BASE / "docs" / "orchestration" / "task-manifest.json"
 SPRINT_TASKS_FILE = BASE / "monitoring" / "cacheflow_sprint_tasks.yaml"
 METRICS_FILE = BASE / "monitoring" / "cacheflow_metrics.yaml"
 STATE_FILE = BASE / "monitoring" / "cacheflow_task_state.yaml"
@@ -33,6 +32,12 @@ LOCK_DIR = BASE / ".context" / "task_locks"
 
 DONE_STATES = {"done", "complete", "closed", "pass"}
 VALID_STATES = {"planned", "pending", "running", "done"}
+COMBINED_STAGE_MIN_SPRINT = 6
+AGENT_LABELS = {
+    "opencode": "\u25C8 OpenCode",
+    "claudecode": "\u25C6 ClaudeCode",
+    "gemini": "\u25C9 Gemini",
+}
 
 
 def now_iso() -> str:
@@ -65,43 +70,74 @@ def load_orchestrator_overrides() -> dict:
         return {}
 
 
+def agent_label(raw_agent: str, sprint: int) -> str:
+    normalized = str(raw_agent or "").strip().lower()
+    if normalized == "codex":
+        if sprint >= COMBINED_STAGE_MIN_SPRINT:
+            return "\u2605 CODEX (Cross-agent)"
+        return "\u2605 CODEX (Master)"
+    return AGENT_LABELS.get(normalized, normalized or "Unassigned")
+
+
 def parse_tasks() -> list[dict]:
-    lines = ROADMAP.read_text().splitlines()
-    row_pattern = re.compile(
-        r"^\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|"
-    )
-    current_gate = None
+    manifest = json.loads(MANIFEST_FILE.read_text())
+    raw_tasks = manifest.get("tasks", [])
     tasks = []
-    for raw in lines:
-        line = raw.strip()
-        if line.startswith("## Gate "):
-            current_gate = line.replace("## Gate ", "", 1).strip()
+    for raw_task in raw_tasks:
+        if not isinstance(raw_task, dict):
             continue
-        if not current_gate or not line.startswith("|"):
+
+        task_id = str(raw_task.get("id", "")).strip()
+        if not task_id:
             continue
-        if line.startswith("| ID |") or line.startswith("| ---"):
+
+        sprint_num = int(raw_task.get("sprint", 0) or 0)
+        criteria = [
+            str(criterion).strip()
+            for criterion in raw_task.get("acceptance_criteria", []) or []
+            if str(criterion).strip()
+        ]
+        files = ", ".join(str(path).strip() for path in raw_task.get("files", []) or [] if str(path).strip())
+        base = {
+            "id": task_id,
+            "description": str(raw_task.get("title", "")).strip(),
+            "sprint": sprint_num,
+            "files": files,
+            "agent": agent_label(str(raw_task.get("agent", "")), sprint_num),
+        }
+
+        if not criteria:
+            tasks.append(
+                {
+                    **base,
+                    "task_key": task_id,
+                    "gate": "",
+                    "criteria": [],
+                }
+            )
             continue
-        match = row_pattern.match(line)
-        if not match:
+
+        if sprint_num >= COMBINED_STAGE_MIN_SPRINT:
+            combined_gate = "+".join(criteria)
+            tasks.append(
+                {
+                    **base,
+                    "task_key": f"{task_id}@{combined_gate}",
+                    "gate": combined_gate,
+                    "criteria": criteria,
+                }
+            )
             continue
-        task_id, desc, sprint, files, agent = [g.strip() for g in match.groups()]
-        sprint_value = sprint.split()[0]
-        try:
-            sprint_num = int(sprint_value)
-        except ValueError:
-            sprint_num = 0
-        task_key = f"{task_id}@{current_gate}"
-        tasks.append(
-            {
-                "id": task_id,
-                "task_key": task_key,
-                "description": desc,
-                "sprint": sprint_num,
-                "files": files,
-                "agent": agent,
-                "gate": current_gate,
-            }
-        )
+
+        for criterion in criteria:
+            tasks.append(
+                {
+                    **base,
+                    "task_key": f"{task_id}@{criterion}",
+                    "gate": criterion,
+                    "criteria": [criterion],
+                }
+            )
     return tasks
 
 
@@ -165,6 +201,32 @@ def _status_map(args: argparse.Namespace) -> dict:
     }
 
 
+def _lookup_previous(existing_state: dict, task: dict) -> dict:
+    previous = existing_state.get(task["task_key"], {})
+    if isinstance(previous, str):
+        return {"status": previous}
+    if isinstance(previous, dict) and previous:
+        return previous
+
+    id_matches = []
+    for rec in existing_state.values():
+        if not isinstance(rec, dict):
+            continue
+        if str(rec.get("id", "")).strip() != task["id"]:
+            continue
+        id_matches.append(rec)
+
+    if not id_matches:
+        return {}
+
+    same_sprint = [rec for rec in id_matches if int(rec.get("sprint", 0) or 0) == int(task["sprint"])]
+    if len(same_sprint) == 1:
+        return same_sprint[0]
+    if same_sprint:
+        return same_sprint[0]
+    return id_matches[0]
+
+
 def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict], dict, list[dict]]:
     existing_state = load_state()
     orchestrator_overrides = load_orchestrator_overrides()
@@ -175,16 +237,11 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
     message = run_git(["log", "-1", "--pretty=%s"])
     timestamp = now_iso()
     selectors = _status_map(args)
-    old_id_state = {k: v for k, v in existing_state.items() if isinstance(v, str)}
     active_locks = load_active_locks()
 
     for task in tasks:
         key = task["task_key"]
-        previous = existing_state.get(key, {})
-        if isinstance(previous, str):
-            previous = {"status": previous}
-        if not previous and task["id"] in old_id_state:
-            previous = {"status": old_id_state[task["id"]]}
+        previous = _lookup_previous(existing_state, task)
 
         record = {
             "status": previous.get("status", "planned"),
@@ -205,7 +262,7 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
 
         # Priority 2: Orchestrator state override
         orchestrator_status = orchestrator_overrides.get(key) or orchestrator_overrides.get(task["id"])
-        if orchestrator_status in ("done", "running"):
+        if orchestrator_status in VALID_STATES:
             target_status = orchestrator_status
 
         # Priority 3: Active locks (implies running)
@@ -254,6 +311,7 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
             "id": task["id"],
             "task_key": key,
             "gate": task["gate"],
+            "criteria": task.get("criteria", []),
             "sprint": task["sprint"],
             "agent": task["agent"],
             "status": task["status"],
@@ -284,7 +342,11 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict) -> dict:
     gates = defaultdict(list)
     for task in tasks:
         sprints[int(task["sprint"])].append(task)
-        gates[task["gate"]].append(task)
+        criteria = task.get("criteria") or [task.get("gate", "")]
+        for criterion in criteria:
+            criterion_name = str(criterion).strip()
+            if criterion_name:
+                gates[criterion_name].append(task)
 
     sprint_rows = []
     current_sprint = 0
