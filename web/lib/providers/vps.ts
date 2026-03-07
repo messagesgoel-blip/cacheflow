@@ -10,9 +10,8 @@
 import { StorageProvider, ListFilesResult, DownloadOptions, UploadOptions, SearchResult } from './StorageProvider'
 import { ProviderToken, ProviderQuota, FileMetadata, ProviderId } from './types'
 
-// API base URL for SFTP proxy
 const API_BASE = typeof window !== 'undefined'
-  ? (process.env.NEXT_PUBLIC_API_URL || '/api')
+  ? (process.env.NEXT_PUBLIC_API_URL || '')
   : ''
 
 export interface VPSConfig {
@@ -74,7 +73,34 @@ export class VPSProvider extends StorageProvider {
     }
   }
 
+  private getConnectionId(): string {
+    return this.config?.id || this.remoteId || ''
+  }
+
+  private getRootPath(): string {
+    return this.config?.rootPath || '/'
+  }
+
+  private getConnectionApiPath(connectionId: string, suffix = ''): string {
+    const base = API_BASE.replace(/\/+$/, '')
+    const path = `/api/providers/vps/${encodeURIComponent(connectionId)}${suffix}`
+    if (!base || base === '/api') return path
+    return base.endsWith('/api') ? `${base}${path.replace(/^\/api/, '')}` : `${base}${path}`
+  }
+
   private getConfig(): VPSConfig {
+    if (!this.config && this.remoteId) {
+      this.config = {
+        id: this.remoteId,
+        displayName: 'VPS / SFTP',
+        host: '',
+        port: 22,
+        username: '',
+        authType: 'key',
+        rootPath: '/',
+      }
+    }
+
     if (!this.config) {
       throw new Error('VPS not configured. Call setConfig() first.')
     }
@@ -90,16 +116,28 @@ export class VPSProvider extends StorageProvider {
    */
   async connect(): Promise<ProviderToken> {
     const config = this.getConfig()
+    if (config.authType !== 'key' || !config.privateKey) {
+      throw new Error('VPS requires PEM key authentication')
+    }
 
-    // Test connection via API
-    const response = await fetch(`${API_BASE}/sftp/connect`, {
+    const formData = new FormData()
+    formData.append('label', config.displayName)
+    formData.append('host', config.host)
+    formData.append('port', String(config.port || 22))
+    formData.append('username', config.username)
+    formData.append(
+      'pemFile',
+      new File([config.privateKey], `${config.displayName || 'vps'}.pem`, {
+        type: 'application/x-pem-file',
+      }),
+    )
+
+    const response = await fetch(this.getConnectionApiPath('', '').replace(/\/$/, ''), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        // Include auth header if user is logged in
         ...(getAuthHeader()),
       },
-      body: JSON.stringify(config),
+      body: formData,
     })
 
     if (!response.ok) {
@@ -127,10 +165,11 @@ export class VPSProvider extends StorageProvider {
    * Disconnect - removes VPS connection
    */
   async disconnect(): Promise<void> {
-    const config = this.getConfig()
-    if (!config.id) return
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) return
 
-    await fetch(`${API_BASE}/sftp/${config.id}`, {
+    await fetch(this.getConnectionApiPath(connectionId), {
       method: 'DELETE',
       headers: getAuthHeader(),
     })
@@ -156,22 +195,13 @@ export class VPSProvider extends StorageProvider {
    * Get disk usage via SSH df command
    */
   async getQuota(): Promise<ProviderQuota> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
 
-    const response = await fetch(`${API_BASE}/sftp/${config.id}/quota`, {
-      headers: getAuthHeader(),
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to get quota')
-    }
-
-    const data = await response.json()
-
-    const used = data.used || 0
-    const total = data.total || 0
-    const free = total - used
+    const used = 0
+    const total = 0
+    const free = 0
 
     return {
       used,
@@ -192,13 +222,14 @@ export class VPSProvider extends StorageProvider {
    * List files via SFTP
    */
   async listFiles(options?: { folderId?: string; pageSize?: number }): Promise<ListFilesResult> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
 
-    const path = options?.folderId || config.rootPath || '/'
+    const path = options?.folderId || this.getRootPath()
 
     const response = await fetch(
-      `${API_BASE}/sftp/${config.id}/files?path=${encodeURIComponent(path)}`,
+      this.getConnectionApiPath(connectionId, `/files?path=${encodeURIComponent(path)}`),
       { headers: getAuthHeader() }
     )
 
@@ -207,7 +238,8 @@ export class VPSProvider extends StorageProvider {
     }
 
     const data = await response.json()
-    const files: FileMetadata[] = (data.files || []).map((f: any) => this.mapFile(f, config.rootPath || '/'))
+    const entries = Array.isArray(data) ? data : (data.files || [])
+    const files: FileMetadata[] = entries.map((f: any) => this.mapFile(f, this.getRootPath(), path))
 
     return {
       files,
@@ -219,38 +251,32 @@ export class VPSProvider extends StorageProvider {
    * Get file metadata
    */
   async getFile(fileId: string): Promise<FileMetadata> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
-
-    const response = await fetch(
-      `${API_BASE}/sftp/${config.id}/file?path=${encodeURIComponent(fileId)}`,
-      { headers: getAuthHeader() }
-    )
-
-    if (!response.ok) {
+    const normalizedPath = normalizeRemotePath(fileId)
+    const parentPath = getParentPath(normalizedPath)
+    const result = await this.listFiles({ folderId: parentPath })
+    const file = result.files.find((entry) => entry.path === normalizedPath)
+    if (!file) {
       throw new Error('Failed to get file')
     }
-
-    const data = await response.json()
-    return this.mapFile(data, config.rootPath || '/')
+    return file
   }
 
   /**
    * Upload file via SFTP
    */
   async uploadFile(file: File, options?: UploadOptions): Promise<FileMetadata> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
 
-    const folderPath = options?.folderId || config.rootPath || '/'
+    const folderPath = options?.folderId || this.getRootPath()
     const fileName = options?.fileName || file.name
-    const targetPath = folderPath === '/' ? `/${fileName}` : `${folderPath}/${fileName}`
+    const targetPath = joinRemotePath(folderPath, fileName)
 
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('path', targetPath)
 
-    const response = await fetch(`${API_BASE}/sftp/${config.id}/upload`, {
+    const response = await fetch(this.getConnectionApiPath(connectionId, `/files/upload?path=${encodeURIComponent(targetPath)}`), {
       method: 'POST',
       headers: getAuthHeader(),
       body: formData,
@@ -260,19 +286,29 @@ export class VPSProvider extends StorageProvider {
       throw new Error(`Upload failed: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    return this.mapFile(data, config.rootPath || '/')
+    return this.mapFile(
+      {
+        name: fileName,
+        path: targetPath,
+        type: 'file',
+        size: file.size,
+        modifiedAt: new Date().toISOString(),
+      },
+      this.getRootPath(),
+      folderPath,
+    )
   }
 
   /**
    * Download file via SFTP
    */
   async downloadFile(fileId: string, options?: DownloadOptions): Promise<Blob> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
 
     const response = await fetch(
-      `${API_BASE}/sftp/${config.id}/download?path=${encodeURIComponent(fileId)}`,
+      this.getConnectionApiPath(connectionId, `/files/download?path=${encodeURIComponent(fileId)}`),
       { headers: getAuthHeader() }
     )
 
@@ -287,11 +323,12 @@ export class VPSProvider extends StorageProvider {
    * Delete file via SFTP
    */
   async deleteFile(fileId: string): Promise<void> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
 
     const response = await fetch(
-      `${API_BASE}/sftp/${config.id}/file?path=${encodeURIComponent(fileId)}`,
+      this.getConnectionApiPath(connectionId, `/files?path=${encodeURIComponent(fileId)}`),
       { method: 'DELETE', headers: getAuthHeader() }
     )
 
@@ -304,80 +341,54 @@ export class VPSProvider extends StorageProvider {
    * Create folder via SFTP
    */
   async createFolder(name: string, parentId?: string): Promise<FileMetadata> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
 
-    const parentPath = parentId || config.rootPath || '/'
-    const targetPath = parentPath === '/' ? `/${name}` : `${parentPath}/${name}`
+    const parentPath = parentId || this.getRootPath()
+    const targetPath = joinRemotePath(parentPath, name)
 
-    const response = await fetch(`${API_BASE}/sftp/${config.id}/folder`, {
+    const response = await fetch(this.getConnectionApiPath(connectionId, `/files/mkdir?path=${encodeURIComponent(targetPath)}`), {
       method: 'POST',
-      headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: targetPath }),
+      headers: getAuthHeader(),
     })
 
     if (!response.ok) {
       throw new Error('Create folder failed')
     }
 
-    const data = await response.json()
-    return this.mapFile(data, config.rootPath || '/')
+    return this.mapFile(
+      {
+        name,
+        path: targetPath,
+        type: 'dir',
+        size: 0,
+        modifiedAt: new Date().toISOString(),
+      },
+      this.getRootPath(),
+      parentPath,
+    )
   }
 
   /**
    * Move/rename file via SFTP
    */
   async moveFile(fileId: string, newParentId: string): Promise<FileMetadata> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
-
-    const fileName = fileId.split('/').pop()
-    const newPath = newParentId === '/' ? `/${fileName}` : `${newParentId}/${fileName}`
-
-    const response = await fetch(
-      `${API_BASE}/sftp/${config.id}/move?from=${encodeURIComponent(fileId)}&to=${encodeURIComponent(newPath)}`,
-      { method: 'POST', headers: getAuthHeader() }
-    )
-
-    if (!response.ok) {
-      throw new Error('Move failed')
-    }
-
-    return this.getFile(newPath)
+    throw new Error('Move is not supported for VPS connections in the unified browser yet')
   }
 
   /**
    * Copy file via SFTP
    */
   async copyFile(fileId: string, newParentId: string): Promise<FileMetadata> {
-    const config = this.getConfig()
-    if (!config.id) throw new Error('Not connected')
-
-    const fileName = fileId.split('/').pop()
-    const newPath = newParentId === '/' ? `/${fileName}` : `${newParentId}/${fileName}`
-
-    const response = await fetch(
-      `${API_BASE}/sftp/${config.id}/copy?from=${encodeURIComponent(fileId)}&to=${encodeURIComponent(newPath)}`,
-      { method: 'POST', headers: getAuthHeader() }
-    )
-
-    if (!response.ok) {
-      throw new Error('Copy failed')
-    }
-
-    return this.getFile(newPath)
+    throw new Error('Copy is not supported for VPS connections in the unified browser yet')
   }
 
   /**
    * Rename file via SFTP
    */
   async renameFile(fileId: string, newName: string): Promise<FileMetadata> {
-    const parts = fileId.split('/')
-    parts.pop()
-    const parentPath = parts.join('/') || '/'
-    const newPath = parentPath === '/' ? `/${newName}` : `${parentPath}/${newName}`
-
-    return this.moveFile(fileId, newPath)
+    throw new Error('Rename is not supported for VPS connections in the unified browser yet')
   }
 
   // ===========================================================================
@@ -442,19 +453,20 @@ export class VPSProvider extends StorageProvider {
     return { valid: true }
   }
 
-  private mapFile(item: any, rootPath: string): FileMetadata {
-    const isFolder = item.isDir || item.isDirectory
+  private mapFile(item: any, rootPath: string, currentPath = rootPath): FileMetadata {
+    const isFolder = item.isDir || item.isDirectory || item.type === 'dir'
+    const path = normalizeRemotePath(item.path || item.fullPath || joinRemotePath(currentPath, item.name || ''))
 
     return {
-      id: item.path,
-      name: item.name,
-      path: item.path,
-      pathDisplay: item.path.replace(rootPath, '') || '/',
+      id: path,
+      name: item.name || path.split('/').pop() || path,
+      path,
+      pathDisplay: path.replace(rootPath, '') || '/',
       size: item.size || 0,
-      mimeType: isFolder ? 'application/vnd.folder' : getMimeType(item.name),
+      mimeType: isFolder ? 'application/vnd.folder' : getMimeType(item.name || path),
       isFolder,
       createdTime: item.createdTime,
-      modifiedTime: item.modifiedTime || item.modTime,
+      modifiedTime: item.modifiedTime || item.modTime || item.modifiedAt || new Date().toISOString(),
       provider: 'vps',
       providerName: 'VPS / SFTP',
     }
@@ -498,6 +510,24 @@ function formatBytes(bytes: number): string {
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+function normalizeRemotePath(path: string): string {
+  if (!path) return '/'
+  return path.startsWith('/') ? path : `/${path}`
+}
+
+function joinRemotePath(basePath: string, name: string): string {
+  const normalizedBase = normalizeRemotePath(basePath)
+  if (normalizedBase === '/') return `/${name}`
+  return `${normalizedBase.replace(/\/+$/, '')}/${name}`
+}
+
+function getParentPath(path: string): string {
+  const normalized = normalizeRemotePath(path).replace(/\/+$/, '')
+  if (normalized === '' || normalized === '/') return '/'
+  const index = normalized.lastIndexOf('/')
+  return index <= 0 ? '/' : normalized.slice(0, index)
 }
 
 // Export
