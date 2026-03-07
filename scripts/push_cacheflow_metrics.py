@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import time
+from datetime import datetime
 from pathlib import Path
 
 import requests
@@ -21,6 +22,17 @@ AUDIT_COMPLETENESS = {
     "partial": 1,
     "complete": 2,
 }
+
+
+def format_datetime(timestamp_str):
+    """Convert ISO datetime string to friendly format: Month DD, YY HH:MM AM/PM"""
+    if not timestamp_str:
+        return ""
+    try:
+        dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+        return dt.strftime("%B %d, %y %I:%M %p")
+    except:
+        return timestamp_str
 
 
 def load_metrics(path):
@@ -44,16 +56,81 @@ def build_payload(data):
     lines.append(f"cacheflow_tasks_completed_total {int(data.get('tasks_completed_total', 0))}")
     lines.append(f"cacheflow_total_tasks {int(data.get('total_tasks', 0))}")
     lines.append(f"cacheflow_total_sprints {int(data.get('total_sprints', 0))}")
+    active_version = esc(data.get("active_roadmap_version"), 8)
+    current_state = esc(data.get("current_state"), 48)
+    roadmap_source = esc(data.get("roadmap_source"), 160)
+    if active_version:
+        lines.append(f'cacheflow_active_roadmap_version{{roadmap_version="{active_version}"}} 1')
+    if current_state:
+        lines.append(
+            f'cacheflow_orchestrator_state{{state="{current_state}",roadmap_source="{roadmap_source}"}} 1'
+        )
 
     for sprint in data.get("sprints", []):
         sprint_label = esc(sprint.get("sprint"))
-        lines.append(f'cacheflow_sprint_total_tasks{{sprint="{sprint_label}"}} {int(sprint.get("total_tasks", 0))}')
-        lines.append(f'cacheflow_sprint_done_tasks{{sprint="{sprint_label}"}} {int(sprint.get("done_tasks", 0))}')
-        lines.append(f'cacheflow_sprint_running_tasks{{sprint="{sprint_label}"}} {int(sprint.get("running_tasks", 0))}')
-        lines.append(f'cacheflow_sprint_pending_tasks{{sprint="{sprint_label}"}} {int(sprint.get("pending_tasks", 0))}')
-        lines.append(f'cacheflow_sprint_planned_tasks{{sprint="{sprint_label}"}} {int(sprint.get("planned_tasks", 0))}')
-        lines.append(f'cacheflow_sprint_progress_percent{{sprint="{sprint_label}"}} {float(sprint.get("progress", 0.0))}')
-        lines.append(f'cacheflow_sprint_commits_total{{sprint="{sprint_label}"}} {int(sprint.get("commits_total", 0))}')
+        roadmap_version = esc(sprint.get("roadmap_version"), 16)
+        sprint_labels = f'sprint="{sprint_label}"'
+        if roadmap_version:
+            sprint_labels += f',roadmap_version="{roadmap_version}"'
+        lines.append(f'cacheflow_sprint_total_tasks{{{sprint_labels}}} {int(sprint.get("total_tasks", 0))}')
+        lines.append(f'cacheflow_sprint_done_tasks{{{sprint_labels}}} {int(sprint.get("done_tasks", 0))}')
+        lines.append(f'cacheflow_sprint_running_tasks{{{sprint_labels}}} {int(sprint.get("running_tasks", 0))}')
+        lines.append(f'cacheflow_sprint_pending_tasks{{{sprint_labels}}} {int(sprint.get("pending_tasks", 0))}')
+        lines.append(f'cacheflow_sprint_planned_tasks{{{sprint_labels}}} {int(sprint.get("planned_tasks", 0))}')
+        lines.append(f'cacheflow_sprint_progress_percent{{{sprint_labels}}} {float(sprint.get("progress", 0.0))}')
+        lines.append(f'cacheflow_sprint_commits_total{{{sprint_labels}}} {int(sprint.get("commits_total", 0))}')
+
+    for version in data.get("roadmap_versions", []):
+        version_label = esc(version.get("roadmap_version"), 8)
+        title = esc(version.get("title"), 64)
+        status = esc(version.get("status"), 16)
+        labels = f'roadmap_version="{version_label}",title="{title}"'
+        lines.append(f'cacheflow_roadmap_version_total_items{{{labels}}} {int(version.get("total_items", 0))}')
+        lines.append(f'cacheflow_roadmap_version_done_items{{{labels}}} {int(version.get("done_items", 0))}')
+        lines.append(f'cacheflow_roadmap_version_running_items{{{labels}}} {int(version.get("running_items", 0))}')
+        lines.append(f'cacheflow_roadmap_version_pending_items{{{labels}}} {int(version.get("pending_items", 0))}')
+        lines.append(f'cacheflow_roadmap_version_planned_items{{{labels}}} {int(version.get("planned_items", 0))}')
+        lines.append(f'cacheflow_roadmap_version_progress_percent{{{labels}}} {float(version.get("progress", 0.0))}')
+        lines.append(f'cacheflow_roadmap_version_status{{{labels},status="{status}"}} 1')
+
+    for stage in data.get("roadmap_stages", []):
+        stage_key = esc(stage.get("stage"), 12)
+        stage_title = esc(stage.get("title"), 96)
+        version_label = esc(stage.get("roadmap_version"), 8)
+        version_title = esc(stage.get("roadmap_version_title"), 64)
+        status = esc(stage.get("status"), 16)
+        labels = (
+            f'stage="{stage_key}",'
+            f'stage_title="{stage_title}",'
+            f'roadmap_version="{version_label}",'
+            f'roadmap_version_title="{version_title}"'
+        )
+        lines.append(f'cacheflow_roadmap_stage_total_items{{{labels}}} {int(stage.get("total_items", 0))}')
+        lines.append(f'cacheflow_roadmap_stage_done_items{{{labels}}} {int(stage.get("done_items", 0))}')
+        lines.append(f'cacheflow_roadmap_stage_running_items{{{labels}}} {int(stage.get("running_items", 0))}')
+        lines.append(f'cacheflow_roadmap_stage_pending_items{{{labels}}} {int(stage.get("pending_items", 0))}')
+        lines.append(f'cacheflow_roadmap_stage_planned_items{{{labels}}} {int(stage.get("planned_items", 0))}')
+        lines.append(f'cacheflow_roadmap_stage_progress_percent{{{labels}}} {float(stage.get("progress", 0.0))}')
+        lines.append(f'cacheflow_roadmap_stage_status{{{labels},status="{status}"}} 1')
+
+    for item in data.get("roadmap_items", []):
+        status = str(item.get("status", "planned")).lower()
+        code = STATUS_CODE.get(status, 0)
+        labels = (
+            f'item_id="{esc(item.get("item_id"), 16)}",'
+            f'title="{esc(item.get("title"), 160)}",'
+            f'sprint="{esc(item.get("sprint"), 12)}",'
+            f'roadmap_version="{esc(item.get("roadmap_version"), 8)}",'
+            f'roadmap_version_title="{esc(item.get("roadmap_version_title"), 32)}",'
+            f'stage="{esc(item.get("stage"), 12)}",'
+            f'stage_title="{esc(item.get("stage_title"), 64)}",'
+            f'item_type="{esc(item.get("item_type"), 16)}",'
+            f'status="{esc(status, 16)}"'
+        )
+        lines.append(f"cacheflow_roadmap_item_status{{{labels}}} {code}")
+        lines.append(f"cacheflow_roadmap_item_progress_percent{{{labels}}} {float(item.get('progress', 0.0))}")
+        lines.append(f"cacheflow_roadmap_item_done_criteria{{{labels}}} {int(item.get('done_criteria', 0))}")
+        lines.append(f"cacheflow_roadmap_item_total_criteria{{{labels}}} {int(item.get('criteria_count', 0))}")
 
     for gate, status in (data.get("gate_status") or {}).items():
         status_norm = esc(str(status).lower(), 24)
@@ -71,6 +148,9 @@ def build_payload(data):
             f'sprint="{esc(task.get("sprint"), 12)}",'
             f'gate="{esc(task.get("gate"), 48)}",'
             f'agent="{esc(task.get("agent"), 48)}",'
+            f'roadmap_version="{esc(task.get("roadmap_version"), 8)}",'
+            f'roadmap_stage="{esc(task.get("roadmap_stage"), 12)}",'
+            f'roadmap_stage_title="{esc(task.get("roadmap_stage_title"), 64)}",'
             f'status="{esc(status, 16)}",'
             f'commit="{esc(task.get("commit"), 20)}",'
             f'done_at="{esc(task.get("done_at"), 40)}",'

@@ -2,13 +2,14 @@
   "dashboard": {
     "id": null,
     "uid": "cacheflow-history",
-    "title": "CacheFlow Task History",
+    "title": "CacheFlow Canonical Roadmap History",
     "tags": [
       "cacheflow",
+      "roadmap",
       "history"
     ],
     "schemaVersion": 41,
-    "version": 2,
+    "version": 5,
     "timezone": "browser",
     "refresh": "1m",
     "time": {
@@ -18,81 +19,124 @@
     "panels": [
       {
         "id": 1,
-        "type": "stat",
-        "title": "Completed Tasks",
+        "type": "text",
+        "title": "Scope & Overview",
         "gridPos": {
           "x": 0,
           "y": 0,
-          "w": 6,
-          "h": 3
+          "w": 24,
+          "h": 4
         },
-        "targets": [
-          {
-            "expr": "cacheflow_tasks_completed_total",
-            "refId": "A"
-          }
-        ]
+        "options": {
+          "mode": "markdown",
+          "content": "# CacheFlow Roadmap History\n- Focused on current roadmap execution, not a raw dump of every legacy task row\n- Detailed raw task rows are scoped to Sprint 6\n- Historical core-platform audit remains on the separate module audit dashboard"
+        }
       },
       {
         "id": 2,
         "type": "stat",
-        "title": "Running Tasks",
+        "title": "Core Platform Tasks Done (V1-1)",
         "gridPos": {
-          "x": 6,
-          "y": 0,
+          "x": 0,
+          "y": 4,
           "w": 6,
-          "h": 3
+          "h": 4
         },
         "targets": [
           {
-            "expr": "cacheflow_tasks_running_total",
+            "expr": "count(cacheflow_task_status{roadmap_stage=\"V1-1\",status=\"done\"})",
             "refId": "A"
           }
-        ]
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        }
       },
       {
         "id": 3,
         "type": "stat",
-        "title": "Done Gates",
+        "title": "Sprint 6 Gate Rows Total",
         "gridPos": {
-          "x": 12,
-          "y": 0,
+          "x": 6,
+          "y": 4,
           "w": 6,
-          "h": 3
+          "h": 4
         },
         "targets": [
           {
-            "expr": "sum(cacheflow_gate_is_done)",
+            "expr": "count(cacheflow_task_status{sprint=\"6\"})",
             "refId": "A"
           }
-        ]
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        }
       },
       {
         "id": 4,
         "type": "stat",
-        "title": "Total Commits",
+        "title": "Sprint 6 Outstanding Rows",
         "gridPos": {
-          "x": 18,
-          "y": 0,
+          "x": 12,
+          "y": 4,
           "w": 6,
-          "h": 3
+          "h": 4
         },
         "targets": [
           {
-            "expr": "sum(cacheflow_sprint_commits_total)",
+            "expr": "count(cacheflow_task_status{sprint=\"6\",status=~\"planned|pending|running\"})",
             "refId": "A"
           }
-        ]
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        }
       },
       {
         "id": 5,
+        "type": "stat",
+        "title": "Total History Entries",
+        "gridPos": {
+          "x": 18,
+          "y": 4,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "count(cacheflow_history_entry)",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        }
+      },
+      {
+        "id": 10,
         "type": "table",
-        "title": "History Entries",
+        "title": "Recent State Changes",
         "gridPos": {
           "x": 0,
-          "y": 3,
+          "y": 8,
           "w": 24,
-          "h": 8
+          "h": 12
         },
         "targets": [
           {
@@ -101,26 +145,283 @@
             "format": "table",
             "instant": true
           }
-        ]
+        ],
+        "options": {
+          "showHeader": true
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
-        "id": 6,
+        "id": 11,
         "type": "table",
-        "title": "Task Rows (All Sprints)",
+        "title": "Sprint 6 Raw Gate Detail",
         "gridPos": {
           "x": 0,
-          "y": 11,
+          "y": 20,
           "w": 24,
           "h": 10
         },
         "targets": [
           {
-            "expr": "cacheflow_task_status",
+            "expr": "cacheflow_task_status{sprint=\"6\"}",
             "refId": "A",
             "format": "table",
             "instant": true
           }
-        ]
+        ],
+        "options": {
+          "showHeader": true
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 12,
+        "type": "table",
+        "title": "Version 1 Roadmap Stage Detail",
+        "gridPos": {
+          "x": 0,
+          "y": 30,
+          "w": 12,
+          "h": 9
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_roadmap_stage_status{roadmap_version=\"1\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 13,
+        "type": "table",
+        "title": "Version 2 Roadmap Stage Detail",
+        "gridPos": {
+          "x": 12,
+          "y": 30,
+          "w": 12,
+          "h": 9
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_roadmap_stage_status{roadmap_version=\"2\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 14,
+        "type": "table",
+        "title": "Version 2 Backlog Item Detail",
+        "gridPos": {
+          "x": 0,
+          "y": 39,
+          "w": 24,
+          "h": 12
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_roadmap_item_status{roadmap_version=\"2\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
+        }
       }
     ]
   },

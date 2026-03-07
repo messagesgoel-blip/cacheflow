@@ -2,15 +2,16 @@
   "dashboard": {
     "id": null,
     "uid": "cacheflow-sprints",
-    "title": "CacheFlow Sprint & Gate Tracker",
+    "title": "CacheFlow Canonical Roadmap Tracker",
     "tags": [
       "cacheflow",
+      "roadmap",
       "sprint",
       "gate"
     ],
     "timezone": "browser",
     "schemaVersion": 41,
-    "version": 3,
+    "version": 6,
     "refresh": "30s",
     "time": {
       "from": "now-30d",
@@ -20,27 +21,27 @@
       {
         "id": 1,
         "type": "text",
-        "title": "Total Roadmap",
+        "title": "Canonical Roadmap",
         "gridPos": {
           "x": 0,
           "y": 0,
           "w": 24,
-          "h": 3
+          "h": 4
         },
         "options": {
           "mode": "markdown",
-          "content": "# Total Roadmap\nSprint panels below track progress, commits, and task-level execution state with commit/date/changelog labels."
+          "content": "# CacheFlow Canonical Roadmap\n- Primary product sequence: Version 1, then Version 2\n- Current execution: Sprint 6 / Version 1\n- Legacy Sprint 0-5 details are no longer the primary dashboard surface\n- Source of truth: `docs/roadmap.md` and `logs/orchestrator-state.json`"
         }
       },
       {
         "id": 2,
         "type": "stat",
-        "title": "📍 Active Sprint",
+        "title": "Active Sprint",
         "gridPos": {
           "x": 0,
-          "y": 3,
+          "y": 4,
           "w": 4,
-          "h": 3
+          "h": 4
         },
         "targets": [
           {
@@ -59,19 +60,26 @@
       {
         "id": 3,
         "type": "gauge",
-        "title": "📈 Roadmap Progress %",
+        "title": "Version 1 Progress %",
         "gridPos": {
           "x": 4,
-          "y": 3,
-          "w": 4,
-          "h": 3
+          "y": 4,
+          "w": 5,
+          "h": 4
         },
         "targets": [
           {
-            "expr": "100 * cacheflow_tasks_completed_total / clamp_min(cacheflow_total_tasks, 1)",
+            "expr": "cacheflow_roadmap_version_progress_percent{roadmap_version=\"1\"}",
             "refId": "A"
           }
         ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
         "fieldConfig": {
           "defaults": {
             "min": 0,
@@ -81,71 +89,105 @@
       },
       {
         "id": 4,
-        "type": "stat",
-        "title": "🟡 Under Execution Tasks",
+        "type": "gauge",
+        "title": "Version 2 Progress %",
         "gridPos": {
-          "x": 8,
-          "y": 3,
-          "w": 4,
-          "h": 3
+          "x": 9,
+          "y": 4,
+          "w": 5,
+          "h": 4
         },
         "targets": [
           {
-            "expr": "count(cacheflow_task_status{status=\"running\"})",
+            "expr": "cacheflow_roadmap_version_progress_percent{roadmap_version=\"2\"}",
             "refId": "A"
           }
-        ]
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
       },
       {
         "id": 5,
         "type": "stat",
-        "title": "✅ Completed Tasks",
+        "title": "Sprint 6 Active Items",
         "gridPos": {
-          "x": 12,
-          "y": 3,
-          "w": 4,
-          "h": 3
+          "x": 14,
+          "y": 4,
+          "w": 5,
+          "h": 4
         },
         "targets": [
           {
-            "expr": "count(cacheflow_task_status{status=\"done\"})",
+            "expr": "count(cacheflow_roadmap_item_status{sprint=\"6\",status=~\"pending|running\"})",
             "refId": "A"
           }
-        ]
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        }
       },
       {
         "id": 6,
         "type": "stat",
-        "title": "📦 Total Commits",
+        "title": "Version 2 Planned Sprints",
         "gridPos": {
-          "x": 20,
-          "y": 3,
-          "w": 4,
-          "h": 3
+          "x": 19,
+          "y": 4,
+          "w": 5,
+          "h": 4
         },
         "targets": [
           {
-            "expr": "sum(cacheflow_sprint_commits_total)",
+            "expr": "count(cacheflow_roadmap_item_status{roadmap_version=\"2\",status=~\"planned|pending|running\"})",
             "refId": "A"
           }
-        ]
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        }
       },
       {
         "id": 10,
         "type": "gauge",
-        "title": "Sprint 0 Progress",
+        "title": "V1-0 Release Blocker",
         "gridPos": {
           "x": 0,
-          "y": 14,
+          "y": 8,
           "w": 6,
-          "h": 3
+          "h": 4
         },
         "targets": [
           {
-            "expr": "cacheflow_sprint_progress_percent{sprint=\"0\"}",
+            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-0\"}",
             "refId": "A"
           }
         ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
         "fieldConfig": {
           "defaults": {
             "min": 0,
@@ -155,77 +197,117 @@
       },
       {
         "id": 11,
-        "type": "stat",
-        "title": "Sprint 0 Total Commits",
+        "type": "gauge",
+        "title": "V1-1 Core Platform",
         "gridPos": {
           "x": 6,
-          "y": 14,
+          "y": 8,
           "w": 6,
-          "h": 3
+          "h": 4
         },
         "targets": [
           {
-            "expr": "cacheflow_sprint_commits_total{sprint=\"0\"}",
+            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-1\"}",
             "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 12,
-        "type": "stat",
-        "title": "Sprint 0 Done Tasks",
-        "gridPos": {
-          "x": 12,
-          "y": 14,
-          "w": 12,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_done_tasks{sprint=\"0\"}",
-            "refId": "A"
-          }
-        ],
-        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"0\"} for denominator"
-      },
-      {
-        "id": 13,
-        "type": "table",
-        "title": "Sprint 0 Tasks",
-        "gridPos": {
-          "x": 0,
-          "y": 17,
-          "w": 24,
-          "h": 5
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_task_status{sprint=\"0\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
           }
         ],
         "options": {
-          "showHeader": true
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 12,
+        "type": "gauge",
+        "title": "V1-2 Essentials",
+        "gridPos": {
+          "x": 12,
+          "y": 8,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-2\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 13,
+        "type": "gauge",
+        "title": "V1-3 Completion",
+        "gridPos": {
+          "x": 18,
+          "y": 8,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-3\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
         }
       },
       {
         "id": 14,
         "type": "gauge",
-        "title": "Sprint 1 Progress",
+        "title": "V2-A Foundation",
         "gridPos": {
           "x": 0,
-          "y": 22,
+          "y": 12,
           "w": 6,
-          "h": 3
+          "h": 4
         },
         "targets": [
           {
-            "expr": "cacheflow_sprint_progress_percent{sprint=\"1\"}",
+            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-A\"}",
             "refId": "A"
           }
         ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
         "fieldConfig": {
           "defaults": {
             "min": 0,
@@ -235,77 +317,27 @@
       },
       {
         "id": 15,
-        "type": "stat",
-        "title": "Sprint 1 Total Commits",
+        "type": "gauge",
+        "title": "V2-B Easy Wins",
         "gridPos": {
           "x": 6,
-          "y": 22,
+          "y": 12,
           "w": 6,
-          "h": 3
+          "h": 4
         },
         "targets": [
           {
-            "expr": "cacheflow_sprint_commits_total{sprint=\"1\"}",
+            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-B\"}",
             "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 16,
-        "type": "stat",
-        "title": "Sprint 1 Done Tasks",
-        "gridPos": {
-          "x": 12,
-          "y": 22,
-          "w": 12,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_done_tasks{sprint=\"1\"}",
-            "refId": "A"
-          }
-        ],
-        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"1\"} for denominator"
-      },
-      {
-        "id": 17,
-        "type": "table",
-        "title": "Sprint 1 Tasks",
-        "gridPos": {
-          "x": 0,
-          "y": 25,
-          "w": 24,
-          "h": 5
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_task_status{sprint=\"1\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
           }
         ],
         "options": {
-          "showHeader": true
-        }
-      },
-      {
-        "id": 18,
-        "type": "gauge",
-        "title": "Sprint 2 Progress",
-        "gridPos": {
-          "x": 0,
-          "y": 30,
-          "w": 6,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_progress_percent{sprint=\"2\"}",
-            "refId": "A"
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
           }
-        ],
+        },
         "fieldConfig": {
           "defaults": {
             "min": 0,
@@ -314,53 +346,137 @@
         }
       },
       {
-        "id": 19,
-        "type": "stat",
-        "title": "Sprint 2 Total Commits",
-        "gridPos": {
-          "x": 6,
-          "y": 30,
-          "w": 6,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_commits_total{sprint=\"2\"}",
-            "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 20,
-        "type": "stat",
-        "title": "Sprint 2 Done Tasks",
+        "id": 16,
+        "type": "gauge",
+        "title": "V2-C Moderate",
         "gridPos": {
           "x": 12,
-          "y": 30,
-          "w": 12,
-          "h": 3
+          "y": 12,
+          "w": 6,
+          "h": 4
         },
         "targets": [
           {
-            "expr": "cacheflow_sprint_done_tasks{sprint=\"2\"}",
+            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-C\"}",
             "refId": "A"
           }
         ],
-        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"2\"} for denominator"
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 17,
+        "type": "gauge",
+        "title": "V2-D Advanced",
+        "gridPos": {
+          "x": 18,
+          "y": 12,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-D\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 20,
+        "type": "table",
+        "title": "Sprint 6 Roadmap Items",
+        "gridPos": {
+          "x": 0,
+          "y": 16,
+          "w": 24,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "cacheflow_roadmap_item_status{sprint=\"6\"}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "options": {
+          "showHeader": true
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "id": 21,
         "type": "table",
-        "title": "Sprint 2 Tasks",
+        "title": "Version 2 Planned Sprints",
         "gridPos": {
           "x": 0,
-          "y": 33,
+          "y": 26,
           "w": 24,
-          "h": 5
+          "h": 12
         },
         "targets": [
           {
-            "expr": "cacheflow_task_status{sprint=\"2\"}",
+            "expr": "cacheflow_roadmap_item_status{roadmap_version=\"2\"}",
             "refId": "A",
             "format": "table",
             "instant": true
@@ -368,79 +484,117 @@
         ],
         "options": {
           "showHeader": true
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
         }
       },
       {
         "id": 22,
-        "type": "gauge",
-        "title": "Sprint 3 Progress",
+        "type": "table",
+        "title": "Roadmap Stage Status",
         "gridPos": {
           "x": 0,
           "y": 38,
-          "w": 6,
-          "h": 3
+          "w": 24,
+          "h": 10
         },
         "targets": [
           {
-            "expr": "cacheflow_sprint_progress_percent{sprint=\"3\"}",
-            "refId": "A"
+            "expr": "cacheflow_roadmap_stage_status",
+            "refId": "A",
+            "format": "table",
+            "instant": true
           }
         ],
+        "options": {
+          "showHeader": true
+        },
         "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
         }
       },
       {
         "id": 23,
-        "type": "stat",
-        "title": "Sprint 3 Total Commits",
-        "gridPos": {
-          "x": 6,
-          "y": 38,
-          "w": 6,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_commits_total{sprint=\"3\"}",
-            "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 24,
-        "type": "stat",
-        "title": "Sprint 3 Done Tasks",
-        "gridPos": {
-          "x": 12,
-          "y": 38,
-          "w": 12,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_done_tasks{sprint=\"3\"}",
-            "refId": "A"
-          }
-        ],
-        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"3\"} for denominator"
-      },
-      {
-        "id": 25,
         "type": "table",
-        "title": "Sprint 3 Tasks",
+        "title": "Recent History Entries",
         "gridPos": {
           "x": 0,
-          "y": 41,
+          "y": 48,
           "w": 24,
-          "h": 5
+          "h": 8
         },
         "targets": [
           {
-            "expr": "cacheflow_task_status{sprint=\"3\"}",
+            "expr": "cacheflow_history_entry{roadmap_version=\"1\"}",
             "refId": "A",
             "format": "table",
             "instant": true
@@ -448,337 +602,44 @@
         ],
         "options": {
           "showHeader": true
-        }
-      },
-      {
-        "id": 26,
-        "type": "gauge",
-        "title": "Sprint 4 Progress",
-        "gridPos": {
-          "x": 0,
-          "y": 46,
-          "w": 6,
-          "h": 3
         },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_progress_percent{sprint=\"4\"}",
-            "refId": "A"
-          }
-        ],
         "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Time"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Timestamp"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "dateTimeAsUS"
+                },
+                {
+                  "id": "custom.align",
+                  "value": "auto"
+                }
+              ]
+            }
+          ]
         }
-      },
-      {
-        "id": 27,
-        "type": "stat",
-        "title": "Sprint 4 Total Commits",
-        "gridPos": {
-          "x": 6,
-          "y": 46,
-          "w": 6,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_commits_total{sprint=\"4\"}",
-            "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 28,
-        "type": "stat",
-        "title": "Sprint 4 Done Tasks",
-        "gridPos": {
-          "x": 12,
-          "y": 46,
-          "w": 12,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_done_tasks{sprint=\"4\"}",
-            "refId": "A"
-          }
-        ],
-        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"4\"} for denominator"
-      },
-      {
-        "id": 29,
-        "type": "table",
-        "title": "Sprint 4 Tasks",
-        "gridPos": {
-          "x": 0,
-          "y": 49,
-          "w": 24,
-          "h": 5
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_task_status{sprint=\"4\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "options": {
-          "showHeader": true
-        }
-      },
-      {
-        "id": 30,
-        "type": "gauge",
-        "title": "Sprint 5 Progress",
-        "gridPos": {
-          "x": 0,
-          "y": 54,
-          "w": 6,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_progress_percent{sprint=\"5\"}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 31,
-        "type": "stat",
-        "title": "Sprint 5 Total Commits",
-        "gridPos": {
-          "x": 6,
-          "y": 54,
-          "w": 6,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_commits_total{sprint=\"5\"}",
-            "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 32,
-        "type": "stat",
-        "title": "Sprint 5 Done Tasks",
-        "gridPos": {
-          "x": 12,
-          "y": 54,
-          "w": 12,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_done_tasks{sprint=\"5\"}",
-            "refId": "A"
-          }
-        ],
-        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"5\"} for denominator"
-      },
-      {
-        "id": 33,
-        "type": "table",
-        "title": "Sprint 5 Tasks",
-        "gridPos": {
-          "x": 0,
-          "y": 57,
-          "w": 24,
-          "h": 5
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_task_status{sprint=\"5\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "options": {
-          "showHeader": true
-        }
-      },
-      {
-        "id": 34,
-        "type": "gauge",
-        "title": "Sprint 6 Progress",
-        "gridPos": {
-          "x": 0,
-          "y": 62,
-          "w": 6,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_progress_percent{sprint=\"6\"}",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 35,
-        "type": "stat",
-        "title": "Sprint 6 Total Commits",
-        "gridPos": {
-          "x": 6,
-          "y": 62,
-          "w": 6,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_commits_total{sprint=\"6\"}",
-            "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 36,
-        "type": "stat",
-        "title": "Sprint 6 Done Tasks",
-        "gridPos": {
-          "x": 12,
-          "y": 62,
-          "w": 12,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_sprint_done_tasks{sprint=\"6\"}",
-            "refId": "A"
-          }
-        ],
-        "description": "Use with cacheflow_sprint_total_tasks{sprint=\"6\"} for denominator"
-      },
-      {
-        "id": 37,
-        "type": "table",
-        "title": "Sprint 6 Tasks",
-        "gridPos": {
-          "x": 0,
-          "y": 65,
-          "w": 24,
-          "h": 5
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_task_status{sprint=\"6\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "options": {
-          "showHeader": true
-        }
-      },
-      {
-        "id": 38,
-        "type": "table",
-        "title": "Task History (Recent)",
-        "gridPos": {
-          "x": 0,
-          "y": 70,
-          "w": 24,
-          "h": 8
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_history_entry{ts!=\"\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "options": {
-          "showHeader": true
-        }
-      },
-      {
-        "id": 39,
-        "type": "stat",
-        "title": "🚦 Done Gates",
-        "gridPos": {
-          "x": 16,
-          "y": 3,
-          "w": 4,
-          "h": 3
-        },
-        "targets": [
-          {
-            "expr": "sum(cacheflow_gate_is_done)",
-            "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 40,
-        "type": "piechart",
-        "title": "Tasks by Status",
-        "gridPos": {
-          "x": 0,
-          "y": 6,
-          "w": 8,
-          "h": 8
-        },
-        "targets": [
-          {
-            "expr": "count by (status) (cacheflow_task_status)",
-            "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 41,
-        "type": "bargauge",
-        "title": "Tasks by Agent",
-        "gridPos": {
-          "x": 8,
-          "y": 6,
-          "w": 8,
-          "h": 8
-        },
-        "targets": [
-          {
-            "expr": "count by (agent) (cacheflow_task_status)",
-            "refId": "A"
-          }
-        ]
-      },
-      {
-        "id": 42,
-        "type": "bargauge",
-        "title": "Tasks by Gate",
-        "gridPos": {
-          "x": 16,
-          "y": 6,
-          "w": 8,
-          "h": 8
-        },
-        "targets": [
-          {
-            "expr": "count by (gate) (cacheflow_task_status)",
-            "refId": "A"
-          }
-        ]
       }
     ]
   },
