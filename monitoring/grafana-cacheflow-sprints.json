@@ -1,647 +1,964 @@
 {
-  "dashboard": {
-    "id": null,
-    "uid": "cacheflow-sprints",
-    "title": "CacheFlow Canonical Roadmap Tracker",
-    "tags": [
-      "cacheflow",
-      "roadmap",
-      "sprint",
-      "gate"
-    ],
-    "timezone": "browser",
-    "schemaVersion": 41,
-    "version": 6,
-    "refresh": "30s",
-    "time": {
-      "from": "now-30d",
-      "to": "now"
+  "id": null,
+  "uid": "cacheflow-sprints",
+  "title": "CacheFlow Canonical Roadmap Tracker",
+  "tags": [
+    "cacheflow",
+    "roadmap",
+    "sprint",
+    "gate"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 41,
+  "version": 6,
+  "refresh": "30s",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "Canonical Roadmap",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# CacheFlow Canonical Roadmap\n- Primary product sequence: Version 1, then Version 2\n- Current execution: Sprint 6 / Version 1\n- Legacy Sprint 0-5 details are no longer the primary dashboard surface\n- Source of truth: `docs/roadmap.md` and `logs/orchestrator-state.json`"
+      }
     },
-    "panels": [
-      {
-        "id": 1,
-        "type": "text",
-        "title": "Canonical Roadmap",
-        "gridPos": {
-          "x": 0,
-          "y": 0,
-          "w": 24,
-          "h": 4
-        },
-        "options": {
-          "mode": "markdown",
-          "content": "# CacheFlow Canonical Roadmap\n- Primary product sequence: Version 1, then Version 2\n- Current execution: Sprint 6 / Version 1\n- Legacy Sprint 0-5 details are no longer the primary dashboard surface\n- Source of truth: `docs/roadmap.md` and `logs/orchestrator-state.json`"
-        }
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Active Sprint",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 4,
+        "h": 4
       },
-      {
-        "id": 2,
-        "type": "stat",
-        "title": "Active Sprint",
-        "gridPos": {
-          "x": 0,
-          "y": 4,
-          "w": 4,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_current_sprint",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
+      "targets": [
+        {
+          "expr": "cacheflow_current_sprint",
+          "refId": "A"
         }
-      },
-      {
-        "id": 3,
-        "type": "gauge",
-        "title": "Version 1 Progress %",
-        "gridPos": {
-          "x": 4,
-          "y": 4,
-          "w": 5,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_version_progress_percent{roadmap_version=\"1\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 4,
-        "type": "gauge",
-        "title": "Version 2 Progress %",
-        "gridPos": {
-          "x": 9,
-          "y": 4,
-          "w": 5,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_version_progress_percent{roadmap_version=\"2\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 5,
-        "type": "stat",
-        "title": "Sprint 6 Active Items",
-        "gridPos": {
-          "x": 14,
-          "y": 4,
-          "w": 5,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "count(cacheflow_roadmap_item_status{sprint=\"6\",status=~\"pending|running\"})",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        }
-      },
-      {
-        "id": 6,
-        "type": "stat",
-        "title": "Version 2 Planned Sprints",
-        "gridPos": {
-          "x": 19,
-          "y": 4,
-          "w": 5,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "count(cacheflow_roadmap_item_status{roadmap_version=\"2\",status=~\"planned|pending|running\"})",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        }
-      },
-      {
-        "id": 10,
-        "type": "gauge",
-        "title": "V1-0 Release Blocker",
-        "gridPos": {
-          "x": 0,
-          "y": 8,
-          "w": 6,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-0\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 11,
-        "type": "gauge",
-        "title": "V1-1 Core Platform",
-        "gridPos": {
-          "x": 6,
-          "y": 8,
-          "w": 6,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-1\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 12,
-        "type": "gauge",
-        "title": "V1-2 Essentials",
-        "gridPos": {
-          "x": 12,
-          "y": 8,
-          "w": 6,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-2\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 13,
-        "type": "gauge",
-        "title": "V1-3 Completion",
-        "gridPos": {
-          "x": 18,
-          "y": 8,
-          "w": 6,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-3\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 14,
-        "type": "gauge",
-        "title": "V2-A Foundation",
-        "gridPos": {
-          "x": 0,
-          "y": 12,
-          "w": 6,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-A\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 15,
-        "type": "gauge",
-        "title": "V2-B Easy Wins",
-        "gridPos": {
-          "x": 6,
-          "y": 12,
-          "w": 6,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-B\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 16,
-        "type": "gauge",
-        "title": "V2-C Moderate",
-        "gridPos": {
-          "x": 12,
-          "y": 12,
-          "w": 6,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-C\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 17,
-        "type": "gauge",
-        "title": "V2-D Advanced",
-        "gridPos": {
-          "x": 18,
-          "y": 12,
-          "w": 6,
-          "h": 4
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-D\"}",
-            "refId": "A"
-          }
-        ],
-        "options": {
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ]
-          }
-        },
-        "fieldConfig": {
-          "defaults": {
-            "min": 0,
-            "max": 100
-          }
-        }
-      },
-      {
-        "id": 20,
-        "type": "table",
-        "title": "Sprint 6 Roadmap Items",
-        "gridPos": {
-          "x": 0,
-          "y": 16,
-          "w": 24,
-          "h": 10
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_item_status{sprint=\"6\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "options": {
-          "showHeader": true
-        },
-        "fieldConfig": {
-          "defaults": {},
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "Time"
-              },
-              "properties": [
-                {
-                  "id": "unit",
-                  "value": "dateTimeAsUS"
-                },
-                {
-                  "id": "custom.align",
-                  "value": "auto"
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "Timestamp"
-              },
-              "properties": [
-                {
-                  "id": "unit",
-                  "value": "dateTimeAsUS"
-                },
-                {
-                  "id": "custom.align",
-                  "value": "auto"
-                }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        "id": 21,
-        "type": "table",
-        "title": "Version 2 Planned Sprints",
-        "gridPos": {
-          "x": 0,
-          "y": 26,
-          "w": 24,
-          "h": 12
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_item_status{roadmap_version=\"2\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "options": {
-          "showHeader": true
-        },
-        "fieldConfig": {
-          "defaults": {},
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "Time"
-              },
-              "properties": [
-                {
-                  "id": "unit",
-                  "value": "dateTimeAsUS"
-                },
-                {
-                  "id": "custom.align",
-                  "value": "auto"
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "Timestamp"
-              },
-              "properties": [
-                {
-                  "id": "unit",
-                  "value": "dateTimeAsUS"
-                },
-                {
-                  "id": "custom.align",
-                  "value": "auto"
-                }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        "id": 22,
-        "type": "table",
-        "title": "Roadmap Stage Status",
-        "gridPos": {
-          "x": 0,
-          "y": 38,
-          "w": 24,
-          "h": 10
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_roadmap_stage_status",
-            "refId": "A",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "options": {
-          "showHeader": true
-        },
-        "fieldConfig": {
-          "defaults": {},
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "Time"
-              },
-              "properties": [
-                {
-                  "id": "unit",
-                  "value": "dateTimeAsUS"
-                },
-                {
-                  "id": "custom.align",
-                  "value": "auto"
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "Timestamp"
-              },
-              "properties": [
-                {
-                  "id": "unit",
-                  "value": "dateTimeAsUS"
-                },
-                {
-                  "id": "custom.align",
-                  "value": "auto"
-                }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        "id": 23,
-        "type": "table",
-        "title": "Recent History Entries",
-        "gridPos": {
-          "x": 0,
-          "y": 48,
-          "w": 24,
-          "h": 8
-        },
-        "targets": [
-          {
-            "expr": "cacheflow_history_entry{roadmap_version=\"1\"}",
-            "refId": "A",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "options": {
-          "showHeader": true
-        },
-        "fieldConfig": {
-          "defaults": {},
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "Time"
-              },
-              "properties": [
-                {
-                  "id": "unit",
-                  "value": "dateTimeAsUS"
-                },
-                {
-                  "id": "custom.align",
-                  "value": "auto"
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byName",
-                "options": "Timestamp"
-              },
-              "properties": [
-                {
-                  "id": "unit",
-                  "value": "dateTimeAsUS"
-                },
-                {
-                  "id": "custom.align",
-                  "value": "auto"
-                }
-              ]
-            }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
           ]
         }
       }
-    ]
-  },
-  "overwrite": true
+    },
+    {
+      "id": 3,
+      "type": "gauge",
+      "title": "Version 1 Progress %",
+      "gridPos": {
+        "x": 4,
+        "y": 4,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_version_progress_percent{roadmap_version=\"1\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "gauge",
+      "title": "Version 2 Progress %",
+      "gridPos": {
+        "x": 9,
+        "y": 4,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_version_progress_percent{roadmap_version=\"2\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Sprint 6 Active Items",
+      "gridPos": {
+        "x": 14,
+        "y": 4,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "count(cacheflow_roadmap_item_status{sprint=\"6\",status=~\"pending|running\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Version 2 Planned Sprints",
+      "gridPos": {
+        "x": 19,
+        "y": 4,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "count(cacheflow_roadmap_item_status{roadmap_version=\"2\",status=~\"planned|pending|running\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "gauge",
+      "title": "V1-0 Release Blocker",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-0\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "gauge",
+      "title": "V1-1 Core Platform",
+      "gridPos": {
+        "x": 6,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-1\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "gauge",
+      "title": "V1-2 Essentials",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-2\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "gauge",
+      "title": "V1-3 Completion",
+      "gridPos": {
+        "x": 18,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V1-3\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "gauge",
+      "title": "V2-A Foundation",
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-A\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 15,
+      "type": "gauge",
+      "title": "V2-B Easy Wins",
+      "gridPos": {
+        "x": 6,
+        "y": 12,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-B\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 16,
+      "type": "gauge",
+      "title": "V2-C Moderate",
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-C\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 17,
+      "type": "gauge",
+      "title": "V2-D Advanced",
+      "gridPos": {
+        "x": 18,
+        "y": 12,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_progress_percent{stage=\"V2-D\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "id": 20,
+      "type": "table",
+      "title": "Sprint 6 Roadmap Items",
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 10
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_item_status{sprint=\"6\"}",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsUS"
+              },
+              {
+                "id": "custom.align",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Timestamp"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsUS"
+              },
+              {
+                "id": "custom.align",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "__name__"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Name"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stage Status"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "roadmap_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Version"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stage"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stage"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Status"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "type": "table",
+      "title": "Version 2 Planned Sprints",
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 24,
+        "h": 12
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_item_status{roadmap_version=\"2\"}",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsUS"
+              },
+              {
+                "id": "custom.align",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Timestamp"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsUS"
+              },
+              {
+                "id": "custom.align",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "__name__"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Name"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stage Status"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "roadmap_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Version"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stage"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stage"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Status"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "type": "table",
+      "title": "Roadmap Stage Status",
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 24,
+        "h": 10
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_roadmap_stage_status",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsUS"
+              },
+              {
+                "id": "custom.align",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Timestamp"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsUS"
+              },
+              {
+                "id": "custom.align",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "__name__"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Name"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stage Status"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "roadmap_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Version"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stage"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stage"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Status"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 23,
+      "type": "table",
+      "title": "Recent History Entries",
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "cacheflow_history_entry{roadmap_version=\"1\"}",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsUS"
+              },
+              {
+                "id": "custom.align",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Timestamp"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsUS"
+              },
+              {
+                "id": "custom.align",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "__name__"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Name"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stage Status"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "roadmap_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Version"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stage"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stage"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Status"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }
