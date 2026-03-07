@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { useActionCenter } from '@/components/ActionCenterProvider'
@@ -11,6 +11,8 @@ interface VpsItem {
   size: number
   modifiedAt?: string | null
 }
+
+const MOCK_RUN_PATH = '/srv/storage/local/mock run'
 
 function normalizePath(raw: string): string {
   if (!raw) return '/'
@@ -30,6 +32,16 @@ function parentPath(input: string): string {
   return normalized.slice(0, idx)
 }
 
+function emitVpsFilesChanged(connectionId: string, folderPath: string) {
+  if (typeof window === 'undefined' || !connectionId) return
+  window.dispatchEvent(new CustomEvent('cacheflow:vps-files-changed', {
+    detail: {
+      connectionId,
+      folderPath: normalizePath(folderPath),
+    },
+  }))
+}
+
 export default function VpsBrowserPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
@@ -41,11 +53,13 @@ export default function VpsBrowserPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [mkdirName, setMkdirName] = useState('')
+  const latestLoadId = useRef(0)
 
   const canGoUp = useMemo(() => path !== '/', [path])
 
   const load = useCallback(async (targetPath: string) => {
     if (!id) return
+    const requestId = ++latestLoadId.current
     setLoading(true)
     setError(null)
     const normalized = normalizePath(targetPath)
@@ -59,12 +73,15 @@ export default function VpsBrowserPage() {
         throw new Error(payload?.detail || payload?.error || 'Failed to load files')
       }
       const payload = await response.json()
+      if (requestId !== latestLoadId.current) return
       setItems(Array.isArray(payload) ? payload : [])
       setPath(normalized)
     } catch (err: any) {
+      if (requestId !== latestLoadId.current) return
       setError(err?.message || 'Failed to load files')
       setItems([])
     } finally {
+      if (requestId !== latestLoadId.current) return
       setLoading(false)
     }
   }, [id])
@@ -90,6 +107,7 @@ export default function VpsBrowserPage() {
       }
       actions.notify({ kind: 'success', title: 'Uploaded', message: selectedFile.name })
       setSelectedFile(null)
+      emitVpsFilesChanged(id, path)
       await load(path)
     } catch (err: any) {
       actions.notify({ kind: 'error', title: 'Upload failed', message: err?.message || 'Upload failed' })
@@ -107,6 +125,7 @@ export default function VpsBrowserPage() {
         const payload = await response.json().catch(() => ({}))
         throw new Error(payload?.detail || payload?.error || 'Delete failed')
       }
+      emitVpsFilesChanged(id, path)
       await load(path)
     } catch (err: any) {
       actions.notify({ kind: 'error', title: 'Delete failed', message: err?.message || 'Delete failed' })
@@ -126,6 +145,7 @@ export default function VpsBrowserPage() {
         throw new Error(payload?.detail || payload?.error || 'mkdir failed')
       }
       setMkdirName('')
+      emitVpsFilesChanged(id, path)
       await load(path)
     } catch (err: any) {
       actions.notify({ kind: 'error', title: 'Create folder failed', message: err?.message || 'Create folder failed' })
@@ -151,6 +171,15 @@ export default function VpsBrowserPage() {
           </button>
         </div>
 
+        <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/30 dark:bg-blue-950/30 dark:text-blue-100">
+          <p>
+            Manual VPS auth is preserved. Keep QA work inside <code>{MOCK_RUN_PATH}</code> so browse, upload, copy, move, preview, and delete checks stay isolated from real server content.
+          </p>
+          <p className="mt-2 text-xs text-blue-800 dark:text-blue-200">
+            Manual flow: open <code>Mock Run</code> first, stay inside that tree, and if root-level transfer checks fail retry from the same path instead of <code>/</code>.
+          </p>
+        </div>
+
         <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
           <button
             type="button"
@@ -159,6 +188,13 @@ export default function VpsBrowserPage() {
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600"
           >
             Up
+          </button>
+          <button
+            type="button"
+            onClick={() => void load(MOCK_RUN_PATH)}
+            className="rounded-lg border border-blue-300 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/30"
+          >
+            Mock Run
           </button>
           <input
             type="file"

@@ -31,6 +31,10 @@ function resolveApiBase(): string {
   return normalizeBaseUrl(selected);
 }
 
+function normalizeEmail(email: string): string {
+  return String(email || '').trim().toLowerCase();
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -42,11 +46,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const normalizedEmail = normalizeEmail(email);
     const apiBase = resolveApiBase();
     const backendResponse = await fetch(`${apiBase}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: normalizedEmail, password }),
       cache: 'no-store',
     });
 
@@ -59,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     const token = payload?.token;
-    const user = payload?.user || { email };
+    const user = payload?.user || { email: normalizedEmail };
     if (!token) {
       return NextResponse.json(
         { success: false, error: 'Login succeeded but no token was returned' },
@@ -101,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     response.cookies.set(
       'userData',
-      JSON.stringify({ id: user?.id ?? null, email: user?.email || email }),
+      JSON.stringify({ id: user?.id ?? null, email: user?.email || normalizedEmail }),
       {
         httpOnly: false,
         secure: isProd,

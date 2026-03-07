@@ -58,6 +58,11 @@ const NODES_UNDER_TEST: VpsNode[] =
     : [{ label: 'Missing VPS Config', host: '', port: 22, username: '', pemPath: '' }]
 const QA_EMAIL = process.env.PLAYWRIGHT_QA_EMAIL || 'admin@cacheflow.goels.in'
 const QA_PASSWORD = process.env.PLAYWRIGHT_QA_PASSWORD || 'admin123'
+const SAVED_VPS_SOURCE_LABEL = process.env.PLAYWRIGHT_VPS_SOURCE_LABEL || 'OCI'
+const SAVED_VPS_TARGET_LABEL = process.env.PLAYWRIGHT_VPS_TARGET_LABEL || 'test remote'
+const MOCK_RUN_PATH = '/srv/storage/local/mock run'
+const SAVED_VPS_SOURCE_ID = '03f733ac-68dd-4f6b-83ee-0fca06a8888a'
+const SAVED_VPS_TARGET_ID = '0e57f4e0-3964-4757-afcd-5286faf294e2'
 
 function maskedHost(host: string): string {
   const ipv4 = host.match(/^(\d+\.\d+\.\d+)\.\d+$/)
@@ -160,6 +165,161 @@ async function disconnectProvider(page: Page, label: string) {
   await expect(card).not.toBeVisible({ timeout: 30_000 })
 }
 
+async function openSavedVpsBrowser(page: Page, label: string) {
+  await openProviders(page)
+  const card = cardByLabel(page, label)
+  await expect(card).toBeVisible({ timeout: 30_000 })
+  await card.getByRole('button', { name: /Open Files/i }).click()
+  await expect(page).toHaveURL(/\/providers\/vps\//, { timeout: 20_000 })
+}
+
+async function openMockRunInVpsBrowser(page: Page) {
+  await page.getByRole('button', { name: /^Mock Run$/i }).click()
+  await expect(page.getByText(`Path: ${MOCK_RUN_PATH}`)).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('tbody tr').filter({ hasText: 'Loading...' })).toHaveCount(0, { timeout: 120_000 })
+}
+
+async function openFolderInVpsBrowser(page: Page, folderName: string, expectedPath: string) {
+  const folderButton = page
+    .locator('tbody tr')
+    .filter({ has: page.getByRole('button', { name: new RegExp(`^${folderName}$`) }) })
+    .first()
+    .getByRole('button', { name: new RegExp(`^${folderName}$`) })
+  await expect(folderButton).toBeVisible({ timeout: 30_000 })
+  await folderButton.click({ force: true })
+  await expect(page.getByText(`Path: ${expectedPath}`)).toBeVisible({ timeout: 30_000 })
+}
+
+async function uploadFileToCurrentVpsPath(
+  page: Page,
+  file: { name: string; mimeType: string; buffer: Buffer },
+) {
+  await setVpsUploadFile(page, file)
+  await page.getByRole('button', { name: /^Upload$/i }).click()
+  await expect(page.getByRole('row').filter({ hasText: file.name })).toBeVisible({ timeout: 90_000 })
+}
+
+async function deleteFileFromCurrentVpsPath(page: Page, fileName: string) {
+  const row = page.getByRole('row').filter({ hasText: fileName })
+  if (!(await row.isVisible().catch(() => false))) return
+  await row.getByRole('button', { name: /Delete/i }).click()
+  await expect(row).toHaveCount(0, { timeout: 90_000 })
+}
+
+async function goToFiles(page: Page) {
+  await page.goto('/files', { waitUntil: 'domcontentloaded' })
+  if (page.url().includes('/login')) {
+    await login(page)
+    await page.goto('/files', { waitUntil: 'domcontentloaded' })
+  }
+  await expect(page).toHaveURL(/\/files/, { timeout: 30_000 })
+  await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 30_000 })
+}
+
+async function selectSidebarAccount(page: Page, label: string) {
+  const account = page
+    .locator('[data-testid^="cf-sidebar-account-"]')
+    .filter({ hasText: label })
+    .first()
+  await expect(account).toBeVisible({ timeout: 30_000 })
+  await account.click()
+  await expect(page.getByTestId('cf-breadcrumb')).toContainText(`VPS / SFTP (${label})`, { timeout: 30_000 })
+  await expect(page.getByText('Loading files...')).toHaveCount(0, { timeout: 90_000 })
+}
+
+async function waitForUnifiedBrowserIdle(page: Page) {
+  await expect(page.getByText('Loading files...')).toHaveCount(0, { timeout: 90_000 })
+}
+
+async function refreshUnifiedBrowser(page: Page) {
+  await page.getByTestId('files-refresh').click()
+  await waitForUnifiedBrowserIdle(page)
+}
+
+async function waitForFolderRow(page: Page, folderName: string, timeout = 60_000) {
+  const row = page
+    .locator(`[data-testid="cf-file-row"][data-file-name="${folderName}"]`)
+    .first()
+  await expect(row).toBeVisible({ timeout })
+  return row
+}
+
+async function openFolderInUnifiedBrowser(page: Page, folderName: string) {
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      await waitForUnifiedBrowserIdle(page)
+      const row = await waitForFolderRow(page, folderName, attempt === 1 ? 60_000 : 90_000)
+      await row.click()
+      await expect(page.getByTestId('cf-breadcrumb')).toContainText(folderName, { timeout: 90_000 })
+      await waitForUnifiedBrowserIdle(page)
+      return
+    } catch (error) {
+      lastError = error
+      if (attempt === 2) break
+      await refreshUnifiedBrowser(page)
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(`Failed to open folder ${folderName}`)
+}
+
+async function expectUnifiedBrowserFile(page: Page, fileName: string) {
+  await expect(
+    page.locator('[data-testid="cf-file-row"]').filter({ hasText: fileName }).first(),
+  ).toBeVisible({ timeout: 90_000 })
+}
+
+async function expectUnifiedBrowserFileMissing(page: Page, fileName: string) {
+  await expect(
+    page.locator('[data-testid="cf-file-row"]').filter({ hasText: fileName }),
+  ).toHaveCount(0, { timeout: 90_000 })
+}
+
+async function selectFileInUnifiedBrowser(page: Page, fileName: string) {
+  const row = page
+    .locator('[data-testid="cf-file-row"]')
+    .filter({ hasText: fileName })
+    .first()
+  await expect(row).toBeVisible({ timeout: 60_000 })
+  await row.getByTestId('cf-row-checkbox').check()
+  await expect(page.getByTestId('cf-selection-toolbar')).toBeVisible({ timeout: 30_000 })
+}
+
+async function openSelectionToolbarAction(page: Page, actionName: 'Copy' | 'Move') {
+  const button = page
+    .getByTestId('cf-selection-toolbar')
+    .getByRole('button')
+    .filter({ hasText: new RegExp(`^${actionName}$`, 'i') })
+    .first()
+  await expect(button).toBeVisible({ timeout: 30_000 })
+  await button.click()
+}
+
+async function deleteSelectedFileInUnifiedBrowser(page: Page) {
+  const toolbar = page.getByTestId('cf-selection-toolbar')
+  await expect(toolbar).toBeVisible({ timeout: 30_000 })
+  await toolbar.getByRole('button', { name: /^Delete$/i }).click()
+  await page.getByRole('button', { name: /^Delete$/i }).last().click()
+}
+
+async function waitForTransferState(page: Page, state: 'COMPLETED' | 'FAILED') {
+  const panel = page.getByTestId('cf-transfer-queue-panel')
+  await expect(panel).toBeVisible({ timeout: 30_000 })
+  const item = panel.locator('[data-testid^="cf-transfer-queue-item-"]').last()
+  await expect(item.getByText(state)).toBeVisible({ timeout: 120_000 })
+  return item
+}
+
+async function openMockRunInUnifiedBrowser(page: Page) {
+  for (const segment of ['srv', 'storage', 'local', 'mock run']) {
+    await openFolderInUnifiedBrowser(page, segment)
+  }
+  await expect(page.getByTestId('cf-breadcrumb')).toContainText('mock run', { timeout: 30_000 })
+  await refreshUnifiedBrowser(page)
+}
+
 async function setVpsUploadFile(
   page: Page,
   file: { name: string; mimeType: string; buffer: Buffer } | string,
@@ -168,6 +328,77 @@ async function setVpsUploadFile(
   const fileInput = main.locator('input[type="file"]').first()
   await fileInput.setInputFiles(file)
   await expect(main.getByRole('button', { name: /^Upload$/i })).toBeEnabled({ timeout: 10_000 })
+}
+
+async function uploadFileToUnifiedBrowser(
+  page: Page,
+  file: { name: string; mimeType: string; buffer: Buffer },
+) {
+  const main = page.locator('main').first()
+  const fileInput = main.locator('input[type="file"]').first()
+  await fileInput.setInputFiles(file)
+  await expectUnifiedBrowserFile(page, file.name)
+}
+
+async function stubSavedVpsConnections(page: Page) {
+  await page.addInitScript(() => {
+    localStorage.removeItem('cacheflow_token_vps')
+    localStorage.removeItem('cacheflow_tokens_vps')
+  })
+
+  await page.route('**/api/connections', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: [
+          {
+            id: SAVED_VPS_TARGET_ID,
+            provider: 'vps',
+            accountKey: SAVED_VPS_TARGET_ID,
+            remoteId: SAVED_VPS_TARGET_ID,
+            accountName: SAVED_VPS_TARGET_LABEL,
+            accountEmail: '',
+            accountLabel: SAVED_VPS_TARGET_LABEL,
+            isDefault: false,
+            status: 'connected',
+            host: '103.174.102.129',
+            port: 22,
+            username: 'sanjay',
+          },
+          {
+            id: SAVED_VPS_SOURCE_ID,
+            provider: 'vps',
+            accountKey: SAVED_VPS_SOURCE_ID,
+            remoteId: SAVED_VPS_SOURCE_ID,
+            accountName: SAVED_VPS_SOURCE_LABEL,
+            accountEmail: '',
+            accountLabel: SAVED_VPS_SOURCE_LABEL,
+            isDefault: false,
+            status: 'connected',
+            host: '40.233.74.160',
+            port: 22,
+            username: 'sanjay',
+          },
+        ],
+      }),
+    })
+  })
+
+  await page.route('**/api/remotes/**/health', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        data: {
+          status: 'connected',
+          healthy: true,
+        },
+      }),
+    })
+  })
 }
 
 async function openTmpDirectory(page: Page) {
@@ -359,4 +590,95 @@ test.describe('VPS SFTP provider — live node tests', () => {
       })
     })
   }
+})
+
+test.describe('VPS saved connections — mock run QA', () => {
+  test.beforeEach(async ({ page }) => {
+    test.setTimeout(240_000)
+    await login(page)
+  })
+
+  test('transfer modal stays inside mock run', async ({ page }) => {
+    await stubSavedVpsConnections(page)
+
+    await goToFiles(page)
+
+    await selectSidebarAccount(page, SAVED_VPS_SOURCE_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+    await selectFileInUnifiedBrowser(page, 'readme.txt')
+    await openSelectionToolbarAction(page, 'Copy')
+    const copyModal = page.getByTestId('transfer-modal-content')
+    await expect(copyModal).toBeVisible({ timeout: 30_000 })
+    await expect(copyModal.getByTestId('transfer-dest-path')).toContainText(MOCK_RUN_PATH)
+    await copyModal.getByLabel('Target account').selectOption({ label: SAVED_VPS_TARGET_LABEL })
+    await expect(copyModal.getByTestId('transfer-dest-path')).toContainText(MOCK_RUN_PATH)
+    await copyModal.getByRole('button', { name: /Cancel/i }).click()
+
+    await selectSidebarAccount(page, SAVED_VPS_TARGET_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+    await selectFileInUnifiedBrowser(page, 'readme.txt')
+    await openSelectionToolbarAction(page, 'Move')
+    const moveModal = page.getByTestId('transfer-modal-content')
+    await expect(moveModal).toBeVisible({ timeout: 30_000 })
+    await expect(moveModal.getByTestId('transfer-dest-path')).toContainText(MOCK_RUN_PATH)
+    await moveModal.getByLabel('Target account').selectOption({ label: SAVED_VPS_SOURCE_LABEL })
+    await expect(moveModal.getByTestId('transfer-dest-path')).toContainText(MOCK_RUN_PATH)
+    await moveModal.getByRole('button', { name: /Cancel/i }).click()
+  })
+
+  test('copy and move stay green inside mock run', async ({ page }) => {
+    const fileName = `pw-vps-transfer-${Date.now()}.txt`
+
+    await stubSavedVpsConnections(page)
+
+    await goToFiles(page)
+
+    await selectSidebarAccount(page, SAVED_VPS_SOURCE_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+    await uploadFileToUnifiedBrowser(page, {
+      name: fileName,
+      mimeType: 'text/plain',
+      buffer: Buffer.from(`cacheflow live vps transfer ${Date.now()}`, 'utf8'),
+    })
+
+    await selectFileInUnifiedBrowser(page, fileName)
+    await openSelectionToolbarAction(page, 'Copy')
+    const copyModal = page.getByTestId('transfer-modal-content')
+    await expect(copyModal).toBeVisible({ timeout: 30_000 })
+    await copyModal.getByLabel('Target account').selectOption({ label: SAVED_VPS_TARGET_LABEL })
+    await expect(copyModal.getByTestId('transfer-dest-path')).toContainText(MOCK_RUN_PATH)
+    await copyModal.getByRole('button', { name: /^Copy here$/i }).click()
+    await waitForTransferState(page, 'COMPLETED')
+
+    await selectSidebarAccount(page, SAVED_VPS_TARGET_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+    await page.getByTestId('files-refresh').click()
+    await expectUnifiedBrowserFile(page, fileName)
+
+    await selectFileInUnifiedBrowser(page, fileName)
+    await openSelectionToolbarAction(page, 'Move')
+    const moveModal = page.getByTestId('transfer-modal-content')
+    await expect(moveModal).toBeVisible({ timeout: 30_000 })
+    await moveModal.getByLabel('Target account').selectOption({ label: SAVED_VPS_SOURCE_LABEL })
+    await expect(moveModal.getByTestId('transfer-dest-path')).toContainText(MOCK_RUN_PATH)
+    await moveModal.getByRole('button', { name: /^Move here$/i }).click()
+    await waitForTransferState(page, 'COMPLETED')
+
+    await selectSidebarAccount(page, SAVED_VPS_SOURCE_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+    await page.getByTestId('files-refresh').click()
+    await expectUnifiedBrowserFile(page, fileName)
+
+    await selectSidebarAccount(page, SAVED_VPS_TARGET_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+    await page.getByTestId('files-refresh').click()
+    await expectUnifiedBrowserFileMissing(page, fileName)
+
+    await selectSidebarAccount(page, SAVED_VPS_SOURCE_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+    await page.getByTestId('files-refresh').click()
+    await selectFileInUnifiedBrowser(page, fileName)
+    await deleteSelectedFileInUnifiedBrowser(page)
+    await expectUnifiedBrowserFileMissing(page, fileName)
+  })
 })

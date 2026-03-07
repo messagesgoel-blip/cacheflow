@@ -67,7 +67,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const [clipboard, setClipboard] = useState<{ mode: 'copy' | 'move', file: FileMetadata } | null>(null)
   const [draggedFile, setDraggedFile] = useState<FileMetadata | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [pendingFolderPath, setPendingFolderPath] = useState<string | null>(null)
   const uploadInputRef = useRef<HTMLInputElement | null>(null)
+  const filesRef = useRef<FileMetadata[]>([])
+  const lastViewKeyRef = useRef<string | null>(null)
 
   // Aggregated mode state with persistence
   const [isAggregatedView, setIsAggregatedView] = useState(() => {
@@ -91,6 +94,17 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   })
   const [aggregatedFiles, setAggregatedFiles] = useState<AggregatedFileItem[]>([])
 
+  useEffect(() => {
+    filesRef.current = files
+  }, [files])
+
+  useEffect(() => {
+    if (loading) return
+    if (error || pendingFolderPath === currentPath) {
+      setPendingFolderPath(null)
+    }
+  }, [loading, error, pendingFolderPath, currentPath])
+
   // Persist aggregated view state
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -113,8 +127,14 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   }, [aggregatedProviderFilter])
   
   const { addTransfer } = useTransferQueue()
-  const [transferModal, setTransferModal] = useState<{ open: boolean; mode: 'copy' | 'move'; file: FileMetadata | null; correlationId?: string }>({ open: false, mode: 'copy', file: null })
+  const [transferModal, setTransferModal] = useState<{ open: boolean; mode: 'copy' | 'move'; file: FileMetadata | null; correlationId?: string; initialFolderPath?: string }>({ open: false, mode: 'copy', file: null })
   const [renameModal, setRenameModal] = useState<{ open: boolean; file: FileMetadata | null; correlationId?: string }>({ open: false, file: null })
+
+  const clearTransientBrowserState = useCallback(() => {
+    setSelectedFiles(new Set())
+    setFocusedIndex(-1)
+    setPreviewPanelFile(null)
+  }, [])
 
   // Selection computed
   const selectedFileObjects = useMemo(() => {
@@ -143,12 +163,37 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     if (localStorage.getItem('cacheflow:ui:allProvidersView') === 'flat') setIsGroupedView(false)
   }, [])
 
+  useEffect(() => {
+    const handleVpsFilesChanged = async (event: Event) => {
+      const detail = (event as CustomEvent<{ connectionId?: string; folderPath?: string }>).detail
+      const connectionId = detail?.connectionId
+      if (!connectionId) return
+
+      const folderPath = detail?.folderPath || '/'
+      await metadataCache.invalidateCache('vps', connectionId, folderPath)
+
+      const isCurrentVpsView =
+        (selectedProvider === 'vps' && activeAccountKey === connectionId && currentPath === folderPath) ||
+        (selectedProvider === 'all' && currentPath === folderPath)
+
+      if (isCurrentVpsView) {
+        setRefreshKey((k) => k + 1)
+      }
+    }
+
+    window.addEventListener('cacheflow:vps-files-changed', handleVpsFilesChanged as EventListener)
+    return () => {
+      window.removeEventListener('cacheflow:vps-files-changed', handleVpsFilesChanged as EventListener)
+    }
+  }, [activeAccountKey, currentPath, selectedProvider])
+
   const toggleGroupedView = () => {
     const newState = !isGroupedView
     setIsGroupedView(newState); localStorage.setItem('cacheflow:ui:allProvidersView', newState ? 'grouped' : 'flat')
   }
 
-  // Load connected providers - SYNC-1: fetch from server state API
+  // Load connected providers from server state. Keep this separate from file refreshes;
+  // navigation and folder refreshes should not rehydrate the entire connection model.
   useEffect(() => {
     let tokensChanged = false
     const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav']
@@ -243,11 +288,6 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         }
       }
 
-      if (tokensChanged) {
-        setRefreshKey(k => k + 1)
-        return
-      }
-
       // Build ConnectedProvider list: merge server metadata with localStorage tokens
       const connected: ConnectedProvider[] = []
       const loadingIds: ProviderId[] = []
@@ -293,7 +333,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     }
 
     loadConnections()
-  }, [token, refreshKey])
+  }, [token])
   const filteredFiles = useMemo(() => {
     if (!searchQuery || isSearching) return files
     const q = searchQuery.toLowerCase()
@@ -380,6 +420,15 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   // Fetch logic
   useEffect(() => {
     let isStale = false
+    const viewKey = JSON.stringify({
+      selectedProvider,
+      activeAccountKey,
+      currentPath,
+      search: searchQuery.trim(),
+      aggregated: isAggregatedView,
+      duplicatesOnly: showDuplicatesOnly,
+      aggregatedProviderFilter,
+    })
     async function performSearch() {
       if (!searchQuery.trim()) return
       setIsSearching(true); setError(null)
@@ -421,10 +470,16 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
     async function loadAllFiles() {
       if (searchQuery.trim()) { performSearch(); return }
-      
-      // If we already have files and are just refreshing, don't clear the list (avoids flash of loading spinner)
-      const isRefreshing = files.length > 0;
-      if (!isRefreshing) setFiles([]); 
+
+      const preserveExistingFiles =
+        lastViewKeyRef.current === viewKey && filesRef.current.length > 0
+      lastViewKeyRef.current = viewKey
+
+      if (!preserveExistingFiles) {
+        clearTransientBrowserState()
+        setFiles([])
+        setAggregatedFiles([])
+      }
       
       setLoading(true); 
       setError(null);
@@ -588,12 +643,50 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     }
     const timer = setTimeout(() => { if (searchQuery.trim()) performSearch(); else loadAllFiles() }, searchQuery.trim() ? 500 : 0)
     return () => { isStale = true; clearTimeout(timer) }
-  }, [selectedProvider, activeAccountKey, currentPath, refreshKey, loadingProviders, searchQuery, connectedProviders, isAggregatedView, showDuplicatesOnly, aggregatedProviderFilter])
+  }, [selectedProvider, activeAccountKey, currentPath, refreshKey, loadingProviders, searchQuery, connectedProviders, isAggregatedView, showDuplicatesOnly, aggregatedProviderFilter, clearTransientBrowserState])
 
   // Handlers
-  const handleSidebarNavigate = (pid: any, key?: string) => { setSelectedProvider(pid); if (key) { setActiveAccountKey(key); tokenManager.setActiveToken(pid, key) } else setActiveAccountKey(''); setCurrentPath('/'); setBreadcrumbStack([]); setRefreshKey(k => k + 1) }
-  const handleBreadcrumbNavigate = (idx: number) => { if (idx === -1) { setCurrentPath('/'); setBreadcrumbStack([]) } else { const target = breadcrumbStack[idx]; setCurrentPath(target.id); setBreadcrumbStack(prev => prev.slice(0, idx + 1)) } }
-  const handleFolderClick = (file: FileMetadata) => { if (selectedProvider === 'all') { setSelectedProvider(file.provider as any); if ((file as any).accountKey) { setActiveAccountKey((file as any).accountKey); tokenManager.setActiveToken(file.provider as any, (file as any).accountKey) } }; setCurrentPath(file.path); setBreadcrumbStack(prev => [...prev, { id: file.path, name: file.name }]) }
+  const handleSidebarNavigate = (pid: any, key?: string) => {
+    clearTransientBrowserState()
+    setPendingFolderPath(null)
+    setSelectedProvider(pid)
+    if (key) {
+      setActiveAccountKey(key)
+      tokenManager.setActiveToken(pid, key)
+    } else {
+      setActiveAccountKey('')
+    }
+    setCurrentPath('/')
+    setBreadcrumbStack([])
+    setRefreshKey(k => k + 1)
+  }
+  const handleBreadcrumbNavigate = (idx: number) => {
+    clearTransientBrowserState()
+    setPendingFolderPath(null)
+    if (idx === -1) {
+      setCurrentPath('/')
+      setBreadcrumbStack([])
+    } else {
+      const target = breadcrumbStack[idx]
+      setCurrentPath(target.id)
+      setBreadcrumbStack(prev => prev.slice(0, idx + 1))
+    }
+  }
+  const handleFolderClick = (file: FileMetadata) => {
+    clearTransientBrowserState()
+    const nextPath = getFolderNavigationTarget(file)
+    if (loading || pendingFolderPath === nextPath || currentPath === nextPath) return
+    setPendingFolderPath(nextPath)
+    if (selectedProvider === 'all') {
+      setSelectedProvider(file.provider as any)
+      if ((file as any).accountKey) {
+        setActiveAccountKey((file as any).accountKey)
+        tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
+      }
+    }
+    setCurrentPath(nextPath)
+    setBreadcrumbStack(buildNextBreadcrumbStack(breadcrumbStack, file, nextPath))
+  }
   
   const handleToggleFavorite = async (file: FileMetadata) => {
     if (isFavoriting.has(file.id)) return
@@ -689,8 +782,8 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     }
   }
 
-  const handleFileMove = (file: FileMetadata) => setTransferModal({ open: true, mode: 'move', file })
-  const handleFileCopy = (file: FileMetadata) => setTransferModal({ open: true, mode: 'copy', file })
+  const handleFileMove = (file: FileMetadata) => setTransferModal({ open: true, mode: 'move', file, initialFolderPath: currentTransferFolderPath })
+  const handleFileCopy = (file: FileMetadata) => setTransferModal({ open: true, mode: 'copy', file, initialFolderPath: currentTransferFolderPath })
   const handleFileRename = (file: FileMetadata) => {
     const correlationId = actionLogger.generateCorrelationId()
     actionLogger.log({
@@ -803,6 +896,41 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     }
   }
 
+  const handleRefresh = async () => {
+    const folderIdForCache = currentPath === '/' ? null : currentPath
+
+    if (selectedProvider === 'all') {
+      await Promise.allSettled(
+        connectedProviders.map((cp) =>
+          metadataCache.invalidateCache(
+            cp.providerId,
+            cp.accountKey || undefined,
+            folderIdForCache ?? rootFolderId(cp.providerId),
+          ),
+        ),
+      )
+      setRefreshKey((k) => k + 1)
+      return
+    }
+
+    if (['recent', 'starred', 'activity'].includes(selectedProvider)) {
+      setRefreshKey((k) => k + 1)
+      return
+    }
+
+    const pid = selectedProvider as ProviderId
+    if (activeAccountKey) {
+      await metadataCache.invalidateCache(
+        pid,
+        activeAccountKey,
+        folderIdForCache ?? rootFolderId(pid),
+      )
+    } else {
+      await metadataCache.invalidateCache(pid)
+    }
+    setRefreshKey((k) => k + 1)
+  }
+
   const handleFileDelete = async (file: FileMetadata) => {
     const safeName = file.name || 'untitled'
     const ok = await actions.confirm({ title: 'Delete?', message: `Delete "${safeName}"?`, confirmText: 'Delete', cancelText: 'Cancel' })
@@ -858,6 +986,9 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     if (['all', 'recent', 'starred', 'activity'].includes(selectedProvider) || !activeAccountKey) return undefined
     return connectedProviders.find(cp => cp.providerId === selectedProvider && cp.accountKey === activeAccountKey)?.displayName
   }, [selectedProvider, activeAccountKey, connectedProviders])
+  const currentTransferFolderPath = useMemo(() => {
+    return breadcrumbStack[breadcrumbStack.length - 1]?.id || currentPath
+  }, [breadcrumbStack, currentPath])
 
   return (
     <div className="flex h-[calc(100vh-120px)] bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden -mx-4 md:-mx-6">
@@ -875,7 +1006,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           onChange={handleUploadSelection}
           data-testid="cf-action-upload-input"
         />
-        {transferModal.open && transferModal.file && <TransferModal isOpen={transferModal.open} mode={transferModal.mode} file={transferModal.file} connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))} onClose={() => setTransferModal({ open: false, mode: 'copy', file: null })} onSubmit={async (args) => { addTransfer({ type: transferModal.mode, file: transferModal.file!, ...args }); setTransferModal({ open: false, mode: 'copy', file: null }); setSelectedFiles(new Set()) }} />}
+        {transferModal.open && transferModal.file && <TransferModal isOpen={transferModal.open} mode={transferModal.mode} file={transferModal.file} currentFolderPath={transferModal.initialFolderPath || currentTransferFolderPath} connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))} onClose={() => setTransferModal({ open: false, mode: 'copy', file: null })} onSubmit={async (args) => { addTransfer({ type: transferModal.mode, file: transferModal.file!, ...args }); setTransferModal({ open: false, mode: 'copy', file: null }); setSelectedFiles(new Set()) }} />}
         {renameModal.open && renameModal.file && <RenameModal isOpen={renameModal.open} title="Rename" initialValue={renameModal.file?.name || ''} onClose={() => {
           if (renameModal.file && renameModal.correlationId) {
             actionLogger.log({
@@ -1070,7 +1201,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             >
               {uploading ? 'Uploading...' : 'Upload'}
             </button>
-            <button data-testid="files-refresh" onClick={() => setRefreshKey(k => k + 1)} className="p-2 hover:bg-gray-100 rounded-lg"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+            <button data-testid="files-refresh" onClick={() => void handleRefresh()} className="p-2 hover:bg-gray-100 rounded-lg"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
           </div>
         </div>
 
@@ -1111,18 +1242,18 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                 {/* When aggregated mode is on, force flat list regardless of grouped/flat toggle */}
                 {isAggregatedView ? (
                   <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
-                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={true} showDuplicateBadge={isAggregatedView} />
+                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={true} showDuplicateBadge={isAggregatedView} />
                   </div>
                 ) : groupedFiles ? groupedFiles.map(group => (
                   <section key={group.label} data-testid={`cf-allproviders-group-section-${group.accountKey}`} className="space-y-4">
                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><span>{PROVIDERS.find(p => p.id === group.providerId)?.icon}</span> {group.label} • {group.files.length} ITEMS</h3>
                     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
-                      <FileTable files={group.files} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={false} showDuplicateBadge={isAggregatedView} />
+                      <FileTable files={group.files} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={false} showDuplicateBadge={isAggregatedView} />
                     </div>
                   </section>
                 )) : (
                   <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
-                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={selectedProvider === 'all' || !!searchQuery} showDuplicateBadge={isAggregatedView} />
+                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={selectedProvider === 'all' || !!searchQuery} showDuplicateBadge={isAggregatedView} />
                   </div>
                 )}
               </div>
@@ -1130,14 +1261,14 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           </div>
           {previewPanelFile && <PreviewPanel file={previewPanelFile.file} url={previewPanelFile.url} type={previewPanelFile.type} textContent={previewPanelFile.textContent} previewError={previewPanelFile.previewError} onClose={() => setPreviewPanelFile(null)} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} />}
         </div>
-        <SelectionToolbar selectedFiles={selectedFileObjects} onOpen={handleFileOpen} onDownload={(fs) => fs.length === 1 ? handleFileDownload(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Download', message: 'Coming soon!' })} onRename={handleFileRename} onMove={(fs) => setTransferModal({ open: true, mode: 'move', file: fs[0] })} onCopy={(fs) => setTransferModal({ open: true, mode: 'copy', file: fs[0] })} onDelete={(fs) => fs.length === 1 ? handleFileDelete(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Delete', message: 'Coming soon!' })} onClearSelection={() => setSelectedFiles(new Set())} />
+        <SelectionToolbar selectedFiles={selectedFileObjects} onOpen={handleFileOpen} onDownload={(fs) => fs.length === 1 ? handleFileDownload(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Download', message: 'Coming soon!' })} onRename={handleFileRename} onMove={(fs) => setTransferModal({ open: true, mode: 'move', file: fs[0], initialFolderPath: currentTransferFolderPath })} onCopy={(fs) => setTransferModal({ open: true, mode: 'copy', file: fs[0], initialFolderPath: currentTransferFolderPath })} onDelete={(fs) => fs.length === 1 ? handleFileDelete(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Delete', message: 'Coming soon!' })} onClearSelection={() => setSelectedFiles(new Set())} />
         <TransferQueuePanel />
       </main>
     </div>
   )
 }
 
-function FileTable({ files, selectedFiles, focusedIndex, favorites, isFavoriting, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, showProviderBadge, showDuplicateBadge }: any) {
+function FileTable({ files, selectedFiles, focusedIndex, favorites, isFavoriting, pendingFolderPath, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, showProviderBadge, showDuplicateBadge }: any) {
   return (
     <table className="w-full text-left table-fixed">
       <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-400 uppercase text-[9px] font-black tracking-widest border-b border-gray-100 dark:border-gray-800">
@@ -1145,20 +1276,20 @@ function FileTable({ files, selectedFiles, focusedIndex, favorites, isFavoriting
       </thead>
       <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
         {files.map((file: any, idx: number) => (
-          <FileRow key={file.id} file={file} selected={selectedFiles.has(file.id)} focused={focusedIndex === idx} isFavorite={favorites.has(file.id)} isFavoriting={isFavoriting.has(file.id)} onSelect={() => onSelect(file.id)} onFolderClick={onFolderClick} onOpen={onOpen} onDownload={onDownload} onRename={onRename} onMove={onMove} onCopy={onCopy} onDelete={onDelete} onToggleFavorite={onToggleFavorite} showProviderBadge={showProviderBadge} showDuplicateBadge={showDuplicateBadge} />
+          <FileRow key={file.id} file={file} selected={selectedFiles.has(file.id)} focused={focusedIndex === idx} isFavorite={favorites.has(file.id)} isFavoriting={isFavoriting.has(file.id)} isOpeningFolder={pendingFolderPath === getFolderNavigationTarget(file)} onSelect={() => onSelect(file.id)} onFolderClick={onFolderClick} onOpen={onOpen} onDownload={onDownload} onRename={onRename} onMove={onMove} onCopy={onCopy} onDelete={onDelete} onToggleFavorite={onToggleFavorite} showProviderBadge={showProviderBadge} showDuplicateBadge={showDuplicateBadge} />
         ))}
       </tbody>
     </table>
   )
 }
 
-function FileRow({ file, selected, focused, isFavorite, isFavoriting, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, showProviderBadge, showDuplicateBadge }: any) {
+function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningFolder, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, showProviderBadge, showDuplicateBadge }: any) {
   const provider = PROVIDERS.find(p => p.id === file.provider); const [showOverflow, setShowOverflow] = useState(false)
   const isDuplicate = file.isDuplicate || (file.providers && file.providers.length > 1)
   const providerCount = file.providers?.length || 1
   const resolvedFileName = file.name || '[unnamed]'
   return (
-    <tr draggable={!file.isFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={resolvedFileName} data-provider-id={file.provider || ''} data-account-key={(file as any).accountKey || ''} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'} ${focused ? 'ring-2 ring-blue-500/50 ring-inset z-10' : ''}`} onClick={() => file.isFolder ? onFolderClick(file) : onOpen(file)}>
+    <tr draggable={!file.isFolder && !isOpeningFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={resolvedFileName} data-provider-id={file.provider || ''} data-account-key={(file as any).accountKey || ''} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'} ${focused ? 'ring-2 ring-blue-500/50 ring-inset z-10' : ''} ${isOpeningFolder ? 'bg-blue-50 dark:bg-blue-900/20 cursor-progress' : ''}`} onClick={() => isOpeningFolder ? undefined : file.isFolder ? onFolderClick(file) : onOpen(file)}>
       <td className="px-4 py-3">
         <input
           type="checkbox"
@@ -1183,9 +1314,14 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, onSelect, 
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-xl flex-shrink-0">{file.isFolder ? '📁' : getFileIcon(file.mimeType)}</span>
+          <span className={`text-xl flex-shrink-0 ${isOpeningFolder ? 'animate-pulse' : ''}`}>{file.isFolder ? '📁' : getFileIcon(file.mimeType)}</span>
           <div className="min-w-0 flex items-center gap-2">
             <p className={`font-semibold text-sm truncate ${resolvedFileName === '[unnamed]' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'}`}>{resolvedFileName}</p>
+            {isOpeningFolder && (
+              <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full whitespace-nowrap">
+                Opening...
+              </span>
+            )}
             {showDuplicateBadge && isDuplicate && (
               <span className="px-1.5 py-0.5 text-[9px] font-bold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full border border-purple-200 dark:border-purple-800 whitespace-nowrap" title={`Also on ${providerCount - 1} other provider${providerCount > 2 ? 's' : ''}`}>
                 📋 {providerCount}x
@@ -1251,6 +1387,42 @@ function applyRenamedMetadata(file: FileMetadata, nextName: string): FileMetadat
     pathDisplay: renameFilePath(file.pathDisplay || file.path, nextName) || file.pathDisplay || file.path,
     modifiedTime: new Date().toISOString(),
   })
+}
+
+function getFolderNavigationTarget(file: FileMetadata): string {
+  if (!file.isFolder) return String(file.path || file.id)
+
+  switch (file.provider) {
+    case 'box':
+    case 'google':
+    case 'onedrive':
+    case 'pcloud':
+      return String(file.id || file.path)
+    default:
+      return String(file.path || file.id)
+  }
+}
+
+export function buildNextBreadcrumbStack(
+  currentStack: Array<{ id: string; name: string }>,
+  file: FileMetadata,
+  nextPath: string,
+): Array<{ id: string; name: string }> {
+  if (nextPath.startsWith('/')) {
+    const segments = nextPath.split('/').filter(Boolean)
+    let runningPath = ''
+    return segments.map((segment) => {
+      runningPath = `${runningPath}/${segment}`
+      return { id: runningPath, name: segment }
+    })
+  }
+
+  const existingIndex = currentStack.findIndex((entry) => entry.id === nextPath)
+  if (existingIndex >= 0) {
+    return currentStack.slice(0, existingIndex + 1)
+  }
+
+  return [...currentStack, { id: nextPath, name: file.name }]
 }
 
 export function getFileIcon(mimeType: string): string {

@@ -374,21 +374,120 @@ export class VPSProvider extends StorageProvider {
    * Move/rename file via SFTP
    */
   async moveFile(fileId: string, newParentId: string): Promise<FileMetadata> {
-    throw new Error('Move is not supported for VPS connections in the unified browser yet')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
+
+    const existing = await this.getFile(fileId).catch(() => null)
+    const targetPath = joinRemotePath(newParentId || this.getRootPath(), getFileName(fileId))
+    const response = await fetch(this.getConnectionApiPath(connectionId, '/files/move'), {
+      method: 'POST',
+      headers: {
+        ...getAuthHeader(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sourcePath: fileId,
+        destinationPath: targetPath,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Move failed' }))
+      throw new Error(error.detail || error.error || 'Move failed')
+    }
+
+    return this.mapFile(
+      {
+        name: getFileName(targetPath),
+        path: targetPath,
+        type: existing?.isFolder ? 'dir' : 'file',
+        size: existing?.size || 0,
+        modifiedAt: new Date().toISOString(),
+      },
+      this.getRootPath(),
+      newParentId || this.getRootPath(),
+    )
   }
 
   /**
    * Copy file via SFTP
    */
   async copyFile(fileId: string, newParentId: string): Promise<FileMetadata> {
-    throw new Error('Copy is not supported for VPS connections in the unified browser yet')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
+
+    const existing = await this.getFile(fileId).catch(() => null)
+    const targetPath = joinRemotePath(newParentId || this.getRootPath(), getFileName(fileId))
+    const response = await fetch(this.getConnectionApiPath(connectionId, '/files/copy'), {
+      method: 'POST',
+      headers: {
+        ...getAuthHeader(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sourcePath: fileId,
+        destinationPath: targetPath,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Copy failed' }))
+      throw new Error(error.detail || error.error || 'Copy failed')
+    }
+
+    return this.mapFile(
+      {
+        name: getFileName(targetPath),
+        path: targetPath,
+        type: existing?.isFolder ? 'dir' : 'file',
+        size: existing?.size || 0,
+        modifiedAt: new Date().toISOString(),
+      },
+      this.getRootPath(),
+      newParentId || this.getRootPath(),
+    )
   }
 
   /**
    * Rename file via SFTP
    */
   async renameFile(fileId: string, newName: string): Promise<FileMetadata> {
-    throw new Error('Rename is not supported for VPS connections in the unified browser yet')
+    this.getConfig()
+    const connectionId = this.getConnectionId()
+    if (!connectionId) throw new Error('Not connected')
+
+    const existing = await this.getFile(fileId).catch(() => null)
+    const response = await fetch(this.getConnectionApiPath(connectionId, '/files/rename'), {
+      method: 'POST',
+      headers: {
+        ...getAuthHeader(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        path: fileId,
+        newName,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Rename failed' }))
+      throw new Error(error.detail || error.error || 'Rename failed')
+    }
+
+    const renamedPath = joinRemotePath(getParentPath(fileId), newName)
+    return this.mapFile(
+      {
+        name: newName,
+        path: renamedPath,
+        type: existing?.isFolder ? 'dir' : 'file',
+        size: existing?.size || 0,
+        modifiedAt: new Date().toISOString(),
+      },
+      this.getRootPath(),
+      getParentPath(renamedPath),
+    )
   }
 
   // ===========================================================================
@@ -528,6 +627,12 @@ function getParentPath(path: string): string {
   if (normalized === '' || normalized === '/') return '/'
   const index = normalized.lastIndexOf('/')
   return index <= 0 ? '/' : normalized.slice(0, index)
+}
+
+function getFileName(path: string): string {
+  const normalized = normalizeRemotePath(path).replace(/\/+$/, '')
+  const index = normalized.lastIndexOf('/')
+  return index === -1 ? normalized : normalized.slice(index + 1)
 }
 
 // Export

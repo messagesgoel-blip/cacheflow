@@ -61,7 +61,11 @@ export default function VPSModal() {
 
       const result = await response.json().catch(() => ({}))
       if (!response.ok) {
-        setInlineError(result?.detail || result?.error || 'Connection test failed')
+        const rawError = result?.detail || result?.error || 'Connection test failed'
+        const authHint = /All configured authentication methods failed/i.test(rawError)
+          ? ' Make sure you uploaded the private key file, not the .pub file, and that the matching public key is already in ~/.ssh/authorized_keys on the server.'
+          : ''
+        setInlineError(`${rawError}${authHint}`)
         return
       }
 
@@ -152,7 +156,22 @@ export default function VPSModal() {
               className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Upload the private key file only. Do not upload the matching <code>.pub</code> file.
+            </p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              If you generated a new key pair, add its public key to <code>~/.ssh/authorized_keys</code> on the server before connecting.
+            </p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Files must end in <code>.pem</code> or <code>.key</code>. If your private key has no extension, rename or copy it before uploading.
+            </p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Your private key is encrypted before storage and never returned after saving.
+            </p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              For manual QA, use a dedicated writable test path such as <code>/srv/storage/local/mock run</code> instead of operating in <code>/</code>.
+            </p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              After connecting, open <code>Mock Run</code> first and keep destructive checks there so the saved VPS entry and real server content stay unchanged.
             </p>
             {pemFile && (
               <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">Selected: {pemFile.name}</p>

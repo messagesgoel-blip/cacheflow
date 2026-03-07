@@ -1,6 +1,6 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
@@ -59,6 +59,7 @@ CREATE INDEX idx_files_user_status ON files(user_id, status);
 CREATE INDEX idx_files_modified ON files(last_modified DESC);
 CREATE INDEX idx_conflicts_unresolved ON conflicts(user_id, resolved);
 CREATE INDEX idx_shared_links_token ON shared_links(token);
+CREATE UNIQUE INDEX users_email_lower_key ON users(LOWER(email));
 
 -- Admin notifications (Day 45)
 CREATE TABLE IF NOT EXISTS admin_notifications (

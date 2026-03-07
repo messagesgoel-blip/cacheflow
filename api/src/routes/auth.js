@@ -7,6 +7,10 @@ const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
 
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
 // POST /auth/register
 router.post('/register', async (req, res) => {
   const { email, password } = req.body;
@@ -14,13 +18,14 @@ router.post('/register', async (req, res) => {
   if (password.length < 8)   return res.status(400).json({ error: 'password min 8 chars' });
 
   try {
-    const exists = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
+    const normalizedEmail = normalizeEmail(email);
+    const exists = await pool.query('SELECT id FROM users WHERE LOWER(email)=LOWER($1)', [normalizedEmail]);
     if (exists.rows.length)  return res.status(409).json({ error: 'email already registered' });
 
     const hash   = await bcrypt.hash(password, 12);
     const result = await pool.query(
       'INSERT INTO users (email, password_hash) VALUES ($1,$2) RETURNING id, email, created_at',
-      [email, hash]
+      [normalizedEmail, hash]
     );
     const user  = result.rows[0];
     const token = jwt.sign(
@@ -41,7 +46,8 @@ router.post('/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'email and password required' });
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
+    const normalizedEmail = normalizeEmail(email);
+    const result = await pool.query('SELECT * FROM users WHERE LOWER(email)=LOWER($1)', [normalizedEmail]);
     const user   = result.rows[0];
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       return res.status(401).json({ error: 'invalid credentials' });

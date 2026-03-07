@@ -31,6 +31,7 @@ model Tenant {
 
 model User {
   id              String    @id @default(uuid())
+  // DB also enforces UNIQUE (LOWER(email)) via SQL migration 007_users_email_lower_unique.
   email           String    @unique
   passwordHash    String    @map("password_hash")
   tenantId        String?   @map("tenant_id") @default("00000000-0000-0000-0000-000000000001")

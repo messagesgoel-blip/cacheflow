@@ -191,6 +191,23 @@ function sftpRmdir(sftp, remotePath) {
   });
 }
 
+function sftpRename(sftp, oldPath, newPath) {
+  return new Promise((resolve, reject) => {
+    sftp.rename(oldPath, newPath, (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+}
+
+function sftpCreateReadStream(sftp, remotePath) {
+  return sftp.createReadStream(remotePath);
+}
+
+function sftpCreateWriteStream(sftp, remotePath) {
+  return sftp.createWriteStream(remotePath);
+}
+
 async function withSftpSession(connection, handler) {
   const privateKeyPem = decryptPem(connection.pem_key, connection.pem_iv).toString('utf8');
   const entry = await vpsPool.acquire(connection.id, {
@@ -393,6 +410,75 @@ router.post('/vps/:id/files/upload', upload.single('file'), async (req, res) => 
     });
   } catch (err) {
     return res.status(400).json({ error: 'Upload failed', detail: err.message });
+  }
+});
+
+router.post('/vps/:id/files/rename', async (req, res) => {
+  const connection = await getVpsConnection(req.params.id, req.user.id);
+  if (!connection) return res.status(404).json({ error: 'VPS connection not found' });
+
+  const sourcePath = parseRemotePath(req.body?.path);
+  const newName = typeof req.body?.newName === 'string' ? req.body.newName.trim() : '';
+  if (!sourcePath) return res.status(400).json({ error: 'path is required' });
+  if (!newName) return res.status(400).json({ error: 'newName is required' });
+  if (newName.includes('/')) return res.status(400).json({ error: 'newName must not contain path separators' });
+
+  const destinationPath = path.posix.join(path.posix.dirname(sourcePath), newName);
+
+  try {
+    await withSftpSession(connection, async (sftp) => {
+      await sftpRename(sftp, sourcePath, destinationPath);
+    });
+    return res.json({ renamed: true, path: destinationPath });
+  } catch (err) {
+    return res.status(400).json({ error: 'Rename failed', detail: err.message });
+  }
+});
+
+router.post('/vps/:id/files/move', async (req, res) => {
+  const connection = await getVpsConnection(req.params.id, req.user.id);
+  if (!connection) return res.status(404).json({ error: 'VPS connection not found' });
+
+  const sourcePath = parseRemotePath(req.body?.sourcePath);
+  const destinationPath = parseRemotePath(req.body?.destinationPath);
+  if (!sourcePath || !destinationPath) {
+    return res.status(400).json({ error: 'sourcePath and destinationPath are required' });
+  }
+
+  try {
+    await withSftpSession(connection, async (sftp) => {
+      await sftpRename(sftp, sourcePath, destinationPath);
+    });
+    return res.json({ moved: true, path: destinationPath });
+  } catch (err) {
+    return res.status(400).json({ error: 'Move failed', detail: err.message });
+  }
+});
+
+router.post('/vps/:id/files/copy', async (req, res) => {
+  const connection = await getVpsConnection(req.params.id, req.user.id);
+  if (!connection) return res.status(404).json({ error: 'VPS connection not found' });
+
+  const sourcePath = parseRemotePath(req.body?.sourcePath);
+  const destinationPath = parseRemotePath(req.body?.destinationPath);
+  if (!sourcePath || !destinationPath) {
+    return res.status(400).json({ error: 'sourcePath and destinationPath are required' });
+  }
+
+  try {
+    await withSftpSession(connection, async (sftp) => {
+      const stats = await sftpStat(sftp, sourcePath);
+      if (stats.isDirectory()) {
+        throw new Error('Directory copy is not supported');
+      }
+      await pipeline(
+        sftpCreateReadStream(sftp, sourcePath),
+        sftpCreateWriteStream(sftp, destinationPath)
+      );
+    });
+    return res.status(201).json({ copied: true, path: destinationPath });
+  } catch (err) {
+    return res.status(400).json({ error: 'Copy failed', detail: err.message });
   }
 });
 

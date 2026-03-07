@@ -21,9 +21,13 @@ process.on('uncaughtException', (err) => {
 const app  = require('./app');
 const PORT = config.port;
 
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
 async function seedTestUser() {
   const enabled = String(process.env.CACHEFLOW_TEST_USER_SEED || '').toLowerCase() === 'true';
-  const email = process.env.CACHEFLOW_TEST_USER_EMAIL;
+  const email = normalizeEmail(process.env.CACHEFLOW_TEST_USER_EMAIL);
   const password = process.env.CACHEFLOW_TEST_USER_PASSWORD;
   if (!enabled || !email || !password) return;
 
@@ -31,7 +35,7 @@ async function seedTestUser() {
   const bcrypt = require('bcryptjs');
 
   try {
-    const exists = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
+    const exists = await pool.query('SELECT id FROM users WHERE LOWER(email)=LOWER($1)', [email]);
     if (exists.rows.length) {
       console.log('[seed] test user already exists:', email);
       return;

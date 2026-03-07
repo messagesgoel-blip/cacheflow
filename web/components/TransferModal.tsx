@@ -12,6 +12,7 @@ export default function TransferModal({
   isOpen,
   mode,
   file,
+  currentFolderPath,
   connectedProviderIds,
   onClose,
   onSubmit,
@@ -19,6 +20,7 @@ export default function TransferModal({
   isOpen: boolean
   mode: Mode
   file: FileMetadata | null
+  currentFolderPath?: string
   connectedProviderIds: ProviderId[]
   onClose: () => void
   onSubmit: (args: { targetProviderId: ProviderId; targetAccountKey: string; targetFolderId: string }) => Promise<void>
@@ -97,16 +99,15 @@ export default function TransferModal({
     const tokens = tokenManager.getTokens(targetProviderId).filter((t) => !t.disabled)
     const key = tokens[0]?.accountKey || tokens[0]?.accountEmail || ''
     setTargetAccountKey(key)
-    setStack([{ id: rootFolderId(targetProviderId), label: '/' }])
+    setStack(buildInitialStack(targetProviderId, file, currentFolderPath))
   }, [isOpen, targetProviderId])
 
   useEffect(() => {
     if (!isOpen) return
-    // When switching accounts, reset folder selection to root to avoid invalid folder IDs
-    setStack([{ id: rootFolderId(targetProviderId), label: '/' }])
+    setStack(buildInitialStack(targetProviderId, file, currentFolderPath))
     setFolders([])
     setError(null)
-  }, [isOpen, targetProviderId, targetAccountKey])
+  }, [isOpen, targetProviderId, targetAccountKey, file, currentFolderPath])
 
   useEffect(() => {
     if (!isOpen) return
@@ -129,7 +130,16 @@ export default function TransferModal({
       const currentToken = tokenManager.getToken(targetProviderId, targetAccountKey)
       provider.remoteId = (currentToken as any)?.remoteId
 
-      const folderIdForApi = currentFolderId || rootFolderId(targetProviderId)
+      const needsVpsRootCorrection =
+        targetProviderId === 'vps' &&
+        currentFolderId === 'root' &&
+        Boolean(currentFolderPath)
+      const folderIdForApi = needsVpsRootCorrection
+        ? normalizePath(currentFolderPath || '/')
+        : currentFolderId || rootFolderId(targetProviderId)
+      if (needsVpsRootCorrection) {
+        setStack(buildInitialStack(targetProviderId, file, currentFolderPath))
+      }
       const res = await provider.listFiles({ folderId: folderIdForApi })
       const onlyFolders = res.files.filter((f) => f.isFolder)
       onlyFolders.sort((a, b) => a.name.localeCompare(b.name))
@@ -298,7 +308,7 @@ export default function TransferModal({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting || loading}
+            disabled={isSubmitting}
             className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
           >
             {isSubmitting ? (
@@ -334,4 +344,42 @@ function rootFolderId(providerId: ProviderId): string {
     default:
       return 'root'
   }
+}
+
+export function buildInitialStack(
+  providerId: ProviderId,
+  file: FileMetadata | null,
+  currentFolderPath?: string,
+): Array<{ id: string; label: string }> {
+  if (providerId !== 'vps' || !file) {
+    return [{ id: rootFolderId(providerId), label: '/' }]
+  }
+
+  const targetPath = getInitialVpsTargetPath(file, currentFolderPath)
+  if (targetPath === '/') {
+    return [{ id: '/', label: '/' }]
+  }
+
+  const segments = targetPath.split('/').filter(Boolean)
+  const stack = [{ id: '/', label: '/' }]
+  let current = ''
+  for (const segment of segments) {
+    current = `${current}/${segment}`
+    stack.push({ id: current, label: segment })
+  }
+  return stack
+}
+
+export function getInitialVpsTargetPath(file: FileMetadata, currentFolderPath?: string): string {
+  const normalized = normalizePath(file.path || '/')
+  const normalizedCurrentFolder = normalizePath(currentFolderPath || '/')
+  if (file.isFolder) return normalized
+  if (normalized === '/' || !normalized.includes('/')) return normalizedCurrentFolder
+  const trimmed = normalized.replace(/\/+$/, '')
+  const lastSlash = trimmed.lastIndexOf('/')
+  const parentPath = lastSlash <= 0 ? '/' : trimmed.slice(0, lastSlash)
+  if (parentPath === '/' && normalizedCurrentFolder !== '/') {
+    return normalizedCurrentFolder
+  }
+  return parentPath
 }

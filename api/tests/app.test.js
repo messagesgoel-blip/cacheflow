@@ -88,10 +88,14 @@ describe('API app', () => {
 
       const res = await request(app)
         .post('/auth/register')
-        .send({ email: 'exists@example.com', password: 'Password123!' });
+        .send({ email: 'Exists@Example.com ', password: 'Password123!' });
 
       expect(res.status).toBe(409);
       expect(res.body.error).toMatch(/already registered/i);
+      expect(mockQuery).toHaveBeenCalledWith(
+        'SELECT id FROM users WHERE LOWER(email)=LOWER($1)',
+        ['exists@example.com']
+      );
     });
 
     test('creates user and returns token', async () => {
@@ -109,11 +113,21 @@ describe('API app', () => {
 
       const res = await request(app)
         .post('/auth/register')
-        .send({ email: 'new@example.com', password: 'Password123!' });
+        .send({ email: ' New@Example.com ', password: 'Password123!' });
 
       expect(res.status).toBe(201);
       expect(res.body.user.email).toBe('new@example.com');
       expect(res.body.token).toBeTruthy();
+      expect(mockQuery).toHaveBeenNthCalledWith(
+        1,
+        'SELECT id FROM users WHERE LOWER(email)=LOWER($1)',
+        ['new@example.com']
+      );
+      expect(mockQuery).toHaveBeenNthCalledWith(
+        2,
+        'INSERT INTO users (email, password_hash) VALUES ($1,$2) RETURNING id, email, created_at',
+        ['new@example.com', expect.any(String)]
+      );
     });
   });
 
@@ -151,11 +165,15 @@ describe('API app', () => {
 
       const res = await request(app)
         .post('/auth/login')
-        .send({ email: 'good@example.com', password });
+        .send({ email: ' Good@Example.com ', password });
 
       expect(res.status).toBe(200);
       expect(res.body.user.email).toBe('good@example.com');
       expect(res.body.token).toBeTruthy();
+      expect(mockQuery).toHaveBeenCalledWith(
+        'SELECT * FROM users WHERE LOWER(email)=LOWER($1)',
+        ['good@example.com']
+      );
     });
   });
 
