@@ -1,18 +1,14 @@
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import HomeEntry from '@/components/HomeEntry'
+import { resolveServerSession } from '@/lib/auth/serverSession'
 
 export default async function Home({
   searchParams,
 }: {
   searchParams?: Promise<{ mode?: string }>
 }) {
-  const cookieStore = await cookies()
-  const hasSession = Boolean(
-    cookieStore.get('accessToken')?.value || cookieStore.get('userData')?.value,
-  )
-
-  if (hasSession) {
+  const session = await resolveServerSession()
+  if (session.authenticated) {
     redirect('/files')
   }
 

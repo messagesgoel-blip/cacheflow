@@ -9,11 +9,11 @@ interface SessionResponse {
   user?: {
     email?: string
   }
-  accessToken?: string
 }
 
 export default function FilesPage() {
   const [token, setToken] = useState<string | null>(null)
+  const [authenticated, setAuthenticated] = useState(false)
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -23,14 +23,6 @@ export default function FilesPage() {
     const hydrateSession = async () => {
       const localToken = localStorage.getItem('cf_token')
       const localEmail = localStorage.getItem('cf_email') || ''
-      if (localToken) {
-        if (isMounted) {
-          setToken(localToken)
-          setEmail(localEmail)
-          setLoading(false)
-        }
-        return
-      }
 
       try {
         const res = await fetch('/api/auth/session', {
@@ -42,32 +34,39 @@ export default function FilesPage() {
         if (!res.ok) {
           if (isMounted) {
             setToken(null)
+            setAuthenticated(false)
             setEmail('')
           }
+          localStorage.removeItem('cf_token')
+          localStorage.removeItem('cf_email')
           return
         }
 
         const session = (await res.json()) as SessionResponse
         if (!isMounted) return
 
-        if (session.authenticated && session.accessToken) {
-          setToken(session.accessToken)
-          setEmail(session.user?.email || '')
-          localStorage.setItem('cf_token', session.accessToken)
-          localStorage.setItem('cf_email', session.user?.email || '')
-        } else if (session.user && session.accessToken) {
-          setToken(session.accessToken)
-          setEmail(session.user?.email || '')
-          localStorage.setItem('cf_token', session.accessToken)
-          localStorage.setItem('cf_email', session.user?.email || '')
+        if (session.authenticated) {
+          setAuthenticated(true)
+          setToken(localToken || '')
+          setEmail(session.user?.email || localEmail)
         } else {
           setToken(null)
+          setAuthenticated(false)
           setEmail('')
+          localStorage.removeItem('cf_token')
+          localStorage.removeItem('cf_email')
         }
       } catch {
         if (isMounted) {
-          setToken(null)
-          setEmail('')
+          if (localToken) {
+            setToken(localToken)
+            setAuthenticated(true)
+            setEmail(localEmail)
+          } else {
+            setToken(null)
+            setAuthenticated(false)
+            setEmail('')
+          }
         }
       } finally {
         if (isMounted) setLoading(false)
@@ -88,13 +87,13 @@ export default function FilesPage() {
     )
   }
 
-  if (!token) {
+  if (!authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-4">Please log in to browse your files</p>
           <a
-            href="/login"
+            href="/?mode=login"
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
             Log In
@@ -115,7 +114,7 @@ export default function FilesPage() {
         }}
       />
       <main className="p-4 md:p-6">
-        <UnifiedFileBrowser token={token} />
+        <UnifiedFileBrowser token={token || ''} />
       </main>
     </div>
   )
