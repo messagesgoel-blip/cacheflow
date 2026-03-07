@@ -8,6 +8,14 @@
 - commit:
 - agent:
 
+## 2026-03-07 — Consolidate product planning into one canonical V1/V2 roadmap
+- decision: Replace the legacy launch-only Sprint 6 roadmap with a canonical roadmap where Version 1 = merged Phase 1 + Phase 1.5, Version 2 = former Phase 2, and GTM / Commercial work lives in a separate backlog.
+- rationale: The repo had two competing sprint-6 definitions and multiple roadmap sources, which caused orchestration, dashboards, and fresh context windows to disagree about what work was actually next.
+- alternatives rejected: Keep both roadmaps and rely on prompt-level clarification; keep the launch-only Sprint 6 as the active roadmap.
+- files: docs/roadmap.md, docs/gtm-commercial-backlog.md, docs/orchestration/task-manifest.json, docs/sprints-task-dashboard.md, logs/orchestrator-state.json
+- commit: pending
+- agent: codex
+
 ## 2026-03-02 — Use `id@gate` as canonical task key for sprint tracking
 - decision: Treat roadmap tasks as `task_id@gate` in metrics, task state, and lock operations.
 - rationale: Numeric task IDs repeat across gates, and unique keys are required for accurate status, commit metadata, and lock ownership.
@@ -36,7 +44,7 @@
 - decision: Track a dedicated QA watcher task under gate `QA-1` for dependency-unblock monitoring, blocker triage, and immediate E2E pickup when prerequisites merge.
 - rationale: Prevent idle agent time and keep continuous QA feedback while feature dependencies are unmerged.
 - alternatives rejected: Passive wait-only mode for Gemini; this delays blocker visibility and slows handoff timing.
-- files: docs/roadmap-v4.3.md, docs/sprints-task-dashboard.md, monitoring/cacheflow_task_state.yaml, monitoring/cacheflow_metrics.yaml
+- files: docs/roadmap.md, docs/sprints-task-dashboard.md, monitoring/cacheflow_task_state.yaml, monitoring/cacheflow_metrics.yaml
 - commit: pending
 - agent: codex
 
@@ -52,7 +60,7 @@
 - decision: Add task `0.9` (stateful deployment guard) and task `0.4a` (ErrorCode→UI action contract) as canonical roadmap tasks, and amend `2.6`, `2.7`, `4.7`, `4.10`, and `5.7` with CSP, proxy, 2FA-scope, and naming/disclaimer requirements.
 - rationale: These gaps carry operational/security/legal risk if left implicit; codifying them in roadmap + sprint board + generated task state prevents drift across agents.
 - alternatives rejected: Keep requirements only in ad-hoc prompt text; this would not propagate into monitoring/task-state or dispatch artifacts.
-- files: docs/roadmap-v4.3.md, docs/sprints-task-dashboard.md, monitoring/cacheflow_task_state.yaml, monitoring/cacheflow_metrics.yaml, monitoring/cacheflow_sprint_tasks.yaml, monitoring/task_history.yaml
+- files: docs/roadmap.md, docs/sprints-task-dashboard.md, monitoring/cacheflow_task_state.yaml, monitoring/cacheflow_metrics.yaml, monitoring/cacheflow_sprint_tasks.yaml, monitoring/task_history.yaml
 - commit: pending
 - agent: codex
 

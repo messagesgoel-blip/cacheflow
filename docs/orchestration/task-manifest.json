@@ -1,11 +1,11 @@
 {
-  "version": "4.3",
-  "generated_at": "2026-03-03T23:35:21.368389+00:00",
-  "source_document": "/docs/CacheFlow_AgentRoadmap_v4_3.docx",
+  "version": "5.0",
+  "generated_at": "2026-03-07T06:00:01Z",
+  "source_document": "/docs/roadmap.md",
   "source_snapshot": {
-    "docx_text_lines": 3078,
-    "task_rows": 122,
-    "unique_task_ids": 106
+    "text_lines": 173,
+    "v1_sections": 4,
+    "v2_sections": 4
   },
   "scope_constraints": {
     "codex": {
@@ -149,9 +149,49 @@
       "description": "VPS/WebDAV credentials never in API response after save; provider secrets never in browser",
       "sprint_reference": "Sprint 4 · 4.5"
     },
-    "LAUNCH-1": {
-      "description": "Affiliate panel hidden from users with zero successful transfers",
-      "sprint_reference": "Sprint 6 · 6.6"
+    "QUOTA-1": {
+      "description": "Provider quota surfaces emit configurable 80% and 95% threshold alerts through in-app and email notifications",
+      "sprint_reference": "Version 1 · 6.1"
+    },
+    "RIMPORT-1": {
+      "description": "Remote URL imports stream directly into the selected provider without buffering the full file on the CacheFlow server",
+      "sprint_reference": "Version 1 · 6.1"
+    },
+    "LOGS-1": {
+      "description": "Persistent terminal view renders real-time BullMQ and worker events over SSE with zero polling",
+      "sprint_reference": "Version 1 · 6.2"
+    },
+    "SCHED-2": {
+      "description": "Recurring user-scoped backup jobs run with browser closed and expose reliable execution history",
+      "sprint_reference": "Version 1 · 6.3"
+    },
+    "THROTTLE-1": {
+      "description": "User-controlled bandwidth caps persist per session and apply to future transfers",
+      "sprint_reference": "Version 1 · 6.3"
+    },
+    "MEDIA-1": {
+      "description": "HTTP range requests support seekable media playback without a full file download",
+      "sprint_reference": "Version 1 · 6.4"
+    },
+    "STREAM-1": {
+      "description": "Long-lived media streams remain stable without disk buffering or unbounded memory growth",
+      "sprint_reference": "Version 1 · 6.4"
+    },
+    "VERSION-1": {
+      "description": "Overwrite and delete flows create snapshots that users can browse and restore",
+      "sprint_reference": "Version 1 · 6.5"
+    },
+    "TRASH-1": {
+      "description": "Per-user trash supports restore and permanent delete with retention controls",
+      "sprint_reference": "Version 1 · 6.5"
+    },
+    "KEYS-1": {
+      "description": "Dedicated VPS/SFTP key management supports create, rotate, and test flows with encrypted-at-rest material",
+      "sprint_reference": "Version 1 · 6.6"
+    },
+    "NODE-1": {
+      "description": "VPS bridge supports custom ports and configurable keep-alive behavior for strict environments",
+      "sprint_reference": "Version 1 · 6.6"
     },
     "HOLD-UI-2026-03-02": {
       "description": "Phase 1 UI stabilization tasks block non-UI feature work until complete",
@@ -360,22 +400,28 @@
     },
     "6": {
       "wave1": [
-        "6.4",
-        "6.5",
-        "6.8A",
-        "6.8B",
-        "6.8C"
-      ],
-      "wave2": [
         "6.1",
         "6.2",
-        "6.3",
-        "6.6",
-        "6.7"
+        "6.3"
+      ],
+      "wave2": [
+        "6.4",
+        "6.5",
+        "6.6"
       ],
       "wave3": [],
       "gate_criteria": [
-        "LAUNCH-1"
+        "QUOTA-1",
+        "RIMPORT-1",
+        "LOGS-1",
+        "SCHED-2",
+        "THROTTLE-1",
+        "MEDIA-1",
+        "STREAM-1",
+        "VERSION-1",
+        "TRASH-1",
+        "KEYS-1",
+        "NODE-1"
       ],
       "gate_mode": "playwright"
     }
@@ -3021,208 +3067,137 @@
       "rollback_plan": "revert to last sprint gate tag"
     },
     {
-      "id": "6.4",
-      "sprint": 6,
-      "wave": 1,
-      "agent": "opencode",
-      "title": "Billing and subscription tier model",
-      "files": [
-        "/lib/billing/stripe.ts",
-        "/app/api/billing/**",
-        "/prisma/migrations/006_billing/"
-      ],
-      "produces_contract": true,
-      "contract_path": "/docs/contracts/6.4.md",
-      "depends_on_contracts": [],
-      "acceptance_criteria": [
-        "LAUNCH-1"
-      ],
-      "forbidden_side_effects": [
-        "Do not modify frontend component UX outside listed files.",
-        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
-        "Do not change client-visible API response shapes outside task scope."
-      ],
-      "rollback_plan": "revert to last sprint gate tag"
-    },
-    {
-      "id": "6.5",
-      "sprint": 6,
-      "wave": 1,
-      "agent": "opencode",
-      "title": "Tier enforcement — limits enforced reliably at API layer",
-      "files": [
-        "/lib/billing/tierEnforcement.ts",
-        "/middleware.ts"
-      ],
-      "produces_contract": true,
-      "contract_path": "/docs/contracts/6.5.md",
-      "depends_on_contracts": [],
-      "acceptance_criteria": [
-        "LAUNCH-1"
-      ],
-      "forbidden_side_effects": [
-        "Do not modify frontend component UX outside listed files.",
-        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
-        "Do not change client-visible API response shapes outside task scope."
-      ],
-      "rollback_plan": "revert to last sprint gate tag"
-    },
-    {
-      "id": "6.8A",
-      "sprint": 6,
-      "wave": 1,
-      "agent": "opencode",
-      "title": "[OPTION A] Rich version history + unified trash — RECOMMENDED",
-      "files": [
-        "/lib/providers/*/trash.ts",
-        "/app/trash/page.tsx",
-        "/components/files/VersionHistoryPanel.tsx"
-      ],
-      "produces_contract": true,
-      "contract_path": "/docs/contracts/6.8A.md",
-      "depends_on_contracts": [],
-      "acceptance_criteria": [
-        "LAUNCH-1"
-      ],
-      "forbidden_side_effects": [
-        "Do not modify frontend component UX outside listed files.",
-        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
-        "Do not change client-visible API response shapes outside task scope."
-      ],
-      "rollback_plan": "revert to last sprint gate tag"
-    },
-    {
-      "id": "6.8B",
-      "sprint": 6,
-      "wave": 1,
-      "agent": "opencode",
-      "title": "[OPTION B] Collabora Online (full Office editing) — HIGH INFRA COST",
-      "files": [
-        "/docker-compose.collabora.yml",
-        "/app/api/wopi/**",
-        "/components/editor/CollaboraEditor.tsx"
-      ],
-      "produces_contract": true,
-      "contract_path": "/docs/contracts/6.8B.md",
-      "depends_on_contracts": [],
-      "acceptance_criteria": [
-        "LAUNCH-1"
-      ],
-      "forbidden_side_effects": [
-        "Do not modify frontend component UX outside listed files.",
-        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
-        "Do not change client-visible API response shapes outside task scope."
-      ],
-      "rollback_plan": "revert to last sprint gate tag"
-    },
-    {
-      "id": "6.8C",
-      "sprint": 6,
-      "wave": 1,
-      "agent": "opencode",
-      "title": "[OPTION C] Magnet/torrent remote upload — REQUIRES ABUSE CONTROLS",
-      "files": [
-        "/lib/transfers/torrentUpload.ts",
-        "/lib/queue/workers/torrentWorker.ts"
-      ],
-      "produces_contract": true,
-      "contract_path": "/docs/contracts/6.8C.md",
-      "depends_on_contracts": [],
-      "acceptance_criteria": [
-        "LAUNCH-1"
-      ],
-      "forbidden_side_effects": [
-        "Do not modify frontend component UX outside listed files.",
-        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
-        "Do not change client-visible API response shapes outside task scope."
-      ],
-      "rollback_plan": "revert to last sprint gate tag"
-    },
-    {
       "id": "6.1",
       "sprint": 6,
-      "wave": 2,
-      "agent": "claudecode",
-      "title": "PWA manifest + next-pwa service worker (app shell only)",
+      "wave": 1,
+      "agent": "codex",
+      "title": "Version 1 essentials — quota alerts + remote URL import",
       "files": [
-        "/public/manifest.json",
-        "/next.config.js",
-        "/app/offline/page.tsx"
+        "/lib/transfers/remoteUpload.ts",
+        "/api/src/routes/remoteUpload.js",
+        "/api/src/services/remoteUploadService.js",
+        "/web/components/files/RemoteUploadModal.tsx",
+        "/web/components/dashboard/StorageHero.tsx",
+        "/web/components/dashboard/ProviderCapacityBar.tsx",
+        "/web/components/Sidebar.tsx"
       ],
-      "produces_contract": false,
+      "produces_contract": true,
       "contract_path": "/docs/contracts/6.1.md",
-      "depends_on_contracts": [
-        "6.4",
-        "6.5",
-        "6.8A",
-        "6.8B",
-        "6.8C"
-      ],
+      "depends_on_contracts": [],
       "acceptance_criteria": [
-        "LAUNCH-1"
+        "QUOTA-1",
+        "RIMPORT-1"
       ],
       "forbidden_side_effects": [
-        "Do not implement API routes, DB schema, or token storage logic.",
-        "Do not edit Prisma migrations or backend worker code.",
-        "Do not modify server credential storage flows."
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
       ],
       "rollback_plan": "revert to last sprint gate tag"
     },
     {
       "id": "6.2",
       "sprint": 6,
-      "wave": 2,
-      "agent": "claudecode",
-      "title": "SEO landing page — storage calculator + provider grid",
+      "wave": 1,
+      "agent": "codex",
+      "title": "Version 1 essentials — real-time terminal + log view",
       "files": [
-        "/app/(marketing)/page.tsx",
-        "/components/marketing/StorageCalculator.tsx",
-        "/app/(marketing)/layout.tsx"
+        "/lib/transfers/progressBridge.ts",
+        "/web/context/TransferContext.tsx",
+        "/api/src/routes/transfer.js",
+        "/api/src/routes/activity.js",
+        "/web/components/TransferQueuePanel.tsx"
       ],
-      "produces_contract": false,
+      "produces_contract": true,
       "contract_path": "/docs/contracts/6.2.md",
-      "depends_on_contracts": [
-        "6.4",
-        "6.5",
-        "6.8A",
-        "6.8B",
-        "6.8C"
-      ],
+      "depends_on_contracts": [],
       "acceptance_criteria": [
-        "LAUNCH-1"
+        "LOGS-1"
       ],
       "forbidden_side_effects": [
-        "Do not implement API routes, DB schema, or token storage logic.",
-        "Do not edit Prisma migrations or backend worker code.",
-        "Do not modify server credential storage flows."
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
       ],
       "rollback_plan": "revert to last sprint gate tag"
     },
     {
       "id": "6.3",
       "sprint": 6,
-      "wave": 2,
-      "agent": "gemini",
-      "title": "PWA install + offline E2E tests",
+      "wave": 1,
+      "agent": "codex",
+      "title": "Version 1 essentials — scheduled backups + bandwidth throttle",
       "files": [
-        "/e2e/tests/pwa.spec.ts"
+        "/web/app/api/jobs/route.ts",
+        "/web/lib/jobs/scheduledJobService.ts",
+        "/lib/jobs/scheduledJobService.ts",
+        "/lib/queue/workers/scheduledJobWorker.ts",
+        "/web/app/schedules/page.tsx",
+        "/web/components/schedules/CreateJobModal.tsx",
+        "/web/components/schedules/JobCard.tsx"
       ],
-      "produces_contract": false,
+      "produces_contract": true,
       "contract_path": "/docs/contracts/6.3.md",
-      "depends_on_contracts": [
-        "6.4",
-        "6.5",
-        "6.8A",
-        "6.8B",
-        "6.8C"
-      ],
+      "depends_on_contracts": [],
       "acceptance_criteria": [
-        "LAUNCH-1"
+        "SCHED-2",
+        "THROTTLE-1"
       ],
       "forbidden_side_effects": [
-        "Do not modify production source implementation files unless explicitly listed.",
-        "Do not edit environment variable files or secrets.",
-        "Do not bypass gate criteria when tests fail."
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.4",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "codex",
+      "title": "Version 1 completion — media streaming polish",
+      "files": [
+        "/lib/transfers/streamTransfer.ts",
+        "/web/components/PreviewPanel.tsx",
+        "/web/app/api/remotes/[uuid]/upload/route.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/6.4.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "MEDIA-1",
+        "STREAM-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "6.5",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "codex",
+      "title": "Version 1 completion — file versioning + trash bin",
+      "files": [
+        "/lib/providers/*/trash.ts",
+        "/web/app/trash/page.tsx",
+        "/web/components/files/VersionHistoryPanel.tsx",
+        "/web/components/cleanup/StaleFileList.tsx"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/6.5.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "VERSION-1",
+        "TRASH-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
       ],
       "rollback_plan": "revert to last sprint gate tag"
     },
@@ -3230,55 +3205,26 @@
       "id": "6.6",
       "sprint": 6,
       "wave": 2,
-      "agent": "claudecode",
-      "title": "Affiliate storage calculator — only shown post-transfer-reliability",
+      "agent": "codex",
+      "title": "Version 1 completion — VPS/SFTP key lifecycle",
       "files": [
-        "/components/dashboard/AffiliatePanel.tsx"
+        "/api/src/routes/providers.js",
+        "/lib/vault/credentialVault.ts",
+        "/lib/providers/vps/sshConnectionManager.ts",
+        "/web/components/modals/VPSModal.tsx",
+        "/web/app/providers/vps/[id]/page.tsx"
       ],
-      "produces_contract": false,
+      "produces_contract": true,
       "contract_path": "/docs/contracts/6.6.md",
-      "depends_on_contracts": [
-        "6.4",
-        "6.5",
-        "6.8A",
-        "6.8B",
-        "6.8C"
-      ],
+      "depends_on_contracts": [],
       "acceptance_criteria": [
-        "LAUNCH-1"
+        "KEYS-1",
+        "NODE-1"
       ],
       "forbidden_side_effects": [
-        "Do not implement API routes, DB schema, or token storage logic.",
-        "Do not edit Prisma migrations or backend worker code.",
-        "Do not modify server credential storage flows."
-      ],
-      "rollback_plan": "revert to last sprint gate tag"
-    },
-    {
-      "id": "6.7",
-      "sprint": 6,
-      "wave": 2,
-      "agent": "gemini",
-      "title": "Billing E2E — limits enforced, upgrade/downgrade safe",
-      "files": [
-        "/e2e/tests/billing.spec.ts"
-      ],
-      "produces_contract": false,
-      "contract_path": "/docs/contracts/6.7.md",
-      "depends_on_contracts": [
-        "6.4",
-        "6.5",
-        "6.8A",
-        "6.8B",
-        "6.8C"
-      ],
-      "acceptance_criteria": [
-        "LAUNCH-1"
-      ],
-      "forbidden_side_effects": [
-        "Do not modify production source implementation files unless explicitly listed.",
-        "Do not edit environment variable files or secrets.",
-        "Do not bypass gate criteria when tests fail."
+        "Do not trigger production deployments.",
+        "Do not rotate secrets or modify .env files.",
+        "Do not change billing configuration without explicit approval."
       ],
       "rollback_plan": "revert to last sprint gate tag"
     }

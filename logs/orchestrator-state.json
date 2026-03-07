@@ -2,6 +2,8 @@
   "current_sprint": 6,
   "current_wave": 0,
   "current_state": "patching-post-gate-failures",
+  "roadmap_version": "5.0",
+  "roadmap_source": "/home/sanjay/cacheflow_work/docs/roadmap.md",
   "tasks": {
     "0.1": "done",
     "0.2": "done",
@@ -99,18 +101,28 @@
     "5.10": "done",
     "5.12": "done",
     "5.13": "done",
-    "6.4": "pending",
-    "6.5": "pending",
-    "6.8A": "pending",
-    "6.8B": "pending",
-    "6.8C": "pending",
     "6.1": "pending",
     "6.2": "pending",
     "6.3": "pending",
+    "6.4": "pending",
+    "6.5": "pending",
     "6.6": "pending",
-    "6.7": "pending"
+    "7": "pending",
+    "8": "pending",
+    "9": "pending",
+    "10": "pending",
+    "11": "pending",
+    "12": "pending",
+    "13": "pending",
+    "14": "pending",
+    "15": "pending",
+    "16": "pending",
+    "17": "pending",
+    "18": "pending",
+    "19": "pending",
+    "20": "pending"
   },
-  "last_updated": "2026-03-07T04:35:12Z",
+  "last_updated": "2026-03-07T06:00:01Z",
   "post_gate_status": {
     "baseline_commit": "f7f14d3",
     "artifact_dir": "/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737",
@@ -120,6 +132,6 @@
       "build": "pass",
       "playwright": "fail"
     },
-    "note": "Roadmap source moved to /srv/storage/local/Cacheflow/Roadmap/. Post-gate patch cycle in progress (patching-post-gate-failures)."
+    "note": "Canonical roadmap is now /home/sanjay/cacheflow_work/docs/roadmap.md. Historical snapshots remain under /srv/storage/local/Cacheflow/Roadmap/. Post-gate patch cycle remains in progress (patching-post-gate-failures)."
   }
 }

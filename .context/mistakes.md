@@ -21,7 +21,7 @@
 ## 2026-03-03 — Stale local roadmap view caused false "task not found" on UI hold IDs
 - what was tried: Claiming `UI-P1-T02@HOLD-UI-2026-03-02` and `UI-P1-T05@HOLD-UI-2026-03-02` from a node that had not pulled latest roadmap/task-state updates.
 - why it failed: Local task parser only recognized prior `sprint.task@gate` set and lacked newly added hold-task IDs.
-- do not attempt: Do not claim tasks before `git pull --rebase` and re-reading `docs/roadmap-v4.3.md` + `docs/sprints-task-dashboard.md`.
+- do not attempt: Do not claim tasks before `git pull --rebase` and re-reading `docs/roadmap.md` + `docs/sprints-task-dashboard.md`.
 - agent: codex
 
 ## 2026-03-03 — SSH heredoc quoting corrupted TypeScript edits

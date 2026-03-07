@@ -1,7 +1,7 @@
 # Sprint 1 Startup Prompts (All Agents)
 
-Use these prompts as-is when bootstrapping Sprint 1.  
-Roadmap source: `docs/roadmap-v4.3.md`  
+Use these prompts as-is when bootstrapping Sprint 1.
+Roadmap source: `docs/roadmap.md`
 Task board source: `docs/sprints-task-dashboard.md`
 
 ## Shared Startup Block
@@ -13,7 +13,7 @@ Before coding:
 1) git pull --rebase
 2) Read AGENTS.md and STATUS.md fully
 3) Read .context/decisions.md, .context/patterns.md, .context/mistakes.md, .context/dependencies.md
-4) Read docs/roadmap-v4.3.md and only work Sprint 1 task keys assigned below
+4) Read docs/roadmap.md and only work Sprint 1 task keys assigned below
 5) Claim each task key before touching files:
    - claim_task <task_key>
    - verify with get_active_tasks
