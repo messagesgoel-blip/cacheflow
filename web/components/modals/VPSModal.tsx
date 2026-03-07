@@ -3,94 +3,85 @@
 import { useState } from 'react'
 import { useActionCenter } from '@/components/ActionCenterProvider'
 import { useIntegration } from '@/context/IntegrationContext'
-import { authFetch } from '@/lib/apiClient'
-
-type AuthMethod = 'password' | 'sshKey'
 
 export default function VPSModal() {
   const { modalState, closeModal } = useIntegration()
   const [connecting, setConnecting] = useState(false)
-  const [server, setServer] = useState('')
+  const [label, setLabel] = useState('')
+  const [host, setHost] = useState('')
   const [port, setPort] = useState('22')
   const [username, setUsername] = useState('')
-  const [authMethod, setAuthMethod] = useState<AuthMethod>('password')
-  const [password, setPassword] = useState('')
-  const [privateKey, setPrivateKey] = useState('')
-  const [passphrase, setPassphrase] = useState('')
+  const [pemFile, setPemFile] = useState<File | null>(null)
+  const [inlineError, setInlineError] = useState<string | null>(null)
   const actions = useActionCenter()
 
   if (!modalState.isOpen || modalState.modalType !== 'connect' || modalState.providerId !== 'vps') return null
 
+  const resetState = () => {
+    setLabel('')
+    setHost('')
+    setPort('22')
+    setUsername('')
+    setPemFile(null)
+    setInlineError(null)
+    setConnecting(false)
+  }
+
   const handleConnect = async () => {
-    if (!server || !username) {
-      actions.notify({ kind: 'error', title: 'Missing Fields', message: 'Please fill in all required fields' })
+    setInlineError(null)
+    if (!label.trim() || !host.trim() || !username.trim()) {
+      setInlineError('Label, host, and username are required.')
       return
     }
-    if (authMethod === 'password' && !password) {
-      actions.notify({ kind: 'error', title: 'Missing Password', message: 'Please enter your password' })
+    if (!pemFile) {
+      setInlineError('PEM key file is required.')
       return
     }
-    if (authMethod === 'sshKey' && !privateKey) {
-      actions.notify({ kind: 'error', title: 'Missing SSH Key', message: 'Please enter your private key' })
+
+    const ext = pemFile.name.toLowerCase()
+    if (!ext.endsWith('.pem') && !ext.endsWith('.key')) {
+      setInlineError('PEM key must use .pem or .key extension.')
       return
     }
 
     setConnecting(true)
     try {
-      // POST to /api/connections (exact endpoint) with type="sftp"
-      const payload: Record<string, unknown> = {
-        type: 'sftp',
-        server,
-        port: parseInt(port) || 22,
-        username,
-        authMethod,
-      }
+      const formData = new FormData()
+      formData.append('label', label.trim())
+      formData.append('host', host.trim())
+      formData.append('port', String(Number.parseInt(port, 10) || 22))
+      formData.append('username', username.trim())
+      formData.append('pemFile', pemFile)
 
-      if (authMethod === 'password') {
-        payload.password = password
-      } else {
-        payload.privateKey = privateKey
-        if (passphrase) {
-          payload.passphrase = passphrase
-        }
-      }
-
-      const response = await authFetch('/api/connections', {
+      const response = await fetch('/api/providers/vps', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        credentials: 'include',
+        body: formData,
       })
 
-      const result = await response.json() as { success: boolean; connectionId?: string; error?: string }
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to connect')
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        setInlineError(result?.detail || result?.error || 'Connection test failed')
+        return
       }
 
-      actions.notify({ kind: 'success', title: 'Connected', message: 'SFTP connection created successfully' })
+      actions.notify({
+        kind: 'success',
+        title: 'Connected',
+        message: `${label.trim()} connected successfully`,
+      })
+      window.dispatchEvent(new CustomEvent('cacheflow:vps-connected', { detail: { id: result?.id } }))
+      resetState()
       closeModal()
-
-      // Clear sensitive data from state
-      setPassword('')
-      setPrivateKey('')
-      setPassphrase('')
-      setServer('')
-      setUsername('')
-      setPort('22')
     } catch (err: any) {
-      actions.notify({ kind: 'error', title: 'Connection Failed', message: err.message || 'Failed to connect to SFTP server' })
+      setInlineError(err?.message || 'Connection test failed')
     } finally {
       setConnecting(false)
     }
   }
 
   const handleClose = () => {
-    setPassword('')
-    setPrivateKey('')
-    setPassphrase('')
-    setServer('')
-    setUsername('')
-    setPort('22')
+    resetState()
     closeModal()
   }
 
@@ -98,18 +89,31 @@ export default function VPSModal() {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl">
         <h3 className="text-lg font-semibold mb-2">Connect VPS / SFTP</h3>
-        <p className="text-sm text-gray-500 mb-6">Enter your VPS/SFTP server credentials</p>
+        <p className="text-sm text-gray-500 mb-6">Connect your VPS using PEM key authentication.</p>
 
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Label <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="OCI Node 1"
+              required
+              className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1">
               Host <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              value={server}
-              onChange={(e) => setServer(e.target.value)}
-              placeholder="your-server.com"
+              value={host}
+              onChange={(e) => setHost(e.target.value)}
+              placeholder="203.0.113.1"
               required
               className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
             />
@@ -137,89 +141,35 @@ export default function VPSModal() {
               className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
             />
           </div>
-
-          {/* Auth Method Toggle */}
           <div>
-            <label className="block text-sm font-medium mb-2">Authentication Method</label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="authMethod"
-                  value="password"
-                  checked={authMethod === 'password'}
-                  onChange={() => setAuthMethod('password')}
-                  className="w-4 h-4 text-blue-500"
-                />
-                <span className="text-sm">Password</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="authMethod"
-                  value="sshKey"
-                  checked={authMethod === 'sshKey'}
-                  onChange={() => setAuthMethod('sshKey')}
-                  className="w-4 h-4 text-blue-500"
-                />
-                <span className="text-sm">SSH Key</span>
-              </label>
-            </div>
+            <label className="block text-sm font-medium mb-1">
+              PEM Key <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="file"
+              accept=".pem,.key"
+              onChange={(e) => setPemFile(e.target.files?.[0] || null)}
+              className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Your private key is encrypted before storage and never returned after saving.
+            </p>
+            {pemFile && (
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">Selected: {pemFile.name}</p>
+            )}
           </div>
-
-          {/* Password Field */}
-          {authMethod === 'password' && (
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="password"
-                required
-                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-              />
-            </div>
-          )}
-
-          {/* SSH Key Fields */}
-          {authMethod === 'sshKey' && (
-            <>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Private Key <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={privateKey}
-                  onChange={(e) => setPrivateKey(e.target.value)}
-                  placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-                  required
-                  rows={4}
-                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 font-mono text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Passphrase <span className="text-gray-400">(optional)</span>
-                </label>
-                <input
-                  type="password"
-                  value={passphrase}
-                  onChange={(e) => setPassphrase(e.target.value)}
-                  placeholder="key passphrase"
-                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div>
-            </>
-          )}
         </div>
+
+        {inlineError && (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
+            {inlineError}
+          </div>
+        )}
 
         <div className="flex gap-3 mt-6">
           <button onClick={handleClose} className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
           <button onClick={handleConnect} disabled={connecting} className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50">
-            {connecting ? 'Connecting...' : 'Connect'}
+            {connecting ? 'Testing connection…' : 'Test & Connect'}
           </button>
         </div>
       </div>

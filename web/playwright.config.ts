@@ -4,6 +4,19 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3010'
 const useDevWebServer = ['1', 'true', 'yes', 'on'].includes(
   (process.env.PLAYWRIGHT_USE_DEV_SERVER || '').toLowerCase(),
 )
+const parsedBaseUrl = (() => {
+  try {
+    return new URL(baseURL)
+  } catch {
+    return new URL('http://127.0.0.1:3010')
+  }
+})()
+const devPort =
+  Number.parseInt(process.env.PLAYWRIGHT_DEV_PORT || '', 10) ||
+  Number.parseInt(parsedBaseUrl.port || '', 10) ||
+  3010
+const devHost = process.env.PLAYWRIGHT_DEV_HOST || '127.0.0.1'
+const devServerUrl = `http://${devHost}:${devPort}`
 
 export default defineConfig({
   testDir: './e2e',
@@ -25,9 +38,9 @@ export default defineConfig({
   ...(useDevWebServer
     ? {
         webServer: {
-          command: 'npx next dev -p 3010',
-          url: 'http://127.0.0.1:3010',
-          reuseExistingServer: true,
+          command: `npx next dev -p ${devPort} --hostname ${devHost}`,
+          url: devServerUrl,
+          reuseExistingServer: false,
           timeout: 120000,
         },
       }

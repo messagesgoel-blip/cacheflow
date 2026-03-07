@@ -20,7 +20,6 @@ process.on('uncaughtException', (err) => {
 
 const app  = require('./app');
 const PORT = config.port;
-const { seedQARemotes } = require('./services/qaSeed');
 
 async function seedTestUser() {
   const enabled = String(process.env.CACHEFLOW_TEST_USER_SEED || '').toLowerCase() === 'true';
@@ -49,7 +48,7 @@ async function seedTestUser() {
   }
 }
 
-seedTestUser().then(() => seedQARemotes());
+seedTestUser();
 
 app.listen(PORT, () => {
   console.log(`[cacheflow] API listening on port ${PORT}`);

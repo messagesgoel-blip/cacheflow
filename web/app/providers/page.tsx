@@ -7,32 +7,45 @@ import { IntegrationProvider } from '@/context/IntegrationContext'
 import ConnectProviderModal from '@/components/modals/ConnectProviderModal'
 import WebDAVModal from '@/components/modals/WebDAVModal'
 import VPSModal from '@/components/modals/VPSModal'
+import { useRouter } from 'next/navigation'
 
 export default function ProvidersPage() {
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const router = useRouter()
+  const [email, setEmail] = useState('Account')
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-    if (t && e) {
-      setToken(t)
-      setEmail(e)
+    const loadSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (!response.ok) {
+          router.push('/login?reason=session_expired')
+          return
+        }
+        const payload = await response.json()
+        if (!payload?.authenticated) {
+          router.push('/login')
+          return
+        }
+        setEmail(payload?.user?.email || 'Account')
+      } finally {
+        setReady(true)
+      }
     }
-  }, [])
+    void loadSession()
+  }, [router])
 
-  if (!token) {
+  const handleLogout = async () => {
+    router.push('/login')
+  }
+
+  if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Please log in to manage your cloud providers</p>
-          <a
-            href="/login"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Log In
-          </a>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
       </div>
     )
   }
@@ -40,11 +53,7 @@ export default function ProvidersPage() {
   return (
     <IntegrationProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Navbar email={email} onLogout={() => {
-          localStorage.removeItem('cf_token')
-          localStorage.removeItem('cf_email')
-          window.location.href = '/login'
-        }} />
+        <Navbar email={email} onLogout={handleLogout} />
         <ProviderHub />
         <ConnectProviderModal />
         <WebDAVModal />

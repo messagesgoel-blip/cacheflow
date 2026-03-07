@@ -27,6 +27,7 @@ api/src/routes/search.js
 api/src/services/embeddings.js
 
 web/next-env.d.ts
+web/e2e/fixtures/vps-test-config.ts
 .context/task_locks/
 .context/cache_state/
 logs/

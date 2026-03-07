@@ -35,6 +35,21 @@ interface ProviderConnection {
   isDefault: boolean;
   status: 'connected' | 'disconnected' | 'error';
   lastSyncAt?: string;
+  host?: string;
+  port?: number;
+  username?: string;
+}
+
+interface BackendVpsConnection {
+  id: string;
+  provider: 'vps';
+  label: string;
+  host: string;
+  port: number;
+  username: string;
+  authMethod: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Types for explicit error surfaces
@@ -126,6 +141,24 @@ function mapRemoteToConnection(remote: BackendRemote): ProviderConnection {
   };
 }
 
+function mapVpsToConnection(vps: BackendVpsConnection): ProviderConnection {
+  return {
+    id: vps.id,
+    provider: 'vps',
+    accountKey: vps.id,
+    remoteId: vps.id,
+    accountName: vps.label,
+    accountEmail: '',
+    accountLabel: vps.label,
+    isDefault: false,
+    status: 'connected',
+    lastSyncAt: vps.updatedAt || vps.createdAt,
+    host: vps.host,
+    port: vps.port,
+    username: vps.username,
+  };
+}
+
 /**
  * GET /api/connections
  *
@@ -194,6 +227,26 @@ export async function GET(request: NextRequest) {
     const payload = await backendResponse.json();
     const remotes = extractRemotes(payload);
     const connections = remotes.map(mapRemoteToConnection);
+
+    try {
+      const vpsResponse = await fetch(`${apiBase}/api/providers/vps`, {
+        headers: {
+          ...(authHeader && { Authorization: authHeader }),
+          ...(cookieHeader && { Cookie: cookieHeader }),
+        },
+        credentials: 'include',
+        cache: 'no-store',
+      });
+
+      if (vpsResponse.ok) {
+        const vpsPayload = await vpsResponse.json();
+        const rawVps = Array.isArray(vpsPayload?.data) ? vpsPayload.data : [];
+        const vpsConnections = rawVps.map(mapVpsToConnection);
+        connections.push(...vpsConnections);
+      }
+    } catch {
+      // VPS listing is best-effort so providers page remains usable.
+    }
 
     // FIX-06: Enforce stable sort
     connections.sort((a, b) => {

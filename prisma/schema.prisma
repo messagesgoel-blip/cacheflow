@@ -54,6 +54,7 @@ model User {
   tokens       Token[]
   oauthTokens   OAuthToken[]
   userRemotes  UserRemote[]
+  vpsConnections VpsConnection[]
   cloudConfigs CloudConfig[]
   auditLogs    AuditLog[]
 
@@ -244,6 +245,26 @@ model UserRemote {
   @@index([userId, provider])
   @@index([userId, provider, accountKey])
   @@map("user_remotes")
+}
+
+model VpsConnection {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  label      String
+  host       String
+  port       Int      @default(22)
+  username   String
+  authMethod String   @default("pem") @map("auth_method")
+  pemKey     Bytes    @map("pem_key")
+  pemIv      Bytes    @map("pem_iv")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, host, username])
+  @@map("vps_connections")
 }
 
 // Audit Logs (TRANSFER-1)

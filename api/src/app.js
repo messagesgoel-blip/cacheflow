@@ -17,6 +17,7 @@ const transferRoutes = require('./routes/transfer');
 const remoteUploadRoutes = require('./routes/remoteUpload');
 const apiRoutes      = require('./routes/api');
 const userRemotesRoutes = require('./routes/userRemotes');
+const providersRoutes = require('./routes/providers');
 const favoritesRoutes = require('./routes/favorites');
 const activityRoutes = require('./routes/activity');
 const requestTracker = require('./middleware/requestTracker');
@@ -165,6 +166,7 @@ app.use('/remote-upload', remoteUploadRoutes);
 // New production-grade API routes
 app.use('/api', apiRoutes);
 app.use('/api/remotes', userRemotesRoutes);
+app.use('/api/providers', providersRoutes);
 app.use('/api/favorites', favoritesRoutes);
 app.use('/api/activity', activityRoutes);
 
