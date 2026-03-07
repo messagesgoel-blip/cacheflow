@@ -1,18 +1,23 @@
 # Agent Prompt Scripts
 
-Use these scripts to print Sprint 1 startup prompts per agent.
+Use these scripts to print the active Sprint 6 startup prompts per agent.
 
 ## Usage
 
 ```bash
 cd /home/sanjay/cacheflow_work
-bash scripts/agent-prompts/sprint1_claude.sh
-bash scripts/agent-prompts/sprint1_opencode.sh
-bash scripts/agent-prompts/sprint1_gemini.sh
-bash scripts/agent-prompts/sprint1_codex.sh
+bash scripts/agent-prompts/sprint6_claude.sh
+bash scripts/agent-prompts/sprint6_opencode.sh
+bash scripts/agent-prompts/sprint6_gemini.sh
+bash scripts/agent-prompts/sprint6_codex.sh
 ```
 
-Each script now uses a compact startup flow:
+Active references:
+- `docs/roadmap.md`
+- `docs/sprints/sprint-6.md`
+- `docs/prompts/sprint-6-startup-all-agents.md`
+
+Each script uses a compact startup flow:
 - `agent-preflight` + task claim first
 - `STATUS.md` and recent git log are mandatory
 - `.context/*` files are loaded lazily when relevant to touched scope

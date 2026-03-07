@@ -67,19 +67,22 @@ def find_running_sprint(status_text: str, state: dict, explicit: int | None) -> 
     if explicit is not None:
         return explicit
 
+    by_sprint: dict[int, list[str]] = {}
+    for rec in state.values():
+        sprint = int(rec.get("sprint", 0) or 0)
+        status = str(rec.get("status", "planned")).lower()
+        by_sprint.setdefault(sprint, []).append(status)
+
     env_sprint = os.environ.get("CACHEFLOW_RUNNING_SPRINT", "").strip()
     if env_sprint.isdigit():
         return int(env_sprint)
 
     m = re.search(r"^- running_sprint:\s*(\d+)\s*$", status_text, flags=re.MULTILINE)
     if m:
-        return int(m.group(1))
-
-    by_sprint: dict[int, list[str]] = {}
-    for rec in state.values():
-        sprint = int(rec.get("sprint", 0) or 0)
-        status = str(rec.get("status", "planned")).lower()
-        by_sprint.setdefault(sprint, []).append(status)
+        status_sprint = int(m.group(1))
+        statuses = by_sprint.get(status_sprint, [])
+        if any(st not in DONE_STATES for st in statuses):
+            return status_sprint
 
     incomplete = [s for s, statuses in by_sprint.items() if any(st not in DONE_STATES for st in statuses)]
     if not incomplete:
