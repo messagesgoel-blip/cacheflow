@@ -152,12 +152,15 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   useEffect(() => {
     let tokensChanged = false
     const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav']
+    const maxAccountsPerProvider = 3
     const sortConnectionsForSync = (connections: ProviderConnection[]) =>
       [...connections].sort((a, b) => {
         const timeA = a.lastSyncAt ? new Date(a.lastSyncAt).getTime() : 0
         const timeB = b.lastSyncAt ? new Date(b.lastSyncAt).getTime() : 0
         return timeB - timeA || a.id.localeCompare(b.id)
       })
+    const resolveAccountKey = (conn: ProviderConnection) =>
+      conn.accountKey || conn.accountEmail || conn.accountName || conn.id
 
     if (tokenManager.getTokens('local').length > 0) {
       tokenManager.removeToken('local')
@@ -166,10 +169,12 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
     const loadConnections = async () => {
       let serverConnections: ProviderConnection[] = []
+      let hasFreshServerState = false
       try {
         const result = await apiClient.getConnections()
         if (result.success && result.data) {
           serverConnections = result.data
+          hasFreshServerState = true
         }
       } catch (err) {
         console.warn('[UnifiedFileBrowser] Failed to fetch server connections, using localStorage only:', err)
@@ -177,36 +182,42 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       }
 
       const connectionsForSync = sortConnectionsForSync(serverConnections)
-      const desiredVpsTokens = connectionsForSync
-        .filter((conn) => conn.provider === 'vps')
-        .slice(0, 3)
-        .map((conn) => ({
-          accountKey: conn.accountKey || conn.accountEmail || conn.accountName || conn.id,
-          remoteId: conn.remoteId || conn.id,
-        }))
-      const desiredVpsAccountKeys = new Set(desiredVpsTokens.map((conn) => conn.accountKey))
-      const cachedVpsTokens = tokenManager.getTokens('vps').filter(t => !t.disabled)
-      const shouldResetVpsTokens =
-        desiredVpsTokens.length !== cachedVpsTokens.length ||
-        desiredVpsTokens.some((desired, index) => {
-          const cached = cachedVpsTokens[index]
-          return !cached || cached.accountKey !== desired.accountKey || (cached as any).remoteId !== desired.remoteId
-        })
+      const desiredAccountsByProvider = new Map<ProviderId, Set<string>>()
+      if (hasFreshServerState) {
+        for (const pid of providerIds) {
+          const desiredTokens = connectionsForSync
+            .filter((conn) => conn.provider === pid)
+            .slice(0, maxAccountsPerProvider)
+            .map((conn) => ({
+              accountKey: resolveAccountKey(conn),
+              remoteId: conn.remoteId || conn.id,
+            }))
+          desiredAccountsByProvider.set(pid, new Set(desiredTokens.map((token) => token.accountKey)))
 
-      if (shouldResetVpsTokens) {
-        tokenManager.removeToken('vps')
-        tokensChanged = true
+          const cachedTokens = tokenManager.getTokens(pid).filter((t) => !t.disabled)
+          const shouldResetProviderTokens =
+            desiredTokens.length !== cachedTokens.length ||
+            desiredTokens.some((desired, index) => {
+              const cached = cachedTokens[index]
+              return !cached || cached.accountKey !== desired.accountKey || (cached as any).remoteId !== desired.remoteId
+            })
+
+          if (shouldResetProviderTokens && cachedTokens.length > 0) {
+            tokenManager.removeToken(pid)
+            tokensChanged = true
+          }
+        }
       }
 
       // Hydrate token manager from server-state remotes so seeded QA accounts appear after login.
       for (const conn of connectionsForSync) {
         const pid = conn.provider as ProviderId
         if (!providerIds.includes(pid)) continue
-        if (pid === 'vps' && !desiredVpsAccountKeys.has(conn.accountKey || conn.accountEmail || conn.accountName || conn.id)) {
+        const accountKey = resolveAccountKey(conn)
+        if (hasFreshServerState && !desiredAccountsByProvider.get(pid)?.has(accountKey)) {
           continue
         }
 
-        const accountKey = conn.accountKey || conn.accountEmail || conn.accountName || conn.id
         const remoteId = conn.remoteId || conn.id
         const existing = tokenManager.getTokens(pid).find(t => t.accountKey === accountKey)
 
