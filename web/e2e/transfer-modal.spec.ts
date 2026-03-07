@@ -1,115 +1,100 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+import {
+  gotoFilesAndWait,
+  installMockRuntime,
+  primeQaSession,
+  type MockConnection,
+  type MockProxyRequest,
+} from './helpers/mockRuntime'
 
-const SHOTS_DIR = '/srv/storage/screenshots/cacheflow'
+const QA_EMAIL = process.env.PLAYWRIGHT_QA_EMAIL || 'admin@cacheflow.goels.in'
+const QA_PASSWORD = process.env.PLAYWRIGHT_QA_PASSWORD || 'admin123'
 
-function runId(workerIndex: number): string {
-  return `${new Date().toISOString().replace(/[:.]/g, '-')}-w${workerIndex}`
-}
+const connections: MockConnection[] = [
+  {
+    id: 'remote-g1',
+    remoteId: 'remote-g1',
+    provider: 'google',
+    accountKey: 'g1',
+    accountEmail: 'g1@example.com',
+    accountLabel: 'Google One',
+  },
+  {
+    id: 'remote-d1',
+    remoteId: 'remote-d1',
+    provider: 'dropbox',
+    accountKey: 'd1',
+    accountEmail: 'd1@example.com',
+    accountLabel: 'Dropbox One',
+  },
+]
 
-function shotPath(id: string, name: string): string {
-  const safe = name.replace(/[^a-z0-9\-_.]+/gi, '_')
-  return `${SHOTS_DIR}/${id}_${safe}.png`
-}
-
-test('copy between providers via transfer modal', async ({ page }, testInfo) => {
-  const id = runId(testInfo.workerIndex)
-  const cors = {
-    'access-control-allow-origin': '*',
-    'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-    'access-control-allow-headers': 'authorization,content-type,dropbox-api-arg',
+function mockProxy({ remoteId, url, method }: MockProxyRequest) {
+  if (remoteId === 'remote-g1' && url.includes('/drive/v3/files') && method === 'GET') {
+    return {
+      json: {
+        files: [
+          {
+            id: 'g-file-1',
+            name: 'Budget 2026.xlsx',
+            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            size: '5',
+            modifiedTime: new Date().toISOString(),
+          },
+        ],
+      },
+    }
   }
-  await page.addInitScript(() => {
-    localStorage.setItem('cf_token', 'test-token')
-    localStorage.setItem('cf_email', 'test@example.com')
 
-    localStorage.setItem('cacheflow_tokens_google', JSON.stringify([{
-      provider: 'google', accessToken: 'google-access', refreshToken: 'google-refresh',
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000, accountEmail: 'g1@example.com',
-      displayName: 'Google One', accountId: 'g1', accountKey: 'g1', disabled: false, remoteId: 'remote-g1',
-    }]))
-    localStorage.setItem('cacheflow_tokens_dropbox', JSON.stringify([{
-      provider: 'dropbox', accessToken: 'dropbox-access', refreshToken: 'dropbox-refresh',
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000, accountEmail: 'd1@example.com',
-      displayName: 'Dropbox One', accountId: 'd1', accountKey: 'd1', disabled: false, remoteId: 'remote-d1',
-    }]))
-  })
+  if (remoteId === 'remote-d1' && url.includes('/files/list_folder')) {
+    return {
+      json: {
+        entries: [{ '.tag': 'folder', name: 'Dest', path_lower: '/dest', id: 'id:dest' }],
+        has_more: false,
+        cursor: 'mock-cursor',
+      },
+    }
+  }
 
-  await page.route('**/*', async (route) => {
-    const url = route.request().url()
-    if (url.includes('/api/connections')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          data: [
-            {
-              id: 'remote-g1',
-              provider: 'google',
-              accountKey: 'g1',
-              accountEmail: 'g1@example.com',
-              accountLabel: 'Google One',
-              remoteId: 'remote-g1',
-              status: 'connected',
-            },
-            {
-              id: 'remote-d1',
-              provider: 'dropbox',
-              accountKey: 'd1',
-              accountEmail: 'd1@example.com',
-              accountLabel: 'Dropbox One',
-              remoteId: 'remote-d1',
-              status: 'connected',
-            },
-          ],
-        }),
-      })
-      return
+  if (remoteId === 'remote-d1' && (url.includes('/files/upload') || url.includes('content.dropboxapi.com'))) {
+    return {
+      json: {
+        id: 'id:uploaded',
+        name: 'Budget 2026.xlsx',
+        path_display: '/Dest/Budget 2026.xlsx',
+      },
     }
-    if (url.includes('localhost:3010') || url.includes('127.0.0.1:3010')) {
-      await route.continue()
-      return
-    }
-    if (url.includes('/proxy')) {
-      const body = route.request().postDataJSON?.() || {}
-      const proxyUrl = body.url || ''
-      if (proxyUrl.includes('google') && (proxyUrl.includes('files') || proxyUrl.includes('list'))) {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ files: [{ id: 'g-file-1', name: 'Budget 2026.xlsx', mimeType: 'text/plain', size: '5', modifiedTime: new Date().toISOString() }] }) })
-        return
-      }
-      if (proxyUrl.includes('dropbox') && proxyUrl.includes('list_folder')) {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ entries: [{ '.tag': 'folder', name: 'Dest', path_lower: '/dest', id: 'id:dest' }] }) })
-        return
-      }
-      if (proxyUrl.includes('upload')) {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'id:uploaded', name: 'Budget 2026.xlsx' }) })
-        return
-      }
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ storageQuota: { limit: "100", usage: "0" }, user: { displayName: "Mock" } }) })
-      return
-    }
-    if (url.startsWith('https://')) { await route.fulfill({ status: 200, body: '{}' }); return }
-    await route.continue()
-  })
+  }
 
-  await page.goto('/files')
-  await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
-  
+  if (url.includes('alt=media')) {
+    return {
+      contentType: 'application/octet-stream',
+      body: 'cacheflow transfer test content',
+    }
+  }
+
+  return { json: {} }
+}
+
+test('copy between providers via transfer modal', async ({ page, request }) => {
+  await primeQaSession(page, request, QA_EMAIL, QA_PASSWORD)
+  await installMockRuntime(page, connections, mockProxy)
+
+  await gotoFilesAndWait(page)
   await page.getByTestId('cf-sidebar-account-g1').click()
+
   const budgetRow = page.getByTestId('cf-file-row').filter({ hasText: 'Budget 2026.xlsx' }).first()
   await expect(budgetRow).toBeVisible({ timeout: 15_000 })
 
   await budgetRow.locator('input[type="checkbox"]').click({ force: true })
-  
   await page.getByTestId('cf-selection-toolbar').getByRole('button', { name: 'Copy' }).click({ force: true })
   await expect(page.getByText('Copy file')).toBeVisible()
-  
+
   await page.selectOption('select[aria-label="Target provider"]', 'dropbox')
-  await page.waitForTimeout(2000)
   await page.getByRole('button', { name: /dest/i }).click()
   await page.getByRole('button', { name: /copy here/i }).click()
 
   const queuePanel = page.getByTestId('cf-transfer-queue-panel')
-  await expect(queuePanel).toBeVisible({ timeout: 10000 })
-  await expect(queuePanel).toContainText(/copying|completed/i, { timeout: 30000 })
+  await expect(queuePanel).toBeVisible({ timeout: 10_000 })
+  await expect(queuePanel).toContainText(/copying|completed/i, { timeout: 30_000 })
 })

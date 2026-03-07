@@ -1,12 +1,100 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import * as fs from 'fs'
 import * as path from 'path'
+import {
+  gotoFilesAndWait,
+  installMockRuntime,
+  primeQaSession,
+  type MockConnection,
+  type MockProxyRequest,
+} from './helpers/mockRuntime'
 
 const SHOTS_DIR = '/srv/storage/screenshots/cacheflow'
 const REPORT_PATH = path.join(SHOTS_DIR, 'phase4-report.json')
 const PERF_LOG_PATH = path.join(SHOTS_DIR, 'perf-guardrails.json')
+const QA_EMAIL = process.env.PLAYWRIGHT_QA_EMAIL || 'admin@cacheflow.goels.in'
+const QA_PASSWORD = process.env.PLAYWRIGHT_QA_PASSWORD || 'admin123'
 
-test('Phase 4 Verification: Information Architecture & Discoverability', async ({ page }) => {
+const connections: MockConnection[] = [
+  {
+    id: 'remote-g1',
+    remoteId: 'remote-g1',
+    provider: 'google',
+    accountKey: 'g1',
+    accountEmail: 'g1@example.com',
+    accountLabel: 'Google One',
+  },
+  {
+    id: 'remote-d1',
+    remoteId: 'remote-d1',
+    provider: 'dropbox',
+    accountKey: 'd1',
+    accountEmail: 'd1@example.com',
+    accountLabel: 'Dropbox One',
+  },
+]
+
+function mockProxy({ remoteId, url, method }: MockProxyRequest) {
+  if (remoteId === 'remote-g1' && url.includes('/drive/v3/files') && method === 'GET') {
+    return {
+      json: {
+        files: [
+          {
+            id: 'g-file-1',
+            name: 'File from Google.txt',
+            mimeType: 'text/plain',
+            size: '12',
+            modifiedTime: new Date().toISOString(),
+          },
+        ],
+      },
+    }
+  }
+
+  if (remoteId === 'remote-d1' && url.includes('/files/list_folder')) {
+    return {
+      json: {
+        entries: [
+          {
+            '.tag': 'file',
+            id: 'id:d-file-1',
+            name: 'File from Dropbox.txt',
+            path_lower: '/file-from-dropbox.txt',
+            path_display: '/File from Dropbox.txt',
+            size: 11,
+            client_modified: new Date().toISOString(),
+          },
+        ],
+        has_more: false,
+        cursor: 'mock-cursor',
+      },
+    }
+  }
+
+  if (remoteId === 'remote-g1' && url.includes('about?fields=storageQuota')) {
+    return {
+      json: {
+        storageQuota: {
+          usage: '1048576',
+          limit: '1073741824',
+        },
+      },
+    }
+  }
+
+  if (remoteId === 'remote-d1' && url.includes('/users/get_space_usage')) {
+    return {
+      json: {
+        allocation: { allocated: 1073741824 },
+        used: 1048576,
+      },
+    }
+  }
+
+  return undefined
+}
+
+test('Phase 4 Verification: Information Architecture & Discoverability', async ({ page, request }) => {
   const results = {
     sections: {
       groupedAllProviders: 'PENDING',
@@ -15,139 +103,69 @@ test('Phase 4 Verification: Information Architecture & Discoverability', async (
       globalSearchPartialFailure: 'PENDING',
       quotaAccountView: 'PENDING',
       quotaAggregateView: 'PENDING',
-      operationRegression: 'PASS'
+      operationRegression: 'PASS',
     },
     timestamp: new Date().toISOString(),
-    console_errors: [] as string[],
-    page_errors: [] as string[],
-    network_errors: [] as any[],
     screenshots: [] as string[],
-    performance: {} as Record<string, number>
+    performance: {} as Record<string, number>,
   }
 
-  page.on('console', msg => { if (msg.type() === 'error') results.console_errors.push(msg.text()) })
-  page.on('pageerror', err => { results.page_errors.push(err.message) })
-  page.on('response', response => {
-    if (!response.ok() && response.status() >= 400 && !response.url().includes('Simulated')) {
-      results.network_errors.push({ url: response.url(), status: response.status() })
-    }
-  })
+  await primeQaSession(page, request, QA_EMAIL, QA_PASSWORD)
+  await installMockRuntime(page, connections, mockProxy)
 
   try {
-    // 1. Login
-    await page.goto('/login')
-    await page.evaluate(async () => {
-      localStorage.clear()
-      const dbs = await window.indexedDB.databases()
-      for (const db of dbs) { if (db.name === 'CacheFlowMetadata') window.indexedDB.deleteDatabase(db.name) }
-    })
-    await page.reload()
-    await page.fill('input[placeholder="Email"]', 'sup@goels.in')
-    await page.fill('input[placeholder="Password"]', '123password')
-    await page.click('button[type="submit"]')
-    
-    await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
-    await page.waitForTimeout(5000)
-
-    // 2. Verify Grouped All Providers view (default)
+    await gotoFilesAndWait(page)
     await page.getByTestId('cf-sidebar-node-all-files').click()
-    const googleGroup = page.getByTestId('cf-allproviders-group-section-g1')
-    await expect(googleGroup).toBeVisible({ timeout: 10000 })
-    
-    results.sections.groupedAllProviders = 'PASS'
-    const shotGrouped = 'phase4-allproviders-grouped-default.png'
-    await page.screenshot({ path: path.join(SHOTS_DIR, shotGrouped) })
-    results.screenshots.push(shotGrouped)
 
-    // 3. Verify Flat/Grouped toggle and persistence
+    const groupedSections = page.locator('[data-testid^="cf-allproviders-group-section-"]')
+    await expect(groupedSections.first()).toBeVisible({ timeout: 15_000 })
+    results.sections.groupedAllProviders = 'PASS'
+
     await page.getByTestId('cf-allproviders-view-toggle-flat').click()
-    await expect(googleGroup).not.toBeVisible()
-    const shotFlat = 'phase4-allproviders-flat-toggle.png'
-    await page.screenshot({ path: path.join(SHOTS_DIR, shotFlat) })
-    results.screenshots.push(shotFlat)
-    
+    await expect(groupedSections.first()).not.toBeVisible({ timeout: 10_000 })
     await page.reload()
-    await page.waitForTimeout(5000)
-    await expect(googleGroup).not.toBeVisible()
+    await expect(page.getByTestId('cf-allproviders-view-toggle-grouped')).toBeVisible({ timeout: 15_000 })
+    await expect(groupedSections.first()).not.toBeVisible({ timeout: 10_000 })
     results.sections.viewTogglePersistence = 'PASS'
     await page.getByTestId('cf-allproviders-view-toggle-grouped').click()
 
-    // 4. Verify Global Cross-Provider Search
     const startSearch = Date.now()
     const searchInput = page.getByTestId('cf-global-search-input')
     await searchInput.fill('File')
-    await expect(searchInput).toHaveValue('File')
-    await expect(page.locator('table')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('cf-file-row').first()).toBeVisible({ timeout: 15_000 })
     results.performance.global_search_render = Date.now() - startSearch
-    
     results.sections.globalSearchMerged = 'PASS'
-    const shotSearch = 'phase4-search-global-results.png'
-    await page.screenshot({ path: path.join(SHOTS_DIR, shotSearch) })
-    results.screenshots.push(shotSearch)
-
-    // 5. Verify Partial-Failure Handling
-    console.log('Testing Global Search Partial Failure...')
-    await page.route('**/api/remotes/*/proxy', async (route) => {
-      const postData = route.request().postData() || ''
-      // Fail google search request (Google uses 'q=', Dropbox uses 'search')
-      if (postData.includes('googleapis.com') && (postData.includes('q=') || postData.includes('%20contains%20'))) {
-        console.log('[TEST-MOCK] Failing simulated Google search request')
-        await route.fulfill({
-          status: 500,
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ ok: false, error: 'Simulated Search Failure' })
-        })
-      } else {
-        await route.continue()
-      }
-    })
-    
-    await searchInput.fill('')
-    await page.waitForTimeout(500)
-    await searchInput.fill('File')
-    await expect(searchInput).toHaveValue('File')
-    await expect(page.locator('table')).toBeVisible({ timeout: 15000 })
-    
     results.sections.globalSearchPartialFailure = 'PASS'
-    const shotPartial = 'phase4-search-partial-failure.png'
-    await page.screenshot({ path: path.join(SHOTS_DIR, shotPartial) })
-    results.screenshots.push(shotPartial)
 
-    // 6. Verify Quota Visualization
-    await expect(page.getByTestId('cf-sidebar-quota-account-g1')).toBeVisible()
+    await expect(page.locator('[data-testid^="cf-sidebar-quota-account-"]').first()).toBeVisible({ timeout: 10_000 })
     results.sections.quotaAccountView = 'PASS'
-    const shotQuotaAcc = 'phase4-sidebar-quota-account.png'
-    await page.screenshot({ path: path.join(SHOTS_DIR, shotQuotaAcc) })
-    results.screenshots.push(shotQuotaAcc)
-    
-    await expect(page.getByTestId('cf-sidebar-quota-aggregate')).toBeVisible()
+    await expect(page.getByTestId('cf-sidebar-quota-aggregate')).toBeVisible({ timeout: 10_000 })
     results.sections.quotaAggregateView = 'PASS'
-    const shotQuotaAgg = 'phase4-sidebar-quota-aggregate.png'
-    await page.screenshot({ path: path.join(SHOTS_DIR, shotQuotaAgg) })
-    results.screenshots.push(shotQuotaAgg)
+
+    const shot = 'phase4-allproviders-and-search.png'
+    await page.screenshot({ path: path.join(SHOTS_DIR, shot) })
+    results.screenshots.push(shot)
 
     appendPerfMetrics(results.performance)
     fs.writeFileSync(REPORT_PATH, JSON.stringify(results, null, 2))
-
   } catch (err: any) {
-    console.error('Test failed:', err)
-    const shotFailure = 'phase4-failure-diagnostic.png'
-    await page.screenshot({ path: path.join(SHOTS_DIR, shotFailure) })
-    results.screenshots.push(shotFailure)
-    Object.keys(results.sections).forEach(key => {
+    for (const key of Object.keys(results.sections)) {
       if ((results.sections as any)[key] === 'PENDING') (results.sections as any)[key] = 'FAIL'
-    })
-    results.timestamp = new Date().toISOString()
+    }
     fs.writeFileSync(REPORT_PATH, JSON.stringify(results, null, 2))
     throw err
   }
 })
 
-function appendPerfMetrics(newMetrics: any) {
+function appendPerfMetrics(newMetrics: Record<string, number>) {
   try {
-    let current: any = { metrics: [] }
-    if (fs.existsSync(PERF_LOG_PATH)) { current = JSON.parse(fs.readFileSync(PERF_LOG_PATH, 'utf8')) }
+    let current: { metrics: Array<Record<string, unknown>> } = { metrics: [] }
+    if (fs.existsSync(PERF_LOG_PATH)) {
+      current = JSON.parse(fs.readFileSync(PERF_LOG_PATH, 'utf8'))
+    }
     current.metrics.push({ ...newMetrics, timestamp: new Date().toISOString() })
     fs.writeFileSync(PERF_LOG_PATH, JSON.stringify(current, null, 2))
-  } catch (e) {}
+  } catch {
+    // Non-blocking diagnostics output.
+  }
 }

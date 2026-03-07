@@ -1,9 +1,9 @@
 # Sprint 6 Plan
 
-- Status: Planned
+- Status: Ready
 - Version: 1
 - Stage: V1-2 Power User Essentials and V1-3 Power User Completion
-- Entry gate: V1-0 release blocker must be green before feature execution starts
+- Entry gate: Cleared on 2026-03-07; deterministic gate is green and live smoke is isolated
 
 | ID | Description | Files | Agent | Gates |
 | --- | --- | --- | --- | --- |

@@ -649,7 +649,18 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
   const handleFileMove = (file: FileMetadata) => setTransferModal({ open: true, mode: 'move', file })
   const handleFileCopy = (file: FileMetadata) => setTransferModal({ open: true, mode: 'copy', file })
-  const handleFileRename = (file: FileMetadata) => setRenameModal({ open: true, file })
+  const handleFileRename = (file: FileMetadata) => {
+    const correlationId = actionLogger.generateCorrelationId()
+    actionLogger.log({
+      event: 'modal_open',
+      actionName: 'rename',
+      providerId: file.provider,
+      fileId: file.id,
+      currentPath,
+      correlationId,
+    })
+    setRenameModal({ open: true, file, correlationId })
+  }
   const resolveUploadTarget = useCallback((): { providerId: ProviderId; accountKey: string } | null => {
     const isProviderScoped = !['all', 'recent', 'starred', 'activity'].includes(selectedProvider)
     if (isProviderScoped) {
@@ -823,11 +834,34 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
           data-testid="cf-action-upload-input"
         />
         {transferModal.open && transferModal.file && <TransferModal isOpen={transferModal.open} mode={transferModal.mode} file={transferModal.file} connectedProviderIds={Array.from(new Set(connectedProviders.map(cp => cp.providerId)))} onClose={() => setTransferModal({ open: false, mode: 'copy', file: null })} onSubmit={async (args) => { addTransfer({ type: transferModal.mode, file: transferModal.file!, ...args }); setTransferModal({ open: false, mode: 'copy', file: null }); setSelectedFiles(new Set()) }} />}
-        {renameModal.open && renameModal.file && <RenameModal isOpen={renameModal.open} title="Rename" initialValue={renameModal.file?.name || ''} onClose={() => setRenameModal({ open: false, file: null })} onSubmit={async (newName) => { 
-          const f = renameModal.file!; 
-          const p = getProvider(f.provider)!; 
-          p.remoteId = (f as any).remoteId; 
-          const oldName = f.name;
+        {renameModal.open && renameModal.file && <RenameModal isOpen={renameModal.open} title="Rename" initialValue={renameModal.file?.name || ''} onClose={() => {
+          if (renameModal.file && renameModal.correlationId) {
+            actionLogger.log({
+              event: 'modal_close',
+              actionName: 'rename',
+              providerId: renameModal.file.provider,
+              fileId: renameModal.file.id,
+              currentPath,
+              correlationId: renameModal.correlationId,
+            })
+          }
+          setRenameModal({ open: false, file: null })
+        }} onSubmit={async (newName) => {
+          const f = renameModal.file!
+          const p = getProvider(f.provider)!
+          const correlationId = renameModal.correlationId || actionLogger.generateCorrelationId()
+          p.remoteId = (f as any).remoteId
+          p.setRequestCorrelationId(correlationId)
+          const oldName = f.name
+
+          actionLogger.log({
+            event: 'action_start',
+            actionName: 'rename',
+            providerId: f.provider,
+            fileId: f.id,
+            currentPath,
+            correlationId,
+          })
           
           const toastId = showToast({ title: "Renaming", message: oldName || "file" });
           const safety = setTimeout(() => dismissToast(toastId), 5000);
@@ -851,23 +885,42 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             });
           }, 10000);
 
-          try { 
+          try {
             // FIX-04: Update detail panel immediately
-            const renamedFile = applyRenamedMetadata(f, newName);
+            const renamedFile = applyRenamedMetadata(f, newName)
             setPreviewPanelFile(prev => prev?.file?.id === f.id ? { ...prev, file: renamedFile } : prev);
 
-            await p.renameFile(f.id, newName); 
-            await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey); 
+            await p.renameFile(f.id, newName)
+            await metadataCache.invalidateCache(f.provider as any, (f as any).accountKey)
             
             clearTimeout(safety);
             dismissToast(toastId);
+
+            actionLogger.log({
+              event: 'action_success',
+              actionName: 'rename',
+              providerId: f.provider,
+              fileId: f.id,
+              currentPath,
+              correlationId,
+            })
             
             // Trigger server refetch
             setRefreshKey(k => k + 1);
-          } catch (err: any) { 
+          } catch (err: any) {
             clearTimeout(safety);
             dismissToast(toastId);
             showErrorToast("Rename failed: " + err.message);
+
+            actionLogger.log({
+              event: 'action_fail',
+              actionName: 'rename',
+              providerId: f.provider,
+              fileId: f.id,
+              currentPath,
+              correlationId,
+              error: err?.message || 'Rename failed',
+            })
             
             // Restore if failed
             setRecentRenameBlocklist(prev => {
@@ -876,9 +929,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               return next;
             });
             setRefreshKey(k => k + 1); // Restore from server
-          } finally { 
-            setRenameModal({ open: false, file: null }); 
-          } 
+          } finally {
+            p.setRequestCorrelationId(undefined)
+            setRenameModal({ open: false, file: null })
+          }
         }} />}
         {showShortcutHelp && <ShortcutHelp onClose={() => setShowShortcutHelp(false)} />}
 
@@ -1069,6 +1123,7 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, onSelect, 
           data-testid="cf-row-checkbox"
           data-file-id={file.id}
           checked={selected}
+          onClick={(e) => e.stopPropagation()}
           onChange={(e) => { e.stopPropagation(); onSelect() }}
           className="rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity"
         />

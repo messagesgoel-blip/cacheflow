@@ -38,10 +38,21 @@ const FORBIDDEN_FIELDS = [
   'signing_key',
 ];
 
+const SAFE_OBSERVABILITY_FIELDS = [
+  'requestId',
+  'request_id',
+  'correlationId',
+  'correlation_id',
+];
+
 /**
  * Check if a value looks like a secret
  */
 function looksLikeSecret(key: string, value: any): boolean {
+  if (SAFE_OBSERVABILITY_FIELDS.includes(key)) {
+    return false;
+  }
+
   // Check key name against patterns
   if (SECRET_PATTERNS.some(pattern => pattern.test(key))) {
     return true;

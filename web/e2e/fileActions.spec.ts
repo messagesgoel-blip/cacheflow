@@ -106,7 +106,7 @@ test.describe('File Action Entry Points', () => {
     // Checkbox selection
     const firstRow = rows.first()
     const checkbox = firstRow.getByTestId('cf-row-checkbox')
-    await checkbox.click({ force: true })
+    await checkbox.setChecked(true, { force: true })
 
     // Wait a moment for state to update
     await page.waitForTimeout(500)
@@ -174,19 +174,15 @@ test.describe('File Action Entry Points', () => {
   })
 
   test('Task 2.3: Single-click select and Right Panel', async ({ page }) => {
-    // Current behavior: single click opens/navigates.
-    // Task 2.3 goal: single click selects + shows panel.
     const firstRow = page.getByTestId('cf-file-row').first()
     await expect(firstRow).toBeVisible()
     
     // Click the row (not the checkbox or overflow)
     await firstRow.click()
     
-    // For ACTIONS-1 gate: expect right panel to open
     const previewPanel = page.locator('[data-testid="cf-preview-panel"]')
-    // This might fail now if single-click still navigates folders or opens files immediately
-    // await expect(previewPanel).toBeVisible();
-    await expect(previewPanel).toHaveCount(0)
+    await expect(previewPanel).toBeVisible()
+    await expect(previewPanel).toContainText('GOOGLE A.txt')
   })
 
   test('Task 2.3: Double-click to open', async ({ page }) => {

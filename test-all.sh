@@ -8,7 +8,12 @@ run_suite() {
   local dir="$2"
   local cmd="$3"
   echo "\n▶ ${name} tests"
-  (cd "$dir" && NODE_ENV=test $cmd)
+  (
+    cd "$dir"
+    NODE_ENV=test \
+    TOKEN_ENCRYPTION_KEY="${TOKEN_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}" \
+    $cmd
+  )
 }
 
 run_suite "web"    "$ROOT/web"    "npm test -- --runInBand"

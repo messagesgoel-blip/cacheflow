@@ -22,6 +22,10 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  experimental: {
+    // Avoid pulling transient `.next/dev/types` into standalone `tsc --noEmit`.
+    isolatedDevBuild: false,
+  },
   typescript: {
     // Existing codebase contains legacy TS issues; do not block deploy builds.
     ignoreBuildErrors: true,

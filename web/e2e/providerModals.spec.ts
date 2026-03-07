@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+import { primeQaSession } from './helpers/mockRuntime'
 
 const PROVIDERS = [
   { id: 'google', name: 'Google Drive' },
@@ -9,47 +10,34 @@ const PROVIDERS = [
   { id: 'filen', name: 'Filen' },
   { id: 'yandex', name: 'Yandex Disk' },
   { id: 'webdav', name: 'WebDAV' },
-  { id: 'vps', name: 'VPS / SFTP' }
+  { id: 'vps', name: 'VPS / SFTP' },
 ]
 
+const QA_EMAIL = process.env.PLAYWRIGHT_QA_EMAIL || 'admin@cacheflow.goels.in'
+const QA_PASSWORD = process.env.PLAYWRIGHT_QA_PASSWORD || 'admin123'
+
 test.describe('Provider Connection Modals', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-    const email = `test-${Date.now()}@example.com`
-    const password = 'TestPassword123!'
-
-    // Simple register
-    await page.click('text=Need an account? Register')
-    await page.fill('input[placeholder="Email"]', email)
-    await page.fill('input[placeholder="Password"]', password)
-    await page.click('button:has-text("Register")')
-
-    // Wait for redirect or manual goto
-    await page.waitForURL(/.*files/, { timeout: 15000 }).catch(() => {})
+  test.beforeEach(async ({ page, request }) => {
+    await primeQaSession(page, request, QA_EMAIL, QA_PASSWORD)
     await page.goto('/providers')
-    
-    // Verify we are on the right page
-    await expect(page).toHaveURL(/.*providers/)
+    await expect(page).toHaveURL(/\/providers/, { timeout: 30_000 })
   })
 
   for (const provider of PROVIDERS) {
     test(`Verify ${provider.name} connect modal`, async ({ page }) => {
-      // Find the card for the provider
-      const heading = page.getByRole('heading', { name: provider.name, exact: true, level: 3 })
-      const card = heading.locator('xpath=ancestor::div[contains(@class,"rounded-xl")][1]')
-      
-      await card.getByRole('button', { name: /connect|manage/i }).click()
+      const connectCard = page.getByTestId(`cf-provider-connect-card-${provider.id}`)
+      await expect(connectCard).toBeVisible({ timeout: 20_000 })
 
-      // Check modal
+      await connectCard.getByRole('button', { name: /connect/i }).click({ force: true })
+
       const escapedName = provider.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const modalHeading = page.getByRole('heading', { name: new RegExp(`Connect\\s+${escapedName}`, 'i') })
-      await expect(modalHeading).toBeVisible()
-      const modal = page.locator('div.fixed.inset-0').filter({ has: modalHeading })
+      const modalHeading = page.getByRole('heading', { name: new RegExp(`Connect\\s+${escapedName}`, 'i') }).first()
+      await expect(modalHeading).toBeVisible({ timeout: 10_000 })
 
-      // Close
-      const closeBtn = modal.locator('button:has-text("Cancel"), button:has-text("Close"), .absolute.top-4.right-4 button').first()
-      await closeBtn.click()
-      await expect(modal).not.toBeVisible()
+      const modal = page.locator('div.fixed.inset-0').filter({ has: modalHeading }).first()
+      const closeBtn = modal.getByRole('button', { name: /cancel|close/i }).first()
+      await closeBtn.click({ force: true })
+      await expect(modalHeading).not.toBeVisible({ timeout: 10_000 })
     })
   }
 })

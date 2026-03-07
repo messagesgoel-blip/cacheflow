@@ -1,6 +1,10 @@
 import { defineConfig } from '@playwright/test'
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3010'
+export const LIVE_ONLY_TESTS = [
+  '**/real-*.spec.ts',
+  '**/tests/providers/vps.spec.ts',
+]
 const useDevWebServer = ['1', 'true', 'yes', 'on'].includes(
   (process.env.PLAYWRIGHT_USE_DEV_SERVER || '').toLowerCase(),
 )
@@ -20,6 +24,8 @@ const devServerUrl = `http://${devHost}:${devPort}`
 
 export default defineConfig({
   testDir: './e2e',
+  // Keep the default gate deterministic; live smoke runs via playwright.live.config.ts.
+  testIgnore: LIVE_ONLY_TESTS,
   timeout: 90_000,
   
   // Global setup/teardown for API preflight checks

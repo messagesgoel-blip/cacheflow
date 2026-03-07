@@ -171,7 +171,7 @@ export class LocalProvider extends StorageProvider {
 
   async renameFile(id: string, newName: string): Promise<FileMetadata> {
     const token = localStorage.getItem('cf_token') || ''
-    const data = await apiRenameFile(id, newName, token)
+    const data = await apiRenameFile(id, newName, token, this.getRequestCorrelationId())
     const f = data.data.file
     return {
       id: f.id,
@@ -189,7 +189,7 @@ export class LocalProvider extends StorageProvider {
 
   async moveFile(id: string, pid: string): Promise<FileMetadata> {
     const token = localStorage.getItem('cf_token') || ''
-    const data = await apiMoveFile(id, pid, token)
+    const data = await apiMoveFile(id, pid, token, this.getRequestCorrelationId())
     const f = data.data.file
     return {
       id: f.id,

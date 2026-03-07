@@ -171,6 +171,8 @@ export async function primeQaSession(
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
+        authenticated: true,
+        accessToken: token,
         user: { id: 'qa-user', email },
         expires: new Date(Date.now() + 3600000).toISOString(),
       }),
@@ -183,7 +185,7 @@ export async function primeQaSession(
 export async function installMockRuntime(
   page: Page,
   connections: MockConnection[],
-  handleProxy: (request: MockProxyRequest) => MockProxyResponse | Promise<MockProxyResponse>,
+  handleProxy: (request: MockProxyRequest) => MockProxyResponse | void | Promise<MockProxyResponse | void>,
   options: MockRuntimeOptions = {},
 ): Promise<void> {
   const favorites = [...(options.favorites || [])]
@@ -196,8 +198,8 @@ export async function installMockRuntime(
       const remoteId = connection.remoteId || connection.id
       const token = {
         provider: connection.provider,
-        accessToken: `${connection.provider}-${connection.accountKey}-token`,
-        refreshToken: `${connection.provider}-${connection.accountKey}-refresh`,
+        accessToken: '',
+        refreshToken: '',
         expiresAt: Date.now() + 24 * 60 * 60 * 1000,
         accountEmail: connection.accountEmail,
         displayName: connection.accountLabel,

@@ -18,6 +18,14 @@ export const actionLogger = {
     // In dev/QA, we just log to console. In prod, this would go to Datadog/Sentry.
     const timestamp = new Date().toISOString()
     const logEntry = { timestamp, ...payload }
+
+    if (typeof window !== 'undefined') {
+      const runtimeWindow = window as Window & {
+        __cfActionLogs?: Array<Record<string, unknown>>
+      }
+      runtimeWindow.__cfActionLogs ||= []
+      runtimeWindow.__cfActionLogs.push(logEntry)
+    }
     
     if (payload.event === 'action_fail') {
       console.error('[ActionLogger]', JSON.stringify(logEntry))

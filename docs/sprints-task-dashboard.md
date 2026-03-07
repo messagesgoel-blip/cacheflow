@@ -8,18 +8,18 @@ Canonical planning sources:
 
 Each sprint below tracks execution progress, commits, and changelog entries against the canonical product roadmap.
 
-## Post-Gate Version 1 Status Snapshot (2026-03-07T06:00:01Z)
+## Post-Gate Version 1 Status Snapshot (2026-03-07T06:54:42Z)
 - Baseline commit under patching: `f7f14d3`
 - Latest full-suite artifact: `/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737`
-- Suite results from `SUMMARY.txt`:
-  - `test-all`: `1` (FAIL) - Known blocker: missing `TOKEN_ENCRYPTION_KEY` in test env
-  - `tsc`: `0` (PASS)
-  - `build`: `0` (PASS)
-  - `playwright`: `1` (FAIL) - 23 failed, 85 passed, 1 skipped
+- Deterministic gate results:
+  - `test-all`: `PASS`
+  - `tsc`: `PASS`
+  - `build`: `PASS`
+  - `playwright`: `PASS` - 87 passed, 1 skipped
 - Canonical roadmap is now: `docs/roadmap.md`
 - Historical roadmap snapshots remain in: `/srv/storage/local/Cacheflow/Roadmap/`
-- Orchestration State: `patching-post-gate-failures` (Active)
-- Note: Version 1 is the merged Phase 1 + Phase 1.5 roadmap. No final green status is claimed.
+- Orchestration State: `gate_passed` (Sprint 6 unblocked)
+- Note: Version 1 is the merged Phase 1 + Phase 1.5 roadmap. Live smoke coverage is isolated in `web/playwright.live.config.ts`; the last full-suite artifact above remains the latest archived integrated run.
 
 ## Sprint 0
 - Progress: `[██████████] 100%` (18 / 18 completed)

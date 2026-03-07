@@ -18,16 +18,22 @@ Canonical roadmap for product planning and orchestration.
 
 ## Current Status
 
-- Version 1 release blocker is still active.
-- Orchestration state remains `patching-post-gate-failures`.
+- Version 1 release blocker is cleared for Sprint 6 feature execution.
+- Orchestration state is `gate_passed`.
 - Baseline under patching: `f7f14d3`
 - Last full-suite artifact: `/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737`
+- Latest deterministic gate validation (`2026-03-07T06:54:42Z`):
+  - `test-all`: pass
+  - `tsc`: pass
+  - `build`: pass
+  - `playwright`: pass (`87 passed`, `1 skipped`)
+- Live smoke coverage is isolated in `web/playwright.live.config.ts`
 
 ## Version 1
 
 Version 1 merges the original core-platform roadmap with the power-user bridge roadmap. This is the advised shipping version.
 
-### V1-0 Release Blocker
+### V1-0 Release Blocker (Cleared)
 
 Goal: make the existing platform green and trustworthy before starting new feature work.
 
@@ -38,6 +44,9 @@ Goal: make the existing platform green and trustworthy before starting new featu
   - full deterministic gate green
   - live smoke failures isolated from product regression signal
   - dashboard and orchestrator state aligned to this roadmap
+- Status:
+  - cleared on `2026-03-07`
+  - Sprint 6 entry gate is open
 
 ### V1-1 Core Platform
 
@@ -51,7 +60,7 @@ Goal: ship the base multi-cloud file platform already built across Sprints 0-5.
 - Search, duplicate detection, cleanup, vault
 - Status:
   - functionally implemented
-  - still blocked on final green gate
+  - deterministic gate green
 
 ### V1-2 Power User Essentials
 

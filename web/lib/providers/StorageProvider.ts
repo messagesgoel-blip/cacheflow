@@ -58,17 +58,38 @@ export abstract class StorageProvider {
 
   // Server-side remote ID (if using server persistence)
   public remoteId?: string
+  private requestCorrelationId?: string
+
+  setRequestCorrelationId(correlationId?: string): void {
+    this.requestCorrelationId = correlationId
+  }
+
+  protected getRequestCorrelationId(): string | undefined {
+    return this.requestCorrelationId
+  }
+
+  protected buildRequestHeaders(headers?: HeadersInit): Record<string, string> {
+    const merged = new Headers(headers || {})
+
+    if (this.requestCorrelationId && !merged.has('X-Correlation-Id') && !merged.has('x-correlation-id')) {
+      merged.set('X-Correlation-Id', this.requestCorrelationId)
+    }
+
+    return Object.fromEntries(merged.entries())
+  }
 
   /**
    * Proxy fetch through server-side API to avoid CORS issues
    * Uses backend /api/remotes/:uuid/proxy with bearer token from cf_token.
    */
   protected async proxyFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const requestHeaders = this.buildRequestHeaders(options.headers)
+
     if (this.remoteId) {
       const proxyBody = {
         method: options.method || 'GET',
         url,
-        headers: options.headers,
+        headers: requestHeaders,
         body: options.body,
       }
 
@@ -102,7 +123,10 @@ export abstract class StorageProvider {
       return response
     }
 
-    return fetch(url, options)
+    return fetch(url, {
+      ...options,
+      headers: requestHeaders,
+    })
   }
 
 
