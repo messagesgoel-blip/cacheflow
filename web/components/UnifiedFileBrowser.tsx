@@ -152,6 +152,12 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   useEffect(() => {
     let tokensChanged = false
     const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav']
+    const sortConnectionsForSync = (connections: ProviderConnection[]) =>
+      [...connections].sort((a, b) => {
+        const timeA = a.lastSyncAt ? new Date(a.lastSyncAt).getTime() : 0
+        const timeB = b.lastSyncAt ? new Date(b.lastSyncAt).getTime() : 0
+        return timeB - timeA || a.id.localeCompare(b.id)
+      })
 
     if (tokenManager.getTokens('local').length > 0) {
       tokenManager.removeToken('local')
@@ -170,10 +176,35 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         setError('Failed to sync provider connections')
       }
 
+      const connectionsForSync = sortConnectionsForSync(serverConnections)
+      const desiredVpsTokens = connectionsForSync
+        .filter((conn) => conn.provider === 'vps')
+        .slice(0, 3)
+        .map((conn) => ({
+          accountKey: conn.accountKey || conn.accountEmail || conn.accountName || conn.id,
+          remoteId: conn.remoteId || conn.id,
+        }))
+      const desiredVpsAccountKeys = new Set(desiredVpsTokens.map((conn) => conn.accountKey))
+      const cachedVpsTokens = tokenManager.getTokens('vps').filter(t => !t.disabled)
+      const shouldResetVpsTokens =
+        desiredVpsTokens.length !== cachedVpsTokens.length ||
+        desiredVpsTokens.some((desired, index) => {
+          const cached = cachedVpsTokens[index]
+          return !cached || cached.accountKey !== desired.accountKey || (cached as any).remoteId !== desired.remoteId
+        })
+
+      if (shouldResetVpsTokens) {
+        tokenManager.removeToken('vps')
+        tokensChanged = true
+      }
+
       // Hydrate token manager from server-state remotes so seeded QA accounts appear after login.
-      for (const conn of serverConnections) {
+      for (const conn of connectionsForSync) {
         const pid = conn.provider as ProviderId
         if (!providerIds.includes(pid)) continue
+        if (pid === 'vps' && !desiredVpsAccountKeys.has(conn.accountKey || conn.accountEmail || conn.accountName || conn.id)) {
+          continue
+        }
 
         const accountKey = conn.accountKey || conn.accountEmail || conn.accountName || conn.id
         const remoteId = conn.remoteId || conn.id
