@@ -245,7 +245,7 @@ export default function Sidebar({
                 const health = healthStates[cacheKey]
                 const quota = quotas[cacheKey]
                 const isDragOver = dragOverAccount === cacheKey
-                const usagePercent = quota ? (quota.used / quota.total) * 100 : 0
+                const usagePercent = quota && quota.total > 0 ? (quota.used / quota.total) * 100 : 0
 
                 return (
                   <div key={account.accountKey || `${account.providerId}-${idx}`} className="group/account">
