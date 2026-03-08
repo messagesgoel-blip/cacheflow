@@ -3,6 +3,14 @@
 import { useState, useEffect } from 'react'
 import { ScheduledJob } from '@/app/schedules/page'
 
+const THROTTLE_PRESETS = [
+  { value: null, label: 'Unlimited', description: 'No bandwidth limit' },
+  { value: 1 * 1024 * 1024, label: '1 MB/s', description: 'Low impact' },
+  { value: 5 * 1024 * 1024, label: '5 MB/s', description: 'Moderate' },
+  { value: 25 * 1024 * 1024, label: '25 MB/s', description: 'Standard' },
+  { value: 100 * 1024 * 1024, label: '100 MB/s', description: 'High throughput' },
+]
+
 interface CreateJobModalProps {
   job: ScheduledJob | null
   onSave: (data: {
@@ -10,6 +18,7 @@ interface CreateJobModalProps {
     jobType: string
     cronExpression: string
     enabled: boolean
+    throttle?: { maxBytesPerSecond: number | null }
   }) => void
   onClose: () => void
 }
@@ -34,6 +43,7 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
   const [jobType, setJobType] = useState('sync-file')
   const [cronExpression, setCronExpression] = useState('0 0 * * *')
   const [enabled, setEnabled] = useState(true)
+  const [throttle, setThrottle] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showCustomCron, setShowCustomCron] = useState(false)
@@ -78,6 +88,7 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
         jobType,
         cronExpression: cronExpression.trim(),
         enabled,
+        throttle: { maxBytesPerSecond: throttle },
       })
     } catch (err) {
       setError('Failed to save job')
@@ -236,6 +247,30 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Bandwidth Throttle */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">
+              Bandwidth Throttle
+            </label>
+            <div className="grid grid-cols-5 gap-2">
+              {THROTTLE_PRESETS.map((preset) => (
+                <button
+                  key={String(preset.value)}
+                  type="button"
+                  onClick={() => setThrottle(preset.value)}
+                  className={`rounded-[14px] border p-2 text-center transition ${
+                    throttle === preset.value
+                      ? 'border-[rgba(74,158,255,0.3)] bg-[rgba(74,158,255,0.12)]'
+                      : 'border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] hover:border-[rgba(255,255,255,0.14)]'
+                  }`}
+                >
+                  <div className="text-xs font-medium text-[var(--cf-text-0)]">{preset.label}</div>
+                  <div className="mt-0.5 text-[9px] text-[var(--cf-text-2)]">{preset.description}</div>
+                </button>
+              ))}
             </div>
           </div>
 

@@ -2,11 +2,16 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+interface ThrottleConfig {
+  maxBytesPerSecond: number | null; // null means unlimited
+}
+
 interface JobCreateData {
   name: string;
   jobType: string;
   cronExpression: string;
   enabled?: boolean;
+  throttle?: ThrottleConfig;
 }
 
 interface JobUpdateData {
@@ -14,6 +19,7 @@ interface JobUpdateData {
   jobType?: string;
   cronExpression?: string;
   enabled?: boolean;
+  throttle?: ThrottleConfig;
 }
 
 export class ScheduledJobService {
@@ -39,6 +45,7 @@ export class ScheduledJobService {
         jobType: data.jobType,
         cronExpression: data.cronExpression,
         enabled: data.enabled ?? true,
+        metadata: data.throttle ? JSON.stringify({ throttle: data.throttle }) : undefined,
       },
     });
   }

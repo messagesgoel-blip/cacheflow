@@ -9,12 +9,10 @@
  */
 
 import Redis from 'ioredis';
-import { getRedisClient, RedisNamespace } from '../redis/client';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
 const PROGRESS_CHANNEL_PREFIX = 'progress:';
-const QUEUE_CHANNEL_PREFIX = 'queue:';
 
 export interface ProgressUpdate {
   jobId: string;
@@ -58,7 +56,6 @@ class ProgressBridge {
   private publisher: Redis;
   private subscriber: Redis;
   private subscriptions: Map<string, Set<ProgressSubscriber>> = new Map();
-  private channelListeners: Map<string, Redis> = new Map();
   private initialized = false;
 
   constructor() {

@@ -33,11 +33,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate throttle if provided
+    if (data.throttle && data.throttle.maxBytesPerSecond !== null) {
+      const bps = data.throttle.maxBytesPerSecond;
+      if (typeof bps !== 'number' || bps < 0) {
+        return Response.json({ error: 'throttle.maxBytesPerSecond must be a non-negative number or null' }, { status: 400 });
+      }
+    }
+
     const job = await scheduledJobService.createJob({
       name: data.name,
       jobType: data.jobType,
       cronExpression: data.cronExpression,
       enabled: data.enabled ?? true,
+      throttle: data.throttle || undefined,
     });
 
     return Response.json(job, { status: 201 });

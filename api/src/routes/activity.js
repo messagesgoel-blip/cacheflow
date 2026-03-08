@@ -10,9 +10,9 @@ router.use(authMw);
  * Query params: limit, offset, action, provider
  */
 router.get('/', async (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
   const offset = parseInt(req.query.offset) || 0;
-  const { action, provider } = req.query;
+  const { action, provider, type } = req.query;
 
   try {
     let query = `SELECT * FROM audit_logs WHERE user_id = $1`;
@@ -26,6 +26,11 @@ router.get('/', async (req, res) => {
     if (provider) {
       params.push(provider);
       query += ` AND metadata->>'providerId' = $${params.length}`;
+    }
+
+    if (type) {
+      params.push(type);
+      query += ` AND metadata->>'type' = $${params.length}`;
     }
 
     query += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;

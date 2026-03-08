@@ -1,11 +1,15 @@
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 
+const MAX_REMOTE_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10 GB
+const DOWNLOAD_TIMEOUT_MS = 300_000; // 5 minutes
+
 interface RemoteUploadOptions {
   url: string;
   provider: string;
   filename?: string;
   metadata?: Record<string, any>;
+  maxSizeBytes?: number;
 }
 
 interface RemoteUploadResult {
@@ -17,11 +21,49 @@ interface RemoteUploadResult {
   uploadedAt: string;
 }
 
+export function validateRemoteUrl(url: string): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('Invalid URL format');
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('Only HTTP and HTTPS URLs are supported');
+  }
+
+  // Block private/internal IPs to prevent SSRF
+  const hostname = parsed.hostname.toLowerCase();
+  const blockedPatterns = [
+    /^localhost$/,
+    /^127\.\d+\.\d+\.\d+$/,
+    /^10\.\d+\.\d+\.\d+$/,
+    /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/,
+    /^192\.168\.\d+\.\d+$/,
+    /^0\.0\.0\.0$/,
+    /^\[?::1\]?$/,
+    /^169\.254\.\d+\.\d+$/,
+    /^fc00:/i,
+    /^fe80:/i,
+  ];
+
+  for (const pattern of blockedPatterns) {
+    if (pattern.test(hostname)) {
+      throw new Error('URLs pointing to private or internal networks are not allowed');
+    }
+  }
+}
+
 export async function remoteUpload(options: RemoteUploadOptions): Promise<RemoteUploadResult> {
   const { url, provider, filename, metadata = {} } = options;
+  const maxSize = options.maxSizeBytes ?? MAX_REMOTE_FILE_SIZE;
+
+  validateRemoteUrl(url);
 
   const response = await fetch(url, {
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
+    redirect: 'follow',
   });
 
   if (!response.ok) {
@@ -36,9 +78,17 @@ export async function remoteUpload(options: RemoteUploadOptions): Promise<Remote
   const contentLength = response.headers.get('content-length');
   const size = contentLength ? parseInt(contentLength, 10) : 0;
 
+  if (size > maxSize) {
+    throw new Error(`File too large: ${size} bytes exceeds limit of ${maxSize} bytes`);
+  }
+
   const actualFilename = filename || generateFilenameFromUrl(url);
 
   const buffer = await response.arrayBuffer();
+
+  if (buffer.byteLength > maxSize) {
+    throw new Error(`Downloaded file too large: ${buffer.byteLength} bytes exceeds limit of ${maxSize} bytes`);
+  }
   const stream = Readable.from(Buffer.from(buffer));
 
   const uploadResult = await uploadToProvider(provider, stream, actualFilename, {

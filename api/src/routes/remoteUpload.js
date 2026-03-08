@@ -1,7 +1,11 @@
 const express = require('express');
-const { remoteUpload } = require('../services/remoteUploadService');
+const authMw = require('../middleware/auth');
+const { remoteUpload, validateRemoteUrl } = require('../services/remoteUploadService');
 
 const router = express.Router();
+router.use(authMw);
+
+const ALLOWED_PROVIDERS = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav', 'local'];
 
 router.post('/', async (req, res) => {
   try {
@@ -13,11 +17,17 @@ router.post('/', async (req, res) => {
       });
     }
 
+    if (!ALLOWED_PROVIDERS.includes(provider.toLowerCase())) {
+      return res.status(400).json({
+        error: `Unsupported provider: ${provider}`
+      });
+    }
+
     try {
-      new URL(url);
+      validateRemoteUrl(url);
     } catch (error) {
       return res.status(400).json({
-        error: 'Invalid URL format'
+        error: error.message || 'Invalid URL format'
       });
     }
 

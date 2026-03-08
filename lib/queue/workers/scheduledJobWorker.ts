@@ -2,12 +2,17 @@ import { Worker, Job, Queue } from 'bullmq';
 import { getRedisClient } from '../../redis/client';
 import { executeJob } from '../../jobs/jobEngine';
 
+interface ThrottleConfig {
+  maxBytesPerSecond: number | null;
+}
+
 interface ScheduledJobData {
   jobId: string;
   jobType: string;
   payload: any;
   userId?: string;
   createdAt: Date;
+  throttle?: ThrottleConfig;
 }
 
 class ScheduledJobWorker {
@@ -60,17 +65,23 @@ class ScheduledJobWorker {
   }
 
   private async processJob(job: Job<ScheduledJobData>) {
-    const { jobId, jobType, payload, userId } = job.data;
-    
+    const { jobId, jobType, payload, userId, throttle } = job.data;
+
     console.log(`[ScheduledJobWorker] Processing scheduled job ${jobId}`, {
       jobType,
       userId,
-      attempts: job.attemptsMade
+      attempts: job.attemptsMade,
+      throttle: throttle?.maxBytesPerSecond ? `${Math.round(throttle.maxBytesPerSecond / 1024)} KB/s` : 'unlimited',
     });
 
     try {
+      // Inject throttle config into payload if set
+      const enrichedPayload = throttle?.maxBytesPerSecond
+        ? { ...payload, throttle }
+        : payload;
+
       // Execute the job using the job engine
-      const result = await executeJob(jobType, payload, userId);
+      const result = await executeJob(jobType, enrichedPayload, userId);
       
       console.log(`[ScheduledJobWorker] Successfully executed scheduled job ${jobId}`, {
         jobType,

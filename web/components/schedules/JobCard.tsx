@@ -37,6 +37,14 @@ function formatCronDescription(cron: string): string {
   return cron
 }
 
+function formatThrottle(bps: number | null | undefined): string {
+  if (!bps) return 'Unlimited'
+  if (bps >= 1024 * 1024 * 1024) return `${(bps / (1024 * 1024 * 1024)).toFixed(0)} GB/s`
+  if (bps >= 1024 * 1024) return `${(bps / (1024 * 1024)).toFixed(0)} MB/s`
+  if (bps >= 1024) return `${(bps / 1024).toFixed(0)} KB/s`
+  return `${bps} B/s`
+}
+
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'Never'
   const date = new Date(dateStr)
@@ -85,7 +93,7 @@ export default function JobCard({
             </span>
           </div>
 
-          <div className="mt-2.5 grid gap-2 text-[11px] text-[var(--cf-text-2)] sm:grid-cols-3">
+          <div className="mt-2.5 grid gap-2 text-[11px] text-[var(--cf-text-2)] sm:grid-cols-4">
             <div className="rounded-[18px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] px-3 py-2">
               <div className="cf-kicker mb-1 text-[9px]">Schedule</div>
               <span className="flex items-center gap-1.5">
@@ -111,6 +119,15 @@ export default function JobCard({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 {formatDate(job.lastRunAt)}
+              </span>
+            </div>
+            <div className="rounded-[18px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] px-3 py-2">
+              <div className="cf-kicker mb-1 text-[9px]">Throttle</div>
+              <span className="flex items-center gap-1.5">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {formatThrottle((job as any).throttle?.maxBytesPerSecond)}
               </span>
             </div>
           </div>
