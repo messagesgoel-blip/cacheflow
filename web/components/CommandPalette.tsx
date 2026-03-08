@@ -25,9 +25,11 @@ const COMMANDS: PaletteCommand[] = [
   { id: 'go-schedules', label: 'Go to Schedules', hint: '/schedules', keywords: ['jobs', 'automation'], group: 'Navigate', path: '/schedules' },
   { id: 'go-settings', label: 'Go to Settings', hint: '/settings', keywords: ['preferences'], group: 'Navigate', path: '/settings' },
   { id: 'go-security', label: 'Go to Security', hint: '/settings/security', keywords: ['2fa', 'auth'], group: 'Navigate', path: '/settings/security' },
+  { id: 'go-activity', label: 'Open Activity Feed', hint: '/files?view=activity', keywords: ['timeline', 'history', 'events'], group: 'Navigate', path: '/files?view=activity' },
   { id: 'upload-files', label: 'Upload Files', hint: 'Files action', keywords: ['upload', 'send'], group: 'Quick Actions', path: '/files', eventName: 'cacheflow:command-upload' },
   { id: 'new-folder', label: 'Create Folder', hint: 'Files action', keywords: ['folder', 'mkdir'], group: 'Quick Actions', path: '/files', eventName: 'cacheflow:command-new-folder' },
   { id: 'new-file', label: 'Create Starter File', hint: 'Files action', keywords: ['file', 'template'], group: 'Quick Actions', path: '/files', eventName: 'cacheflow:command-new-file' },
+  { id: 'new-schedule', label: 'Create Schedule Job', hint: '/schedules?compose=new', keywords: ['cron', 'automation', 'job'], group: 'Quick Actions', path: '/schedules?compose=new' },
   { id: 'connect-cloud', label: 'Connect Cloud Provider', hint: 'Providers action', keywords: ['google', 'drive', 'onedrive', 'dropbox'], group: 'Quick Actions', path: '/providers', eventName: 'cacheflow:command-connect-cloud' },
   { id: 'connect-vps', label: 'Connect VPS / SFTP', hint: 'Providers action', keywords: ['server', 'ssh', 'sftp'], group: 'Quick Actions', path: '/providers', eventName: 'cacheflow:command-connect-vps' },
 ]

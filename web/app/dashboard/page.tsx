@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import StorageHero from '@/components/dashboard/StorageHero'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel'
+import RecentActivityPanel from '@/components/dashboard/RecentActivityPanel'
 import RecentTransfersPanel from '@/components/dashboard/RecentTransfersPanel'
 import { tokenManager } from '@/lib/tokenManager'
 import { ProviderId } from '@/lib/providers/types'
@@ -234,6 +235,7 @@ export default function DashboardPage() {
 
           <div className="space-y-5">
             <RecentTransfersPanel />
+            <RecentActivityPanel />
           </div>
         </div>
       </div>

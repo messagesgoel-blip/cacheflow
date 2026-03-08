@@ -27,9 +27,10 @@ import { markOnboardingMilestone } from '@/lib/ui/onboardingMilestones'
 
 interface UnifiedFileBrowserProps {
   token: string
+  routeView?: 'activity'
 }
 
-export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
+export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrowserProps) {
   // Helpers to match requested structure
   const actions = useActionCenter()
   const showToast = (input: { title: string; message: string }) => actions.startTask({ ...input, progress: null })
@@ -147,6 +148,22 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     setFocusedIndex(-1)
     setPreviewPanelFile(null)
   }, [])
+
+  const openActivityFeed = useCallback(() => {
+    clearTransientBrowserState()
+    setPendingFolderPath(null)
+    setSelectedProvider('activity')
+    setActiveAccountKey('')
+    setCurrentPath('/')
+    setBreadcrumbStack([])
+    setRefreshKey((current) => current + 1)
+  }, [clearTransientBrowserState])
+
+  useEffect(() => {
+    if (routeView === 'activity' && selectedProvider !== 'activity') {
+      openActivityFeed()
+    }
+  }, [openActivityFeed, routeView, selectedProvider])
 
   // Selection computed
   const selectedFileObjects = useMemo(() => {
@@ -1030,13 +1047,15 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     window.addEventListener('cacheflow:command-upload', handleCommandUpload)
     window.addEventListener('cacheflow:command-new-folder', openNewFolderModal)
     window.addEventListener('cacheflow:command-new-file', openNewFileModal)
+    window.addEventListener('cacheflow:command-open-activity', openActivityFeed)
 
     return () => {
       window.removeEventListener('cacheflow:command-upload', handleCommandUpload)
       window.removeEventListener('cacheflow:command-new-folder', openNewFolderModal)
       window.removeEventListener('cacheflow:command-new-file', openNewFileModal)
+      window.removeEventListener('cacheflow:command-open-activity', openActivityFeed)
     }
-  }, [actions, connectedProviders.length, openNewFileModal, openNewFolderModal])
+  }, [actions, connectedProviders.length, openActivityFeed, openNewFileModal, openNewFolderModal])
 
   const openCreateInsideFolder = useCallback(
     (folder: FileMetadata, kind: 'folder' | 'file') => {

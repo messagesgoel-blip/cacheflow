@@ -8,7 +8,21 @@ test('schedules surface renders current shell styling and opens the job modal', 
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ success: true, transfers: [] }),
+      body: JSON.stringify({
+        success: true,
+        transfers: [
+          {
+            jobId: 'transfer-1',
+            fileName: 'Nightly Archive.tar.gz',
+            fileSize: 2147483648,
+            progress: 72,
+            status: 'active',
+            operation: 'copy',
+            sourceProvider: 'google',
+            destProvider: 'vps',
+          },
+        ],
+      }),
     })
   })
 
@@ -35,6 +49,9 @@ test('schedules surface renders current shell styling and opens the job modal', 
   await page.goto('/schedules')
   await expect(page.getByTestId('cf-schedules-page')).toBeVisible({ timeout: 15000 })
   await expect(page.getByText('Automation registry')).toBeVisible()
+  await expect(page.getByTestId('cf-schedules-transfer-snapshot')).toBeVisible()
+  await expect(page.getByTestId('cf-schedules-transfer-transfer-1')).toContainText('Nightly Archive.tar.gz')
+  await expect(page.getByTestId('cf-schedules-transfer-transfer-1')).toContainText('72%')
   await expect(page.getByTestId('cf-schedule-job-job-1')).toContainText('Nightly Backup')
   await expect(page.getByTestId('cf-schedule-job-job-1')).toContainText('At 02:00')
 

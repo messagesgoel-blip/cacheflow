@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import JobCard from '@/components/schedules/JobCard'
 import CreateJobModal from '@/components/schedules/CreateJobModal'
+import ScheduleTransferSnapshot from '@/components/schedules/ScheduleTransferSnapshot'
 
 export interface ScheduledJob {
   id: string
@@ -34,6 +35,7 @@ const JOB_TYPE_ICONS: Record<string, string> = {
 
 export default function SchedulesPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [token, setToken] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [jobs, setJobs] = useState<ScheduledJob[]>([])
@@ -81,6 +83,13 @@ export default function SchedulesPage() {
       fetchJobs(token)
     }
   }, [token, fetchJobs])
+
+  useEffect(() => {
+    if (searchParams.get('compose') === 'new') {
+      setEditingJob(null)
+      setIsModalOpen(true)
+    }
+  }, [searchParams])
 
   const handleCreateJob = async (jobData: {
     name: string
@@ -236,6 +245,10 @@ export default function SchedulesPage() {
             <div className="font-mono text-[28px] font-bold text-[var(--cf-teal)]">{upcomingJobs}</div>
             <p className="mt-2 text-sm text-[var(--cf-text-2)]">Jobs with a next scheduled execution already computed.</p>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <ScheduleTransferSnapshot />
         </div>
 
         <div className="cf-panel rounded-[30px]">

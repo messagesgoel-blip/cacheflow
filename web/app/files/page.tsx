@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Navbar from '@/components/Navbar'
+import { useSearchParams } from 'next/navigation'
 import UnifiedFileBrowser from '@/components/UnifiedFileBrowser'
+import Navbar from '@/components/Navbar'
 
 interface SessionResponse {
   authenticated?: boolean
@@ -12,6 +13,7 @@ interface SessionResponse {
 }
 
 export default function FilesPage() {
+  const searchParams = useSearchParams()
   const [token, setToken] = useState<string | null>(null)
   const [authenticated, setAuthenticated] = useState(false)
   const [email, setEmail] = useState('')
@@ -114,7 +116,7 @@ export default function FilesPage() {
         }}
       />
       <main className="mx-auto max-w-[1600px] p-4 md:p-6">
-        <UnifiedFileBrowser token={token || ''} />
+        <UnifiedFileBrowser token={token || ''} routeView={searchParams.get('view') === 'activity' ? 'activity' : undefined} />
       </main>
     </div>
   )
