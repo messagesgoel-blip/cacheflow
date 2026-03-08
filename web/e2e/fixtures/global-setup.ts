@@ -104,3 +104,4 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
   process.env.E2E_SETUP_TIMESTAMP = Date.now().toString();
   process.env.E2E_SETUP_DURATION_MS = setupTime.toString();
 }
+

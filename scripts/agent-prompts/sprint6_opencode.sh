@@ -22,3 +22,4 @@ Rules:
 
 Finish per assigned scope: run targeted backend/test validation, stage only relevant files, then use `done-task <task_key> --test "<targeted test>" --commit "<message>"` when operating on a claimed task key.
 PROMPT
+

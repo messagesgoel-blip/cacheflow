@@ -290,3 +290,4 @@ export default function FileTable({ files, token, onRefresh, viewMode, currentPa
     </>
   )
 }
+

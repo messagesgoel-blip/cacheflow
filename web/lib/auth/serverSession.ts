@@ -84,3 +84,4 @@ export async function resolveServerSession(): Promise<ServerSession> {
 
   return { authenticated: false, user: null }
 }
+

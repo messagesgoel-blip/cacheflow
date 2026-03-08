@@ -7,3 +7,4 @@ Key areas: files/, providers/, ui/, layout/, errors/, Sidebar/, FileBrowser/, Pr
 Rules: TypeScript strict; Tailwind for styling; ensure ARIA/accessibility; minimize prop drilling (prefer context/hooks); client components only when interactive; keep render work light.
 
 Security: never expose credentials or tokens in UI; prefer fetching via server components when possible.
+

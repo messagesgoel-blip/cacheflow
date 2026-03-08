@@ -31,3 +31,4 @@ export function base64UrlEncode(array: Uint8Array): string {
     .replace(/\//g, '_')
     .replace(/=+$/, '')
 }
+

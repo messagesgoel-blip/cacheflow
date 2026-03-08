@@ -12,3 +12,4 @@ export default defineConfig({
   },
   // webServer is already running via docker-compose
 })
+

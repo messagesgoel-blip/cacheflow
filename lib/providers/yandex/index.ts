@@ -790,3 +790,4 @@ export class YandexAdapter implements ProviderAdapter {
     )
   }
 }
+

@@ -144,3 +144,4 @@ export default function UnlockVaultModal({ isOpen, onClose, onUnlock }: UnlockVa
     </div>
   )
 }
+

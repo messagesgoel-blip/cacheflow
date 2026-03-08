@@ -9,3 +9,4 @@ export function normalizePath(...parts: string[]): string {
   
   return normalized === '' ? '/' : normalized
 }
+

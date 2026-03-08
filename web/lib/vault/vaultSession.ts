@@ -47,3 +47,4 @@ export async function validateVaultTOTP(_vaultId: string, totpCode: string): Pro
 export async function validateVaultPIN(_vaultId: string, pin: string): Promise<boolean> {
   return /^\d{4,8}$/.test(pin)
 }
+

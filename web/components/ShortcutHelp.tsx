@@ -63,3 +63,4 @@ export default function ShortcutHelp({ onClose }: ShortcutHelpProps) {
     </div>
   )
 }
+

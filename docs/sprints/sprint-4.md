@@ -17,3 +17,4 @@
 | 4.7 | Share link creation — requires 2FA enabled on account | /app/api/share/route.ts, /lib/share/shareLinkService.ts | ◈ OpenCode | 2FA-1, SHARE-1 |
 | 4.8 | Share link proxy — hides underlying provider | /app/s/[linkId]/route.ts | ◈ OpenCode | SHARE-1 |
 | 4.9 | Abuse controls — rate limits, throttling, link access logging | /lib/share/abuseControls.ts, /app/api/share/[id]/revoke/route.ts | ◈ OpenCode | SHARE-1 |
+

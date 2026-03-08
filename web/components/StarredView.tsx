@@ -119,3 +119,4 @@ export default function StarredView({ onFileClick, onRemoveFavorite }: StarredVi
     </div>
   )
 }
+

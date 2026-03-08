@@ -26,3 +26,4 @@ Canonical sprint definitions aligned to `docs/roadmap.md`.
 
 - Version 2 sprint specs are sequencing documents, not executable manifests.
 - Dashboard and monitoring state should treat Sprint 6 as the live roadmap sprint until Version 1 is complete.
+

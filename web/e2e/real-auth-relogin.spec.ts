@@ -150,3 +150,4 @@ test('real site: logout and login again', async ({ page }) => {
   await login(page)
   await shot(page, 'relogin-after-second-login')
 })
+

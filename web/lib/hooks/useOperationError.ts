@@ -179,3 +179,4 @@ export function useProxyError() {
 export function useFavoritesError() {
   return useOperationError('favorites');
 }
+

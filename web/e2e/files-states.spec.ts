@@ -101,3 +101,4 @@ test('files page loading/empty/loaded screenshots', async ({ page, request }, te
   await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 10000 })
   await page.screenshot({ path: shotPath(id, 'files_loaded_state'), fullPage: true })
 })
+

@@ -74,3 +74,4 @@ export const FavoritesErrorCard: React.FC<FavoritesErrorCardProps> = ({
 };
 
 export default FavoritesErrorCard;
+

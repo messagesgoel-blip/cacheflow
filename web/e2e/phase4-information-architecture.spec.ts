@@ -169,3 +169,4 @@ function appendPerfMetrics(newMetrics: Record<string, number>) {
     // Non-blocking diagnostics output.
   }
 }
+

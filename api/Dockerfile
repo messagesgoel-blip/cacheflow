@@ -25,3 +25,4 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 # Use tini as init process to handle signals properly
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "src/index.js"]
+

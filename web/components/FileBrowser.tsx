@@ -639,3 +639,4 @@ export default function FileBrowser({ token, currentPath = '/', locationId, onPa
     </div>
   )
 }
+

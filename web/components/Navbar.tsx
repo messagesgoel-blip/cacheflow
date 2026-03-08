@@ -75,3 +75,4 @@ export default function Navbar({ email, onLogout }: NavbarProps) {
     </nav>
   )
 }
+

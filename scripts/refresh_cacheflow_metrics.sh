@@ -35,3 +35,4 @@ if [ -f "$MODULE_AUDIT_SCRIPT" ]; then
 fi
 python3 "$PUSH_SCRIPT"
 python3 "$HISTORY_SCRIPT"
+

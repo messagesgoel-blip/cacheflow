@@ -76,3 +76,4 @@ curl -s -X POST "http://127.0.0.1:8100/files/$FILE_ID/retry" \
 - ✅ Manual retry via POST /files/:id/retry
 - ✅ Automatic recovery via stale syncing recovery (5 min)
 - ✅ Worker continues processing other files during outage
+

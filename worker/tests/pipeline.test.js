@@ -295,3 +295,4 @@ describe('stage6Resolve', () => {
     expect(mockQuery).toHaveBeenCalledTimes(1);
   });
 });
+

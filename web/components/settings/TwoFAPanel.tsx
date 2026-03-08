@@ -342,3 +342,4 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
     </div>
   )
 }
+

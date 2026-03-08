@@ -47,3 +47,4 @@ function auditMiddleware(req, res, next) {
 }
 
 module.exports = { auditLog, auditMiddleware };
+

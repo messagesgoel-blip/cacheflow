@@ -319,3 +319,4 @@ export function getProviderColor(id: ProviderId): string {
 export function getProviderName(id: ProviderId): string {
   return getProviderById(id)?.name ?? 'Unknown'
 }
+

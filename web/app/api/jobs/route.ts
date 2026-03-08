@@ -96,3 +96,4 @@ export async function DELETE(request: NextRequest) {
     return Response.json({ error: 'Failed to delete job' }, { status: 500 });
   }
 }
+

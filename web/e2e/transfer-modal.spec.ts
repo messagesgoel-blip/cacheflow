@@ -98,3 +98,4 @@ test('copy between providers via transfer modal', async ({ page, request }) => {
   await expect(queuePanel).toBeVisible({ timeout: 10_000 })
   await expect(queuePanel).toContainText(/copying|completed/i, { timeout: 30_000 })
 })
+

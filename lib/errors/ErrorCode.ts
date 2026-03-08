@@ -106,3 +106,4 @@ export function getDefaultErrorMessage(code: ErrorCode): string {
 export function getDefaultHttpStatus(code: ErrorCode): number {
   return DEFAULT_HTTP_STATUS[code] ?? DEFAULT_HTTP_STATUS[ErrorCode.UNKNOWN];
 }
+

@@ -25,3 +25,4 @@
 
 ## Known Limitations (Pilot Bridge)
 Post-MVP: replaced with WinFSP native daemon.
+

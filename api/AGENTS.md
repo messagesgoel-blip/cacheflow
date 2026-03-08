@@ -9,3 +9,4 @@ Hot spots: routes/files.ts (file ops), routes/remotes.ts (provider OAuth), route
 Standards: Prisma for DB; express-validator for inputs; JWT refresh + access; rate-limit per IP/user; sanitize responses (no raw records or credentials).
 
 Rules: keep handlers short and non-blocking; use structured errors; never store secrets/plaintext or leak vault data; prefer service layer over route logic.
+

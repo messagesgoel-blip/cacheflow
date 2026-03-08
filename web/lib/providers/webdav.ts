@@ -553,3 +553,4 @@ function getAuthHeader(): Record<string, string> {
 
 // Export singleton with default config
 export const webdavProvider = new WebDAVProvider()
+

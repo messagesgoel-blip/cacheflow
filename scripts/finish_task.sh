@@ -184,3 +184,4 @@ if [ "$commit_created" -eq 1 ]; then
 else
   echo "result: no commit created; push/release steps executed based on flags."
 fi
+

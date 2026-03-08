@@ -243,3 +243,4 @@ export default function FolderTree({ token, locationId, currentPath, onFolderSel
     </div>
   )
 }
+

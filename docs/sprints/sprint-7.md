@@ -16,3 +16,4 @@
 
 - Task decomposition is deferred until Version 1 is green.
 - This sprint is defined for sequencing only and is not yet in the executable manifest.
+

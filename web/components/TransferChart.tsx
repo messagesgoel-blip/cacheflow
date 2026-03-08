@@ -158,3 +158,4 @@ export default function TransferChart({ token }: TransferChartProps) {
     </div>
   )
 }
+

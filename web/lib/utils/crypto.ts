@@ -61,3 +61,4 @@ export async function generateVaultKey(): Promise<CryptoKey> {
     ['encrypt', 'decrypt']
   );
 }
+

@@ -318,3 +318,4 @@ function maskHost(host: string): string {
   if (dotIndex <= 0) return '●●●'
   return `${host.slice(0, dotIndex)}.●●●`
 }
+

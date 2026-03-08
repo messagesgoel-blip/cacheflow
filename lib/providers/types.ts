@@ -403,3 +403,4 @@ export interface ProviderAdapterError {
   providerRequestId?: string
   details?: Record<string, unknown>
 }
+

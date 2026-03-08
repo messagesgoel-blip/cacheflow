@@ -40,3 +40,4 @@ export function resolveServerApiBase(): string {
   const nonLoopback = candidates.find((candidate) => !isLoopbackUrl(candidate));
   return nonLoopback || candidates[0] || DEFAULT_API_BASE;
 }
+

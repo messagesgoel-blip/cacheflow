@@ -147,3 +147,4 @@ process.on('SIGTERM', shutdownWorker);
 process.on('SIGINT', shutdownWorker);
 
 export default transferWorker;
+

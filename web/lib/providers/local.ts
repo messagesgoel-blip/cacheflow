@@ -234,3 +234,4 @@ export class LocalProvider extends StorageProvider {
 }
 
 export const localProvider = new LocalProvider()
+

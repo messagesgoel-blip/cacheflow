@@ -83,3 +83,4 @@ describe('TransferModal VPS defaults', () => {
     expect(buildInitialStack('google', createFile())).toEqual([{ id: 'root', label: '/' }])
   })
 })
+

@@ -30,3 +30,4 @@ test('basic pages screenshots', async ({ page }, testInfo) => {
   await page.waitForTimeout(500)
   await page.screenshot({ path: shotPath(id, 'settings_page'), fullPage: true })
 })
+

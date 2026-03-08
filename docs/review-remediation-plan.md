@@ -42,3 +42,4 @@ This checklist tracks follow-up work from the comprehensive review.
 1. Complete naming consistency sweep for API/web contracts.
 2. Plan staged worker dependency upgrades (batch by risk/compatibility).
 3. Add integration smoke tests for upgraded worker dependency batches.
+

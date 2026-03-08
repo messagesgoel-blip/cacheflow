@@ -46,3 +46,4 @@ export function isTextPreviewEligible(input: { size?: number }): boolean {
   const size = typeof input.size === 'number' ? input.size : 0
   return size <= 1024 * 1024
 }
+

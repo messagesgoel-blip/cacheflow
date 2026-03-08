@@ -308,3 +308,4 @@ export function ShareLinkPanel({ file, token, onClose, userHas2FA = false }: Sha
 }
 
 export default ShareLinkPanel
+

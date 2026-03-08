@@ -17,3 +17,4 @@ COPY sync-worker.js config.js .
 # Use tini as init process to handle signals properly
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "sync-worker.js"]
+

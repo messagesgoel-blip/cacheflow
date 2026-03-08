@@ -160,3 +160,4 @@ export function migrateFromLocalStorage(): void {
   
   console.log('Migrated from localStorage to HttpOnly cookies');
 }
+

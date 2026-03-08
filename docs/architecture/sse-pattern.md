@@ -144,3 +144,4 @@ eventSource.onerror = () => {
 1. **Channel multiplexing**: Multiple jobs can share channels by job type
 2. **Subscriber cleanup**: Unsubscribe callbacks prevent memory leaks
 3. **Message batching**: Consider batching for high-frequency updates
+

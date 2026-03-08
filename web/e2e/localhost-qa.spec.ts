@@ -127,3 +127,4 @@ test('localhost login and tab navigation', async ({ page }, testInfo) => {
   const noisy = consoleErrors.filter((e) => /sw\.js|access-control-allow-origin|cors/i.test(e))
   expect(noisy, `Console has CORS/SW noise:\n${noisy.join('\n')}`).toEqual([])
 })
+

@@ -11,3 +11,4 @@ Auth: NextAuth at /api/auth; HttpOnly cookies; apiClient fetches with credential
 Components: prefer components/ui primitives; add data-testid to interactive elements; Tailwind only (no css files).
 
 Tests: run from web/: npx playwright test. Mock /api/auth/session plus /api/connections, /api/files, /api/remotes; start pages via page.goto('/files').
+

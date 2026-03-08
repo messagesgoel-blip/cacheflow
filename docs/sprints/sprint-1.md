@@ -21,3 +21,4 @@
 | 1.7 | Write Playwright token expiry test | /e2e/tests/tokenExpiry.spec.ts | ◉ Gemini | AUTH-1 |
 | 1.8 | Replace shared modal boolean with provider discriminator enum | /context/IntegrationContext.tsx, /components/modals/ConnectProviderModal.tsx | ◆ ClaudeCode | MODAL-1 |
 | 1.9 | Implement correct forms for WebDAV and VPS/SFTP modals | /components/modals/WebDAVModal.tsx, /components/modals/VPSModal.tsx | ◆ ClaudeCode | MODAL-1 |
+

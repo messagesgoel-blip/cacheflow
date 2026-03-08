@@ -18,3 +18,4 @@ export type { ProxyErrorCardProps } from './ProxyErrorCard';
 
 export { FavoritesErrorCard } from './FavoritesErrorCard';
 export type { FavoritesErrorCardProps } from './FavoritesErrorCard';
+

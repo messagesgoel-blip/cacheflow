@@ -122,3 +122,4 @@ export function createAuthFetch(defaultOptions: RequestInit = {}) {
 
 // Export singleton auth fetch instance
 export const authFetch = createAuthFetch();
+

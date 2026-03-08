@@ -96,3 +96,4 @@ export const TOTPInput: React.FC<TOTPInputProps> = ({
 };
 
 export default TOTPInput;
+

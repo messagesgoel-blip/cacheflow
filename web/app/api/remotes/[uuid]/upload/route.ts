@@ -26,3 +26,4 @@ export async function PUT(_request: NextRequest, context: UploadRouteContext) {
   const { uuid } = await context.params
   return legacyUnavailable(uuid)
 }
+

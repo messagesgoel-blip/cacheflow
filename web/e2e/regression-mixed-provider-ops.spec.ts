@@ -80,3 +80,4 @@ test('regression: mixed providers date fallback + copy/move semantics', async ({
   await expect(page.getByText('Invalid Date')).toHaveCount(0)
   await page.screenshot({ path: shotPath(id, 'regression_mixed_provider_date_fallback'), fullPage: true })
 })
+

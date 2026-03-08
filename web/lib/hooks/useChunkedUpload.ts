@@ -285,3 +285,4 @@ export function useChunkedUpload(): UseChunkedUploadReturn {
 
 export { CHUNK_SIZE, MAX_FILE_SIZE };
 export default useChunkedUpload;
+

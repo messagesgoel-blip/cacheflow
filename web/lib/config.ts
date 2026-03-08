@@ -14,3 +14,4 @@ export function getPublicApiUrl(): string {
   const raw = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL
   return ensureUrl(raw, 'NEXT_PUBLIC_API_URL')
 }
+

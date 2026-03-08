@@ -426,3 +426,4 @@ test.describe('Storage Dashboard and Health Indicators', () => {
     expect(yandex.probe.message).toContain('rate-limiting');
   });
 });
+

@@ -44,3 +44,4 @@ Any `ErrorCode` not listed above defaults to a **bottom-right error toast** usin
 
 - Task 0.2: Define AppError taxonomy and ErrorCode enum (`/lib/errors/AppError.ts`, `/lib/errors/ErrorCode.ts`)
 - Task 1.17: Replace SESSION_EXPIRED raw text with actionable component (`SessionExpiredBanner.tsx`)
+

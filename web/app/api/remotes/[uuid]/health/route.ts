@@ -52,3 +52,4 @@ export async function GET(
     status: upstream.status,
   });
 }
+

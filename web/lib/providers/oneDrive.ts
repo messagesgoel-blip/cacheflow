@@ -534,3 +534,4 @@ declare global {
     MSAL: any
   }
 }
+

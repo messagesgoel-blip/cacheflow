@@ -25,3 +25,4 @@ export default async function globalTeardown(config: FullConfig): Promise<void> 
   delete process.env.E2E_SETUP_TIMESTAMP;
   delete process.env.E2E_SETUP_DURATION_MS;
 }
+

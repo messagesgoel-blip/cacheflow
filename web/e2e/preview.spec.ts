@@ -129,3 +129,4 @@ test.describe('2.8@PREVIEW-1: Rich Previews', () => {
     await expect(page.getByTestId('cf-preview-action-download')).toBeVisible()
   })
 })
+

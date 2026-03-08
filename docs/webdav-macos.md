@@ -21,3 +21,4 @@
 ## Known Limitations (Pilot Bridge)
 WebDAV is a pilot-era bridge. Post-MVP this will be replaced with a
 native macFUSE daemon for true NVMe-speed desktop sync.
+

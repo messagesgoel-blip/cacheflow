@@ -108,3 +108,4 @@ test('Multi-account isolation: separate files and cache per account', async ({ p
   await expect(page.getByText('File from A.txt').first()).toBeVisible()
   await expect(page.getByText('File from B.txt').first()).toBeVisible()
 })
+

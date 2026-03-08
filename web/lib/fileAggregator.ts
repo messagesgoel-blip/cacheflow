@@ -249,3 +249,4 @@ export function getProviderDistribution(
 export function getFileKey(file: AggregatedFileItem): string {
   return `${file.primaryProvider}:${file.path}/${file.name}`
 }
+

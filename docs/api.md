@@ -115,3 +115,4 @@ Configured in API middleware:
 - `422` unprocessable entity
 - `429` too many requests
 - `500` internal server error
+

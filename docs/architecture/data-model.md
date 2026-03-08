@@ -350,3 +350,4 @@ User-specific provider configurations.
 - Each migration documents: gate, task, purpose
 - Use `IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS` for idempotency
 - Indexes created alongside tables for performance
+

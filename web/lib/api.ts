@@ -356,3 +356,4 @@ export async function apiCreateShareLink(id: string, token: string, options: { p
   if (!res.ok) throw new Error(data.error || `Share failed: ${res.status}`)
   return data
 }
+

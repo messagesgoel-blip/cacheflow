@@ -66,3 +66,4 @@ export function formatMimeType(filename: string): string {
   }
   return mimeTypes[ext] || 'application/octet-stream'
 }
+

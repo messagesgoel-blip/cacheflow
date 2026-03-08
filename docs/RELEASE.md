@@ -63,3 +63,4 @@ See `/docs/api.md` for full API reference.
 
 ## Version
 PILOT-1.0.0 (May 21, 2026)
+

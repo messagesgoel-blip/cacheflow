@@ -236,3 +236,4 @@ export function setCredentialVault(vault: CredentialVault): void {
 }
 
 export default CredentialVault;
+

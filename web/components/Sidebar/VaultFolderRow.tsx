@@ -24,3 +24,4 @@ export default function VaultFolderRow({ isSelected, isLocked, onClick }: VaultF
     </button>
   )
 }
+

@@ -44,3 +44,4 @@ export async function DELETE(
 
   return proxyJson(upstream)
 }
+

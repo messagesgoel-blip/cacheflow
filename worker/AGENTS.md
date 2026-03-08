@@ -9,3 +9,4 @@ Musts: graceful shutdown, idempotent tasks, strong logging, per-provider rate li
 Hot tasks: conflict-resolution, validation, maintenance cleanup; treat large transfers with chunked/resume logic.
 
 Avoid: holding locks long, blocking calls without timeout, in-memory-only state for transfers.
+

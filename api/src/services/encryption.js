@@ -86,3 +86,4 @@ module.exports = {
   // Current key version for metadata
   KEY_VERSION: '1'
 };
+

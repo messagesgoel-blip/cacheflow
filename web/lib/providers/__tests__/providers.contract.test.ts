@@ -56,3 +56,4 @@ describe('provider registry contract', () => {
     expect(new Set(getAllProviderIds())).toEqual(new Set(providerIds))
   })
 })
+

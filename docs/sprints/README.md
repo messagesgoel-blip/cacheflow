@@ -11,3 +11,4 @@ Canonical human-readable sprint specs aligned to `docs/roadmap.md`.
 
 - `sprint-7.md` through `sprint-20.md`: planned sprint specs only.
 - These files define sequencing and scope, but they do not become executable manifest tasks until Version 1 is fully green.
+

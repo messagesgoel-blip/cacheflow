@@ -18,3 +18,4 @@
 | 3.7 | Tray: chunk-level progress for large files | /components/transfers/TransferItem.tsx | ◆ ClaudeCode | TRANSFER-1 |
 | 3.8 | Auto-resume E2E test — network drop mid-transfer ⚠️ Human verify | /e2e/tests/chunkedResume.spec.ts | ◉ Gemini | TRANSFER-1 |
 | 3.9 | Server streams source → CacheFlow → target without disk write | /lib/transfers/streamTransfer.ts | ◈ OpenCode | ZERODISK-1 |
+

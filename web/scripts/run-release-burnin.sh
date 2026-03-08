@@ -53,3 +53,4 @@ RESULTS=$(echo $RESULTS | jq ".summary.total_runs = $total_runs | .summary.passe
 echo $RESULTS > "$SUMMARY_FILE"
 
 echo "Burn-in complete. Passed: $passed, Failed: $failed"
+

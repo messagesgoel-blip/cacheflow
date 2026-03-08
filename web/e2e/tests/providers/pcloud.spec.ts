@@ -287,3 +287,4 @@ test.describe('Task 4.3 - pCloud provider parity (AUTH-1)', () => {
     expect(calls.some((call) => call.url.includes('eapi.pcloud.com/upload_write'))).toBe(true)
   })
 })
+

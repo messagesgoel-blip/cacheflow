@@ -5,3 +5,4 @@ pool.query("SELECT provider, count(*) FROM oauth_tokens GROUP BY provider", (err
   else console.log(res.rows);
   pool.end();
 });
+

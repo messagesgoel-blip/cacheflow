@@ -50,3 +50,4 @@ if [ "$connections_count" -lt 1 ]; then
 fi
 
 echo "PRECHECK_OK: base=$BASE_URL email=$EMAIL connections=$connections_count"
+

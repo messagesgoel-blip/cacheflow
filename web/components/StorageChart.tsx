@@ -185,3 +185,4 @@ export default function StorageChart({ token }: StorageChartProps) {
     </div>
   )
 }
+

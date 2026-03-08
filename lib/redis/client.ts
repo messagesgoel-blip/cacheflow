@@ -60,3 +60,4 @@ export function getRedisNamespace(dbIndex: number): RedisNamespace | null {
 }
 
 export { Redis };
+

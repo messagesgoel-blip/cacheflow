@@ -383,3 +383,4 @@ export function getInitialVpsTargetPath(file: FileMetadata, currentFolderPath?: 
   }
   return parentPath
 }
+

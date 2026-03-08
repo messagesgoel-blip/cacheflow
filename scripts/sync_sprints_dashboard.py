@@ -160,3 +160,4 @@ def sync_dashboard() -> int:
 if __name__ == "__main__":
     count = sync_dashboard()
     print(f"dashboard sync: {count} lines updated")
+

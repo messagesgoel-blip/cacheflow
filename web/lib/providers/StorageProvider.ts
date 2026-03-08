@@ -310,3 +310,4 @@ export class ProviderRegistry {
 
 // Export singleton registry instance
 export const providerRegistry = new ProviderRegistry()
+

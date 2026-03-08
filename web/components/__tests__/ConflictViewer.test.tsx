@@ -64,3 +64,4 @@ describe('ConflictViewer', () => {
     expect(screen.queryByRole('button', { name: /keep cloud/i })).not.toBeInTheDocument();
   });
 });
+

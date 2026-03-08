@@ -49,3 +49,4 @@ describe('UnifiedFileBrowser folder breadcrumbs', () => {
     expect(stack).toEqual([{ id: 'box-folder-123', name: 'tmp' }])
   })
 })
+

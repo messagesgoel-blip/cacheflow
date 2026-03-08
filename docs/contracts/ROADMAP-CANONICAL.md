@@ -30,3 +30,4 @@
 - Do not use retired roadmap files as live planning input.
 - Do not infer Version 2 work as active while Version 1 is not green.
 - Keep GTM / Commercial work separate from Version 1 product sequencing.
+

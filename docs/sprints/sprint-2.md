@@ -18,3 +18,4 @@
 | 2.7 | Unsupported file types: immediate Download CTA | /components/files/PreviewPanel.tsx, /lib/files/mimeTypes.ts | ◆ ClaudeCode | PREVIEW-1 |
 | 2.8 | E2E preview tests — supported and unsupported types | /e2e/tests/filePreview.spec.ts | ◉ Gemini | PREVIEW-1 |
 | 2.9 | Merge Cloud Drives / Providers / Integrations → Connections | /app/connections/page.tsx, /components/Sidebar/NavItems.tsx, /app/providers/ (delete), /app/integrations/ (delete) | ◆ ClaudeCode | NAV-1 |
+

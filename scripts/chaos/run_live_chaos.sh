@@ -10,3 +10,4 @@ export CHAOS_OUT_DIR="$OUT_DIR"
 node "$REPO_ROOT/scripts/chaos/cacheflow_chaos_live.js"
 
 echo "CHAOS_DONE: $OUT_DIR"
+

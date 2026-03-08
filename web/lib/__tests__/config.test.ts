@@ -26,3 +26,4 @@ describe('web config', () => {
     expect(() => getPublicApiUrl()).toThrow(/invalid next_public_api_url/i)
   })
 })
+

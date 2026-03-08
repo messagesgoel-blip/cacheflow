@@ -171,3 +171,4 @@ app.use('/api/favorites', favoritesRoutes);
 app.use('/api/activity', activityRoutes);
 
 module.exports = app;
+

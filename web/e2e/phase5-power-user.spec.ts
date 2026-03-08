@@ -264,3 +264,4 @@ function appendPerfMetrics(newMetrics: any) {
     // Ignore metric logging failures in smoke verification.
   }
 }
+

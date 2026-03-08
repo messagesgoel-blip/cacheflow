@@ -31,3 +31,4 @@ If any single check fails, parity fails.
 ## Source of Truth in Code
 
 - `lib/providers/ProviderAdapter.interface.ts` exports `PROVIDER_PARITY_CHECKLIST`.
+

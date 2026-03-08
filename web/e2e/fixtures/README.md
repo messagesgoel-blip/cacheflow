@@ -61,3 +61,4 @@ PLAYWRIGHT_API_URL=http://localhost:8100 npm run test:e2e
 # Run in headed mode for debugging
 npm run test:e2e:headed
 ```
+

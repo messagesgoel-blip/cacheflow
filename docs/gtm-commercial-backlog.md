@@ -27,3 +27,4 @@ This backlog preserves the old launch-only Sprint 6 ideas without keeping them i
 ## Intake Rule
 
 No GTM / Commercial item should displace Version 1 release-blocker or Version 1 product-completion work unless explicitly approved.
+

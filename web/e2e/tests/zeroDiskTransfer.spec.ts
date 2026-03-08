@@ -209,3 +209,4 @@ test.describe('Zero-Disk Transfer & Tab-Close Survival', () => {
     console.log('✅ Tab-close survival verified: Transfer state persisted and completed in background.');
   });
 });
+

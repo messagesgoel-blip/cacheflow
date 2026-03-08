@@ -7,3 +7,4 @@ Layout highlights: auth/ (JWT + verification), errors/ (AppError + codes), provi
 Rules: strict TS; avoid cross-module leaks and circular deps; encryption via AES-256-GCM; Redis counters with atomic INCRBY/DECRBY; never store plaintext credentials (always vault).
 
 Patterns: adapter-based providers, centralized error codes, singleton-style utilities where appropriate.
+

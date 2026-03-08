@@ -257,3 +257,4 @@ echo "summary: claimed=${claimed} busy=${busy} failed=${failed}"
 print_finish_instructions
 echo "active locks:"
 ./agent-coord.sh get_active_tasks || true
+

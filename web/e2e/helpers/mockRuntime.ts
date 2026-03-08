@@ -350,3 +350,4 @@ export async function gotoFilesAndWait(page: Page): Promise<void> {
   await page.goto('/files')
   await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
 }
+

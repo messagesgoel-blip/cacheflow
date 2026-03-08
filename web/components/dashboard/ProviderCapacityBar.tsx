@@ -121,3 +121,4 @@ export default function ProviderCapacityBar({ providers }: ProviderCapacityBarPr
     </div>
   )
 }
+

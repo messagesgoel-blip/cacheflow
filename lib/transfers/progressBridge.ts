@@ -224,3 +224,4 @@ export const progressBridge = new ProgressBridge();
 export function createProgressBridge(): ProgressBridge {
   return new ProgressBridge();
 }
+

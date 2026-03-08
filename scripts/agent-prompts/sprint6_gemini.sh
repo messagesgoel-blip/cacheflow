@@ -22,3 +22,4 @@ Rules:
 
 Finish per assigned scope: `done-task <task_key> --test "<targeted test>" --commit "<message>"` when operating on a claimed task key, and hand Codex the exact pass/fail evidence for gate updates.
 PROMPT
+

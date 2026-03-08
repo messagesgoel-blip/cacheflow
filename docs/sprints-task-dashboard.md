@@ -221,3 +221,4 @@ Each sprint below tracks execution progress, commits, and changelog entries agai
 - [Sprint 18](sprints/sprint-18.md): AI-Powered File Organisation
 - [Sprint 19](sprints/sprint-19.md): Embeddable File Picker SDK
 - [Sprint 20](sprints/sprint-20.md): Carbon + Energy Tracking
+

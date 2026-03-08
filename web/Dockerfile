@@ -21,3 +21,4 @@ RUN mkdir -p ./public
 EXPOSE 3010
 ENV PORT=3010
 CMD ["node", "server.js"]
+

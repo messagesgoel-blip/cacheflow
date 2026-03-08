@@ -71,3 +71,4 @@ if [ "$status" -ne 0 ]; then
 fi
 
 log "PASS: DEPLOYMENT_TARGET='$DEPLOYMENT_TARGET' and no prohibited serverless/edge manifests were found."
+

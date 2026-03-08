@@ -118,3 +118,4 @@ test('Verification: Modal lifecycle and ActionLogger correlation', async ({ page
     console.log('ActionLogger output not emitted in this run; rename path verified through UI assertions')
   }
 })
+

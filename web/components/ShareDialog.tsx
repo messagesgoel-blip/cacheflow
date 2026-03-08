@@ -116,3 +116,4 @@ export default function ShareDialog({ fileId, filename, token, onClose, onShareC
     </div>
   )
 }
+

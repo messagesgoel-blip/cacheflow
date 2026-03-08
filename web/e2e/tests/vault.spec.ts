@@ -111,3 +111,4 @@ test.describe('Vault / Private Folder E2E', () => {
     expect(result.body.error).toContain('Invalid PIN');
   });
 });
+

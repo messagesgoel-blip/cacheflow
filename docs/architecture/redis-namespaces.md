@@ -33,3 +33,4 @@ const transferClient = getRedisClient('transfer'); // DB 2
 ## Migration Notes
 
 Existing direct Redis connections should be migrated to use the namespaced client. The client validates namespace selection and rejects invalid configurations in development.
+

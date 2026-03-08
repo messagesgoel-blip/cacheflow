@@ -86,3 +86,4 @@ class TransferRegistry {
 }
 
 export const transferRegistry = new TransferRegistry();
+

@@ -115,3 +115,4 @@ test.describe('Security Audit - Secret Leaks', () => {
     checkForSecrets(body)
   })
 })
+

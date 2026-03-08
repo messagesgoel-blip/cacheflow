@@ -25,3 +25,4 @@ Each script uses a compact startup flow:
 - worker agents finish with `done-task <task_key> --test ... --commit ...`
 - `done-task --test ... --commit ...` auto-detects task key when one lock is active
 - Codex owns shared dashboard/metrics/status sync after lock release
+

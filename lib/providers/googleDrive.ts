@@ -847,3 +847,4 @@ export class GoogleDriveAdapter implements ProviderAdapter {
     }
   }
 }
+

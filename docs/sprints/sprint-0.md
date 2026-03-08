@@ -9,3 +9,4 @@
 | 0.5 | Define streaming pipeline pattern — pipeline() + backpressure strategy | /lib/transfers/streamPipeline.ts, /tests/unit/streamPipeline.test.ts | ◈ OpenCode | TRANSFER-1, ZERODISK-1 |
 | 0.6 | Define singleton refresh promise pattern — prevent concurrent token refresh race | /lib/auth/refreshGuard.ts, /docs/architecture/auth-patterns.md, /tests/unit/refreshGuard.test.ts | ◈ OpenCode | AUTH-4 |
 | 0.7 | Define BullMQ → SSE bridge via Redis pub/sub | /lib/transfers/progressBridge.ts, /docs/architecture/sse-pattern.md | ◈ OpenCode | SSE-1 |
+

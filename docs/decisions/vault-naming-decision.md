@@ -32,3 +32,4 @@ The disclaimer text should be:
 > "Private Folder hides files from All Files and search, but does not provide encryption. Your files remain accessible to anyone with provider access."
 
 This ensures transparency about what the feature actually does versus what users might expect from a "vault" product.
+

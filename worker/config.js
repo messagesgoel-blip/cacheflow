@@ -33,3 +33,4 @@ module.exports = {
   staleSyncingSweepMs: asPositiveInt('STALE_SYNCING_SWEEP_MS', 120000),
   syncPerfLogIntervalMs: asPositiveInt('SYNC_PERF_LOG_INTERVAL_MS', 30000)
 };
+

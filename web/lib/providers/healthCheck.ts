@@ -116,3 +116,4 @@ function buildResult(httpStatus: number, checkedAt: string, latencyMs: number): 
     latencyMs,
   }
 }
+

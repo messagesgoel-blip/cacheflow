@@ -61,3 +61,4 @@ export async function decodeAuthPayload(token: string): Promise<AuthPayload | nu
     return null;
   }
 }
+

@@ -102,3 +102,4 @@ test('prod diagnosis: duplicate folders + empty folder from account mismatch', a
 
   expect(docsCount).toBeGreaterThan(1)
 })
+

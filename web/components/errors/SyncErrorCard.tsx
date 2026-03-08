@@ -56,3 +56,4 @@ export const SyncErrorCard: React.FC<SyncErrorCardProps> = ({
 };
 
 export default SyncErrorCard;
+

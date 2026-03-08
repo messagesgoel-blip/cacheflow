@@ -128,3 +128,4 @@ if [ -z "$task_key" ]; then
 fi
 
 exec "$repo_root/scripts/finish_task.sh" "$task_key" "$@"
+

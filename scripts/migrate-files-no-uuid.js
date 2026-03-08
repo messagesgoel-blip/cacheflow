@@ -322,3 +322,4 @@ const runner = options.dryRun ? dryRun : migrateFiles;
 runner(options)
   .then(() => process.exit(0))
   .catch(() => process.exit(1));
+

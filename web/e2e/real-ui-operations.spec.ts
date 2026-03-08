@@ -178,3 +178,4 @@ test('real site: cross-provider copy/move attempts', async ({ page }, testInfo) 
   await copyMoveBetweenProviders(page, testInfo.workerIndex)
   await shot(page, 'final-cross-provider-state', testInfo.workerIndex)
 })
+

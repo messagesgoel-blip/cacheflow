@@ -15,3 +15,4 @@
 | 5.7 | Vault UI — lock icon in sidebar, hidden from All Files | /components/Sidebar/VaultFolderRow.tsx, /components/vault/UnlockVaultModal.tsx, /app/files/page.tsx (filter vault items) | ◆ ClaudeCode | VAULT-1 |
 | 5.8 | E2E vault tests — enable, lock, unlock, auto-lock | /e2e/tests/vault.spec.ts | ◉ Gemini | VAULT-1 |
 | 5.9 | Duplicate detection — filename + size cross-provider comparison | /lib/cleanup/duplicateDetector.ts, /app/api/cleanup/duplicates/route.ts | ◈ OpenCode | SEARCH-1 |
+
