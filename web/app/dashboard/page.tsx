@@ -133,70 +133,70 @@ export default function DashboardPage() {
         localStorage.removeItem('cf_email')
         window.location.href = '/login'
       }} />
-      <div className="mx-auto max-w-[1600px] px-4 py-8">
-        <div className="mb-8">
-          <div className="cf-kicker mb-3">Overview</div>
-          <h1 className="text-3xl font-semibold text-[var(--cf-text-0)]">Storage Command Center</h1>
+      <div className="mx-auto max-w-[1600px] px-4 py-6">
+        <div className="mb-6">
+          <div className="cf-kicker mb-2">Overview</div>
+          <h1 className="text-[28px] font-semibold leading-tight text-[var(--cf-text-0)]">Storage Command Center</h1>
           <p className="mt-2 max-w-3xl text-sm text-[var(--cf-text-1)]">
             High-signal overview for pooled storage, provider health, and operational movement across your connected providers.
           </p>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-6">
           <StorageHero connectedProviders={connectedProviders} />
         </div>
 
-        <div className="mb-8">
+        <div className="mb-6">
           <OnboardingChecklist connectedProviderCount={connectedProviders.length} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="cf-panel rounded-2xl p-6">
-            <h3 className="cf-kicker mb-3">Connected Providers</h3>
-            <p className="font-mono text-3xl font-bold text-[var(--cf-blue)]">{connectedProviders.length}</p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="cf-panel rounded-2xl p-5">
+            <h3 className="cf-kicker mb-2">Connected Providers</h3>
+            <p className="font-mono text-[28px] font-bold text-[var(--cf-blue)]">{connectedProviders.length}</p>
             <p className="mt-2 text-sm text-[var(--cf-text-2)]">Accounts online in the current control plane session.</p>
           </div>
 
-          <div className="cf-panel rounded-2xl p-6">
-            <h3 className="cf-kicker mb-3">Tracked Accounts</h3>
-            <p className="font-mono text-3xl font-bold text-[var(--cf-teal)]">
+          <div className="cf-panel rounded-2xl p-5">
+            <h3 className="cf-kicker mb-2">Tracked Accounts</h3>
+            <p className="font-mono text-[28px] font-bold text-[var(--cf-teal)]">
               {connectedProviders.filter((p) => (p.accountEmail || p.displayName)).length}
             </p>
             <p className="mt-2 text-sm text-[var(--cf-text-2)]">Named identities available for browsing and quota rollup.</p>
           </div>
 
-          <div className="cf-panel rounded-2xl p-6">
-            <h3 className="cf-kicker mb-3">Coverage</h3>
-            <p className="font-mono text-3xl font-bold text-[var(--cf-amber)]">
+          <div className="cf-panel rounded-2xl p-5">
+            <h3 className="cf-kicker mb-2">Coverage</h3>
+            <p className="font-mono text-[28px] font-bold text-[var(--cf-amber)]">
               {providerTypes.length}
             </p>
             <p className="mt-2 text-sm text-[var(--cf-text-2)]">Distinct provider types feeding the current storage graph.</p>
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="cf-panel rounded-[28px] p-6">
+        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="cf-panel rounded-[28px] p-5">
             <div className="cf-kicker mb-3">Provider Matrix</div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-3">
               <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
                 <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">Cloud Providers</div>
-                <div className="mt-2 font-mono text-2xl font-bold text-[var(--cf-blue)]">{connectedProviders.length - vpsCount}</div>
+                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-blue)]">{connectedProviders.length - vpsCount}</div>
                 <p className="mt-2 text-sm text-[var(--cf-text-2)]">OAuth-backed storage accounts.</p>
               </div>
               <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
                 <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">VPS / SFTP</div>
-                <div className="mt-2 font-mono text-2xl font-bold text-[var(--cf-teal)]">{vpsCount}</div>
+                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-teal)]">{vpsCount}</div>
                 <p className="mt-2 text-sm text-[var(--cf-text-2)]">Server-backed remotes connected to the control plane.</p>
               </div>
               <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
                 <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">Quota Telemetry</div>
-                <div className="mt-2 font-mono text-2xl font-bold text-[var(--cf-amber)]">{quotaKnownCount}</div>
+                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-amber)]">{quotaKnownCount}</div>
                 <p className="mt-2 text-sm text-[var(--cf-text-2)]">Accounts reporting size and usage to the dashboard.</p>
               </div>
             </div>
           </div>
 
-          <div className="cf-panel rounded-[28px] p-6">
+          <div className="cf-panel rounded-[28px] p-5">
             <div className="cf-kicker mb-3">Tracked Identities</div>
             <div className="space-y-3">
               {accountLabels.length > 0 ? (
