@@ -187,12 +187,20 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
         throw new Error('Not authenticated')
       }
 
+      // Find the selected connection to get more details if needed
+      const selectedConn = connectedProviders.find(
+        cp => cp.providerId === targetProvider && cp.accountKey === targetAccountKey
+      )
+
       const requestBody = {
         url: url.trim(),
         provider: targetProvider,
         filename: filename.trim() || undefined,
         metadata: {
           accountKey: targetAccountKey,
+          // If we have a special rclone name, we'd pass it here. 
+          // For now our backend assumes providerId matches rclone remote names or maps them.
+          remoteName: targetProvider === 'google' ? 'gdrive' : targetProvider,
         },
       }
 

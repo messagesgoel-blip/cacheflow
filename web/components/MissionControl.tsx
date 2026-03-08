@@ -244,24 +244,49 @@ export default function MissionControl() {
         </div>
 
         {/* Right: Storage Stats */}
-        <div className="cf-panel rounded-[24px] p-4 bg-[var(--cf-panel-bg)]/40 border-[var(--cf-border)]">
+        <div className={`cf-panel rounded-[24px] p-4 bg-[var(--cf-panel-bg)]/40 border-[var(--cf-border)] transition-all duration-500 ${
+          quotaPercent > 95 ? 'ring-1 ring-[var(--cf-red)]/50 bg-[var(--cf-red)]/5' : 
+          quotaPercent > 80 ? 'ring-1 ring-[var(--cf-amber)]/50 bg-[var(--cf-amber)]/5' : ''
+        }`}>
           <div className="flex items-center justify-between mb-2">
             <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--cf-text-2)] block truncate">Total Pooled Storage</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--cf-text-2)] block truncate">Total Pooled Storage</span>
+                {quotaPercent > 95 ? (
+                  <span className="text-[10px] animate-pulse" title="Critical: Over 95% capacity">🚨</span>
+                ) : quotaPercent > 80 ? (
+                  <span className="text-[10px]" title="Warning: Over 80% capacity">⚠️</span>
+                ) : null}
+              </div>
               <span className="text-[9px] text-[var(--cf-text-3)] block mt-0.5">{transfers.length} jobs tracked</span>
             </div>
-            <span className="text-[11px] font-mono font-bold text-[var(--cf-text-1)]">{Math.round(quotaPercent)}%</span>
+            <span className={`text-[11px] font-mono font-bold ${
+              quotaPercent > 95 ? 'text-[var(--cf-red)]' : 
+              quotaPercent > 80 ? 'text-[var(--cf-amber)]' : 
+              'text-[var(--cf-text-1)]'
+            }`}>{Math.round(quotaPercent)}%</span>
           </div>
-          <div className="h-1.5 w-full bg-[var(--cf-bg3)] rounded-full overflow-hidden mb-2">
+          <div className="h-1.5 w-full bg-[var(--cf-bg3)] rounded-full overflow-hidden mb-2 shadow-inner">
             <div 
-              className={`h-full transition-all duration-1000 ${quotaPercent > 90 ? 'bg-[var(--cf-red)]' : quotaPercent > 75 ? 'bg-[var(--cf-amber)]' : 'bg-[var(--cf-teal)]'}`}
-              style={{ width: `${quotaPercent}%` }}
+              className={`h-full transition-all duration-1000 ${
+                quotaPercent > 95 ? 'bg-[var(--cf-red)] shadow-[0_0_8px_rgba(255,92,92,0.4)]' : 
+                quotaPercent > 80 ? 'bg-[var(--cf-amber)] shadow-[0_0_8px_rgba(255,159,67,0.4)]' : 
+                'bg-[var(--cf-teal)]'
+              }`}
+              style={{ width: `${Math.min(quotaPercent, 100)}%` }}
             />
           </div>
           <div className="flex justify-between text-[10px] font-mono font-medium text-[var(--cf-text-2)]">
-            <span>{formatBytes(quotas.used)} used</span>
+            <span className={quotaPercent > 80 ? 'text-[var(--cf-text-1)]' : ''}>{formatBytes(quotas.used)} used</span>
             <span>{formatBytes(quotas.total)} total</span>
           </div>
+          {quotaPercent > 80 && (
+            <div className={`mt-2 py-1 px-2 rounded-lg text-[9px] font-bold uppercase tracking-tight text-center ${
+              quotaPercent > 95 ? 'bg-[var(--cf-red)]/20 text-[var(--cf-red)]' : 'bg-[var(--cf-amber)]/20 text-[var(--cf-amber)]'
+            }`}>
+              {quotaPercent > 95 ? 'Critical Storage Limit' : 'Approaching Storage Limit'}
+            </div>
+          )}
         </div>
 
       </div>
