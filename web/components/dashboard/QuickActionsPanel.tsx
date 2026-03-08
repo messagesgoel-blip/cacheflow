@@ -48,25 +48,25 @@ const quickActions: QuickAction[] = [
 
 export default function QuickActionsPanel() {
   return (
-    <section data-testid="cf-dashboard-quick-actions" className="cf-panel rounded-[28px] p-5">
-      <div className="mb-4">
+    <section data-testid="cf-dashboard-quick-actions" className="cf-panel rounded-[28px] p-4 sm:p-5">
+      <div className="mb-3">
         <div className="cf-kicker mb-2">Quick Actions</div>
-        <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Common jumps for the active control plane session.</h2>
-        <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">
+        <h2 className="text-base font-semibold text-[var(--cf-text-0)] sm:text-lg">Common jumps for the active control plane session.</h2>
+        <p className="mt-1 text-sm text-[var(--cf-text-1)]">
           Fast access to real CacheFlow routes without introducing new product surfaces.
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
         {quickActions.map((action) => (
           <Link
             key={action.id}
             href={action.href}
             data-testid={`cf-dashboard-quick-action-${action.id}`}
-            className="group flex items-start gap-3 rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4 transition hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.05)]"
+            className="group flex items-start gap-3 rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3.5 py-3.5 transition hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.05)]"
           >
             <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.18)] ${action.accentClass}`}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.18)] ${action.accentClass}`}
               aria-hidden="true"
             >
               {action.icon}
@@ -74,9 +74,9 @@ export default function QuickActionsPanel() {
             <span className="min-w-0 flex-1">
               <span className="flex items-center justify-between gap-3">
                 <span className="text-sm font-semibold text-[var(--cf-text-0)]">{action.label}</span>
-                <span className="text-[12px] text-[var(--cf-text-3)] transition group-hover:text-[var(--cf-text-1)]">Open</span>
+                <span className="text-[11px] text-[var(--cf-text-3)] transition group-hover:text-[var(--cf-text-1)]">Open</span>
               </span>
-              <span className="mt-1 block text-[12px] leading-5 text-[var(--cf-text-2)]">
+              <span className="mt-0.5 block text-[12px] leading-5 text-[var(--cf-text-2)]">
                 {action.description}
               </span>
             </span>

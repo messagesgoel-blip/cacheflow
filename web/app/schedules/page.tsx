@@ -222,7 +222,7 @@ export default function SchedulesPage() {
       <Navbar email={email} onLogout={handleLogout} />
 
       <main data-testid="cf-schedules-page" className="mx-auto max-w-[1400px] px-4 py-6">
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="cf-kicker mb-2">Schedules</div>
             <h1 className="text-[28px] font-semibold leading-tight text-[var(--cf-text-0)]">Scheduled Jobs</h1>
@@ -238,21 +238,21 @@ export default function SchedulesPage() {
           </button>
         </div>
 
-        <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <div className="mb-5 grid gap-3 sm:grid-cols-3">
           <div className="cf-panel rounded-[24px] p-4">
             <div className="cf-kicker mb-2">Active Jobs</div>
             <div className="font-mono text-[28px] font-bold text-[var(--cf-blue)]">{activeJobs}</div>
-            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Schedules currently enabled and ready to execute.</p>
+            <p className="mt-1.5 text-sm text-[var(--cf-text-2)]">Schedules currently enabled and ready to execute.</p>
           </div>
           <div className="cf-panel rounded-[24px] p-4">
             <div className="cf-kicker mb-2">Paused Jobs</div>
             <div className="font-mono text-[28px] font-bold text-[var(--cf-amber)]">{pausedJobs}</div>
-            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Schedules retained in the system but not currently running.</p>
+            <p className="mt-1.5 text-sm text-[var(--cf-text-2)]">Schedules retained in the system but not currently running.</p>
           </div>
           <div className="cf-panel rounded-[24px] p-4">
             <div className="cf-kicker mb-2">Upcoming Runs</div>
             <div className="font-mono text-[28px] font-bold text-[var(--cf-teal)]">{upcomingJobs}</div>
-            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Jobs with a next scheduled execution already computed.</p>
+            <p className="mt-1.5 text-sm text-[var(--cf-text-2)]">Jobs with a next scheduled execution already computed.</p>
           </div>
         </div>
 
@@ -261,7 +261,7 @@ export default function SchedulesPage() {
         </div>
 
         <div className="cf-panel rounded-[30px]">
-          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--cf-border)] px-6 py-5">
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--cf-border)] px-5 py-4 sm:px-6">
             <div>
               <div className="cf-kicker mb-2">Queue</div>
               <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Automation registry</h2>
@@ -286,7 +286,7 @@ export default function SchedulesPage() {
             </div>
           )}
 
-          <div className="p-6">
+          <div className="p-5 sm:p-6">
             {loading ? (
               <div className="py-14 text-center text-[var(--cf-text-2)]">
                 <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />

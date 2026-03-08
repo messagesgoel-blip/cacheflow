@@ -88,13 +88,16 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(6,8,12,0.72)] p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl overflow-y-auto rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] p-6 shadow-[0_36px_90px_rgba(0,0,0,0.42)]">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="w-full max-w-2xl overflow-y-auto rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] p-5 shadow-[0_36px_90px_rgba(0,0,0,0.42)] sm:p-6">
+        <div className="mb-5 flex items-center justify-between">
           <div>
             <div className="cf-kicker mb-2">Schedules</div>
             <h2 className="text-xl font-semibold text-[var(--cf-text-0)]">
               {job ? 'Edit Job' : 'Create Scheduled Job'}
             </h2>
+            <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">
+              Configure cadence and execution state without leaving the current registry view.
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -106,15 +109,15 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="rounded-2xl border border-[rgba(255,92,92,0.2)] bg-[rgba(255,92,92,0.08)] px-4 py-3 text-sm text-[var(--cf-red)]">
               {error}
             </div>
           )}
 
-          <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="space-y-5">
+          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">
                   Job Name
@@ -138,7 +141,7 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
                       key={type.value}
                       type="button"
                       onClick={() => setJobType(type.value)}
-                      className={`rounded-2xl border p-3 text-left transition ${
+                      className={`rounded-[18px] border p-3 text-left transition ${
                         jobType === type.value
                           ? 'border-[rgba(74,158,255,0.3)] bg-[rgba(74,158,255,0.12)]'
                           : 'border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] hover:border-[rgba(255,255,255,0.14)]'
@@ -166,7 +169,7 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
                       key={preset.value}
                       type="button"
                       onClick={() => setCronExpression(preset.value)}
-                      className={`w-full rounded-2xl border p-3 text-left transition ${
+                      className={`w-full rounded-[18px] border p-3 text-left transition ${
                         cronExpression === preset.value
                           ? 'border-[rgba(74,158,255,0.3)] bg-[rgba(74,158,255,0.12)]'
                           : 'border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] hover:border-[rgba(255,255,255,0.14)]'
@@ -212,7 +215,7 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
                 </div>
               )}
 
-              <div className="mt-5 rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
+              <div className="mt-4 rounded-[18px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-medium text-[var(--cf-text-0)]">Enable job immediately</div>
@@ -236,7 +239,7 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-1">
             <button
               type="button"
               onClick={onClose}

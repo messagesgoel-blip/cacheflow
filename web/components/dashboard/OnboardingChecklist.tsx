@@ -109,31 +109,31 @@ export default function OnboardingChecklist({ connectedProviderCount }: { connec
         />
       </div>
 
-      <div className="border-b border-[var(--cf-border)] px-6 py-5">
+      <div className="border-b border-[var(--cf-border)] px-5 py-4 sm:px-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="cf-kicker">Onboarding</div>
-            <h2 className="mt-2 text-xl font-semibold text-[var(--cf-text-0)]">Complete the core CacheFlow setup path.</h2>
-            <p className="mt-2 text-sm text-[var(--cf-text-1)]">
+            <h2 className="mt-2 text-lg font-semibold text-[var(--cf-text-0)] sm:text-xl">Complete the core CacheFlow setup path.</h2>
+            <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">
               {completedCount} of {steps.length} milestones completed.
             </p>
           </div>
           <button
             type="button"
             onClick={() => setOnboardingDismissed(true)}
-            className="rounded-xl border border-[var(--cf-border)] px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+            className="rounded-xl border border-[var(--cf-border)] px-3 py-2 text-sm font-medium text-[var(--cf-text-2)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
           >
             Dismiss
           </button>
         </div>
       </div>
 
-      <div className="space-y-3 px-6 py-5">
+      <div className="space-y-2.5 px-5 py-4 sm:px-6">
         {steps.map((step, index) => (
           <div
             key={step.id}
             data-testid={`cf-dashboard-onboarding-step-${step.id}`}
-            className={`rounded-[22px] border px-4 py-4 transition ${
+            className={`rounded-[20px] border px-4 py-3.5 transition ${
               step.completed
                 ? 'border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.08)]'
                 : 'border-[var(--cf-border)] bg-[var(--cf-panel-soft)]'
@@ -143,7 +143,7 @@ export default function OnboardingChecklist({ connectedProviderCount }: { connec
               <div className="min-w-0">
                 <div className="flex items-center gap-3">
                   <span
-                    className={`flex h-7 w-7 items-center justify-center rounded-full border font-mono text-[10px] font-bold uppercase ${
+                    className={`flex h-7 w-7 items-center justify-center rounded-full border text-[10px] font-semibold uppercase ${
                       step.completed
                         ? 'border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.14)] text-[var(--cf-green)]'
                         : 'border-[var(--cf-border)] text-[var(--cf-text-3)]'
@@ -155,13 +155,13 @@ export default function OnboardingChecklist({ connectedProviderCount }: { connec
                     <div className={`text-sm ${step.completed ? 'font-medium text-[var(--cf-text-1)]' : 'font-semibold text-[var(--cf-text-0)]'}`}>
                       {step.label}
                     </div>
-                    <div className="mt-1 text-[12px] leading-5 text-[var(--cf-text-2)]">{step.description}</div>
+                    <div className="mt-0.5 text-[12px] leading-5 text-[var(--cf-text-2)]">{step.description}</div>
                   </div>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2 self-center">
                 <span
-                  className={`rounded-full border px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] ${
+                  className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${
                     step.completed
                       ? 'border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.12)] text-[var(--cf-green)]'
                       : 'border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.08)] text-[var(--cf-blue)]'
@@ -171,7 +171,7 @@ export default function OnboardingChecklist({ connectedProviderCount }: { connec
                 </span>
                 <Link
                   href={step.href}
-                  className="rounded-xl border border-[var(--cf-border)] px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+                  className="rounded-xl border border-[var(--cf-border)] px-3 py-2 text-sm font-medium text-[var(--cf-text-2)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
                 >
                   {step.cta}
                 </Link>

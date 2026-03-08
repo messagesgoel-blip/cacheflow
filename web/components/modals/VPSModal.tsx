@@ -247,104 +247,114 @@ export default function VPSModal() {
   if (!isVisible) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-        <h3 className="mb-2 text-lg font-semibold">{isEditMode ? 'Edit VPS / SFTP' : 'Connect VPS / SFTP'}</h3>
-        <p className="mb-6 text-sm text-gray-500">
-          {isEditMode
-            ? 'Update the saved VPS details. Test the connection before saving transport changes.'
-            : 'Test the connection first, then save the VPS using PEM key authentication.'}
-        </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(6,8,12,0.72)] p-4 backdrop-blur-sm">
+      <div className="w-full max-w-xl rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] p-6 shadow-[0_36px_90px_rgba(0,0,0,0.42)]">
+        <div className="mb-6">
+          <div className="cf-kicker mb-2">VPS / SFTP</div>
+          <h3 className="text-xl font-semibold text-[var(--cf-text-0)]">{isEditMode ? 'Edit VPS / SFTP' : 'Connect VPS / SFTP'}</h3>
+          <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">
+            {isEditMode
+              ? 'Update the saved VPS details. Test the connection before saving transport changes.'
+              : 'Test the connection first, then save the VPS using PEM key authentication.'}
+          </p>
+        </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Label <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder="OCI Node 1"
-              required
-              className="w-full rounded-lg border px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
-            />
+        <div className="mb-5 grid gap-3 md:grid-cols-3">
+          <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+            <div className="cf-kicker mb-1">Mode</div>
+            <div className="text-sm font-semibold text-[var(--cf-text-0)]">{isEditMode ? 'Saved node update' : 'New saved node'}</div>
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Host <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={host}
-              onChange={(e) => setHost(e.target.value)}
-              placeholder="203.0.113.1"
-              required
-              className="w-full rounded-lg border px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
-            />
+          <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+            <div className="cf-kicker mb-1">Transport</div>
+            <div className="text-sm font-semibold text-[var(--cf-text-0)]">SSH key auth</div>
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">Port</label>
-            <input
-              type="number"
-              value={port}
-              onChange={(e) => setPort(e.target.value)}
-              placeholder="22"
-              className="w-full rounded-lg border px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
-            />
+          <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+            <div className="cf-kicker mb-1">QA Scope</div>
+            <div className="text-sm font-semibold text-[var(--cf-text-0)]">Use mock paths only</div>
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Username <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="username"
-              required
-              className="w-full rounded-lg border px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
-            />
+        </div>
+
+        <div className="space-y-5">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">
+                Label <span className="text-[var(--cf-red)]">*</span>
+              </label>
+              <input
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="OCI Node 1"
+                required
+                className="w-full rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2.5 text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[var(--cf-blue)] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">
+                Host <span className="text-[var(--cf-red)]">*</span>
+              </label>
+              <input
+                type="text"
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
+                placeholder="203.0.113.1"
+                required
+                className="w-full rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2.5 text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[var(--cf-blue)] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">Port</label>
+              <input
+                type="number"
+                value={port}
+                onChange={(e) => setPort(e.target.value)}
+                placeholder="22"
+                className="w-full rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2.5 text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[var(--cf-blue)] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">
+                Username <span className="text-[var(--cf-red)]">*</span>
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="username"
+                required
+                className="w-full rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2.5 text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[var(--cf-blue)] focus:outline-none"
+              />
+            </div>
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              {isEditMode ? 'Replace PEM Key' : 'PEM Key'} {!isEditMode && <span className="text-red-500">*</span>}
+
+          <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+            <div className="cf-kicker mb-2">Credential</div>
+            <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">
+              {isEditMode ? 'Replace PEM Key' : 'PEM Key'} {!isEditMode && <span className="text-[var(--cf-red)]">*</span>}
             </label>
             <input
               type="file"
               accept=".pem,.key"
               onChange={(e) => setPemFile(e.target.files?.[0] || null)}
-              className="w-full rounded-lg border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700"
+              className="w-full rounded-xl border border-[var(--cf-border)] bg-[var(--cf-shell-card)] px-3 py-2.5 text-sm text-[var(--cf-text-1)] file:mr-3 file:rounded-lg file:border-0 file:bg-[rgba(74,158,255,0.14)] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-[var(--cf-blue)]"
             />
-            {isEditMode && !pemFile && (
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Leave empty to keep the currently saved private key.
-              </p>
-            )}
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Upload the private key file only. Do not upload the matching <code>.pub</code> file.
-            </p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Your private key is encrypted before storage and never returned after saving.
-            </p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              For manual QA, use <code>/srv/storage/local/mock run</code> instead of operating in <code>/</code>.
-            </p>
-            {pemFile && (
-              <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">Selected: {pemFile.name}</p>
-            )}
+            <div className="mt-3 space-y-1.5 text-[12px] leading-5 text-[var(--cf-text-2)]">
+              {isEditMode && !pemFile ? <p>Leave empty to keep the currently saved private key.</p> : null}
+              <p>Upload the private key file only. Do not upload the matching <code>.pub</code> file.</p>
+              <p>Your private key is encrypted before storage and never returned after saving.</p>
+              <p>For manual QA, use <code>/srv/storage/local/mock run</code> instead of operating in <code>/</code>.</p>
+              {pemFile ? <p className="text-[var(--cf-text-1)]">Selected: {pemFile.name}</p> : null}
+            </div>
           </div>
         </div>
 
         {testStatus?.kind === 'success' && (
-          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300">
+          <div className="mt-4 rounded-[22px] border border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.08)] px-4 py-4 text-sm text-[var(--cf-green)]">
             <div className="font-medium">{testStatus.message}</div>
             {testStatus.hostFingerprint ? (
-              <div className="mt-2 rounded-md border border-emerald-200/80 bg-white/60 px-3 py-2 dark:border-emerald-800/40 dark:bg-black/10">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700/80 dark:text-emerald-300/80">
-                  Host Fingerprint
-                </div>
-                <div className="mt-1 break-all font-mono text-xs text-emerald-800 dark:text-emerald-200">
+              <div className="mt-3 rounded-2xl border border-[rgba(74,222,128,0.22)] bg-[rgba(255,255,255,0.04)] px-3 py-3">
+                <div className="cf-kicker mb-1 text-[9px] text-[var(--cf-green)]">Host Fingerprint</div>
+                <div className="break-all font-mono text-xs text-[var(--cf-text-0)]">
                   {testStatus.hostFingerprint}
                 </div>
               </div>
@@ -353,7 +363,7 @@ export default function VPSModal() {
         )}
 
         {inlineError && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
+          <div className="mt-4 rounded-[22px] border border-[rgba(255,92,92,0.2)] bg-[rgba(255,92,92,0.08)] px-4 py-3 text-sm text-[var(--cf-red)]">
             {inlineError}
           </div>
         )}
@@ -361,21 +371,21 @@ export default function VPSModal() {
         <div className="mt-6 flex gap-3">
           <button
             onClick={handleClose}
-            className="flex-1 rounded-lg border px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="flex-1 rounded-xl border border-[var(--cf-border)] px-4 py-2.5 text-sm font-medium text-[var(--cf-text-1)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
           >
             Cancel
           </button>
           <button
             onClick={handleTestConnection}
             disabled={testing || submitting}
-            className="flex-1 rounded-lg border border-blue-200 px-4 py-2 text-blue-600 hover:bg-blue-50 disabled:opacity-50 dark:border-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-900/20"
+            className="flex-1 rounded-xl border border-[rgba(74,158,255,0.2)] px-4 py-2.5 text-sm font-medium text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.08)] disabled:opacity-50"
           >
             {testing ? 'Testing…' : 'Test Connection'}
           </button>
           <button
             onClick={handleSave}
             disabled={submitting || testing}
-            className="flex-1 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-50"
+            className="flex-1 rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2.5 text-sm font-medium text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.2)] disabled:opacity-50"
           >
             {submitting ? (isEditMode ? 'Saving…' : 'Connecting…') : isEditMode ? 'Save Changes' : 'Save VPS'}
           </button>

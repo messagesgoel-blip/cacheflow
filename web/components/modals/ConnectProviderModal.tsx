@@ -102,13 +102,31 @@ export default function ConnectProviderModal() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl">
-        <h3 className="text-lg font-semibold mb-2">Connect {provider.name}</h3>
-        <p className="text-sm text-gray-500 mb-6">{provider.description}</p>
-        <div className="flex gap-3">
-          <button onClick={closeModal} className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
-          <button onClick={handleConnect} disabled={connecting} className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(6,8,12,0.72)] p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] p-6 shadow-[0_36px_90px_rgba(0,0,0,0.42)]">
+        <div className="mb-6">
+          <div className="cf-kicker mb-2">Providers</div>
+          <h3 className="text-xl font-semibold text-[var(--cf-text-0)]">Connect {provider.name}</h3>
+          <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">{provider.description}</p>
+        </div>
+        <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+          <div className="cf-kicker mb-1">Flow</div>
+          <p className="text-sm text-[var(--cf-text-2)]">
+            Authorize with the provider, then CacheFlow will persist the connection in your control plane.
+          </p>
+        </div>
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={closeModal}
+            className="flex-1 rounded-xl border border-[var(--cf-border)] px-4 py-2.5 text-sm font-medium text-[var(--cf-text-1)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConnect}
+            disabled={connecting}
+            className="flex-1 rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2.5 text-sm font-medium text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.2)] disabled:opacity-50"
+          >
             {connecting ? 'Connecting...' : 'Authorize'}
           </button>
         </div>
