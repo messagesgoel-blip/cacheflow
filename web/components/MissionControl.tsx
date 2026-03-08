@@ -58,18 +58,40 @@ export default function MissionControl() {
     return () => clearInterval(interval)
   }, [])
 
+  const activeProgressBanner = useMemo(() => {
+    return banners.find(b => b.kind === 'progress')
+  }, [banners])
+
+  const operationLabel = useMemo(() => {
+    if (activeProgressBanner) {
+      return `${activeProgressBanner.title}${activeProgressBanner.message ? `: ${activeProgressBanner.message}` : ''}`
+    }
+    const active = transfers.filter(t => t.status === 'active' || t.status === 'waiting')
+    if (active.length === 0) return null
+    if (active.length === 1) {
+      const t = active[0]
+      const op = t.operation ? t.operation.charAt(0).toUpperCase() + t.operation.slice(1) : 'Processing'
+      return `${op} "${t.fileName}"`
+    }
+    return `Coordinating ${active.length} parallel operations`
+  }, [transfers, activeProgressBanner])
+
   const aggregateProgress = useMemo(() => {
+    if (activeProgressBanner) return activeProgressBanner.progress ?? 0
     const active = transfers.filter(t => t.status === 'active' || t.status === 'waiting')
     if (active.length === 0) return null
     const totalProgress = active.reduce((sum, t) => sum + (t.progress || 0), 0)
     return Math.round(totalProgress / active.length)
-  }, [transfers])
+  }, [transfers, activeProgressBanner])
 
   const activeAlert = useMemo(() => {
     if (banners.length === 0) return null
-    const errors = banners.filter(b => b.kind === 'error')
+    // Filter out progress banners as they are handled in the progress bar section
+    const nonProgress = banners.filter(b => b.kind !== 'progress')
+    if (nonProgress.length === 0) return null
+    const errors = nonProgress.filter(b => b.kind === 'error')
     if (errors.length > 0) return errors[errors.length - 1]
-    return banners[banners.length - 1]
+    return nonProgress[nonProgress.length - 1]
   }, [banners])
 
   const connectedProviderCount = useMemo(() => {
@@ -144,21 +166,24 @@ export default function MissionControl() {
                 Dismiss
               </button>
             </div>
-          ) : activeCount > 0 ? (
+          ) : (activeCount > 0 || activeProgressBanner) ? (
             <div className="flex w-full flex-col px-2">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-black text-[var(--cf-blue)] uppercase tracking-widest">
-                    Processing {activeCount} Operation{activeCount > 1 ? 's' : ''}
+                  <span className="text-[10px] font-black text-[var(--cf-blue)] uppercase tracking-widest">
+                    {activeProgressBanner ? 'Task in progress' : `Processing ${activeCount} Operation${activeCount > 1 ? 's' : ''}`}
                   </span>
                 </div>
                 <span className="font-mono text-[12px] font-bold text-[var(--cf-text-1)]">{aggregateProgress}%</span>
               </div>
-              <div className="h-2 w-full bg-[var(--cf-bg3)] rounded-full overflow-hidden shadow-inner">
+              <div className="h-2 w-full bg-[var(--cf-bg3)] rounded-full overflow-hidden shadow-inner mb-1.5">
                 <div 
                   className="h-full bg-[var(--cf-blue)] transition-all duration-700 ease-out shadow-[0_0_12px_rgba(59,130,246,0.4)]"
                   style={{ width: `${aggregateProgress}%` }}
                 />
+              </div>
+              <div className="text-[10px] font-medium text-[var(--cf-text-2)] truncate text-center">
+                {operationLabel}
               </div>
             </div>
           ) : (
