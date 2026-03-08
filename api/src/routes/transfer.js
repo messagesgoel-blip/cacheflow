@@ -1,5 +1,6 @@
 const express = require('express');
 const authMw = require('../middleware/auth');
+const { addTransferJob, cancelTransferJob } = require('../services/transferService');
 
 const router = express.Router();
 router.use(authMw);
@@ -22,36 +23,62 @@ router.get('/progress/:taskId', (req, res) => {
   res.json({ success: true, taskId, progress: transfer.progress || 0, status: transfer.status || 'unknown' });
 });
 
-router.post('/start', (req, res) => {
-  const { sourceProvider, destProvider, fileId, fileName, fileSize } = req.body;
+router.post('/start', async (req, res) => {
+  const { sourceProvider, destProvider, fileId, fileName, fileSize, sourceFolderId, destFolderId } = req.body;
 
   if (!sourceProvider || !destProvider || !fileId) {
     return res.status(400).json({ success: false, error: 'sourceProvider, destProvider, and fileId are required' });
   }
 
-  const taskId = `transfer_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-  activeTransfers.set(taskId, {
-    taskId,
-    owner: req.user.id,
-    sourceProvider,
-    destProvider,
-    fileId,
-    fileName: fileName || 'unknown',
-    fileSize: fileSize || 0,
-    progress: 0,
-    status: 'waiting',
-    createdAt: new Date().toISOString(),
-  });
+  try {
+    const job = await addTransferJob({
+      userId: req.user.id,
+      sourceProvider,
+      destProvider,
+      fileId,
+      fileName: fileName || 'unknown',
+      fileSize: parseInt(fileSize, 10) || 0,
+      sourceFolderId,
+      destFolderId,
+      operation: 'copy',
+    });
 
-  res.status(201).json({ success: true, taskId });
+    const taskId = job.id;
+    activeTransfers.set(taskId, {
+      taskId,
+      jobId: taskId,
+      owner: req.user.id,
+      sourceProvider,
+      destProvider,
+      fileId,
+      fileName: fileName || 'unknown',
+      fileSize: parseInt(fileSize, 10) || 0,
+      progress: 0,
+      status: 'queued',
+      createdAt: new Date().toISOString(),
+    });
+
+    res.status(201).json({ success: true, taskId });
+  } catch (err) {
+    console.error('[transfer] Failed to enqueue transfer:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to enqueue transfer' });
+  }
 });
 
-router.delete('/:taskId', (req, res) => {
+router.delete('/:taskId', async (req, res) => {
   const { taskId } = req.params;
   const transfer = activeTransfers.get(taskId);
 
   if (!transfer || transfer.owner !== req.user.id) {
     return res.status(404).json({ success: false, error: 'Transfer not found' });
+  }
+
+  try {
+    if (transfer.jobId) {
+      await cancelTransferJob(transfer.jobId);
+    }
+  } catch (err) {
+    console.error(`[transfer] Failed to cancel BullMQ job ${transfer.jobId}:`, err.message);
   }
 
   activeTransfers.delete(taskId);
