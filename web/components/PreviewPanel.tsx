@@ -9,6 +9,7 @@ interface PreviewPanelProps {
   url: string | null
   type: PreviewType
   textContent?: string
+  previewLoading?: boolean
   previewError?: string
   onClose: () => void
   onDownload: (file: FileMetadata) => void
@@ -23,6 +24,7 @@ export default function PreviewPanel({
   url,
   type,
   textContent,
+  previewLoading,
   previewError,
   onClose,
   onDownload,
@@ -62,10 +64,13 @@ export default function PreviewPanel({
             <p className="text-xs text-red-600 uppercase font-bold tracking-widest">Could not load preview</p>
             <p className="text-xs text-gray-500">{previewError}</p>
           </div>
-        ) : !url ? (
-          <div className="text-6xl">{getFileIcon(file.mimeType)}</div>
+        ) : previewLoading ? (
+          <div className="flex flex-col items-center gap-2 text-center p-8">
+            <span className="text-5xl animate-pulse">{getFileIcon(file.mimeType)}</span>
+            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest">Loading preview</p>
+          </div>
         ) : type === 'image' ? (
-          <img src={url} alt={file.name} className="max-w-full max-h-full object-contain" />
+          <img src={url || undefined} alt={file.name} className="max-w-full max-h-full object-contain" />
         ) : type === 'pdf' ? (
           <div className="flex flex-col items-center gap-2">
             <span className="text-6xl">📄</span>
@@ -77,6 +82,8 @@ export default function PreviewPanel({
               {textContent ?? 'Loading text preview…'}
             </pre>
           </div>
+        ) : !url ? (
+          <div className="text-6xl">{getFileIcon(file.mimeType)}</div>
         ) : (
           <div className="flex flex-col items-center gap-2 text-center p-8">
             <span className="text-6xl">{getFileIcon(file.mimeType)}</span>

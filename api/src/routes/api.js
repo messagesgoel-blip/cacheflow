@@ -13,6 +13,30 @@ router.use(authMw);
 const LOCAL_PATH = process.env.LOCAL_CACHE_PATH || '/mnt/local';
 const POOL_PATH = process.env.POOL_PATH || '/mnt/pool';
 
+function parseSingleByteRange(rangeHeader, totalSize) {
+  if (!rangeHeader || typeof rangeHeader !== 'string') return null;
+  const match = /^bytes=(\d*)-(\d*)$/i.exec(rangeHeader.trim());
+  if (!match) return null;
+
+  const [, rawStart, rawEnd] = match;
+  if (totalSize <= 0) return null;
+  if (rawStart === '' && rawEnd === '') return null;
+
+  if (rawStart === '') {
+    const suffixLength = Number.parseInt(rawEnd, 10);
+    if (!Number.isFinite(suffixLength) || suffixLength <= 0) return null;
+    const start = Math.max(totalSize - suffixLength, 0);
+    return { start, end: totalSize - 1 };
+  }
+
+  const start = Number.parseInt(rawStart, 10);
+  const end = rawEnd === '' ? totalSize - 1 : Number.parseInt(rawEnd, 10);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  if (start < 0 || end < start || start >= totalSize) return null;
+
+  return { start, end: Math.min(end, totalSize - 1) };
+}
+
 /**
  * PATCH /api/files/rename
  * Body: { id, newName }
@@ -161,11 +185,34 @@ router.post('/files/download', async (req, res) => {
     // I'll implement it to return a token that can be used for a GET download, or just stream it if Express allows.
     // Express allows streaming in POST.
     
+    const totalSize = Number(fs.statSync(diskPath).size || file.size_bytes || 0);
+    const range = parseSingleByteRange(req.headers.range, totalSize);
+    if (req.headers.range && !range && totalSize > 0) {
+      res.setHeader('Content-Range', `bytes */${totalSize}`);
+      return res.status(416).json({ ok: false, error: 'requested range not satisfiable' });
+    }
+
+    res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${path.basename(file.path)}"`);
-    res.setHeader('Content-Length', file.size_bytes);
+    res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('X-Request-Id', req.requestId);
-    
-    const stream = fs.createReadStream(diskPath);
+
+    if (totalSize === 0) {
+      res.setHeader('Content-Length', '0');
+      return res.status(200).end();
+    }
+
+    const start = range ? range.start : 0;
+    const end = range ? range.end : totalSize - 1;
+    const contentLength = end - start + 1;
+
+    if (range) {
+      res.status(206);
+      res.setHeader('Content-Range', `bytes ${start}-${end}/${totalSize}`);
+    }
+    res.setHeader('Content-Length', String(contentLength));
+
+    const stream = fs.createReadStream(diskPath, { start, end });
     stream.pipe(res);
 
     stream.on('finish', () => {

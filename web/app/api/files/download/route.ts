@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
   const authHeaderFromRequest = request.headers.get('authorization')
   const authHeader = authHeaderFromRequest || (tokenFromCookie ? `Bearer ${tokenFromCookie}` : null)
   const cookieHeader = request.headers.get('cookie')
+  const rangeHeader = request.headers.get('range')
 
   if (!authHeader) {
     return NextResponse.json(
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
       'Content-Type': request.headers.get('content-type') || 'application/json',
       ...(authHeader ? { Authorization: authHeader } : {}),
       ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      ...(rangeHeader ? { Range: rangeHeader } : {}),
     },
     body,
     cache: 'no-store',
@@ -33,10 +35,14 @@ export async function POST(request: NextRequest) {
   const contentType = upstream.headers.get('content-type')
   const disposition = upstream.headers.get('content-disposition')
   const contentLength = upstream.headers.get('content-length')
+  const contentRange = upstream.headers.get('content-range')
+  const acceptRanges = upstream.headers.get('accept-ranges')
 
   if (contentType) responseHeaders.set('content-type', contentType)
   if (disposition) responseHeaders.set('content-disposition', disposition)
   if (contentLength) responseHeaders.set('content-length', contentLength)
+  if (contentRange) responseHeaders.set('content-range', contentRange)
+  if (acceptRanges) responseHeaders.set('accept-ranges', acceptRanges)
 
   return new NextResponse(upstream.body, {
     status: upstream.status,
