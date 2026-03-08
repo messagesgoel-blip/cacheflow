@@ -251,39 +251,39 @@ export default function ProviderHub() {
 
   return (
     <div className="mx-auto max-w-[1600px] p-6">
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="cf-kicker mb-3">Providers</div>
-          <h1 className="mb-2 text-3xl font-semibold text-[var(--cf-text-0)]">Connected Providers</h1>
+          <div className="cf-kicker mb-2">Providers</div>
+          <h1 className="mb-2 text-[28px] font-semibold leading-tight text-[var(--cf-text-0)]">Connected Providers</h1>
           <p className="text-sm text-[var(--cf-text-1)]">
             Operational view for real connected providers, verification state, and stored remote endpoints.
           </p>
         </div>
-        <div className="ml-auto flex gap-3">
+        <div className="ml-auto flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => openConnectModal('google')}
-            className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]"
+            className="rounded-lg border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-3 py-1.5 text-[13px] font-medium text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]"
           >
-            + Add Cloud Provider
+            Add Cloud Provider
           </button>
           <button
             type="button"
             onClick={() => openConnectModal('vps')}
-            className="rounded-xl border border-[rgba(255,159,67,0.28)] bg-[rgba(255,159,67,0.12)] px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.18)]"
+            className="rounded-lg border border-[rgba(255,159,67,0.28)] bg-[rgba(255,159,67,0.12)] px-3 py-1.5 text-[13px] font-medium text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.18)]"
           >
             Connect VPS / SFTP
           </button>
         </div>
       </div>
 
-      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
-          <div key={card.label} className="cf-panel rounded-[22px] p-5">
-            <div className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
+          <div key={card.label} className="cf-panel rounded-[22px] p-4">
+            <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
               {card.label}
             </div>
-            <div className={`text-2xl font-semibold ${card.accent}`}>{card.value}</div>
+            <div className={`text-[26px] font-semibold leading-none ${card.accent}`}>{card.value}</div>
             <div className="mt-2 text-sm text-[var(--cf-text-2)]">{card.helper}</div>
           </div>
         ))}
@@ -492,35 +492,35 @@ export default function ProviderHub() {
           )}
 
           <div className="mb-4">
-            <div className="cf-kicker mb-3">Connect</div>
-            <h2 className="text-xl font-semibold text-[var(--cf-text-0)]">Available Integrations</h2>
+            <div className="cf-kicker mb-2">Connect</div>
+            <h2 className="text-[22px] font-semibold leading-tight text-[var(--cf-text-0)]">Available Integrations</h2>
             <p className="mt-1 text-sm text-[var(--cf-text-1)]">
               Add another provider without leaving the current control plane.
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {availableToConnect.map((provider) => (
               <div
                 key={provider.id}
                 data-testid={`cf-provider-connect-card-${provider.id}`}
-                className="cf-panel rounded-[24px] p-5 transition-all hover:-translate-y-0.5"
+                className="cf-panel rounded-[22px] p-4 transition-all hover:-translate-y-0.5"
               >
-                <div className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
+                <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
                   {provider.id === 'vps' ? 'Server-side remote' : 'OAuth provider'}
                 </div>
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--cf-border)] text-2xl" style={{ backgroundColor: `${provider.color}22` }}>
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--cf-border)] text-[22px]" style={{ backgroundColor: `${provider.color}22` }}>
                     {getProviderIcon(provider.id)}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[var(--cf-text-0)]">{provider.name}</p>
-                    <p className="text-xs text-[var(--cf-text-2)]">{provider.description}</p>
+                    <p className="text-[13px] font-semibold text-[var(--cf-text-0)]">{provider.name}</p>
+                    <p className="text-[11px] text-[var(--cf-text-2)]">{provider.description}</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => openConnectModal(provider.id)}
-                  className="w-full rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]"
+                  className="w-full rounded-lg border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-3 py-1.5 text-[13px] font-medium text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]"
                 >
                   Connect
                 </button>
