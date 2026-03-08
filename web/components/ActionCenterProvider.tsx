@@ -50,6 +50,7 @@ type ActionCenterApi = {
   startTask: (input: { title: string; message?: string; progress?: number | null; key?: string }) => TaskHandle
   confirm: (input: { title: string; message?: string; confirmText?: string; cancelText?: string }) => Promise<boolean>
   prompt: (input: { title: string; message?: string; initial?: string; placeholder?: string; confirmText?: string; cancelText?: string }) => Promise<string | null>
+  banners: Banner[]
 }
 
 const ActionCenterContext = createContext<ActionCenterApi | null>(null)
@@ -58,6 +59,11 @@ export function useActionCenter(): ActionCenterApi {
   const ctx = useContext(ActionCenterContext)
   if (!ctx) throw new Error('useActionCenter must be used within ActionCenterProvider')
   return ctx
+}
+
+export function useBanners(): Banner[] {
+  const ctx = useActionCenter()
+  return ctx.banners
 }
 
 function classFor(kind: BannerKind): string {
@@ -165,23 +171,14 @@ export default function ActionCenterProvider({ children }: { children: React.Rea
       })
     }
 
-    return { notify, dismissBanner, startTask, confirm, prompt }
-  }, [])
+    return { notify, dismissBanner, startTask, confirm, prompt, banners }
+  }, [banners])
 
   return (
     <ActionCenterContext.Provider value={api}>
       {children}
 
-      {/* Banners */}
-      <div className="fixed top-4 right-4 z-[1000] w-[360px] max-w-[calc(100vw-2rem)] space-y-2">
-        {banners.map((b) => (
-          <div key={b.id} className={`rounded-xl border px-4 py-3 shadow-sm ${classFor(b.kind)}`}>
-            <div className="text-sm font-semibold">{b.title}</div>
-            {b.message && <div className="mt-0.5 text-sm opacity-90">{b.message}</div>}
-            {b.kind === 'progress' && <ProgressBar progress={b.progress ?? null} />}
-          </div>
-        ))}
-      </div>
+      {/* Banners moved to MissionControl - removed from here */}
 
       {/* Confirm modal */}
       {confirmState.open && (
