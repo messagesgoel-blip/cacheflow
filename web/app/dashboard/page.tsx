@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
-import StorageHero from '@/components/dashboard/StorageHero'
+import MissionControl from '@/components/MissionControl'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel'
 import RecentActivityPanel from '@/components/dashboard/RecentActivityPanel'
@@ -83,13 +83,7 @@ export default function DashboardPage() {
       try {
         const result = await apiClient.getConnections()
         if (result.success && result.data) {
-          for (const conn of result.data) {
-            const existing = connected.find(c => c.providerId === conn.provider)
-            if (existing && conn.accountEmail === existing.accountEmail) {
-              // Update with server quota if available
-              // For now, just use local
-            }
-          }
+          // Connections already processed by tokenManager + server fetch logic
         }
       } catch (err) {
         console.warn('Failed to fetch server connections:', err)
@@ -126,7 +120,6 @@ export default function DashboardPage() {
   const vpsCount = connectedProviders.filter((provider) => provider.providerId === 'vps').length
   const cloudCount = Math.max(connectedProviders.length - vpsCount, 0)
   const quotaKnownCount = connectedProviders.filter((provider) => (provider.quota?.total || 0) > 0).length
-  const opaqueCount = Math.max(connectedProviders.length - quotaKnownCount, 0)
   const accountLabels = connectedProviders
     .map((provider) => provider.displayName || provider.accountEmail || provider.providerId)
     .slice(0, 6)
@@ -139,17 +132,8 @@ export default function DashboardPage() {
         window.location.href = '/login'
       }} />
       <div className="mx-auto max-w-[1600px] px-4 py-6">
-        <div className="mb-6">
-          <div className="cf-kicker mb-2">Overview</div>
-          <h1 className="text-[28px] font-semibold leading-tight text-[var(--cf-text-0)]">Storage Command Center</h1>
-          <p className="mt-2 max-w-3xl text-sm text-[var(--cf-text-1)]">
-            High-signal overview for pooled storage, provider health, and operational movement across your connected providers.
-          </p>
-        </div>
-
-        <div className="mb-6">
-          <StorageHero connectedProviders={connectedProviders} />
-        </div>
+        
+        <MissionControl />
 
         <div className="mb-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <OnboardingChecklist connectedProviderCount={connectedProviders.length} />

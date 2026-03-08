@@ -66,7 +66,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ActionCenterProvider>
           <TransferQueueProvider>
             <TransferProvider>
-              <MissionControl />
               {children}
               <TransferTray />
             </TransferProvider>
