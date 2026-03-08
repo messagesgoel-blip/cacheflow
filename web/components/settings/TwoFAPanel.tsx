@@ -198,8 +198,9 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+      <div className="space-y-4 animate-pulse">
+        <div className="h-28 rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]" />
+        <div className="h-40 rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]" />
       </div>
     )
   }
@@ -207,17 +208,19 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
   return (
     <div
       data-testid="cf-2fa-panel"
-      className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700"
+      className="space-y-6 rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-subpanel-bg)] p-6 shadow-[var(--cf-shadow-elev)]"
     >
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center gap-4">
           <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center ${
-              settings.enabled ? 'bg-green-100 dark:bg-green-900' : 'bg-gray-100 dark:bg-gray-700'
+            className={`flex h-14 w-14 items-center justify-center rounded-2xl border ${
+              settings.enabled
+                ? 'border-[rgba(0,201,167,0.24)] bg-[rgba(0,201,167,0.1)]'
+                : 'border-[var(--cf-border)] bg-[var(--cf-panel-soft)]'
             }`}
           >
             <svg
-              className={`w-6 h-6 ${settings.enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}
+              className={`h-6 w-6 ${settings.enabled ? 'text-[var(--cf-teal)]' : 'text-[var(--cf-text-2)]'}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -231,100 +234,185 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
             </svg>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Two-Factor Authentication</h3>
-            <p className="text-sm text-gray-500">{settings.enabled ? 'Enabled' : 'Not enabled'}</p>
+            <div className="cf-kicker">Authentication Guardrail</div>
+            <h3 className="mt-2 text-xl font-semibold text-[var(--cf-text-0)]">Two-Factor Authentication</h3>
+            <p className="mt-1 text-sm text-[var(--cf-text-1)]">
+              {settings.enabled ? 'Enabled for this account.' : 'Not enabled yet.'}
+            </p>
           </div>
         </div>
-        {settings.enabled && (
-          <button onClick={handleDisable} className="text-sm text-red-600 hover:text-red-700">
-            Disable
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          <div
+            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+              settings.enabled
+                ? 'border-[rgba(0,201,167,0.24)] bg-[rgba(0,201,167,0.08)] text-[var(--cf-teal)]'
+                : 'border-[var(--cf-border)] bg-[var(--cf-panel-soft)] text-[var(--cf-text-1)]'
+            }`}
+          >
+            {settings.enabled ? 'Protected' : 'Recommended'}
+          </div>
+          {settings.enabled && (
+            <button
+              onClick={handleDisable}
+              className="rounded-2xl border border-[rgba(255,92,92,0.26)] bg-[rgba(255,92,92,0.08)] px-4 py-2 text-sm font-medium text-[var(--cf-red)] transition hover:bg-[rgba(255,92,92,0.14)]"
+            >
+              Disable
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+          <div className="cf-kicker">Status</div>
+          <div className={`mt-3 text-2xl font-semibold ${settings.enabled ? 'text-[var(--cf-teal)]' : 'text-[var(--cf-blue)]'}`}>
+            {settings.enabled ? 'Enabled' : 'Pending'}
+          </div>
+          <p className="mt-2 text-xs leading-5 text-[var(--cf-text-1)]">
+            {settings.enabled
+              ? 'Interactive sign-in now requires a secondary code.'
+              : 'Enable to protect account access with a time-based code.'}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+          <div className="cf-kicker">Last Used</div>
+          <div className="mt-3 text-sm font-semibold text-[var(--cf-text-0)]">
+            {settings.lastUsed ? new Date(settings.lastUsed).toLocaleString() : 'No 2FA sign-in yet'}
+          </div>
+          <p className="mt-2 text-xs leading-5 text-[var(--cf-text-1)]">Tracks recent OTP usage only after successful activation.</p>
+        </div>
+        <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+          <div className="cf-kicker">Recovery</div>
+          <div className="mt-3 text-sm font-semibold text-[var(--cf-text-0)]">
+            {settings.backupCodesRemaining !== undefined ? `${settings.backupCodesRemaining} codes remaining` : 'Codes shown during setup'}
+          </div>
+          <p className="mt-2 text-xs leading-5 text-[var(--cf-text-1)]">Backup codes can be copied during setup and viewed again if still cached in memory.</p>
+        </div>
       </div>
 
       {!settings.enabled && !setupState && (
-        <button
-          onClick={handleStartSetup}
-          className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
-          disabled={isStartingSetup}
-        >
-          {isStartingSetup ? 'Preparing setup...' : 'Enable Two-Factor Authentication'}
-        </button>
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-5">
+          <div className="cf-kicker">Activation</div>
+          <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">
+            Start setup to generate an authenticator secret, display the QR code, and issue one-time backup codes.
+          </p>
+          <button
+            onClick={handleStartSetup}
+            className="mt-5 rounded-2xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2 text-sm font-semibold text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.2)] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isStartingSetup}
+          >
+            {isStartingSetup ? 'Preparing setup...' : 'Enable Two-Factor Authentication'}
+          </button>
+        </div>
       )}
 
       {!settings.enabled && setupState && (
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Scan this QR code in your authenticator app, then enter the 6-digit code.
-          </p>
-          <div className="bg-white p-3 rounded-lg border border-gray-200 inline-block">
-            <img src={setupState.qrCodeUrl} alt="QR Code" className="w-48 h-48" />
+        <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+          <div className="rounded-[24px] border border-[var(--cf-border)] bg-white p-4">
+            <div className="cf-kicker text-slate-500">Authenticator QR</div>
+            <div className="mt-4 inline-block rounded-2xl border border-slate-200 p-2">
+              <img src={setupState.qrCodeUrl} alt="QR Code" className="h-48 w-48" />
+            </div>
+            <p className="mt-4 text-xs leading-5 text-slate-600">
+              Scan with your authenticator app. The secret only needs manual entry if QR scanning is unavailable.
+            </p>
           </div>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={6}
-            value={verificationCode}
-            onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-            placeholder="Enter 6-digit code"
-            className="w-full max-w-xs px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-          <button
-            onClick={handleVerifySetup}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium disabled:opacity-60"
-            disabled={isVerifyingSetup}
-          >
-            {isVerifyingSetup ? 'Verifying...' : 'Verify & Activate'}
-          </button>
-          {backupCodes.length > 0 && (
-            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Backup Codes</span>
-              <div className="grid grid-cols-2 gap-2 font-mono text-sm mt-2">
-                {backupCodes.map((code, i) => (
-                  <code key={i} className="text-gray-600 dark:text-gray-400">
-                    {code}
-                  </code>
-                ))}
+          <div className="space-y-4">
+            <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-5">
+              <div className="cf-kicker">Verification</div>
+              <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">
+                Scan this QR code in your authenticator app, then enter the 6-digit code to activate two-factor authentication.
+              </p>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={verificationCode}
+                onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="Enter 6-digit code"
+                className="mt-5 w-full max-w-xs rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] px-4 py-3 text-[var(--cf-text-0)] outline-none transition focus:border-[var(--cf-blue)]"
+              />
+              <div className="mt-4">
+                <button
+                  onClick={handleVerifySetup}
+                  className="rounded-2xl border border-[rgba(0,201,167,0.24)] bg-[rgba(0,201,167,0.12)] px-4 py-2 text-sm font-semibold text-[var(--cf-teal)] transition hover:bg-[rgba(0,201,167,0.18)] disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isVerifyingSetup}
+                >
+                  {isVerifyingSetup ? 'Verifying...' : 'Verify & Activate'}
+                </button>
               </div>
             </div>
+          {backupCodes.length > 0 && (
+              <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-5">
+                <div className="cf-kicker">Backup Codes</div>
+                <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">
+                  Save these codes somewhere safe. Each code can be used once if your authenticator is unavailable.
+                </p>
+                <div className="mt-4 grid grid-cols-2 gap-2 font-mono text-sm">
+                {backupCodes.map((code, i) => (
+                    <code
+                      key={i}
+                      className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] px-3 py-2 text-[var(--cf-text-1)]"
+                    >
+                    {code}
+                    </code>
+                ))}
+                </div>
+              </div>
           )}
+          </div>
         </div>
       )}
 
       {settings.enabled && (
         <div className="space-y-4">
-          {settings.lastUsed && (
-            <div className="text-sm text-gray-500">Last used: {new Date(settings.lastUsed).toLocaleString()}</div>
-          )}
-          <div className="flex gap-3">
-            <button
-              onClick={handleGenerateBackupCodes}
-              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium"
-            >
-              View Backup Codes
-            </button>
-            {settings.backupCodesRemaining !== undefined && (
-              <span className="text-sm text-gray-500 self-center">{settings.backupCodesRemaining} codes remaining</span>
-            )}
+          <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div className="cf-kicker">Recovery Controls</div>
+                <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">
+                  Keep a copy of your backup codes. These are your fallback if your authenticator device is lost.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleGenerateBackupCodes}
+                  className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] px-4 py-2 text-sm font-medium text-[var(--cf-text-1)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+                >
+                  View Backup Codes
+                </button>
+                {settings.backupCodesRemaining !== undefined && (
+                  <span className="inline-flex items-center rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] px-3 py-1 text-xs font-medium text-[var(--cf-text-1)]">
+                    {settings.backupCodesRemaining} codes remaining
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
           {showBackupCodes && backupCodes.length > 0 && (
-            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Backup Codes</span>
+            <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-5">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="cf-kicker">Backup Codes</div>
+                  <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">Copy these codes to a secure location.</p>
+                </div>
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(backupCodes.join('\n'))
                   }}
-                  className="text-xs text-blue-600 hover:text-blue-700"
+                  className="rounded-2xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.08)] px-3 py-2 text-xs font-semibold text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.14)]"
                 >
                   Copy all
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2 font-mono text-sm">
                 {backupCodes.map((code, i) => (
-                  <code key={i} className="text-gray-600 dark:text-gray-400">
+                  <code
+                    key={i}
+                    className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] px-3 py-2 text-[var(--cf-text-1)]"
+                  >
                     {code}
                   </code>
                 ))}
@@ -335,7 +423,7 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
       )}
 
       {error && (
-        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
+        <div className="rounded-2xl border border-[rgba(255,92,92,0.24)] bg-[rgba(255,92,92,0.08)] px-4 py-3 text-sm text-[var(--cf-red)]">
           {error}
         </div>
       )}

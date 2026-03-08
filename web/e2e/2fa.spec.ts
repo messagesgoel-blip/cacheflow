@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { primeQaSession } from './helpers/mockRuntime';
 
 test.describe('2.16@2FA-1: Two-Factor Authentication', () => {
   test.beforeEach(async ({ page, request }) => {
@@ -46,28 +47,13 @@ test.describe('2.16@2FA-1: Two-Factor Authentication', () => {
       });
     });
 
-    // Login as test user
-    await page.addInitScript(() => {
-      localStorage.setItem('cf_token', 'mock-token');
-      localStorage.setItem('cf_email', 'sup@goels.in');
-    });
-    await page.goto('/files');
-    await expect(page.locator('[data-testid="cf-sidebar-root"]')).toBeVisible({ timeout: 15000 });
+    await primeQaSession(page, request, 'sup@goels.in', '123password');
+    await page.goto('/settings/security');
+    await expect(page).toHaveURL(/.*\/settings\/security/);
+    await expect(page.locator('[data-testid="cf-2fa-panel"]')).toBeVisible({ timeout: 15000 });
   });
 
   test('should allow a user to setup, verify, and disable 2FA', async ({ page }) => {
-    // Navigate to settings
-    await page.getByTestId('cf-sidebar-user-menu').click();
-    await Promise.all([
-      page.waitForURL(/.*\/settings(\/security)?/, { timeout: 10000 }),
-      page.getByTestId('cf-sidebar-user-settings').click(),
-    ]);
-    if (!/\/settings(\/security)?/.test(page.url())) {
-      await page.goto('/settings/security');
-    }
-    await expect(page).toHaveURL(/.*\/settings(\/security)?/);
-
-    // Find the 2FA panel and click the enable button
     const twoFactorPanel = page.locator('[data-testid="cf-2fa-panel"]');
     await expect(twoFactorPanel).toBeVisible();
     const enableButton = twoFactorPanel.locator('button:has-text("Enable")');

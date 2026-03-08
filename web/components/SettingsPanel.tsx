@@ -1,14 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { UserSettings } from '@/lib/providers/types'
 import { useActionCenter } from '@/components/ActionCenterProvider'
 
-interface SettingsPanelProps {
-  // TODO: Connect to real settings when backend is ready
-  // initialSettings?: UserSettings
-  // onSave?: (settings: UserSettings) => void
-}
+interface SettingsPanelProps {}
 
 const defaultSettings: UserSettings = {
   browserOnlyMode: false,
@@ -18,356 +14,335 @@ const defaultSettings: UserSettings = {
   defaultUploadProvider: undefined,
 }
 
+const themeOptions: Array<UserSettings['theme']> = ['light', 'dark', 'system']
+const cacheOptions = [1, 5, 15, 30, 60]
+
+function ToggleSwitch({
+  enabled,
+  onChange,
+  disabled = false,
+}: {
+  enabled: boolean
+  onChange: () => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      onClick={onChange}
+      disabled={disabled}
+      className={`relative inline-flex h-7 w-12 items-center rounded-full border transition ${
+        enabled
+          ? 'border-[rgba(74,158,255,0.45)] bg-[rgba(74,158,255,0.24)]'
+          : 'border-[var(--cf-border)] bg-[var(--cf-panel-soft)]'
+      } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+    >
+      <span
+        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+          enabled ? 'translate-x-6' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  )
+}
+
+function SettingsCard({
+  kicker,
+  title,
+  description,
+  children,
+}: {
+  kicker: string
+  title: string
+  description: string
+  children: ReactNode
+}) {
+  return (
+    <section className="cf-subpanel rounded-[28px] p-5" data-testid={`cf-settings-card-${kicker.toLowerCase().replace(/\s+/g, '-')}`}>
+      <div className="cf-kicker">{kicker}</div>
+      <div className="mt-3">
+        <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">{title}</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--cf-text-1)]">{description}</p>
+      </div>
+      <div className="mt-5 space-y-4">{children}</div>
+    </section>
+  )
+}
+
+function SettingRow({
+  title,
+  description,
+  trailing,
+  helper,
+}: {
+  title: string
+  description: string
+  trailing: ReactNode
+  helper?: ReactNode
+}) {
+  return (
+    <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-semibold text-[var(--cf-text-0)]">{title}</h3>
+          <p className="mt-1 text-sm leading-6 text-[var(--cf-text-1)]">{description}</p>
+          {helper ? <div className="mt-3">{helper}</div> : null}
+        </div>
+        <div className="flex-shrink-0">{trailing}</div>
+      </div>
+    </div>
+  )
+}
+
 export default function SettingsPanel({}: SettingsPanelProps) {
   const [settings, setSettings] = useState<UserSettings>(defaultSettings)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const actions = useActionCenter()
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('cacheflow_settings')
+      if (!raw) return
+      const parsed = JSON.parse(raw) as Partial<UserSettings>
+      setSettings((prev) => ({ ...prev, ...parsed }))
+    } catch {
+      // Keep defaults if saved preferences are invalid.
+    }
+  }, [])
+
   const handleToggle = (key: keyof UserSettings) => {
     if (typeof settings[key] === 'boolean') {
-      setSettings(prev => ({ ...prev, [key]: !prev[key] }))
+      setSettings((prev) => ({ ...prev, [key]: !prev[key] }))
       setSaved(false)
     }
   }
 
-  const handleChange = (key: keyof UserSettings, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }))
+  const handleChange = (key: keyof UserSettings, value: UserSettings[keyof UserSettings]) => {
+    setSettings((prev) => ({ ...prev, [key]: value }))
     setSaved(false)
   }
 
   const handleSave = async () => {
     setSaving(true)
-    // TODO: Save to server/localStorage
-    // await api.saveSettings(settings)
     localStorage.setItem('cacheflow_settings', JSON.stringify(settings))
-
-    // Simulate save
-    await new Promise(resolve => setTimeout(resolve, 500))
-
+    await new Promise((resolve) => setTimeout(resolve, 500))
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
 
+  const browserModeTone = settings.browserOnlyMode
+    ? {
+        label: 'Private',
+        className:
+          'border-[rgba(0,201,167,0.24)] bg-[rgba(0,201,167,0.08)] text-[var(--cf-teal)]',
+      }
+    : {
+        label: 'Convenience',
+        className:
+          'border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.08)] text-[var(--cf-blue)]',
+      }
+
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
-      <div className="mb-6 flex items-end justify-between gap-4">
+    <div className="px-6 py-6 lg:px-8" data-testid="cf-settings-panel">
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Settings
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Manage your CacheFlow preferences
+          <div className="cf-kicker">Preference Controls</div>
+          <h2 className="mt-2 text-2xl font-semibold text-[var(--cf-text-0)]">Operational defaults</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--cf-text-1)]">
+            These values shape browser behavior, cache refresh cadence, and visual theme without changing server-side provider state.
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
+            type="button"
             onClick={() => setSettings(defaultSettings)}
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="rounded-2xl border border-[var(--cf-border)] px-4 py-2 text-sm font-medium text-[var(--cf-text-1)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
           >
             Reset
           </button>
           <button
+            type="button"
+            data-testid="cf-settings-save"
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-2xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2 text-sm font-semibold text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.2)] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}
+            {saving ? 'Saving...' : saved ? 'Saved' : 'Save changes'}
           </button>
         </div>
       </div>
 
-      {/* Privacy Section */}
-      <section className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-          Privacy & Security
-        </h2>
+      <div className="mb-6 grid gap-4 lg:grid-cols-4">
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+          <div className="cf-kicker">Token Strategy</div>
+          <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${browserModeTone.className}`}>
+            {browserModeTone.label}
+          </div>
+          <p className="mt-3 text-xs leading-5 text-[var(--cf-text-1)]">
+            {settings.browserOnlyMode
+              ? 'Credentials stay in the browser only.'
+              : 'Encrypted server-side storage remains enabled.'}
+          </p>
+        </div>
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+          <div className="cf-kicker">Refresh</div>
+          <div className="mt-3 text-2xl font-semibold text-[var(--cf-teal)]">
+            {settings.autoRefreshTokens ? 'Auto' : 'Manual'}
+          </div>
+          <p className="mt-3 text-xs leading-5 text-[var(--cf-text-1)]">OAuth refresh cadence follows your current privacy mode.</p>
+        </div>
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+          <div className="cf-kicker">Cache TTL</div>
+          <div className="mt-3 text-2xl font-semibold text-[var(--cf-amber)]">
+            {settings.cacheTTLMinutes >= 60 ? `${settings.cacheTTLMinutes / 60}h` : `${settings.cacheTTLMinutes}m`}
+          </div>
+          <p className="mt-3 text-xs leading-5 text-[var(--cf-text-1)]">Controls how aggressively folder listings refresh from providers.</p>
+        </div>
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+          <div className="cf-kicker">Theme</div>
+          <div className="mt-3 text-2xl font-semibold capitalize text-[var(--cf-purple)]">{settings.theme}</div>
+          <p className="mt-3 text-xs leading-5 text-[var(--cf-text-1)]">Updates the visual shell only. No behavior changes.</p>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Browser-only Mode */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900 dark:text-white">
-                  Browser-only mode
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Keep your OAuth tokens only in your browser&apos;s local storage.
-                  Tokens will not be stored on the server.
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    settings.browserOnlyMode
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                      : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                  }`}>
-                    {settings.browserOnlyMode ? '🔒 Private' : '☁️ Convenience'}
-                  </span>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="space-y-6">
+          <SettingsCard
+            kicker="Privacy"
+            title="Token and session behavior"
+            description="Keep the current auth model intact while choosing between convenience and stricter browser-only handling."
+          >
+            <SettingRow
+              title="Browser-only mode"
+              description="Keep your OAuth tokens only in browser storage. This avoids server-side token persistence but requires re-authentication if browser data is cleared."
+              trailing={
+                <ToggleSwitch
+                  enabled={settings.browserOnlyMode}
+                  onChange={() => handleToggle('browserOnlyMode')}
+                />
+              }
+              helper={
+                <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${browserModeTone.className}`}>
+                  {settings.browserOnlyMode ? 'Private storage mode' : 'Encrypted server storage'}
                 </div>
-              </div>
-              <ToggleSwitch
-                enabled={settings.browserOnlyMode}
-                onChange={() => handleToggle('browserOnlyMode')}
-              />
-            </div>
-
-            {!settings.browserOnlyMode && (
-              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Default:</strong> Your OAuth tokens are stored on the server (encrypted).
-                  This allows faster re-login and background sync.
-                  <button
-                    onClick={() => handleToggle('browserOnlyMode')}
-                    className="ml-1 underline"
-                  >
-                    Enable browser-only
-                  </button>
-                </p>
-              </div>
-            )}
-
-            {settings.browserOnlyMode && (
-              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  <strong>Note:</strong> You&apos;ll need to re-authenticate with each provider
-                  after clearing browser data or using a different device.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Auto-refresh Tokens */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900 dark:text-white">
-                  Auto-refresh tokens
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Automatically refresh OAuth tokens before they expire to keep your providers connected.
-                </p>
-              </div>
-              <ToggleSwitch
-                enabled={settings.autoRefreshTokens}
-                onChange={() => handleToggle('autoRefreshTokens')}
-                disabled={settings.browserOnlyMode}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Storage Section */}
-      <section className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-          </svg>
-          Storage & Cache
-        </h2>
-
-        <div className="space-y-4">
-          {/* Cache TTL */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900 dark:text-white">
-                  Cache duration
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  How long to cache file listings before refreshing from providers.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {[1, 5, 15, 30, 60].map((minutes) => (
-                <button
-                  key={minutes}
-                  onClick={() => handleChange('cacheTTLMinutes', minutes)}
+              }
+            />
+            <SettingRow
+              title="Auto-refresh tokens"
+              description="Automatically refresh provider access before expiry to reduce reconnect friction."
+              trailing={
+                <ToggleSwitch
+                  enabled={settings.autoRefreshTokens}
+                  onChange={() => handleToggle('autoRefreshTokens')}
                   disabled={settings.browserOnlyMode}
-                  className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                    settings.cacheTTLMinutes === minutes
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  } ${settings.browserOnlyMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                />
+              }
+              helper={
+                settings.browserOnlyMode ? (
+                  <p className="text-xs text-[var(--cf-amber)]">Disabled while browser-only mode is active.</p>
+                ) : null
+              }
+            />
+          </SettingsCard>
+
+          <SettingsCard
+            kicker="Storage"
+            title="Cache and browser data"
+            description="These controls affect local cache behavior only. They do not change remote provider contents."
+          >
+            <SettingRow
+              title="Cache duration"
+              description="Choose how long file listings and metadata stay warm before the browser asks providers for fresh state."
+              trailing={<div className="text-sm font-semibold text-[var(--cf-text-0)]">{settings.cacheTTLMinutes} min</div>}
+              helper={
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                  {cacheOptions.map((minutes) => (
+                    <button
+                      key={minutes}
+                      type="button"
+                      onClick={() => handleChange('cacheTTLMinutes', minutes)}
+                      disabled={settings.browserOnlyMode}
+                      className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
+                        settings.cacheTTLMinutes === minutes
+                          ? 'border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] text-[var(--cf-blue)]'
+                          : 'border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'
+                      } ${settings.browserOnlyMode ? 'cursor-not-allowed opacity-50' : ''}`}
+                    >
+                      {minutes < 60 ? `${minutes}m` : `${minutes / 60}h`}
+                    </button>
+                  ))}
+                </div>
+              }
+            />
+            <SettingRow
+              title="Clear cached data"
+              description="Purge locally cached metadata and listings so the next navigation rebuilds state directly from providers."
+              trailing={
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const ok = await actions.confirm({
+                      title: 'Clear cached data?',
+                      message: 'Clear all cached data? This will require reloading file listings.',
+                      confirmText: 'Clear',
+                      cancelText: 'Cancel',
+                    })
+                    if (!ok) return
+                    localStorage.removeItem('cacheflow_cache')
+                    actions.notify({ kind: 'success', title: 'Cache cleared' })
+                  }}
+                  className="rounded-2xl border border-[var(--cf-border)] px-4 py-2 text-sm font-medium text-[var(--cf-text-1)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
                 >
-                  {minutes < 60 ? `${minutes} min` : `${minutes / 60} hr`}
+                  Clear
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Clear Cache */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900 dark:text-white">
-                  Clear cached data
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Clear all cached file listings and metadata from your browser.
-                </p>
-              </div>
-              <button
-                onClick={async () => {
-                  const ok = await actions.confirm({
-                    title: 'Clear cached data?',
-                    message: 'Clear all cached data? This will require reloading file listings.',
-                    confirmText: 'Clear',
-                    cancelText: 'Cancel',
-                  })
-                  if (!ok) return
-                  localStorage.removeItem('cacheflow_cache')
-                  actions.notify({ kind: 'success', title: 'Cache cleared' })
-                }}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                Clear
-              </button>
-            </div>
-          </div>
+              }
+            />
+          </SettingsCard>
         </div>
-      </section>
 
-      {/* Appearance Section */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-          </svg>
-          Appearance
-        </h2>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                Theme
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Choose your preferred color scheme.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {(['light', 'dark', 'system'] as const).map((theme) => (
+        <SettingsCard
+          kicker="Appearance"
+          title="Interface theme"
+          description="Set the preferred shell theme for this browser session."
+        >
+          <div className="grid gap-3 sm:grid-cols-3">
+            {themeOptions.map((theme) => (
               <button
                 key={theme}
+                type="button"
                 onClick={() => handleChange('theme', theme)}
-                className={`py-2 px-3 rounded-lg text-sm font-medium capitalize transition-colors ${
+                className={`rounded-[24px] border p-4 text-left transition ${
                   settings.theme === theme
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? 'border-[rgba(167,139,250,0.28)] bg-[rgba(167,139,250,0.12)]'
+                    : 'border-[var(--cf-border)] bg-[var(--cf-panel-soft)] hover:bg-[var(--cf-hover-bg)]'
                 }`}
               >
-                {theme === 'light' && '☀️ '}
-                {theme === 'dark' && '🌙 '}
-                {theme === 'system' && '💻 '}
-                {theme}
+                <div className="cf-kicker">{theme}</div>
+                <div className="mt-3 text-sm font-semibold text-[var(--cf-text-0)]">
+                  {theme === 'system' ? 'Match device preference' : `${theme[0].toUpperCase()}${theme.slice(1)} shell`}
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[var(--cf-text-1)]">
+                  {theme === 'light'
+                    ? 'Higher contrast surfaces with brighter shell backgrounds.'
+                    : theme === 'dark'
+                      ? 'Dense, low-glare shell optimized for long file sessions.'
+                      : 'Follow the active OS appearance setting.'}
+                </p>
               </button>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          About
-        </h2>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-2xl">
-              ☁️
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
-                CacheFlow
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Version 2.5 • Secure Server-Side Remote Architecture
-              </p>
-            </div>
-          </div>
-          <div className="mt-4 space-y-3 text-sm text-gray-600 dark:text-gray-400">
-            <p>
-              CacheFlow unifies multiple cloud storage providers into a single secure dashboard.
+          <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+            <div className="cf-kicker">Persistence</div>
+            <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">
+              Preferences are stored locally in `cacheflow_settings` until server-backed user settings are introduced.
             </p>
-            <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Secure Persistence:</strong> Your cloud tokens are stored with AES-256-GCM encryption on our server.</li>
-              <li><strong>Privacy First:</strong> All provider requests are proxied through our backend; your raw credentials never touch the browser local storage.</li>
-              <li><strong>Zero Permanent Storage:</strong> File blobs are never stored by CacheFlow. We only cache metadata to provide a fast, unified browsing experience.</li>
-            </ul>
           </div>
-        </div>
-      </section>
-
-      {/* Connected Accounts Section */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-          </svg>
-          Connected Accounts
-        </h2>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Connect your cloud storage accounts to access them from CacheFlow. 
-            Your account metadata is synced automatically across devices.
-          </p>
-          <a
-            href="/providers"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Manage Connected Accounts
-          </a>
-        </div>
-      </section>
-
-      {/* Footer spacing */}
-      <div className="h-2" />
+        </SettingsCard>
+      </div>
     </div>
-  )
-}
-
-// Toggle Switch Component
-interface ToggleSwitchProps {
-  enabled: boolean
-  onChange: () => void
-  disabled?: boolean
-}
-
-function ToggleSwitch({ enabled, onChange, disabled }: ToggleSwitchProps) {
-  return (
-    <button
-      role="switch"
-      aria-checked={enabled}
-      onClick={onChange}
-      disabled={disabled}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        enabled ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          enabled ? 'translate-x-6' : 'translate-x-1'
-        }`}
-      />
-    </button>
   )
 }
