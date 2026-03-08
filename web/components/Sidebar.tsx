@@ -117,7 +117,7 @@ export default function Sidebar({
   )
 
   const navItemClass = (isActive: boolean, isDragOver?: boolean) => `
-    relative flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all
+    relative flex items-center gap-2.5 rounded-xl border px-3 py-2 transition-all
     ${isActive
       ? 'border-[rgba(74,158,255,0.34)] bg-[rgba(74,158,255,0.12)] text-[var(--cf-blue)] shadow-[0_0_0_1px_rgba(74,158,255,0.06)]'
       : 'border-transparent text-[var(--cf-text-1)] hover:border-[var(--cf-border)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}
@@ -232,7 +232,7 @@ export default function Sidebar({
             {!isCollapsed && (
               <div
                 data-testid={`cf-sidebar-provider-${provider.id}`}
-                className="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cf-text-3)]"
+                className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cf-text-3)]"
               >
                 {provider.name}
               </div>
@@ -264,17 +264,17 @@ export default function Sidebar({
                       className={navItemClass(selectedProvider === provider.id && activeAccountKey === account.accountKey, isDragOver)}
                       title={`${getAccountLabel(account)}${health?.message ? ` (${health.message})` : ''}`}
                     >
-                      <span className="text-sm font-bold">{provider.icon}</span>
+                      <span className="text-[13px] font-bold leading-none">{provider.icon}</span>
                       {!isCollapsed && (
                         <div className="flex min-w-0 flex-1 flex-col items-start">
-                          <div className="flex w-full items-center gap-2">
-                            <span className="flex-1 break-words whitespace-normal text-left text-sm leading-tight">
+                          <div className="flex w-full items-start gap-2">
+                            <span className="flex-1 break-words whitespace-normal text-left text-[13px] font-medium leading-[1.2]">
                               {getAccountLabel(account)}
                             </span>
                             <div className={`h-2 w-2 flex-shrink-0 rounded-full ${getHealthColor(health?.status)}`} title={health?.status || 'unknown'} />
                           </div>
                           {getAccountSubLabel(account) && (
-                            <span className="w-full break-words whitespace-normal text-[10px] leading-tight text-[var(--cf-text-2)]">
+                            <span className="mt-0.5 w-full break-words whitespace-normal font-mono text-[10px] leading-tight text-[var(--cf-text-2)]">
                               {getAccountSubLabel(account)}
                             </span>
                           )}
@@ -286,14 +286,14 @@ export default function Sidebar({
                     </button>
 
                     {!isCollapsed && quota && (
-                      <div data-testid={`cf-sidebar-quota-account-${account.accountKey}`} className="mb-2 mt-1 px-10">
+                      <div data-testid={`cf-sidebar-quota-account-${account.accountKey}`} className="mb-2 mt-1 px-9">
                         <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--cf-bg3)]">
                           <div
                             className={`h-full ${getUsageColor(usagePercent)}`}
                             style={{ width: `${usagePercent}%` }}
                           />
                         </div>
-                        <div className="mt-0.5 flex justify-between font-mono text-[8px] text-[var(--cf-text-3)]">
+                        <div className="mt-0.5 flex justify-between font-mono text-[8px] tracking-[0.08em] text-[var(--cf-text-3)]">
                           <span>{formatBytes(quota.used)}</span>
                           <span>{Math.round(usagePercent)}%</span>
                         </div>
