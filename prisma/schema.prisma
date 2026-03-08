@@ -258,6 +258,8 @@ model VpsConnection {
   authMethod String   @default("pem") @map("auth_method")
   pemKey     Bytes    @map("pem_key")
   pemIv      Bytes    @map("pem_iv")
+  lastTestedAt DateTime? @map("last_tested_at")
+  lastHostFingerprint String? @map("last_host_fingerprint")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
