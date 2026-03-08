@@ -64,6 +64,41 @@ def table_panel(panel_id: int, title: str, x: int, y: int, w: int, h: int, expr:
                         {"id": "unit", "value": "dateTimeAsUS"},
                         {"id": "custom.align", "value": "auto"}
                     ]
+                },
+                {
+                    "matcher": {"id": "byName", "options": "__name__"},
+                    "properties": [
+                        {"id": "displayName", "value": "Name"},
+                        {"id": "custom.align", "value": "left"}
+                    ]
+                },
+                {
+                    "matcher": {"id": "byName", "options": "Value"},
+                    "properties": [
+                        {"id": "displayName", "value": "Stage Status"},
+                        {"id": "custom.align", "value": "center"}
+                    ]
+                },
+                {
+                    "matcher": {"id": "byName", "options": "roadmap_version"},
+                    "properties": [
+                        {"id": "displayName", "value": "Version"},
+                        {"id": "custom.align", "value": "center"}
+                    ]
+                },
+                {
+                    "matcher": {"id": "byName", "options": "stage"},
+                    "properties": [
+                        {"id": "displayName", "value": "Stage"},
+                        {"id": "custom.align", "value": "left"}
+                    ]
+                },
+                {
+                    "matcher": {"id": "byName", "options": "status"},
+                    "properties": [
+                        {"id": "displayName", "value": "Status"},
+                        {"id": "custom.align", "value": "center"}
+                    ]
                 }
             ]
         }
@@ -71,7 +106,8 @@ def table_panel(panel_id: int, title: str, x: int, y: int, w: int, h: int, expr:
 
 
 def write_dashboard(path: Path, payload: dict) -> None:
-    path.write_text(json.dumps(payload, indent=2) + "\n")
+    dashboard_content = payload["dashboard"]
+    path.write_text(json.dumps(dashboard_content, indent=2) + "\n")
 
 
 def build_sprints_dashboard() -> dict:
@@ -215,11 +251,519 @@ def build_module_audit_dashboard() -> dict:
     }
 
 
+def build_engineering_health_dashboard() -> dict:
+    panels = [
+        {
+            "gridPos": {"h": 2, "w": 24, "x": 0, "y": 0},
+            "id": 1,
+            "options": {
+                "code": {
+                    "language": "plaintext",
+                    "showLineNumbers": False,
+                    "showMiniMap": False
+                },
+                "content": "## 🏗️ CacheFlow Sprint Health\nManager view · answers: **what's at risk**, **how far along each sprint is**, and **are we tracking to roadmap**.",
+                "mode": "markdown"
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"refId": "A"}],
+            "title": "CacheFlow — Engineering Health Dashboard",
+            "type": "text"
+        },
+        {
+            "description": "Which sprint is currently active",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "displayName": "Active Sprint",
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}]}
+                },
+                "overrides": []
+            },
+            "gridPos": {"h": 4, "w": 4, "x": 0, "y": 2},
+            "id": 2,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                "showPercentChange": False,
+                "textMode": "auto",
+                "wideLayout": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "cacheflow_current_sprint", "refId": "A"}],
+            "title": "Active Sprint",
+            "type": "stat"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "mappings": [],
+                    "max": 100,
+                    "min": 0,
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": None}, {"color": "semi-dark-orange", "value": 50}, {"color": "semi-dark-yellow", "value": 75}, {"color": "semi-dark-green", "value": 90}]},
+                    "unit": "percent"
+                },
+                "overrides": []
+            },
+            "gridPos": {"h": 6, "w": 6, "x": 4, "y": 2},
+            "id": 3,
+            "options": {
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                "showThresholdLabels": False,
+                "showThresholdMarkers": True,
+                "sizing": "auto",
+                "text": {}
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "100 * cacheflow_tasks_completed_total / clamp_min(cacheflow_total_tasks, 1)", "refId": "A"}],
+            "title": "Overall Roadmap Progress",
+            "type": "gauge"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "semi-dark-yellow", "value": None}, {"color": "semi-dark-red", "value": 10}]},
+                    "unit": "none"
+                },
+                "overrides": []
+            },
+            "gridPos": {"h": 4, "w": 5, "x": 10, "y": 2},
+            "id": 4,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                "showPercentChange": False,
+                "textMode": "auto",
+                "wideLayout": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "count(cacheflow_task_status{status=\"running\"})", "refId": "A"}],
+            "title": "⚠️ In Flight",
+            "type": "stat"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": None}]},
+                    "unit": "none"
+                },
+                "overrides": []
+            },
+            "gridPos": {"h": 4, "w": 5, "x": 15, "y": 2},
+            "id": 5,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                "showPercentChange": False,
+                "textMode": "auto",
+                "wideLayout": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "count(cacheflow_task_status{status=\"done\"})", "refId": "A"}],
+            "title": "✅ Total Done",
+            "type": "stat"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "purple", "value": None}]},
+                    "unit": "none"
+                },
+                "overrides": []
+            },
+            "gridPos": {"h": 4, "w": 4, "x": 20, "y": 2},
+            "id": 6,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                "showPercentChange": False,
+                "textMode": "auto",
+                "wideLayout": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "sum(cacheflow_gate_is_done)", "refId": "A"}],
+            "title": "🚩 Gates Cleared",
+            "type": "stat"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "super-light-blue", "value": None}]},
+                    "unit": "none"
+                },
+                "overrides": []
+            },
+            "gridPos": {"h": 2, "w": 24, "x": 0, "y": 6},
+            "id": 7,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                "showPercentChange": False,
+                "textMode": "auto",
+                "wideLayout": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "sum(cacheflow_sprint_commits_total)", "refId": "A"}],
+            "title": "📦 Total Commits",
+            "type": "stat"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "palette-classic"},
+                    "custom": {
+                        "axisBorderShow": False,
+                        "axisCenteredZero": False,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {"legend": False, "tooltip": False, "viz": False},
+                        "insertNulls": False,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {"type": "linear"},
+                        "showPoints": "auto",
+                        "spanNulls": False,
+                        "stacking": {"group": "A", "mode": "none"},
+                        "thresholdsStyle": {"mode": "off"}
+                    },
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}, {"color": "red", "value": 80}]}
+                },
+                "overrides": []
+            },
+            "gridPos": {"h": 7, "w": 12, "x": 0, "y": 8},
+            "id": 8,
+            "options": {
+                "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": True},
+                "tooltip": {"mode": "single", "sort": "none"}
+            },
+            "targets": [{"expr": "cacheflow_sprint_progress_percent", "legendFormat": "Sprint {{sprint}}", "refId": "A"}],
+            "title": "🗺️ Sprint Pipeline — Completion %",
+            "type": "timeseries"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "palette-classic"},
+                    "custom": {
+                        "axisBorderShow": False,
+                        "axisCenteredZero": False,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {"legend": False, "tooltip": False, "viz": False},
+                        "insertNulls": False,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {"type": "linear"},
+                        "showPoints": "auto",
+                        "spanNulls": False,
+                        "stacking": {"group": "A", "mode": "none"},
+                        "thresholdsStyle": {"mode": "off"}
+                    },
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}, {"color": "red", "value": 80}]}
+                },
+                "overrides": []
+            },
+            "gridPos": {"h": 7, "w": 12, "x": 12, "y": 8},
+            "id": 9,
+            "options": {
+                "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": True},
+                "tooltip": {"mode": "single", "sort": "none"}
+            },
+            "targets": [
+                {"expr": "cacheflow_sprint_done_tasks", "legendFormat": "Sprint {{sprint}} done", "refId": "A"},
+                {"expr": "cacheflow_sprint_total_tasks", "legendFormat": "Sprint {{sprint}} total", "refId": "B"}
+            ],
+            "title": "📊 Done / Total Tasks per Sprint",
+            "type": "timeseries"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {"type": "auto"},
+                        "inspect": False
+                    },
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}, {"color": "red", "value": 80}]}
+                },
+                "overrides": [
+                    {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "unit", "value": "dateTimeAsUS"}]},
+                    {"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "unit", "value": "none"}]}
+                ]
+            },
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 15},
+            "id": 10,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {"countRows": False, "fields": "", "reducer": ["sum"], "show": False},
+                "showHeader": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [
+                {"expr": "count by (gate) (cacheflow_task_status)", "format": "table", "instant": True, "range": False, "refId": "A"},
+                {"expr": "count by (gate) (cacheflow_task_status{status=\"done\"})", "format": "table", "instant": True, "range": False, "refId": "B"},
+                {"expr": "count by (gate) (cacheflow_task_status{status=\"running\"})", "format": "table", "instant": True, "range": False, "refId": "C"}
+            ],
+            "title": "📋 Tasks by Gate",
+            "transformations": [
+                {"id": "merge", "options": {}},
+                {"id": "organize", "options": {"excludeByName": {}, "indexByName": {"Value": 2, "Value #B": 3, "Value #C": 4, "gate": 0}, "renameByName": {"Value": "Total", "Value #B": "Done", "Value #C": "Running", "gate": "Gate"}}}
+            ],
+            "type": "table"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {"type": "auto"},
+                        "inspect": False
+                    },
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}, {"color": "red", "value": 80}]}
+                },
+                "overrides": [
+                    {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "unit", "value": "dateTimeAsUS"}]},
+                    {"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "unit", "value": "none"}]}
+                ]
+            },
+            "gridPos": {"h": 10, "w": 24, "x": 0, "y": 23},
+            "id": 11,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {"countRows": False, "fields": "", "reducer": ["sum"], "show": False},
+                "showHeader": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "cacheflow_task_status{status=\"planned\", sprint=~\"$sprint\", agent=~\"$agent\"}", "format": "table", "instant": True, "range": False, "refId": "A"}],
+            "title": "📋 Backlog / Planned",
+            "type": "table"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {"type": "auto"},
+                        "inspect": False
+                    },
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}, {"color": "red", "value": 80}]}
+                },
+                "overrides": [
+                    {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "unit", "value": "dateTimeAsUS"}]},
+                    {"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "unit", "value": "none"}]}
+                ]
+            },
+            "gridPos": {"h": 10, "w": 24, "x": 0, "y": 33},
+            "id": 12,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {"countRows": False, "fields": "", "reducer": ["sum"], "show": False},
+                "showHeader": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "cacheflow_task_status{status=\"running\", sprint=~\"$sprint\", agent=~\"$agent\"}", "format": "table", "instant": True, "range": False, "refId": "A"}],
+            "title": "🚀 In Progress / Active",
+            "type": "table"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {"type": "auto"},
+                        "inspect": False
+                    },
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}, {"color": "red", "value": 80}]}
+                },
+                "overrides": [
+                    {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "unit", "value": "dateTimeAsUS"}]},
+                    {"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "unit", "value": "none"}]}
+                ]
+            },
+            "gridPos": {"h": 10, "w": 24, "x": 0, "y": 43},
+            "id": 13,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {"countRows": False, "fields": "", "reducer": ["sum"], "show": False},
+                "showHeader": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "cacheflow_task_status{status=\"done\", sprint=~\"$sprint\", agent=~\"$agent\"}", "format": "table", "instant": True, "range": False, "refId": "A"}],
+            "title": "✅ Completed / Done",
+            "type": "table"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {"type": "auto"},
+                        "inspect": False
+                    },
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}, {"color": "red", "value": 80}]}
+                },
+                "overrides": [
+                    {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "unit", "value": "dateTimeAsUS"}]},
+                    {"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "unit", "value": "none"}]}
+                ]
+            },
+            "gridPos": {"h": 10, "w": 24, "x": 0, "y": 53},
+            "id": 14,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {"countRows": False, "fields": "", "reducer": ["sum"], "show": False},
+                "showHeader": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "cacheflow_task_status{sprint=~\"$sprint\", agent=~\"$agent\"}", "format": "table", "instant": True, "range": False, "refId": "A"}],
+            "title": "📋 All Tasks",
+            "type": "table"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {
+                    "color": {"mode": "thresholds"},
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {"type": "auto"},
+                        "inspect": False
+                    },
+                    "mappings": [],
+                    "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": None}, {"color": "red", "value": 80}]}
+                },
+                "overrides": [
+                    {"matcher": {"id": "byName", "options": "Time"}, "properties": [{"id": "unit", "value": "dateTimeAsUS"}]},
+                    {"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "unit", "value": "none"}]}
+                ]
+            },
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 63},
+            "id": 15,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {"countRows": False, "fields": "", "reducer": ["sum"], "show": False},
+                "showHeader": True
+            },
+            "pluginVersion": "12.4.0",
+            "targets": [{"expr": "cacheflow_history_entry{ts!=\"\"}", "format": "table", "instant": True, "range": False, "refId": "A"}],
+            "title": "📜 Task History (Recent)",
+            "type": "table"
+        }
+    ]
+    
+    templating = {
+        "list": [
+            {
+                "current": {},
+                "datasource": {"type": "prometheus", "uid": "prometheus"},
+                "definition": "label_values(cacheflow_task_status, sprint)",
+                "hide": 0,
+                "includeAll": True,
+                "label": "Sprint",
+                "multi": True,
+                "name": "sprint",
+                "options": [],
+                "query": {"expr": "label_values(cacheflow_task_status, sprint)"},
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": False,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "current": {},
+                "datasource": {"type": "prometheus", "uid": "prometheus"},
+                "definition": "label_values(cacheflow_task_status, agent)",
+                "hide": 0,
+                "includeAll": True,
+                "label": "Agent",
+                "multi": True,
+                "name": "agent",
+                "options": [],
+                "query": {"expr": "label_values(cacheflow_task_status, agent)"},
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": False,
+                "sort": 1,
+                "type": "query"
+            }
+        ]
+    }
+    
+    return {
+        "dashboard": {
+            "id": None,
+            "uid": "ad2pj27",
+            "title": "CacheFlow — Engineering Health",
+            "tags": ["cacheflow", "health", "manager", "sprint"],
+            "timezone": "browser",
+            "schemaVersion": 42,
+            "version": 1,
+            "refresh": "30s",
+            "time": {"from": "now-30d", "to": "now"},
+            "panels": panels,
+            "templating": templating
+        },
+        "overwrite": True,
+    }
+
+
 def main() -> None:
     write_dashboard(MONITORING / "grafana-cacheflow-sprints.json", build_sprints_dashboard())
     write_dashboard(MONITORING / "grafana-cacheflow-history.json", build_history_dashboard())
     write_dashboard(MONITORING / "grafana-cacheflow-module-audit.json", build_module_audit_dashboard())
-    print("generated 3 Grafana dashboards")
+    write_dashboard(MONITORING / "grafana-cacheflow-engineering-health.json", build_engineering_health_dashboard())
+    print("generated 4 Grafana dashboards")
 
 
 if __name__ == "__main__":
