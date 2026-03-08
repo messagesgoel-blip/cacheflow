@@ -74,7 +74,8 @@ echo "==> Checking git worktree..."
 require_clean_git
 
 echo "==> Pulling latest from git..."
-git pull --ff-only origin main
+git fetch origin main
+git merge --ff-only FETCH_HEAD
 
 SHA=$(git rev-parse --short HEAD)
 IMAGE="cacheflow:$SHA"
