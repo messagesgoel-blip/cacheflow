@@ -19,6 +19,9 @@ interface ServerConnection {
   isDefault: boolean
   status: 'connected' | 'disconnected' | 'error'
   lastSyncAt?: string
+  host?: string
+  port?: number
+  username?: string
 }
 
 interface SessionResponse {
@@ -35,6 +38,9 @@ function toConnectedProvider(conn: ServerConnection): ConnectedProvider {
     accountEmail: conn.accountEmail,
     displayName: conn.accountLabel || conn.accountName,
     accountKey: conn.accountKey,
+    host: conn.host,
+    port: conn.port,
+    username: conn.username,
     connectedAt: conn.lastSyncAt ? new Date(conn.lastSyncAt).getTime() : Date.now(),
     lastSyncedAt: conn.lastSyncAt ? new Date(conn.lastSyncAt).getTime() : undefined,
   }
@@ -105,7 +111,7 @@ export default function ConnectionsPage() {
     .map(toConnectedProvider)
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="cf-shell-page flex min-h-screen flex-col">
       <Navbar
         email="Account"
         onLogout={() => {
@@ -115,11 +121,11 @@ export default function ConnectionsPage() {
 
       {/* Mobile menu button */}
       <button
-        className="show-mobile-only fixed top-16 left-4 z-30 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+        className="show-mobile-only fixed left-4 top-16 z-30 rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] p-2 shadow-[var(--cf-shadow-elev)]"
         onClick={() => setSidebarOpen(true)}
         aria-label="Open menu"
       >
-        <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="h-6 w-6 text-[var(--cf-text-1)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
@@ -148,18 +154,19 @@ export default function ConnectionsPage() {
         </div>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="page-header">
+          <div className="mx-auto max-w-[1280px]">
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Connections</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  All provider connections from server state
+                <div className="cf-kicker mb-3">Your Drives</div>
+                <h1 className="text-3xl font-semibold text-[var(--cf-text-0)]">Connections</h1>
+                <p className="mt-2 text-sm text-[var(--cf-text-1)]">
+                  All provider connections currently known to the server control plane.
                 </p>
               </div>
               <button
                 onClick={() => fetchConnections()}
                 disabled={loading}
-                className="px-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] transition-colors hover:text-[var(--cf-text-0)] disabled:opacity-50"
               >
                 {loading ? 'Refreshing…' : 'Refresh'}
               </button>
@@ -168,25 +175,25 @@ export default function ConnectionsPage() {
             {error && (
               <div
                 data-testid="cf-connections-error"
-                className="mb-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm"
+                className="mb-4 rounded-2xl border border-[rgba(255,92,92,0.28)] bg-[rgba(255,92,92,0.08)] p-4 text-sm text-[var(--cf-red)]"
               >
                 {error}
               </div>
             )}
 
             {loading && connections.length === 0 ? (
-              <div data-testid="cf-connections-loading" className="text-center py-12 text-gray-400">
+              <div data-testid="cf-connections-loading" className="cf-panel rounded-[24px] py-12 text-center text-[var(--cf-text-2)]">
                 Loading connections…
               </div>
             ) : connections.length === 0 && !error ? (
               <div
                 data-testid="cf-connections-empty"
-                className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700"
+                className="cf-panel rounded-[24px] py-12 text-center"
               >
-                <p className="text-gray-500 dark:text-gray-400 mb-3">No provider connections found</p>
+                <p className="mb-3 text-[var(--cf-text-1)]">No provider connections found</p>
                 <a
                   href="/providers"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-sm text-[var(--cf-blue)] hover:underline"
                 >
                   Add your first provider →
                 </a>
@@ -200,25 +207,27 @@ export default function ConnectionsPage() {
                   <div
                     key={`${conn.provider}:${conn.accountKey}`}
                     data-testid={`cf-connection-item-${conn.accountKey}`}
-                    className="responsive-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    className="cf-panel flex flex-col gap-3 rounded-[24px] p-5 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col">
-                        <span className="font-medium text-gray-900 dark:text-white text-sm">
+                        <span className="text-sm font-medium text-[var(--cf-text-0)]">
                           {conn.accountLabel || conn.accountName}
                         </span>
-                        {conn.accountEmail && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {conn.accountEmail}
+                        {(conn.provider === 'vps' ? (conn.username && conn.host ? `${conn.username}@${conn.host}` : conn.host || conn.username || '') : conn.accountEmail) && (
+                          <span className="text-xs text-[var(--cf-text-2)]">
+                            {conn.provider === 'vps'
+                              ? (conn.username && conn.host ? `${conn.username}@${conn.host}` : conn.host || conn.username)
+                              : conn.accountEmail}
                           </span>
                         )}
-                        <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">
+                        <span className="text-xs capitalize text-[var(--cf-text-3)]">
                           {conn.provider}
                         </span>
                       </div>
                     </div>
                     <span
-                      className={`self-start sm:self-center px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLOR[conn.status] ?? STATUS_COLOR.disconnected}`}
+                      className={`self-start rounded-full px-2.5 py-1 text-xs font-medium sm:self-center ${STATUS_COLOR[conn.status] ?? STATUS_COLOR.disconnected}`}
                     >
                       {STATUS_LABEL[conn.status] ?? conn.status}
                     </span>

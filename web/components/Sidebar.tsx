@@ -12,6 +12,17 @@ interface SidebarProps {
   onDrop?: (e: React.DragEvent, providerId: ProviderId, accountKey: string, folderId: string) => void
 }
 
+const PLATFORM_ITEMS: Array<{
+  id: 'all' | 'recent' | 'starred' | 'activity'
+  label: string
+  icon: string
+}> = [
+  { id: 'all', label: 'All Files', icon: '▦' },
+  { id: 'recent', label: 'Recent', icon: '◎' },
+  { id: 'starred', label: 'Starred', icon: '★' },
+  { id: 'activity', label: 'Activity Feed', icon: '≋' },
+]
+
 export default function Sidebar({
   connectedProviders,
   selectedProvider,
@@ -32,7 +43,6 @@ export default function Sidebar({
     [connectedProviders],
   )
 
-  // Load collapse state from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('cacheflow:ui:sidebarCollapsed')
     if (stored === 'true') {
@@ -41,19 +51,16 @@ export default function Sidebar({
     setIsMounted(true)
   }, [])
 
-  // Fetch health and quotas lazily
   useEffect(() => {
     if (!mounted || connectedProviders.length === 0) return
 
     const fetchData = async () => {
-      // Use cookie-based auth (HttpOnly) - no client-side token needed
-      const newHealth: Record<string, any> = {}
+      const newHealth: Record<string, { status: string; message?: string }> = {}
       const newQuotas: Record<string, ProviderQuota> = {}
 
       for (const cp of connectedProviders) {
         const cacheKey = `${cp.providerId}:${cp.accountKey}`
 
-        // 1. Health - use credentials: include for cookies
         try {
           const tokens = JSON.parse(localStorage.getItem(`cacheflow_tokens_${cp.providerId}`) || '[]')
           const token = tokens.find((t: any) => t.accountKey === cp.accountKey)
@@ -64,182 +71,175 @@ export default function Sidebar({
             const body = await res.json()
             if (body.ok) newHealth[cacheKey] = body.data
           }
-        } catch (e) {}
+        } catch {}
 
-        // 2. Quota (from local provider instance)
         try {
           const provider = getProvider(cp.providerId)
           if (provider) {
             const tokens = JSON.parse(localStorage.getItem(`cacheflow_tokens_${cp.providerId}`) || '[]')
             const tokenData = tokens.find((t: any) => t.accountKey === cp.accountKey)
             provider.remoteId = (tokenData as any)?.remoteId
-            
             const quota = await provider.getQuota()
             newQuotas[cacheKey] = quota
           }
-        } catch (e) {}
+        } catch {}
       }
-      
+
       setHealthStates(newHealth)
       setQuotas(newQuotas)
     }
 
-    fetchData()
-    const interval = setInterval(fetchData, 900000) // Every 15 mins
+    void fetchData()
+    const interval = setInterval(() => {
+      void fetchData()
+    }, 900000)
     return () => clearInterval(interval)
-  }, [mounted, providerSignature])
+  }, [mounted, providerSignature, connectedProviders])
 
-  // Aggregate Quota computed
   const aggregateQuota = useMemo(() => {
     let used = 0
     let total = 0
-    Object.values(quotas).forEach(q => {
+    Object.values(quotas).forEach((q) => {
       used += q.used
       total += q.total
     })
     return { used, total, percent: total > 0 ? (used / total) * 100 : 0 }
   }, [quotas])
 
-  // Persist collapse state
   const toggleCollapse = () => {
     const newState = !isCollapsed
     setIsCollapsed(newState)
     localStorage.setItem('cacheflow:ui:sidebarCollapsed', String(newState))
   }
 
-  if (!mounted) return null
-
-  const providerGroups = PROVIDERS.filter(p => 
-    connectedProviders.some(cp => cp.providerId === p.id)
+  const providerGroups = PROVIDERS.filter((p) =>
+    connectedProviders.some((cp) => cp.providerId === p.id),
   )
 
   const navItemClass = (isActive: boolean, isDragOver?: boolean) => `
-    flex items-center gap-3 px-3 py-2 rounded-lg transition-all relative
-    ${isActive 
-      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium' 
-      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'}
-    ${isDragOver ? 'ring-2 ring-blue-500 bg-blue-100 dark:bg-blue-900/50 scale-[1.02] z-10' : ''}
+    relative flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all
+    ${isActive
+      ? 'border-[rgba(74,158,255,0.34)] bg-[rgba(74,158,255,0.12)] text-[var(--cf-blue)] shadow-[0_0_0_1px_rgba(74,158,255,0.06)]'
+      : 'border-transparent text-[var(--cf-text-1)] hover:border-[var(--cf-border)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}
+    ${isDragOver ? 'z-10 scale-[1.02] ring-2 ring-[var(--cf-blue)]' : ''}
     ${isCollapsed ? 'justify-center px-0' : ''}
   `
 
   const getHealthColor = (status?: string) => {
     switch (status) {
-      case 'connected': return 'bg-green-500'
-      case 'degraded': return 'bg-yellow-500'
-      case 'needs_reauth': return 'bg-red-500'
-      default: return 'bg-gray-300'
+      case 'connected':
+        return 'bg-[var(--cf-green)]'
+      case 'degraded':
+        return 'bg-[var(--cf-amber)]'
+      case 'needs_reauth':
+        return 'bg-[var(--cf-red)]'
+      default:
+        return 'bg-[var(--cf-text-3)]'
     }
   }
 
   const getUsageColor = (percent: number) => {
-    if (percent > 90) return 'bg-red-500'
-    if (percent > 75) return 'bg-yellow-500'
-    return 'bg-blue-500'
+    if (percent > 90) return 'bg-[var(--cf-red)]'
+    if (percent > 75) return 'bg-[var(--cf-amber)]'
+    return 'bg-[var(--cf-blue)]'
   }
 
+  const getAccountLabel = (account: ConnectedProvider) =>
+    account.displayName || account.accountEmail || account.accountKey || 'Unnamed connection'
+
+  const getAccountSubLabel = (account: ConnectedProvider) => {
+    if (account.providerId === 'vps') {
+      if (account.username && account.host) return `${account.username}@${account.host}`
+      return account.host || account.username || ''
+    }
+    const label = getAccountLabel(account)
+    if (!account.accountEmail || account.accountEmail === label) return ''
+    return account.accountEmail
+  }
+
+  if (!mounted) return null
+
   return (
-    <aside 
+    <aside
       data-testid="cf-sidebar-root"
-      className={`
-        flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300
-        ${isCollapsed ? 'w-[64px]' : 'w-64'}
-      `}
+      className={`flex h-full flex-col border-r border-[var(--cf-border)] bg-[var(--cf-sidebar-bg)] transition-all duration-300 ${
+        isCollapsed ? 'w-[72px]' : 'w-72'
+      }`}
     >
-      {/* Header / Toggle */}
-      <div className={`p-4 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+      <div className={`flex items-center p-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         {!isCollapsed && (
-          <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            CacheFlow
-          </span>
+          <div>
+            <span className="block text-sm font-semibold text-[var(--cf-text-0)]">Navigation Grid</span>
+            <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cf-text-2)]">Platform Surface</span>
+          </div>
         )}
         <button
           data-testid="cf-sidebar-collapse-toggle"
           onClick={toggleCollapse}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
-          title={isCollapsed ? "Expand" : "Collapse"}
+          className="rounded-xl border border-[var(--cf-border)] p-1.5 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+          title={isCollapsed ? 'Expand' : 'Collapse'}
         >
-          <svg className={`w-5 h-5 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`h-5 w-5 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
           </svg>
         </button>
       </div>
 
-      {/* Aggregate Quota Widget */}
       {!isCollapsed && aggregateQuota.total > 0 && (
-        <div data-testid="cf-sidebar-quota-aggregate" className="px-6 mb-4">
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-100 dark:border-gray-800">
-            <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase mb-1">
+        <div data-testid="cf-sidebar-quota-aggregate" className="mb-4 px-4">
+          <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] p-4 shadow-[var(--cf-shadow-elev)]">
+            <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
               <span>Total Storage</span>
               <span>{Math.round(aggregateQuota.percent)}%</span>
             </div>
-            <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div 
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--cf-bg3)]">
+              <div
                 className={`h-full transition-all duration-500 ${getUsageColor(aggregateQuota.percent)}`}
                 style={{ width: `${aggregateQuota.percent}%` }}
               />
             </div>
-            <p className="text-[10px] text-gray-500 mt-1.5 font-medium">
+            <p className="mt-2 font-mono text-[10px] text-[var(--cf-text-1)]">
               {formatBytes(aggregateQuota.used)} of {formatBytes(aggregateQuota.total)} used
             </p>
           </div>
         </div>
       )}
 
-      {/* Main Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 space-y-1 py-2">
-        <button
-          data-testid="cf-sidebar-node-all-files"
-          onClick={() => onNavigate('all')}
-          className={navItemClass(selectedProvider === 'all')}
-          title="All Files"
-        >
-          <span className="text-xl">📁</span>
-          {!isCollapsed && <span>All Files</span>}
-        </button>
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
+        {!isCollapsed && (
+          <div className="px-3 pb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cf-text-3)]">
+            Platform
+          </div>
+        )}
 
-        <button
-          onClick={() => onNavigate('recent')}
-          className={navItemClass(selectedProvider === 'recent')}
-          title="Recent"
-        >
-          <span className="text-xl">🕒</span>
-          {!isCollapsed && <span>Recent</span>}
-        </button>
+        {PLATFORM_ITEMS.map((item) => (
+          <button
+            key={item.id}
+            data-testid={item.id === 'all' ? 'cf-sidebar-node-all-files' : undefined}
+            onClick={() => onNavigate(item.id)}
+            className={navItemClass(selectedProvider === item.id)}
+            title={item.label}
+          >
+            <span className="text-base font-bold">{item.icon}</span>
+            {!isCollapsed && <span className="text-sm">{item.label}</span>}
+          </button>
+        ))}
 
-        <button
-          onClick={() => onNavigate('starred')}
-          className={navItemClass(selectedProvider === 'starred')}
-          title="Starred"
-        >
-          <span className="text-xl">⭐</span>
-          {!isCollapsed && <span>Starred</span>}
-        </button>
+        <div className="my-4 border-t border-[var(--cf-border)]" />
 
-        <button
-          onClick={() => onNavigate('activity')}
-          className={navItemClass(selectedProvider === 'activity')}
-          title="Activity"
-        >
-          <span className="text-xl">⚡</span>
-          {!isCollapsed && <span>Activity Feed</span>}
-        </button>
-
-        <div className="my-4 border-t border-gray-100 dark:border-gray-800" />
-
-        {/* Provider Groups */}
-        {providerGroups.map(provider => (
+        {providerGroups.map((provider) => (
           <div key={provider.id} className="space-y-1">
             {!isCollapsed && (
-              <div 
+              <div
                 data-testid={`cf-sidebar-provider-${provider.id}`}
-                className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                className="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cf-text-3)]"
               >
                 {provider.name}
               </div>
             )}
-            
+
             {connectedProviders
-              .filter(cp => cp.providerId === provider.id)
+              .filter((cp) => cp.providerId === provider.id)
               .map((account, idx) => {
                 const cacheKey = `${account.providerId}:${account.accountKey}`
                 const health = healthStates[cacheKey]
@@ -262,40 +262,38 @@ export default function Sidebar({
                         onDrop?.(e, provider.id, account.accountKey || '', 'root')
                       }}
                       className={navItemClass(selectedProvider === provider.id && activeAccountKey === account.accountKey, isDragOver)}
-                      title={`${account.displayName}${health?.message ? ` (${health.message})` : ''}`}
+                      title={`${getAccountLabel(account)}${health?.message ? ` (${health.message})` : ''}`}
                     >
-                      <span className="text-xl">{provider.icon}</span>
+                      <span className="text-sm font-bold">{provider.icon}</span>
                       {!isCollapsed && (
-                        <div className="flex flex-col items-start overflow-hidden flex-1">
-                          <div className="flex items-center gap-2 w-full">
-                            <span className="truncate flex-1 text-sm">{account.displayName}</span>
-                            <div 
-                              className={`w-2 h-2 rounded-full flex-shrink-0 ${getHealthColor(health?.status)}`} 
-                              title={health?.status || 'unknown'}
-                            />
+                        <div className="flex min-w-0 flex-1 flex-col items-start">
+                          <div className="flex w-full items-center gap-2">
+                            <span className="flex-1 break-words whitespace-normal text-left text-sm leading-tight">
+                              {getAccountLabel(account)}
+                            </span>
+                            <div className={`h-2 w-2 flex-shrink-0 rounded-full ${getHealthColor(health?.status)}`} title={health?.status || 'unknown'} />
                           </div>
-                          <span className="truncate w-full text-[10px] text-gray-400 leading-tight">
-                            {account.accountEmail}
-                          </span>
+                          {getAccountSubLabel(account) && (
+                            <span className="w-full break-words whitespace-normal text-[10px] leading-tight text-[var(--cf-text-2)]">
+                              {getAccountSubLabel(account)}
+                            </span>
+                          )}
                         </div>
                       )}
                       {isCollapsed && (
-                        <div 
-                          className={`absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${getHealthColor(health?.status)}`}
-                        />
+                        <div className={`absolute bottom-1 right-1 h-2.5 w-2.5 rounded-full border border-[var(--cf-bg0)] ${getHealthColor(health?.status)}`} />
                       )}
                     </button>
-                    
-                    {/* Mini Quota Bar (Expanded only) */}
+
                     {!isCollapsed && quota && (
-                      <div data-testid={`cf-sidebar-quota-account-${account.accountKey}`} className="px-10 mt-1 mb-2">
-                        <div className="h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                          <div 
+                      <div data-testid={`cf-sidebar-quota-account-${account.accountKey}`} className="mb-2 mt-1 px-10">
+                        <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--cf-bg3)]">
+                          <div
                             className={`h-full ${getUsageColor(usagePercent)}`}
                             style={{ width: `${usagePercent}%` }}
                           />
                         </div>
-                        <div className="flex justify-between text-[8px] text-gray-400 mt-0.5">
+                        <div className="mt-0.5 flex justify-between font-mono text-[8px] text-[var(--cf-text-3)]">
                           <span>{formatBytes(quota.used)}</span>
                           <span>{Math.round(usagePercent)}%</span>
                         </div>
@@ -303,23 +301,20 @@ export default function Sidebar({
                     )}
                   </div>
                 )
-              })
-            }
+              })}
           </div>
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="border-t border-[var(--cf-border)] p-4">
         <a
           href="/providers"
-          className={`
-            flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
-            ${isCollapsed ? 'justify-center px-0' : ''}
-          `}
+          className={`flex items-center gap-3 rounded-xl border border-[var(--cf-border)] px-3 py-2 text-[var(--cf-text-1)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] ${
+            isCollapsed ? 'justify-center px-0' : ''
+          }`}
           title="Add Provider"
         >
-          <span className="text-xl">➕</span>
+          <span className="text-base font-bold">+</span>
           {!isCollapsed && <span className="text-sm font-medium">Add Provider</span>}
         </a>
       </div>

@@ -29,11 +29,12 @@ export default function ThemeToggle() {
     setIsDark(prev => {
       const newIsDark = !prev
 
+      document.documentElement.classList.remove('dark', 'light')
       if (newIsDark) {
         document.documentElement.classList.add('dark')
         localStorage.setItem('cf_theme', 'dark')
       } else {
-        document.documentElement.classList.remove('dark')
+        document.documentElement.classList.add('light')
         localStorage.setItem('cf_theme', 'light')
       }
 

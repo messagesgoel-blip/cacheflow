@@ -29,12 +29,12 @@ export default function UnifiedBreadcrumb({
   return (
     <div 
       data-testid="cf-breadcrumb"
-      className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 overflow-x-auto whitespace-nowrap pb-1"
+      className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 font-mono text-[11px] text-[var(--cf-text-2)]"
     >
       <button
         data-testid="cf-breadcrumb-crumb-home"
         onClick={onNavigateHome}
-        className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-softer)] px-3 py-1 text-[var(--cf-text-1)] transition-colors hover:text-[var(--cf-blue)]"
       >
         All Files
       </button>
@@ -46,7 +46,7 @@ export default function UnifiedBreadcrumb({
           </svg>
           <button
             onClick={() => onNavigateStack(-1)}
-            className="font-medium text-gray-900 dark:text-white hover:text-blue-600 transition-colors"
+            className="font-medium text-[var(--cf-text-0)] transition-colors hover:text-[var(--cf-blue)]"
           >
             {getProviderName()}
             {activeAccountName && ` (${activeAccountName})`}
@@ -62,7 +62,7 @@ export default function UnifiedBreadcrumb({
           <button
             data-testid={`cf-breadcrumb-crumb-${idx}`}
             onClick={() => onNavigateStack(idx)}
-            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors max-w-[150px] truncate"
+            className="max-w-[150px] truncate transition-colors hover:text-[var(--cf-blue)]"
           >
             {segment.name}
           </button>

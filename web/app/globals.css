@@ -2,58 +2,160 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth theme transitions */
+:root,
+html.dark {
+  --cf-bg0: #07090d;
+  --cf-bg1: #0b0e14;
+  --cf-bg2: #0f1219;
+  --cf-bg3: #141820;
+  --cf-surface: #181d28;
+  --cf-border: #1e2535;
+  --cf-border-2: #252d3d;
+  --cf-text-0: #e8edf5;
+  --cf-text-1: #9aa5bc;
+  --cf-text-2: #5a6478;
+  --cf-text-3: #343d50;
+  --cf-teal: #00c9a7;
+  --cf-blue: #4a9eff;
+  --cf-amber: #ff9f43;
+  --cf-red: #ff5c5c;
+  --cf-green: #4ade80;
+  --cf-purple: #a78bfa;
+  --cf-font-ui: "DM Sans", "Outfit", "Segoe UI", sans-serif;
+  --cf-font-mono: "IBM Plex Mono", "Fira Code", "SFMono-Regular", monospace;
+  --cf-page-bg:
+    radial-gradient(circle at top left, rgba(74, 158, 255, 0.12), transparent 32%),
+    radial-gradient(circle at top right, rgba(0, 201, 167, 0.08), transparent 28%),
+    linear-gradient(180deg, var(--cf-bg0) 0%, var(--cf-bg1) 45%, #080b11 100%);
+  --cf-shell-bg:
+    radial-gradient(circle at top left, rgba(74, 158, 255, 0.1), transparent 30%),
+    linear-gradient(180deg, rgba(7, 9, 13, 0.98) 0%, rgba(11, 14, 20, 0.98) 100%);
+  --cf-panel-bg: rgba(24, 29, 40, 0.9);
+  --cf-subpanel-bg: rgba(15, 18, 25, 0.92);
+  --cf-panel-soft: rgba(255, 255, 255, 0.03);
+  --cf-panel-softer: rgba(255, 255, 255, 0.02);
+  --cf-sidebar-bg: rgba(7, 9, 13, 0.96);
+  --cf-navbar-bg: rgba(11, 14, 20, 0.92);
+  --cf-toolbar-bg: rgba(11, 14, 20, 0.92);
+  --cf-shell-card-bg: rgba(24, 29, 40, 0.72);
+  --cf-shell-card-strong: rgba(11, 14, 20, 0.86);
+  --cf-table-head-bg: rgba(24, 29, 40, 0.96);
+  --cf-menu-bg: rgba(24, 29, 40, 0.98);
+  --cf-divider-soft: rgba(255, 255, 255, 0.04);
+  --cf-hover-bg: rgba(255, 255, 255, 0.04);
+  --cf-hover-bg-strong: rgba(255, 255, 255, 0.08);
+  --cf-shadow-strong: 0 24px 80px rgba(0, 0, 0, 0.34);
+  --cf-scroll-track: var(--cf-bg1);
+  --cf-scroll-thumb: #2b3447;
+  --cf-scroll-thumb-hover: #3c4760;
+  --cf-shadow-elev: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+
+html.light {
+  --cf-bg0: #f3f6fb;
+  --cf-bg1: #eef3f9;
+  --cf-bg2: #ffffff;
+  --cf-bg3: #dde6f2;
+  --cf-surface: #ffffff;
+  --cf-border: #d6e0ec;
+  --cf-border-2: #c6d3e3;
+  --cf-text-0: #0f172a;
+  --cf-text-1: #334155;
+  --cf-text-2: #64748b;
+  --cf-text-3: #94a3b8;
+  --cf-teal: #0f9f8b;
+  --cf-blue: #2563eb;
+  --cf-amber: #d97706;
+  --cf-red: #dc2626;
+  --cf-green: #16a34a;
+  --cf-purple: #7c3aed;
+  --cf-page-bg:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(15, 159, 139, 0.08), transparent 24%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 52%, #e9eff7 100%);
+  --cf-shell-bg:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(243, 247, 252, 0.96) 100%);
+  --cf-panel-bg: rgba(255, 255, 255, 0.92);
+  --cf-subpanel-bg: rgba(248, 251, 255, 0.95);
+  --cf-panel-soft: rgba(255, 255, 255, 0.72);
+  --cf-panel-softer: rgba(255, 255, 255, 0.58);
+  --cf-sidebar-bg: rgba(246, 249, 253, 0.96);
+  --cf-navbar-bg: rgba(255, 255, 255, 0.86);
+  --cf-toolbar-bg: rgba(255, 255, 255, 0.9);
+  --cf-shell-card-bg: rgba(255, 255, 255, 0.76);
+  --cf-shell-card-strong: rgba(255, 255, 255, 0.9);
+  --cf-table-head-bg: rgba(244, 248, 252, 0.96);
+  --cf-menu-bg: rgba(255, 255, 255, 0.98);
+  --cf-divider-soft: rgba(148, 163, 184, 0.18);
+  --cf-hover-bg: rgba(37, 99, 235, 0.06);
+  --cf-hover-bg-strong: rgba(37, 99, 235, 0.1);
+  --cf-shadow-strong: 0 24px 64px rgba(15, 23, 42, 0.12);
+  --cf-scroll-track: #edf2f7;
+  --cf-scroll-thumb: #b7c3d4;
+  --cf-scroll-thumb-hover: #93a4bb;
+  --cf-shadow-elev: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
 html {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-html * {
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* Disable transitions during initial load */
-html:not(.dark) {
   color-scheme: light;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 html.dark {
   color-scheme: dark;
 }
 
-/* Custom scrollbar for dark mode */
-.dark ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+html * {
+  transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
 }
 
-.dark ::-webkit-scrollbar-track {
-  background: #1f2937;
+body {
+  min-height: 100vh;
+  color: var(--cf-text-0);
+  font-family: var(--cf-font-ui);
+  background: var(--cf-page-bg);
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 4px;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
-}
-
-/* Light scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--cf-scroll-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: var(--cf-scroll-thumb);
+  border-radius: 9999px;
+  border: 2px solid var(--cf-scroll-track);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--cf-scroll-thumb-hover);
+}
+
+.cf-shell-page {
+  min-height: 100vh;
+  background: var(--cf-shell-bg);
+}
+
+.cf-kicker {
+  color: var(--cf-text-2);
+  font-size: 10px;
+  font-family: var(--cf-font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cf-panel {
+  background: var(--cf-panel-bg);
+  border: 1px solid var(--cf-border);
+  box-shadow: var(--cf-shadow-elev);
+}
+
+.cf-subpanel {
+  background: var(--cf-subpanel-bg);
+  border: 1px solid var(--cf-border-2);
 }

@@ -44,15 +44,15 @@ export default function ProvidersPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      <div className="cf-shell-page flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />
       </div>
     )
   }
 
   return (
     <IntegrationProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="cf-shell-page">
         <Navbar email={email} onLogout={handleLogout} />
         <ProviderHub />
         <ConnectProviderModal />

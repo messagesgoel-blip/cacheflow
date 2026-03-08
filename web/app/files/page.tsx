@@ -81,20 +81,20 @@ export default function FilesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-500 dark:text-gray-400">Loading files…</p>
+      <div className="cf-shell-page flex min-h-screen items-center justify-center">
+        <p className="font-mono text-sm text-[var(--cf-text-2)]">Loading files…</p>
       </div>
     )
   }
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="cf-shell-page flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Please log in to browse your files</p>
+          <p className="mb-4 text-[var(--cf-text-1)]">Please log in to browse your files</p>
           <a
             href="/?mode=login"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="rounded-xl border border-[rgba(74,158,255,0.32)] bg-[rgba(74,158,255,0.14)] px-4 py-2 text-[var(--cf-blue)] transition-colors hover:bg-[rgba(74,158,255,0.2)]"
           >
             Log In
           </a>
@@ -104,7 +104,7 @@ export default function FilesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="cf-shell-page">
       <Navbar
         email={email}
         onLogout={() => {
@@ -113,7 +113,7 @@ export default function FilesPage() {
           window.location.href = '/login'
         }}
       />
-      <main className="p-4 md:p-6">
+      <main className="mx-auto max-w-[1600px] p-4 md:p-6">
         <UnifiedFileBrowser token={token || ''} />
       </main>
     </div>
