@@ -1627,7 +1627,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
           <div className="min-w-0 flex-1">
             <UnifiedBreadcrumb selectedProvider={selectedProvider} activeAccountName={activeAccountName} stack={breadcrumbStack} onNavigateStack={handleBreadcrumbNavigate} onNavigateHome={() => handleSidebarNavigate('all')} />
           </div>
-          <div className="flex max-w-full flex-col items-stretch gap-3 lg:items-end">
+          <div className="flex w-full max-w-[980px] flex-col items-stretch gap-3 lg:w-auto lg:items-end">
             <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
               <span className="cf-micro-label">
                 {writeActionsDisabled ? 'Read Only Scope' : 'Write Target'}
@@ -1638,16 +1638,17 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-3">
+            <div className="flex w-full flex-wrap items-center justify-end gap-3">
             {selectedProvider === 'all' && !searchQuery && (
               <>
-                <div className="flex flex-wrap gap-2">
+                <div className="cf-toolbar-card flex flex-wrap items-center gap-2 rounded-[20px] px-2 py-2">
+                  <span className="cf-micro-label px-2">Views</span>
                   {/* View Toggles */}
-                  <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
+                  <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)]">
                     <button
                       data-testid="cf-allproviders-view-toggle-grouped"
                       onClick={() => !isGroupedView && !isAggregatedView && toggleGroupedView()}
-                      className={`px-3.5 py-2 text-sm font-semibold transition-colors ${isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.14)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'} disabled:cursor-not-allowed disabled:opacity-50`}
+                      className={`px-3 py-2 text-sm font-medium transition-colors ${isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'} disabled:cursor-not-allowed disabled:opacity-50`}
                       aria-pressed={isGroupedView && !isAggregatedView}
                       disabled={isAggregatedView}
                     >
@@ -1656,7 +1657,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                     <button
                       data-testid="cf-allproviders-view-toggle-flat"
                       onClick={() => isGroupedView && !isAggregatedView && toggleGroupedView()}
-                      className={`px-3.5 py-2 text-sm font-semibold transition-colors ${!isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.14)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'} disabled:cursor-not-allowed disabled:opacity-50`}
+                      className={`px-3 py-2 text-sm font-medium transition-colors ${!isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'} disabled:cursor-not-allowed disabled:opacity-50`}
                       aria-pressed={!isGroupedView && !isAggregatedView}
                       disabled={isAggregatedView}
                     >
@@ -1671,7 +1672,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                         }
                         setIsAggregatedView(prev => !prev);
                       }}
-                      className={`px-3.5 py-2 text-sm font-semibold transition-colors ${isAggregatedView ? 'bg-[rgba(0,201,167,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
+                      className={`px-3 py-2 text-sm font-medium transition-colors ${isAggregatedView ? 'bg-[rgba(0,201,167,0.1)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
                       aria-pressed={isAggregatedView}
                     >
                       Aggregated
@@ -1682,11 +1683,11 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                   {isAggregatedView && (
                     <>
                       {/* Provider Filter Dropdown */}
-                      <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
+                      <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)]">
                         <select
                           value={aggregatedProviderFilter || 'all'}
                           onChange={(e) => setAggregatedProviderFilter(e.target.value as ProviderId | 'all' | null)}
-                          className="border-none bg-transparent px-3.5 py-2 text-sm font-semibold text-[var(--cf-text-1)] focus:outline-none"
+                          className="border-none bg-transparent px-3 py-2 text-sm font-medium text-[var(--cf-text-1)] focus:outline-none"
                           aria-label="Filter providers"
                         >
                           <option value="all">All Providers</option>
@@ -1700,11 +1701,11 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                       </div>
 
                       {/* Duplicates Only Toggle */}
-                      <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
+                      <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)]">
                         <button
                           data-testid="cf-duplicates-filter-toggle"
                           onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)}
-                          className={`px-3.5 py-2 text-sm font-semibold transition-colors ${showDuplicatesOnly ? 'bg-[rgba(167,139,250,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
+                          className={`px-3 py-2 text-sm font-medium transition-colors ${showDuplicatesOnly ? 'bg-[rgba(167,139,250,0.1)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
                           aria-pressed={showDuplicatesOnly}
                         >
                           Duplicates Only
@@ -1715,38 +1716,42 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                 </div>
               </>
             )}
-            <div className="cf-toolbar-card rounded-2xl p-1">
-              <div className="relative">
-                <input data-testid="cf-global-search-input" type="text" placeholder="Search files across providers..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-64 rounded-[14px] border border-transparent bg-transparent px-4 py-2.5 pl-10 text-sm text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[rgba(74,158,255,0.28)] focus:bg-[var(--cf-panel-softer)] focus:outline-none md:w-80" />
+            <div className="cf-toolbar-card flex min-w-[280px] flex-1 items-center gap-2 rounded-[20px] px-2 py-2 lg:min-w-[320px] lg:flex-none">
+              <span className="cf-micro-label px-2">Search</span>
+              <div className="relative flex-1">
+                <input data-testid="cf-global-search-input" type="text" placeholder="Search files across providers..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full rounded-[14px] border border-transparent bg-transparent px-4 py-2.5 pl-10 text-sm text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[rgba(74,158,255,0.22)] focus:bg-[var(--cf-panel-softer)] focus:outline-none md:min-w-[18rem]" />
                 <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--cf-text-3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 {isSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500" /></div>}
               </div>
             </div>
-            <button
-              data-testid="cf-action-new-folder"
-              onClick={openNewFolderModal}
-              disabled={writeActionsDisabled}
-              className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3.5 py-2 text-sm font-semibold text-[var(--cf-text-1)] transition-colors hover:border-[rgba(74,158,255,0.22)] hover:text-[var(--cf-text-0)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              New Folder
-            </button>
-            <button
-              data-testid="cf-action-new-file"
-              onClick={openNewFileModal}
-              disabled={writeActionsDisabled}
-              className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3.5 py-2 text-sm font-semibold text-[var(--cf-text-1)] transition-colors hover:border-[rgba(255,159,67,0.22)] hover:text-[var(--cf-text-0)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              New File
-            </button>
-            <button
-              data-testid="cf-action-upload"
-              onClick={() => uploadInputRef.current?.click()}
-              disabled={uploading || connectedProviders.length === 0}
-              className="rounded-xl border border-[rgba(0,201,167,0.26)] bg-[rgba(0,201,167,0.1)] px-3.5 py-2 text-sm font-semibold text-[var(--cf-teal)] transition-colors hover:bg-[rgba(0,201,167,0.16)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {uploading ? 'Uploading...' : 'Upload'}
-            </button>
-            <button data-testid="files-refresh" onClick={() => void handleRefresh()} className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+            <div className="cf-toolbar-card flex flex-wrap items-center gap-2 rounded-[20px] px-2 py-2">
+              <span className="cf-micro-label px-2">Actions</span>
+              <button
+                data-testid="cf-action-new-folder"
+                onClick={openNewFolderModal}
+                disabled={writeActionsDisabled}
+                className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm font-medium text-[var(--cf-text-1)] transition-colors hover:border-[rgba(74,158,255,0.18)] hover:text-[var(--cf-text-0)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                New Folder
+              </button>
+              <button
+                data-testid="cf-action-new-file"
+                onClick={openNewFileModal}
+                disabled={writeActionsDisabled}
+                className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm font-medium text-[var(--cf-text-1)] transition-colors hover:border-[rgba(255,159,67,0.18)] hover:text-[var(--cf-text-0)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                New File
+              </button>
+              <button
+                data-testid="cf-action-upload"
+                onClick={() => uploadInputRef.current?.click()}
+                disabled={uploading || connectedProviders.length === 0}
+                className="rounded-xl border border-[rgba(0,201,167,0.24)] bg-[rgba(0,201,167,0.08)] px-3 py-2 text-sm font-medium text-[var(--cf-teal)] transition-colors hover:bg-[rgba(0,201,167,0.13)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {uploading ? 'Uploading...' : 'Upload'}
+              </button>
+              <button data-testid="files-refresh" onClick={() => void handleRefresh()} className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+            </div>
             </div>
           </div>
         </div>

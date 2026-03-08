@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { primeQaSession } from './helpers/mockRuntime'
 
 /**
  * Task 3.4: Tray E2E — entry survives navigation, retry works on failure
@@ -8,30 +9,8 @@ import { test, expect } from '@playwright/test'
 test.describe('Transfer Tray / Queue Panel', () => {
   const TEST_JOB_ID = 'transfer-user123-legacy'
 
-  test.beforeEach(async ({ page, context }) => {
-    await context.addCookies([
-      {
-        name: 'accessToken',
-        value: 'test-token',
-        domain: 'localhost',
-        path: '/',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-      {
-        name: 'accessToken',
-        value: 'test-token',
-        domain: '127.0.0.1',
-        path: '/',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ])
-
-    await page.addInitScript(() => {
-      localStorage.setItem('cf_token', 'test-token')
-      localStorage.setItem('cf_email', 'test@example.com')
-    })
+  test.beforeEach(async ({ page, request }) => {
+    await primeQaSession(page, request, 'test@example.com', '123password')
 
     await page.route('**/api/connections', async (route) => {
       await route.fulfill({
@@ -50,17 +29,6 @@ test.describe('Transfer Tray / Queue Panel', () => {
               status: 'connected',
             },
           ],
-        }),
-      })
-    })
-
-    await page.route('**/api/auth/session', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          user: { id: 'user-123', email: 'test@example.com', name: 'Test User' },
-          expires: new Date(Date.now() + 3600000).toISOString(),
         }),
       })
     })

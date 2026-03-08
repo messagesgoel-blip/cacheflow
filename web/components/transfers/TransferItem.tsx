@@ -60,6 +60,19 @@ const formatFileSize = (bytes: number): string => {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 };
 
+const itemTone = (status: TransferStatus): string => {
+  switch (status) {
+    case 'completed':
+      return 'border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.08)] text-[var(--cf-green)]';
+    case 'failed':
+      return 'border-[rgba(255,92,92,0.22)] bg-[rgba(255,92,92,0.08)] text-[var(--cf-red)]';
+    case 'active':
+      return 'border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.08)] text-[var(--cf-blue)]';
+    default:
+      return 'border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] text-[var(--cf-text-1)]';
+  }
+};
+
 /**
  * Get status icon emoji
  */
@@ -209,22 +222,22 @@ export const TransferItem: React.FC<TransferItemProps> = ({
   const operationDisplay = operation ? operation.charAt(0).toUpperCase() + operation.slice(1) : '';
 
   return (
-    <div className="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+    <div className="mb-3 rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] p-4 transition-colors hover:bg-[var(--cf-panel-soft)]">
       <div className="flex items-start gap-3">
         {/* Status Icon */}
-        <span className="text-xl flex-shrink-0 mt-0.5">{getStatusIcon(status)}</span>
+        <span className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border text-base ${itemTone(status)}`}>{getStatusIcon(status)}</span>
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">
           {/* Header: File name and operation */}
           <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-medium text-gray-900 truncate" title={fileName}>
+            <p className="truncate text-sm font-semibold text-[var(--cf-text-0)]" title={fileName}>
               {fileName}
             </p>
             {status === 'completed' && (
               <button
                 onClick={() => onDismiss?.(jobId)}
-                className="text-xs text-gray-400 hover:text-gray-600 flex-shrink-0"
+                className="flex-shrink-0 text-xs text-[var(--cf-text-3)] hover:text-[var(--cf-text-1)]"
                 aria-label="Dismiss"
               >
                 ×
@@ -233,7 +246,7 @@ export const TransferItem: React.FC<TransferItemProps> = ({
             {status === 'failed' && onRetry && (
               <button
                 onClick={() => onRetry(jobId)}
-                className="text-xs text-blue-600 hover:text-blue-800 flex-shrink-0"
+                className="flex-shrink-0 text-xs font-medium text-[var(--cf-blue)] hover:text-[var(--cf-text-0)]"
               >
                 Retry
               </button>
@@ -241,7 +254,7 @@ export const TransferItem: React.FC<TransferItemProps> = ({
             {(status === 'active' || status === 'waiting') && onCancel && (
               <button
                 onClick={() => onCancel(jobId)}
-                className="text-xs text-gray-500 hover:text-gray-700 flex-shrink-0 ml-2"
+                className="ml-2 flex-shrink-0 text-xs text-[var(--cf-text-2)] hover:text-[var(--cf-text-0)]"
                 title="Cancel transfer"
               >
                 ✕
@@ -250,18 +263,16 @@ export const TransferItem: React.FC<TransferItemProps> = ({
           </div>
 
           {/* Metadata: Size and provider/operation */}
-          <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-            <span>{formatFileSize(fileSize)}</span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-[var(--cf-text-2)]">
+            <span className="rounded-full border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] px-2.5 py-1">{formatFileSize(fileSize)}</span>
             {providerDisplay && (
               <>
-                <span>•</span>
-                <span>{providerDisplay}</span>
+                <span className="rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-2.5 py-1">{providerDisplay}</span>
               </>
             )}
             {operationDisplay && (
               <>
-                <span>•</span>
-                <span>{operationDisplay}</span>
+                <span className="rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-2.5 py-1">{operationDisplay}</span>
               </>
             )}
           </div>
@@ -270,16 +281,16 @@ export const TransferItem: React.FC<TransferItemProps> = ({
           {isChunked && totalChunks && totalChunks > 1 && (
             <div className="mt-3">
               {/* Chunk visualization */}
-              <div className="flex gap-0.5 mb-2">
+              <div className="mb-2 flex gap-0.5">
                 {chunkStatuses.map((chunk, idx) => (
                   <div
                     key={idx}
                     className={`flex-1 h-1.5 rounded-full transition-all ${
                       chunk.isCommitted
-                        ? 'bg-green-500'
+                        ? 'bg-[var(--cf-green)]'
                         : chunk.isCurrent
-                        ? 'bg-blue-500 animate-pulse'
-                        : 'bg-gray-200'
+                        ? 'bg-[var(--cf-blue)] animate-pulse'
+                        : 'bg-[var(--cf-bg3)]'
                     }`}
                     title={`Chunk ${idx + 1}/${totalChunks}${
                       chunk.isCommitted
@@ -293,7 +304,7 @@ export const TransferItem: React.FC<TransferItemProps> = ({
               </div>
 
               {/* Chunk progress text */}
-              <div className="flex justify-between text-xs text-gray-600 mb-1">
+              <div className="mb-1 flex justify-between text-xs text-[var(--cf-text-2)]">
                 <span>
                   {inferredCommittedChunks.length} of {totalChunks} chunks
                   {inferredCurrentChunk !== undefined && inferredCurrentChunk < totalChunks && ` (uploading ${inferredCurrentChunk + 1})`}
@@ -306,18 +317,18 @@ export const TransferItem: React.FC<TransferItemProps> = ({
           {/* Simple Progress Bar (for non-chunked transfers only) */}
           {(status === 'active' || status === 'waiting') && !isChunked && (
             <div className="mt-2">
-              <div className="flex justify-between text-xs text-gray-600 mb-1">
+              <div className="mb-1 flex justify-between text-xs text-[var(--cf-text-2)]">
                 <span>Progress</span>
                 <span>{progress}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="h-2 w-full rounded-full bg-[var(--cf-bg3)]">
                 <div
                   className={`h-2 rounded-full transition-all ${getStatusColor(status)}`}
                   style={{ width: `${progress}%` }}
                 />
               </div>
               {bytesTransferred > 0 && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-[var(--cf-text-2)]">
                   {formatFileSize(bytesTransferred)} of {formatFileSize(fileSize)} transferred
                 </p>
               )}
@@ -326,7 +337,7 @@ export const TransferItem: React.FC<TransferItemProps> = ({
 
           {/* Error Display */}
           {status === 'failed' && error && (
-            <p className="text-xs text-red-600 mt-2">{error}</p>
+            <p className="mt-2 rounded-xl border border-[rgba(255,92,92,0.2)] bg-[rgba(255,92,92,0.08)] px-3 py-2 text-xs text-[var(--cf-red)]">{error}</p>
           )}
         </div>
       </div>

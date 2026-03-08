@@ -123,9 +123,12 @@ export default function RecentActivityPanel() {
                 key={item.id}
                 href="/files?view=activity"
                 data-testid={`cf-dashboard-activity-${item.id}`}
-                className="block rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4 transition hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.05)]"
+                className="group block rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4 transition hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.05)]"
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border text-sm ${actionTone(item.action)}`}>
+                    {provider?.icon || '•'}
+                  </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate text-sm font-semibold text-[var(--cf-text-0)]">
@@ -146,9 +149,17 @@ export default function RecentActivityPanel() {
                           {formatBytes(item.metadata.size_bytes)}
                         </span>
                       ) : null}
-                      <span>{new Date(item.created_at).toLocaleString()}</span>
+                      <span className="rounded-full border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] px-2.5 py-1">
+                        {new Date(item.created_at).toLocaleString([], {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </span>
                     </div>
                   </div>
+                  <span className="mt-0.5 text-[var(--cf-text-3)] transition group-hover:text-[var(--cf-text-1)]">↗</span>
                 </div>
               </Link>
             )

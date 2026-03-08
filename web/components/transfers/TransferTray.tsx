@@ -15,6 +15,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTransferContext, TransferItem as TransferItemType } from '../../context/TransferContext';
 import { TransferItem } from './TransferItem';
+import { formatBytes } from '@/lib/providers/types';
 
 /**
  * TransferTray Component
@@ -82,6 +83,10 @@ export const TransferTray: React.FC = () => {
       completedTransfers: completed.slice(0, 5), // Keep last 5 completed
     };
   }, [transfers]);
+  const totalBytes = useMemo(
+    () => transfers.reduce((sum, transfer) => sum + (transfer.fileSize || 0), 0),
+    [transfers],
+  );
 
   // Handle cancel action
   const handleCancel = async (jobId: string) => {
@@ -112,10 +117,10 @@ export const TransferTray: React.FC = () => {
       <button
         onClick={() => setIsOpen(true)}
         style={trayStyle}
-        className="fixed bottom-4 p-3 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors z-50"
+        className="fixed bottom-4 z-50 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] p-3 text-[var(--cf-text-1)] shadow-[var(--cf-shadow-strong)] transition-colors hover:bg-[var(--cf-panel-soft)] hover:text-[var(--cf-text-0)]"
         aria-label="Show transfers"
       >
-        <span className="text-lg">📁</span>
+        <span className="text-lg">⇅</span>
       </button>
     );
   }
@@ -126,13 +131,13 @@ export const TransferTray: React.FC = () => {
       <button
         onClick={() => setIsOpen(true)}
         style={trayStyle}
-        className="fixed bottom-4 p-2 bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 transition-colors z-50"
+        className="fixed bottom-4 z-50 rounded-2xl border border-[rgba(74,158,255,0.26)] bg-[rgba(74,158,255,0.14)] p-2.5 text-[var(--cf-blue)] shadow-[var(--cf-shadow-strong)] transition-colors hover:bg-[rgba(74,158,255,0.18)]"
         aria-label={`${activeCount} active transfer${activeCount > 1 ? 's' : ''}`}
       >
         <div className="relative">
-          <span className="text-lg text-white">📁</span>
+          <span className="text-lg">⇅</span>
           {activeCount > 0 && (
-            <span data-testid="activeBadge" className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+            <span data-testid="activeBadge" className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--cf-red)] text-xs text-white">
               {activeCount > 9 ? '9+' : activeCount}
             </span>
           )}
@@ -146,27 +151,64 @@ export const TransferTray: React.FC = () => {
     <div 
       data-testid="cf-transfer-tray"
       style={trayStyle}
-      className="fixed bottom-4 w-80 max-h-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+      className="fixed bottom-4 z-50 w-[22rem] max-h-[32rem] overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)]"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50">
-        <h3 className="font-semibold text-gray-900">Transfers</h3>
-        <div className="flex items-center gap-2">
-          {activeCount > 0 && (
-            <span className="text-xs text-gray-600">{activeCount} active</span>
-          )}
+      <div className="border-b border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="cf-kicker">Transfers</div>
+            <h3 className="mt-1 text-sm font-semibold text-[var(--cf-text-0)]">Live transfer tray</h3>
+            <p className="mt-1 text-xs text-[var(--cf-text-2)]">
+              {formatBytes(totalBytes)} across {transfers.length} tracked jobs
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {activeCount > 0 && (
+              <span className="rounded-full border border-[var(--cf-border)] px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">
+                {activeCount} active
+              </span>
+            )}
+            <button
+              onClick={refreshTransfers}
+              className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-2)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+              aria-label="Refresh transfers"
+            >
+              ↻
+            </button>
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="rounded-2xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] px-3 py-2">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">Active</div>
+            <div className="mt-1 text-base font-semibold text-[var(--cf-blue)]">{activeTransfers.length}</div>
+          </div>
+          <div className="rounded-2xl border border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.1)] px-3 py-2">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">Done</div>
+            <div className="mt-1 text-base font-semibold text-[var(--cf-green)]">
+              {completedTransfers.filter((transfer) => transfer.status === 'completed').length}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[rgba(255,92,92,0.22)] bg-[rgba(255,92,92,0.08)] px-3 py-2">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">Failed</div>
+            <div className="mt-1 text-base font-semibold text-[var(--cf-red)]">
+              {completedTransfers.filter((transfer) => transfer.status === 'failed').length}
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-2">
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            className="rounded-xl border border-[var(--cf-border)] px-3 py-1.5 text-xs font-medium text-[var(--cf-text-1)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
             aria-label="Minimize"
           >
-            −
+            Minimize
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="overflow-y-auto max-h-80">
+      <div className="max-h-[24rem] overflow-y-auto px-3 py-3">
         {/* Active transfers */}
         {activeTransfers.length > 0 && (
           <>
@@ -197,7 +239,7 @@ export const TransferTray: React.FC = () => {
         {completedTransfers.length > 0 && (
           <>
             {activeTransfers.length > 0 && (
-              <div className="px-3 py-2 text-xs text-gray-500 border-b border-gray-100">
+              <div className="px-2 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--cf-text-3)]">
                 Completed
               </div>
             )}
@@ -222,7 +264,7 @@ export const TransferTray: React.FC = () => {
 
         {/* Empty state */}
         {activeTransfers.length === 0 && completedTransfers.length === 0 && (
-          <div className="p-8 text-center text-gray-500">
+          <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-8 text-center text-[var(--cf-text-2)]">
             <p className="text-sm">No transfers</p>
           </div>
         )}
