@@ -106,13 +106,18 @@ export default function ActivityFeed() {
     return item.resource_id || item.resource
   }
 
+  const getProviderMeta = (providerId?: string) => {
+    if (!providerId) return null
+    return PROVIDERS.find((provider) => provider.id === providerId) || null
+  }
+
   return (
-    <div data-testid="cf-activity-feed" className="mx-auto max-w-[1280px] p-6">
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div data-testid="cf-activity-feed" className="mx-auto max-w-[1280px] px-5 py-5 sm:px-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="cf-kicker mb-3">Activity</div>
-          <h1 className="text-3xl font-semibold text-[var(--cf-text-0)]">Activity Feed</h1>
-          <p className="mt-2 text-sm text-[var(--cf-text-1)]">Recent actions across your connected providers and file surfaces.</p>
+          <div className="cf-kicker mb-2">Activity</div>
+          <h1 className="text-[1.7rem] font-semibold tracking-[-0.02em] text-[var(--cf-text-0)]">Activity Feed</h1>
+          <p className="mt-1.5 max-w-2xl text-sm text-[var(--cf-text-1)]">Recent actions across your connected providers and file surfaces.</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -120,7 +125,7 @@ export default function ActivityFeed() {
             data-testid="cf-activity-filter-action"
             value={filter.action}
             onChange={(e) => setFilter(prev => ({ ...prev, action: e.target.value }))}
-            className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] focus:border-[var(--cf-blue)] focus:outline-none"
+            className="rounded-lg border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2 text-[13px] font-medium text-[var(--cf-text-1)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors hover:border-[rgba(255,255,255,0.16)] focus:border-[var(--cf-blue)] focus:outline-none"
           >
             <option value="">All Actions</option>
             <option value="upload">Upload</option>
@@ -134,7 +139,7 @@ export default function ActivityFeed() {
             data-testid="cf-activity-filter-provider"
             value={filter.provider}
             onChange={(e) => setFilter(prev => ({ ...prev, provider: e.target.value }))}
-            className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] focus:border-[var(--cf-blue)] focus:outline-none"
+            className="rounded-lg border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2 text-[13px] font-medium text-[var(--cf-text-1)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-colors hover:border-[rgba(255,255,255,0.16)] focus:border-[var(--cf-blue)] focus:outline-none"
           >
             <option value="">All Providers</option>
             {PROVIDERS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -143,68 +148,65 @@ export default function ActivityFeed() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="cf-panel rounded-[24px] px-8 py-10 text-center">
+        <div className="flex justify-center py-16">
+          <div className="cf-panel rounded-[22px] px-7 py-8 text-center">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />
           </div>
         </div>
       ) : activities.length === 0 ? (
-        <div className="cf-panel rounded-[24px] py-24 text-center">
+        <div className="cf-panel rounded-[22px] py-20 text-center">
           <p className="text-sm text-[var(--cf-text-1)]">No recent activity found.</p>
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {activities.map((item, index) => (
-            <div key={item.id} className="relative flex gap-4">
+            <div key={item.id} className="relative flex gap-3.5">
               {index < activities.length - 1 && (
-                <div className="absolute left-[1.15rem] top-12 h-[calc(100%-1rem)] w-px bg-[var(--cf-border)]" />
+                <div className="absolute left-[1rem] top-10 h-[calc(100%-0.25rem)] w-px bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.03))]" />
               )}
 
-              <div className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-base ${getActionTone(item.action)}`}>
+              <div className={`relative z-10 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm shadow-[0_10px_24px_rgba(0,0,0,0.18)] ${getActionTone(item.action)}`}>
                 {getActionIcon(item.action)}
               </div>
 
               <div
-                key={item.id}
                 data-testid={`cf-activity-item-${item.id}`}
-                className="cf-panel mb-4 flex-1 rounded-[22px] p-4"
+                className="cf-panel mb-3 flex-1 rounded-[20px] px-4 py-3.5"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex flex-wrap items-start justify-between gap-2.5">
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-semibold text-[var(--cf-text-0)]">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="truncate text-[13px] font-semibold text-[var(--cf-text-0)] sm:text-sm">
                         {getActivityHeadline(item)}
                       </p>
-                      <span className={`rounded-full border px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] ${getActionTone(item.action)}`}>
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize ${getActionTone(item.action)}`}>
                         {item.action.replace(/_/g, ' ')}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-[var(--cf-text-2)]">
+                    <p className="mt-1 text-[12px] leading-relaxed text-[var(--cf-text-2)]">
                       {getActivityDetail(item)}
                     </p>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
                       {item.metadata.providerId && (
-                        <div className="flex items-center gap-1.5 rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-2 py-1">
-                          <span className="text-xs">{PROVIDERS.find(p => p.id === item.metadata.providerId)?.icon}</span>
-                          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">
-                            {item.metadata.providerId}
+                        <div className="flex items-center gap-1.5 rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-2.5 py-1 text-[11px] text-[var(--cf-text-2)]">
+                          <span className="text-xs">{getProviderMeta(item.metadata.providerId)?.icon}</span>
+                          <span className="font-medium">
+                            {getProviderMeta(item.metadata.providerId)?.name || item.metadata.providerId}
                           </span>
                         </div>
                       )}
                       {item.metadata.size_bytes && (
-                        <span className="font-mono text-[10px] text-[var(--cf-text-2)]">
+                        <span className="rounded-full border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] px-2.5 py-1 text-[11px] text-[var(--cf-text-2)]">
                           {formatBytes(item.metadata.size_bytes)}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="shrink-0 text-right">
-                    <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-3)]">
-                      Event Time
-                    </div>
-                    <div className="mt-1 text-[11px] text-[var(--cf-text-1)]">
+                  <div className="shrink-0 rounded-2xl border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.02)] px-3 py-2 text-right">
+                    <div className="cf-kicker mb-1 text-[9px]">Event Time</div>
+                    <div className="text-[11px] text-[var(--cf-text-1)]">
                       {new Date(item.created_at).toLocaleString()}
                     </div>
                   </div>
