@@ -124,7 +124,9 @@ export default function DashboardPage() {
 
   const providerTypes = Array.from(new Set(connectedProviders.map((provider) => provider.providerId)))
   const vpsCount = connectedProviders.filter((provider) => provider.providerId === 'vps').length
+  const cloudCount = Math.max(connectedProviders.length - vpsCount, 0)
   const quotaKnownCount = connectedProviders.filter((provider) => (provider.quota?.total || 0) > 0).length
+  const opaqueCount = Math.max(connectedProviders.length - quotaKnownCount, 0)
   const accountLabels = connectedProviders
     .map((provider) => provider.displayName || provider.accountEmail || provider.providerId)
     .slice(0, 6)
@@ -154,27 +156,78 @@ export default function DashboardPage() {
           <QuickActionsPanel />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="cf-panel rounded-[24px] p-4">
-            <h3 className="cf-kicker mb-2">Connected Providers</h3>
-            <p className="font-mono text-[28px] font-bold text-[var(--cf-blue)]">{connectedProviders.length}</p>
-            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Accounts online in the current control plane session.</p>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="cf-panel rounded-[28px] p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <div className="cf-kicker mb-2">Command Coverage</div>
+                <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Provider summary density</h2>
+              </div>
+              <div className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1 text-[11px] text-[var(--cf-text-2)]">
+                {providerTypes.length} provider types
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                {
+                  label: 'Connected Providers',
+                  value: String(connectedProviders.length),
+                  helper: 'Accounts online in the current control plane session.',
+                  accent: 'text-[var(--cf-blue)]',
+                },
+                {
+                  label: 'Tracked Accounts',
+                  value: String(connectedProviders.filter((p) => (p.accountEmail || p.displayName)).length),
+                  helper: 'Named identities available for browsing and quota rollup.',
+                  accent: 'text-[var(--cf-teal)]',
+                },
+                {
+                  label: 'Cloud Footprint',
+                  value: String(cloudCount),
+                  helper: 'OAuth-backed storage surfaces currently hydrated.',
+                  accent: 'text-[var(--cf-amber)]',
+                },
+                {
+                  label: 'Opaque Remotes',
+                  value: String(opaqueCount),
+                  helper: 'Connected remotes without quota telemetry.',
+                  accent: 'text-[var(--cf-purple)]',
+                },
+              ].map((card) => (
+                <div key={card.label} className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+                  <div className="cf-kicker mb-2">{card.label}</div>
+                  <p className={`font-mono text-[26px] font-bold ${card.accent}`}>{card.value}</p>
+                  <p className="mt-2 text-sm text-[var(--cf-text-2)]">{card.helper}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="cf-panel rounded-[24px] p-4">
-            <h3 className="cf-kicker mb-2">Tracked Accounts</h3>
-            <p className="font-mono text-[28px] font-bold text-[var(--cf-teal)]">
-              {connectedProviders.filter((p) => (p.accountEmail || p.displayName)).length}
-            </p>
-            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Named identities available for browsing and quota rollup.</p>
-          </div>
+          <div className="cf-panel rounded-[28px] p-5">
+            <div className="mb-4">
+              <div className="cf-kicker mb-2">Observed Mix</div>
+              <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Current provider footprint</h2>
+              <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">Compact split between cloud coverage, server nodes, and quota telemetry.</p>
+            </div>
 
-          <div className="cf-panel rounded-[24px] p-4">
-            <h3 className="cf-kicker mb-2">Coverage</h3>
-            <p className="font-mono text-[28px] font-bold text-[var(--cf-amber)]">
-              {providerTypes.length}
-            </p>
-            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Distinct provider types feeding the current storage graph.</p>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+                <div className="cf-kicker mb-2 text-[9px]">Cloud Providers</div>
+                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-blue)]">{cloudCount}</div>
+                <p className="mt-2 text-sm text-[var(--cf-text-2)]">OAuth-backed storage accounts.</p>
+              </div>
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+                <div className="cf-kicker mb-2 text-[9px]">VPS / SFTP</div>
+                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-teal)]">{vpsCount}</div>
+                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Server-backed remotes connected to the control plane.</p>
+              </div>
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+                <div className="cf-kicker mb-2 text-[9px]">Quota Telemetry</div>
+                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-amber)]">{quotaKnownCount}</div>
+                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Accounts reporting size and usage to the dashboard.</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -188,19 +241,19 @@ export default function DashboardPage() {
 
             <div className="grid gap-3 md:grid-cols-3">
               <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Cloud Providers</div>
-                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-blue)]">{connectedProviders.length - vpsCount}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">OAuth-backed storage accounts.</p>
+                <div className="cf-kicker mb-2 text-[9px]">Live Clouds</div>
+                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-blue)]">{cloudCount}</div>
+                <p className="mt-2 text-sm text-[var(--cf-text-2)]">OAuth-backed storage accounts currently represented above.</p>
               </div>
               <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">VPS / SFTP</div>
+                <div className="cf-kicker mb-2 text-[9px]">Server Nodes</div>
                 <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-teal)]">{vpsCount}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Server-backed remotes connected to the control plane.</p>
+                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Directly managed VPS and SFTP remotes in the same shell.</p>
               </div>
               <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Quota Telemetry</div>
-                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-amber)]">{quotaKnownCount}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Accounts reporting size and usage to the dashboard.</p>
+                <div className="cf-kicker mb-2 text-[9px]">Identity Labels</div>
+                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-amber)]">{accountLabels.length}</div>
+                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Named handles surfaced for fast browsing and routing context.</p>
               </div>
             </div>
 

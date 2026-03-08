@@ -80,62 +80,35 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[30px] border border-[var(--cf-border)] bg-[linear-gradient(145deg,rgba(24,29,40,0.98),rgba(11,14,20,0.98))] p-6 text-[var(--cf-text-0)] shadow-[0_24px_80px_rgba(0,0,0,0.34)]">
-      <div className="mb-5 flex items-start justify-between gap-6">
-        <div>
-          <div className="cf-kicker mb-2">Overview</div>
-          <h2 className="mb-1 text-[28px] font-semibold leading-tight">Total Pooled Storage</h2>
-          <p className="text-sm text-[var(--cf-text-1)]">{connectedProviders.length} provider{connectedProviders.length !== 1 ? 's' : ''} connected</p>
-        </div>
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--cf-border-2)] bg-[rgba(74,158,255,0.12)] backdrop-blur-sm">
-          <svg className="h-8 w-8 text-[var(--cf-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-          </svg>
-        </div>
-      </div>
-
-      <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-3">
-        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-          <p className="cf-kicker mb-1.5">Used</p>
-          <p className="font-mono text-[26px] font-bold text-[var(--cf-teal)]">{formatBytes(aggregateQuota.used)}</p>
-        </div>
-        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-          <p className="cf-kicker mb-1.5">Total Available</p>
-          <p className="font-mono text-[26px] font-bold text-[var(--cf-blue)]">{formatBytes(aggregateQuota.total)}</p>
-        </div>
-        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-          <p className="cf-kicker mb-1.5">Free</p>
-          <p className="font-mono text-[26px] font-bold text-[var(--cf-amber)]">{formatBytes(aggregateQuota.total - aggregateQuota.used)}</p>
-        </div>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
-        <div>
-          <div className="mb-3 flex items-center justify-between gap-3">
+    <div className="overflow-hidden rounded-[30px] border border-[var(--cf-border)] bg-[linear-gradient(145deg,rgba(24,29,40,0.98),rgba(11,14,20,0.98))] p-5 text-[var(--cf-text-0)] shadow-[0_24px_80px_rgba(0,0,0,0.34)] lg:p-6">
+      <div className="mb-4 grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
+        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4 lg:p-5">
+          <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <div className="cf-kicker">Usage</div>
-              <div className="mt-1 text-sm text-[var(--cf-text-1)]">Combined quota from providers that report telemetry.</div>
+              <div className="cf-kicker mb-2">Overview</div>
+              <h2 className="mb-1 text-[28px] font-semibold leading-tight">Total Pooled Storage</h2>
+              <p className="text-sm text-[var(--cf-text-1)]">{connectedProviders.length} provider{connectedProviders.length !== 1 ? 's' : ''} connected</p>
             </div>
-            <span className="rounded-full border border-[var(--cf-border)] px-2.5 py-1 font-mono text-[11px] text-[var(--cf-text-2)]">{Math.round(aggregateQuota.percent)}%</span>
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--cf-border-2)] bg-[rgba(74,158,255,0.12)] backdrop-blur-sm">
+              <svg className="h-7 w-7 text-[var(--cf-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+              </svg>
+            </div>
           </div>
-          <div className="h-3 overflow-hidden rounded-full bg-[var(--cf-bg3)]">
-            <div
-              className={`h-full transition-all duration-500 ${getUsageColor(aggregateQuota.percent)}`}
-              style={{ width: `${Math.min(aggregateQuota.percent, 100)}%` }}
-            />
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {[
-              { label: 'Accounts', value: String(connectedProviders.length), accent: 'text-[var(--cf-blue)]' },
-              { label: 'Quota-tracked', value: String(providersWithQuota.length), accent: 'text-[var(--cf-teal)]' },
-              { label: 'Opaque remotes', value: String(providersWithoutQuota.length), accent: 'text-[var(--cf-amber)]' },
-              { label: 'Free headroom', value: formatBytes(Math.max(aggregateQuota.total - aggregateQuota.used, 0)), accent: 'text-[var(--cf-purple)]' },
-            ].map((item) => (
-              <div key={item.label} className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5">
-                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">{item.label}</div>
-                <div className={`mt-2 truncate font-mono text-base font-bold ${item.accent}`}>{item.value}</div>
-              </div>
-            ))}
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+              <p className="cf-kicker mb-1.5">Used</p>
+              <p className="font-mono text-[24px] font-bold text-[var(--cf-teal)]">{formatBytes(aggregateQuota.used)}</p>
+            </div>
+            <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+              <p className="cf-kicker mb-1.5">Total Available</p>
+              <p className="font-mono text-[24px] font-bold text-[var(--cf-blue)]">{formatBytes(aggregateQuota.total)}</p>
+            </div>
+            <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+              <p className="cf-kicker mb-1.5">Free</p>
+              <p className="font-mono text-[24px] font-bold text-[var(--cf-amber)]">{formatBytes(aggregateQuota.total - aggregateQuota.used)}</p>
+            </div>
           </div>
         </div>
 
@@ -155,7 +128,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
               const used = provider.quota?.used || 0
               const percent = total > 0 ? Math.round((used / total) * 100) : 0
               return (
-                <div key={`${provider.providerId}:${provider.accountEmail || provider.displayName}`} className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5">
+                <div key={`${provider.providerId}:${provider.accountEmail || provider.displayName}`} className="rounded-[20px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="truncate text-[13px] font-medium text-[var(--cf-text-0)]">
                       {getProviderDisplayName(provider.providerId, provider.displayName, provider.accountEmail)}
@@ -189,8 +162,74 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
         </div>
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
+        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4 lg:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <div className="cf-kicker">Usage</div>
+              <div className="mt-1 text-sm text-[var(--cf-text-1)]">Combined quota from providers that report telemetry.</div>
+            </div>
+            <span className="rounded-full border border-[var(--cf-border)] px-2.5 py-1 font-mono text-[11px] text-[var(--cf-text-2)]">{Math.round(aggregateQuota.percent)}%</span>
+          </div>
+          <div className="h-3 overflow-hidden rounded-full bg-[var(--cf-bg3)]">
+            <div
+              className={`h-full transition-all duration-500 ${getUsageColor(aggregateQuota.percent)}`}
+              style={{ width: `${Math.min(aggregateQuota.percent, 100)}%` }}
+            />
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              { label: 'Accounts', value: String(connectedProviders.length), accent: 'text-[var(--cf-blue)]' },
+              { label: 'Quota-tracked', value: String(providersWithQuota.length), accent: 'text-[var(--cf-teal)]' },
+              { label: 'Opaque remotes', value: String(providersWithoutQuota.length), accent: 'text-[var(--cf-amber)]' },
+              { label: 'Free headroom', value: formatBytes(Math.max(aggregateQuota.total - aggregateQuota.used, 0)), accent: 'text-[var(--cf-purple)]' },
+            ].map((item) => (
+              <div key={item.label} className="rounded-[20px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">{item.label}</div>
+                <div className={`mt-2 truncate font-mono text-base font-bold ${item.accent}`}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4">
+          <div className="mb-3">
+            <div className="cf-kicker">Quota Coverage</div>
+            <div className="mt-1 text-sm text-[var(--cf-text-1)]">Operational split between quota-reported accounts and opaque remotes.</div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            {[
+              {
+                label: 'Quota-tracked',
+                value: String(providersWithQuota.length),
+                helper: 'Accounts reporting used and total space.',
+                accent: 'text-[var(--cf-teal)]',
+              },
+              {
+                label: 'Opaque remotes',
+                value: String(providersWithoutQuota.length),
+                helper: 'Live remotes without quota telemetry.',
+                accent: 'text-[var(--cf-amber)]',
+              },
+              {
+                label: 'Reporting ratio',
+                value: connectedProviders.length > 0 ? `${Math.round((providersWithQuota.length / connectedProviders.length) * 100)}%` : '0%',
+                helper: 'Coverage across the current provider footprint.',
+                accent: 'text-[var(--cf-blue)]',
+              },
+            ].map((item) => (
+              <div key={item.label} className="rounded-[20px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">{item.label}</div>
+                <div className={`mt-2 text-[22px] font-semibold ${item.accent}`}>{item.value}</div>
+                <p className="mt-1.5 text-xs leading-5 text-[var(--cf-text-2)]">{item.helper}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {providersWithQuota.length > 0 && (
-        <div className="border-t border-[var(--cf-border)] pt-5">
+        <div className="mt-5 border-t border-[var(--cf-border)] pt-5">
           <h3 className="cf-kicker mb-3">
             Provider Breakdown
           </h3>
