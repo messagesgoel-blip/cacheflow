@@ -1,20 +1,21 @@
 language: "en-US"
-
 reviews:
-  profile: "chill"
+  profile: "assertive"
+  request_changes_workflow: true
   high_level_summary: true
   poem: false
   review_status: true
   collapse_walkthrough: false
-
   path_filters:
-    - "!**/.next/**"
-    - "!**/node_modules/**"
-    - "!**/coverage/**"
-    - "!**/playwright-report/**"
-    - "!**/test-results/**"
-    - "!**/monitoring/*.yaml"
-
-  auto_review:
-    enabled: true
-    drafts: false
+    - "!monitoring/*.yaml"
+    - "!docs/sprints-task-dashboard.md"
+    - "!logs/**"
+  path_instructions:
+    - path: "app/**"
+      instructions: "This is Next.js frontend owned by ClaudeCode. Check for React anti-patterns, missing error boundaries, and token storage in localStorage."
+    - path: "api/**"
+      instructions: "Backend routes owned by OpenCode. Verify no client secrets are returned, tokens passed via headers not URL params."
+    - path: "e2e/**"
+      instructions: "Playwright tests owned by Gemini. Verify port 3010, auth cookie injection, and reuseExistingServer is true."
+    - path: "scripts/orchestrate.ts"
+      instructions: "Critical orchestration file. Flag any changes to gate logic, agent dispatch, or sprint counter very prominently."
