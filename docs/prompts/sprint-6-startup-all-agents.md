@@ -50,7 +50,7 @@ Use the Shared Startup Block first.
 
 Agent: OpenCode
 Sprint: 6
-Repo: /home/sanjay/cacheflow_work
+Repo: /opt/docker/apps/cacheflow
 
 Primary ownership:
 - Backend/API/DB work for 6.1, 6.3, and 6.6
@@ -68,7 +68,7 @@ Use the Shared Startup Block first.
 
 Agent: ClaudeCode
 Sprint: 6
-Repo: /home/sanjay/cacheflow_work
+Repo: /opt/docker/apps/cacheflow
 
 Primary ownership:
 - UI/UX work for 6.1 through 6.6
@@ -84,7 +84,7 @@ Use the Shared Startup Block first.
 
 Agent: Gemini
 Sprint: 6
-Repo: /home/sanjay/cacheflow_work
+Repo: /opt/docker/apps/cacheflow
 
 Primary ownership:
 - Deterministic Playwright and targeted QA for each Sprint 6 task
@@ -100,7 +100,7 @@ Use the Shared Startup Block first.
 
 Agent: Codex
 Sprint: 6
-Repo: /home/sanjay/cacheflow_work
+Repo: /opt/docker/apps/cacheflow
 
 Owned task keys:
 - 6.1@QUOTA-1+RIMPORT-1

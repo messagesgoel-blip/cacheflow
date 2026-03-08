@@ -53,7 +53,7 @@ global.TextDecoder = TextDecoder
 
 ### Verification
 ```bash
-cd /home/sanjay/cacheflow_work/web
+cd /opt/docker/apps/cacheflow/web
 npm test -- tokenVault.test.ts
 ```
 Expected: All 7 tokenVault tests PASS
@@ -76,7 +76,7 @@ error TS7006: Parameter 'err' implicitly has an 'any' type
 
 **Fix:**
 ```bash
-cd /home/sanjay/cacheflow_work/web
+cd /opt/docker/apps/cacheflow/web
 npm install ssh2 @types/ssh2
 ```
 
@@ -182,7 +182,7 @@ const mockFile: AggregatedFileItem = {
 
 ### Verification
 ```bash
-cd /home/sanjay/cacheflow_work/web
+cd /opt/docker/apps/cacheflow/web
 npx tsc --noEmit
 ```
 Expected: ZERO errors
@@ -246,7 +246,7 @@ timeout: 60000,  // Increase from default
 
 ### Verification
 ```bash
-cd /home/sanjay/cacheflow_work/web
+cd /opt/docker/apps/cacheflow/web
 npx playwright test --project=chromium --grep "localhost login"
 ```
 Expected: Test completes without 401/500 errors
@@ -266,7 +266,7 @@ Expected: Test completes without 401/500 errors
 
 ```bash
 # All must pass:
-cd /home/sanjay/cacheflow_work/web
+cd /opt/docker/apps/cacheflow/web
 
 # 1. Jest tests
 npm test  # 0 failures

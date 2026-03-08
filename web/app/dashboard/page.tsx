@@ -116,7 +116,6 @@ export default function DashboardPage() {
     )
   }
 
-  const providerTypes = Array.from(new Set(connectedProviders.map((provider) => provider.providerId)))
   const vpsCount = connectedProviders.filter((provider) => provider.providerId === 'vps').length
   const cloudCount = Math.max(connectedProviders.length - vpsCount, 0)
   const quotaKnownCount = connectedProviders.filter((provider) => (provider.quota?.total || 0) > 0).length
@@ -138,78 +137,6 @@ export default function DashboardPage() {
         <div className="mb-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <OnboardingChecklist connectedProviderCount={connectedProviders.length} />
           <QuickActionsPanel />
-        </div>
-
-        <div className="mb-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="cf-panel rounded-[28px] p-5">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
-                <div className="cf-kicker mb-2">Command Coverage</div>
-                <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Operational footprint summary</h2>
-              </div>
-              <div className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1 text-[11px] text-[var(--cf-text-2)]">
-                {providerTypes.length} provider types
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                {
-                  label: 'Connected Providers',
-                  value: String(connectedProviders.length),
-                  helper: 'Accounts online in the current control plane session.',
-                  accent: 'text-[var(--cf-blue)]',
-                },
-                {
-                  label: 'Tracked Accounts',
-                  value: String(connectedProviders.filter((p) => (p.accountEmail || p.displayName)).length),
-                  helper: 'Named identities available for browsing and quota rollup.',
-                  accent: 'text-[var(--cf-teal)]',
-                },
-                {
-                  label: 'Cloud Footprint',
-                  value: String(cloudCount),
-                  helper: 'OAuth-backed storage surfaces currently hydrated.',
-                  accent: 'text-[var(--cf-amber)]',
-                },
-                {
-                  label: 'Server Nodes',
-                  value: String(vpsCount),
-                  helper: 'Managed VPS and SFTP remotes in the active shell.',
-                  accent: 'text-[var(--cf-purple)]',
-                },
-              ].map((card) => (
-                <div key={card.label} className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                  <div className="cf-kicker mb-2">{card.label}</div>
-                  <p className={`font-mono text-[26px] font-bold ${card.accent}`}>{card.value}</p>
-                  <p className="mt-2 text-sm text-[var(--cf-text-2)]">{card.helper}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="cf-panel rounded-[28px] p-5">
-            <div className="mb-4">
-              <div className="cf-kicker mb-2">Observed Mix</div>
-              <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Current provider footprint</h2>
-              <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">Distribution across cloud coverage, server nodes, and quota reporting.</p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Quota Coverage</div>
-                <div className="mt-2 font-mono text-base font-bold text-[var(--cf-blue)]">
-                  {connectedProviders.length > 0 ? `${Math.round((quotaKnownCount / connectedProviders.length) * 100)}%` : '0%'} reported
-                </div>
-              </div>
-              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Storage Remotes</div>
-                <div className="mt-2 font-mono text-base font-bold text-[var(--cf-teal)]">
-                  {cloudCount} cloud • {vpsCount} server
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.8fr]">

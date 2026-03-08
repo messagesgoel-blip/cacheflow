@@ -3,7 +3,7 @@
   "current_wave": 0,
   "current_state": "gate_passed",
   "roadmap_version": "5.0",
-  "roadmap_source": "/home/sanjay/cacheflow_work/docs/roadmap.md",
+  "roadmap_source": "/opt/docker/apps/cacheflow/docs/roadmap.md",
   "tasks": {
     "0.1": "done",
     "0.2": "done",
@@ -132,6 +132,6 @@
       "build": "pass",
       "playwright": "pass"
     },
-    "note": "Canonical roadmap is now /home/sanjay/cacheflow_work/docs/roadmap.md. Historical snapshots remain under /srv/storage/local/Cacheflow/Roadmap/. Deterministic gate is green on the current working tree (test-all, tsc, build, playwright 87 passed / 1 skipped). Live smoke is isolated in /home/sanjay/cacheflow_work/web/playwright.live.config.ts, and Sprint 6 is unblocked."
+    "note": "Canonical roadmap is now /opt/docker/apps/cacheflow/docs/roadmap.md. Historical snapshots remain under /srv/storage/local/Cacheflow/Roadmap/. Deterministic gate is green on the active working tree (test-all, tsc, build, playwright 87 passed / 1 skipped). Live smoke is isolated in /opt/docker/apps/cacheflow/web/playwright.live.config.ts, and Sprint 6 is unblocked."
   }
 }
