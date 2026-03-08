@@ -6,6 +6,22 @@ import { tokenManager } from '@/lib/tokenManager'
 import { useActionCenter } from '@/components/ActionCenterProvider'
 import { useIntegration } from '@/context/IntegrationContext'
 import { PROVIDERS, ProviderId } from '@/lib/providers/types'
+import { authFetch } from '@/lib/apiClient'
+
+function resolveAccountKey(providerId: ProviderId, providerToken: {
+  accountKey?: string
+  accountId?: string
+  accountEmail?: string
+  displayName?: string
+}) {
+  return (
+    providerToken.accountKey ||
+    providerToken.accountId ||
+    providerToken.accountEmail ||
+    providerToken.displayName ||
+    `${providerId}-primary`
+  )
+}
 
 export default function ConnectProviderModal() {
   const { modalState, closeModal } = useIntegration()
@@ -23,19 +39,60 @@ export default function ConnectProviderModal() {
 
   const handleConnect = async () => {
     setConnecting(true)
+    let connectedAccountKey: string | null = null
     try {
-      const providerInstance = getProvider(modalState.providerId as ProviderId)
+      const providerId = modalState.providerId as ProviderId
+      const providerInstance = getProvider(providerId)
       if (!providerInstance) throw new Error('Provider not available')
       const providerToken = await providerInstance.connect()
-      tokenManager.saveToken(modalState.providerId as ProviderId, {
-        provider: modalState.providerId as ProviderId,
-        accessToken: providerToken.accessToken,
-        accountEmail: providerToken.accountEmail,
-        displayName: providerToken.displayName,
-        accountId: providerToken.accountId,
-      } as any)
-      window.location.reload()
+      connectedAccountKey = resolveAccountKey(providerId, providerToken)
+
+      const response = await authFetch('/api/remotes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: providerId,
+          accountKey: connectedAccountKey,
+          accessToken: providerToken.accessToken,
+          refreshToken: providerToken.refreshToken,
+          expiresAt: providerToken.expiresAt,
+          accountId: providerToken.accountId,
+          accountEmail: providerToken.accountEmail,
+          displayName: providerToken.displayName,
+        }),
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Failed to save provider connection')
+      }
+
+      const remoteId =
+        payload?.data?.remote?.id ||
+        payload?.remote?.id ||
+        undefined
+
+      tokenManager.saveToken(providerId, {
+        ...providerToken,
+        provider: providerId,
+        accountKey: connectedAccountKey,
+      } as any, remoteId)
+
+      actions.notify({
+        kind: 'success',
+        title: 'Connected',
+        message: `${provider?.name || providerId} connected successfully`,
+      })
+      closeModal()
+      window.dispatchEvent(
+        new CustomEvent('cacheflow:remote-connected', {
+          detail: { providerId, remoteId, accountKey: connectedAccountKey },
+        }),
+      )
     } catch (err: any) {
+      if (connectedAccountKey) {
+        tokenManager.removeToken(modalState.providerId as ProviderId, connectedAccountKey)
+      }
       actions.notify({ kind: 'error', title: 'Connection Failed', message: err.message })
     } finally {
       setConnecting(false)

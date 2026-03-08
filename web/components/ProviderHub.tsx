@@ -113,6 +113,17 @@ export default function ProviderHub() {
   }, [fetchConnections])
 
   useEffect(() => {
+    const handleRemoteConnected = () => {
+      void fetchConnections()
+    }
+
+    window.addEventListener('cacheflow:remote-connected', handleRemoteConnected)
+    return () => {
+      window.removeEventListener('cacheflow:remote-connected', handleRemoteConnected)
+    }
+  }, [fetchConnections])
+
+  useEffect(() => {
     const handleCloudConnect = () => openConnectModal('google')
     const handleVpsConnect = () => openConnectModal('vps')
 

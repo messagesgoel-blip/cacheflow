@@ -119,6 +119,11 @@ function extractRemotes(payload: any): BackendRemote[] {
   return [];
 }
 
+function normalizeProviderId(provider: string): string {
+  if (provider === 'google_drive') return 'google';
+  return provider;
+}
+
 function mapRemoteToConnection(remote: BackendRemote): ProviderConnection {
   const accountKey = remote.account_key || remote.account_id || remote.id;
   const expiresAt = remote.expires_at ? new Date(remote.expires_at).getTime() : null;
@@ -133,7 +138,7 @@ function mapRemoteToConnection(remote: BackendRemote): ProviderConnection {
 
   return {
     id: remote.id,
-    provider: remote.provider,
+    provider: normalizeProviderId(remote.provider),
     accountKey,
     remoteId: remote.id,
     accountName: accountLabel,
