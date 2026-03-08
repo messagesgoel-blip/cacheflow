@@ -14,4 +14,6 @@ Tests: Playwright in web/e2e (run from web/). Gate command: SPRINT_LIMIT=N npx t
 
 Commits: git commit --no-verify; do not commit .next/, node_modules/, coverage/, monitoring/*.yaml.
 
+Definition of done: no change is considered done until it is tested, committed, and deployed from a clean git worktree in `/opt/docker/apps/cacheflow`. Do not treat uncommitted local changes or dirty-tree builds as done for live.
+
 Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.

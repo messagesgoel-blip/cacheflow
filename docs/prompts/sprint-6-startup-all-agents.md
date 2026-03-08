@@ -28,6 +28,8 @@ Execution rules:
 - Worker agents only claim Sprint 6 task keys after Codex dispatches the exact scope.
 - Write/update contracts for producer tasks before dependent work.
 - Keep commits scoped to the assigned Sprint 6 task key whenever possible.
+- No change is considered done until it is tested, committed, and deployed from a clean git worktree in `/opt/docker/apps/cacheflow`.
+- Do not treat dirty-tree builds, uncommitted local changes, or dev-only verification as done for live.
 - On completion of each task key:
   - run tests relevant to changed files
   - stage task files (`git add <files>`)
