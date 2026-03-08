@@ -100,6 +100,65 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+function getLinearGateIssueId(sprint: number): string | null {
+  const sprintSpecific = process.env[`LINEAR_SPRINT_${sprint}_ISSUE_ID`]?.trim();
+  if (sprintSpecific) {
+    return sprintSpecific;
+  }
+
+  const fallback = process.env.LINEAR_GATE_ISSUE_ID?.trim();
+  return fallback || null;
+}
+
+async function updateLinearIssueOnGatePass(sprint: number): Promise<void> {
+  const apiKey = process.env.LINEAR_API_KEY?.trim();
+  const doneStateId = process.env.LINEAR_DONE_STATE_ID?.trim();
+  const issueId = getLinearGateIssueId(sprint);
+
+  if (!apiKey || !doneStateId || !issueId) {
+    return;
+  }
+
+  const response = await fetch("https://api.linear.app/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: apiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: `
+        mutation UpdateIssueState($issueId: String!, $doneStateId: String!) {
+          issueUpdate(id: $issueId, input: { stateId: $doneStateId }) {
+            success
+          }
+        }
+      `,
+      variables: {
+        issueId,
+        doneStateId,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Linear issue update failed with HTTP ${response.status}`);
+  }
+
+  const payload = (await response.json()) as {
+    data?: { issueUpdate?: { success?: boolean } };
+    errors?: Array<{ message?: string }>;
+  };
+
+  if (payload.errors?.length) {
+    const messages = payload.errors.map((error) => error.message || "Unknown Linear error").join("; ");
+    throw new Error(`Linear issue update failed: ${messages}`);
+  }
+
+  if (!payload.data?.issueUpdate?.success) {
+    throw new Error(`Linear issue update did not report success for issue ${issueId}`);
+  }
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -1351,6 +1410,7 @@ async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, s
     state.current_wave = 0;
     state.current_sprint = sprint + 1;
     await writeState(state, { syncDashboard: true, syncReason: `sprint:${sprint}:gate:pass` });
+    await updateLinearIssueOnGatePass(sprint);
 
     await appendAudit({
       ts: nowIso(),

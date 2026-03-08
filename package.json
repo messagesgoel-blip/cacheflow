@@ -18,7 +18,9 @@
     "ssh2": "^1.17.0"
   },
   "devDependencies": {
+    "@prisma/config": "^7.4.2",
     "@types/node": "^25.3.3",
+    "prisma": "^7.4.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
