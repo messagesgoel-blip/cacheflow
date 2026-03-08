@@ -1,4 +1,4 @@
-const { Readable } = require('stream');
+const { Readable, PassThrough } = require('stream');
 const { finished } = require('stream/promises');
 const dns = require('dns/promises');
 const { isIP } = require('net');
@@ -124,19 +124,22 @@ async function remoteUpload(options) {
 
     const actualFilename = filename || generateFilenameFromUrl(url);
 
-    // Stream the response body with incremental size enforcement
-    const chunks = [];
+    // Stream directly to provider with a size-limiting PassThrough.
+    // No full-body buffering — bytes are counted on the fly.
     let receivedBytes = 0;
+    const sizeGuard = new PassThrough({
+      transform(chunk, _encoding, cb) {
+        receivedBytes += chunk.length;
+        if (receivedBytes > MAX_REMOTE_FILE_SIZE) {
+          cb(new Error(`Downloaded file too large: exceeds limit of ${MAX_REMOTE_FILE_SIZE} bytes`));
+        } else {
+          cb(null, chunk);
+        }
+      },
+    });
 
-    for await (const chunk of response.body) {
-      receivedBytes += chunk.byteLength;
-      if (receivedBytes > MAX_REMOTE_FILE_SIZE) {
-        throw new Error(`Downloaded file too large: exceeds limit of ${MAX_REMOTE_FILE_SIZE} bytes`);
-      }
-      chunks.push(Buffer.from(chunk));
-    }
-
-    const stream = Readable.from(Buffer.concat(chunks));
+    const nodeStream = Readable.fromWeb(response.body);
+    const stream = nodeStream.pipe(sizeGuard);
 
     const uploadResult = await uploadToProvider(provider, stream, actualFilename, {
       contentType,
