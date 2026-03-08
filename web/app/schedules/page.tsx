@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import JobCard from '@/components/schedules/JobCard'
 import CreateJobModal from '@/components/schedules/CreateJobModal'
@@ -35,7 +35,6 @@ const JOB_TYPE_ICONS: Record<string, string> = {
 
 export default function SchedulesPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [token, setToken] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [jobs, setJobs] = useState<ScheduledJob[]>([])
@@ -85,11 +84,21 @@ export default function SchedulesPage() {
   }, [token, fetchJobs])
 
   useEffect(() => {
-    if (searchParams.get('compose') === 'new') {
-      setEditingJob(null)
-      setIsModalOpen(true)
+    const syncComposeState = () => {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('compose') === 'new') {
+        setEditingJob(null)
+        setIsModalOpen(true)
+      }
     }
-  }, [searchParams])
+
+    syncComposeState()
+    window.addEventListener('popstate', syncComposeState)
+
+    return () => {
+      window.removeEventListener('popstate', syncComposeState)
+    }
+  }, [])
 
   const handleCreateJob = async (jobData: {
     name: string
