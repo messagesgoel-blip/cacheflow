@@ -22,7 +22,9 @@ Example: `feat/URM-42-oauth-token-fix`
 This enables issue auto-tracking of commits against issues.
 
 ## Pull Requests
-- Open a PR for feature work before it is considered ready for review or merge.
+## PR Policy
+- All work must be on a branch following `feat/URM-{id}-{description}`.
+- A PR must be opened before any task is marked complete.
 - Every PR branch must follow `feat/URM-{issue-id}-{short-description}` so the issue tracker can associate commits with the issue.
 - PR title should include the issue key when applicable.
 - PR description must include:
@@ -33,6 +35,8 @@ This enables issue auto-tracking of commits against issues.
 - On PR open, request CodeRabbit explicitly with:
   - `@coderabbitai review`
   - `@coderabbitai summary`
+- CodeRabbit review must complete before the branch is eligible for merge.
+- Codex must not merge a branch with unresolved CodeRabbit blocking comments.
 - After requesting CodeRabbit review, lock all other follow-up work on that change until review is complete and findings are resolved or triaged.
 - If behavior changes, update affected tests in the same PR.
 - Do not treat a branch as done at PR open time; it is only done after tests pass, the change is committed, and it is deployed from a clean git worktree in `/opt/docker/apps/cacheflow`.
