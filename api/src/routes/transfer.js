@@ -13,7 +13,7 @@ router.get('/progress/:taskId', (req, res) => {
   const { taskId } = req.params;
   const transfer = activeTransfers.get(taskId);
 
-  if (!transfer) {
+  if (!transfer || transfer.owner !== req.user.id) {
     return res.status(404).json({ success: false, error: 'Transfer not found' });
   }
 
@@ -30,6 +30,7 @@ router.post('/start', (req, res) => {
   const taskId = `transfer_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   activeTransfers.set(taskId, {
     taskId,
+    owner: req.user.id,
     sourceProvider,
     destProvider,
     fileId,
@@ -45,8 +46,9 @@ router.post('/start', (req, res) => {
 
 router.delete('/:taskId', (req, res) => {
   const { taskId } = req.params;
+  const transfer = activeTransfers.get(taskId);
 
-  if (!activeTransfers.has(taskId)) {
+  if (!transfer || transfer.owner !== req.user.id) {
     return res.status(404).json({ success: false, error: 'Transfer not found' });
   }
 

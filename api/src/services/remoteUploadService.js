@@ -19,7 +19,14 @@ const PRIVATE_IP_PATTERNS = [
   /^fe80:/i,
 ];
 
-function isPrivateIP(ip) {
+/** Normalize IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1) to plain IPv4 */
+function normalizeIP(ip) {
+  const match = ip.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i);
+  return match ? match[1] : ip;
+}
+
+function isPrivateIP(raw) {
+  const ip = normalizeIP(raw);
   return PRIVATE_IP_PATTERNS.some(p => p.test(ip));
 }
 
@@ -88,12 +95,12 @@ async function remoteUpload(options) {
 
     clearTimeout(timeoutId);
 
-    // If redirect, validate the new location before following
+    // If redirect, resolve relative Location first, then validate
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get('location');
       if (location) {
-        validateRemoteUrl(location);
         const redirectUrl = new URL(location, url);
+        validateRemoteUrl(redirectUrl.toString());
         await validateResolvedIPs(redirectUrl.hostname);
       }
       throw new Error(`Redirect to ${location} — client should retry with validated URL`);
@@ -117,12 +124,19 @@ async function remoteUpload(options) {
 
     const actualFilename = filename || generateFilenameFromUrl(url);
 
-    const buffer = await response.arrayBuffer();
+    // Stream the response body with incremental size enforcement
+    const chunks = [];
+    let receivedBytes = 0;
 
-    if (buffer.byteLength > MAX_REMOTE_FILE_SIZE) {
-      throw new Error(`Downloaded file too large: ${buffer.byteLength} bytes exceeds limit of ${MAX_REMOTE_FILE_SIZE} bytes`);
+    for await (const chunk of response.body) {
+      receivedBytes += chunk.byteLength;
+      if (receivedBytes > MAX_REMOTE_FILE_SIZE) {
+        throw new Error(`Downloaded file too large: exceeds limit of ${MAX_REMOTE_FILE_SIZE} bytes`);
+      }
+      chunks.push(Buffer.from(chunk));
     }
-    const stream = Readable.from(Buffer.from(buffer));
+
+    const stream = Readable.from(Buffer.concat(chunks));
 
     const uploadResult = await uploadToProvider(provider, stream, actualFilename, {
       contentType,
@@ -133,7 +147,7 @@ async function remoteUpload(options) {
       success: true,
       fileId: uploadResult.fileId,
       provider,
-      size,
+      size: receivedBytes,
       contentType,
       uploadedAt: new Date().toISOString(),
     };
