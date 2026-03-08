@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import UnifiedFileBrowser from '@/components/UnifiedFileBrowser'
 import Navbar from '@/components/Navbar'
+import MissionControl from '@/components/MissionControl'
 
 interface SessionResponse {
   authenticated?: boolean
@@ -121,6 +122,7 @@ export default function FilesPage() {
         }}
       />
       <main className="mx-auto max-w-[1600px] p-4 md:p-6">
+        <MissionControl />
         <Suspense
           fallback={
             <div className="cf-panel rounded-[28px] px-5 py-8 text-sm text-[var(--cf-text-2)]">

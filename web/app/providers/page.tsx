@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import ProviderHub from '@/components/ProviderHub'
 import Navbar from '@/components/Navbar'
+import MissionControl from '@/components/MissionControl'
 import { IntegrationProvider } from '@/context/IntegrationContext'
 import ConnectProviderModal from '@/components/modals/ConnectProviderModal'
 import WebDAVModal from '@/components/modals/WebDAVModal'
@@ -54,7 +55,10 @@ export default function ProvidersPage() {
     <IntegrationProvider>
       <div className="cf-shell-page">
         <Navbar email={email} onLogout={handleLogout} />
-        <ProviderHub />
+        <main className="mx-auto max-w-[1600px] p-4 md:p-6">
+          <MissionControl />
+          <ProviderHub />
+        </main>
         <ConnectProviderModal />
         <WebDAVModal />
         <VPSModal />

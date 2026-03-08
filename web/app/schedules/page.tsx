@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import MissionControl from '@/components/MissionControl'
 import JobCard from '@/components/schedules/JobCard'
 import CreateJobModal from '@/components/schedules/CreateJobModal'
 import ScheduleTransferSnapshot from '@/components/schedules/ScheduleTransferSnapshot'
@@ -221,7 +222,9 @@ export default function SchedulesPage() {
     <div className="cf-shell-page">
       <Navbar email={email} onLogout={handleLogout} />
 
-      <main data-testid="cf-schedules-page" className="mx-auto max-w-[1400px] px-4 py-6">
+      <main data-testid="cf-schedules-page" className="mx-auto max-w-[1600px] px-4 py-6 md:px-6">
+        <MissionControl />
+        
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="cf-kicker mb-2">Schedules</div>
@@ -260,7 +263,7 @@ export default function SchedulesPage() {
           <ScheduleTransferSnapshot />
         </div>
 
-        <div className="cf-panel rounded-[30px]">
+        <div className="cf-panel rounded-[300px] overflow-hidden">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--cf-border)] px-5 py-4 sm:px-6">
             <div>
               <div className="cf-kicker mb-2">Queue</div>
