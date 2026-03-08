@@ -5,6 +5,7 @@ import { formatBytes } from '@/lib/providers/types'
 
 interface ProviderInfo {
   providerId: string
+  accountKey?: string
   accountEmail?: string
   displayName?: string
   quota?: { used: number; total: number }
@@ -134,7 +135,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
               const used = provider.quota?.used || 0
               const percent = total > 0 ? Math.round((used / total) * 100) : 0
               return (
-                <div key={`${provider.providerId}:${provider.accountEmail || provider.displayName}`} className="rounded-[20px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3">
+                <div key={`${provider.providerId}:${provider.accountKey || provider.accountEmail || provider.displayName || 'default'}`} className="rounded-[20px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="truncate text-[13px] font-medium text-[var(--cf-text-0)]">
                       {getProviderDisplayName(provider.providerId, provider.displayName, provider.accountEmail)}
@@ -260,7 +261,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
 
               return (
                 <div
-                  key={`${provider.providerId}:${provider.accountEmail || provider.displayName}`}
+                  key={`${provider.providerId}:${provider.accountKey || provider.accountEmail || provider.displayName || 'default'}`}
                   className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5 transition-colors hover:bg-[rgba(255,255,255,0.05)]"
                 >
                   <div className="mb-2 flex items-center justify-between">
@@ -302,7 +303,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
           <div className="flex flex-wrap gap-2">
             {providersWithoutQuota.map((provider) => (
               <span
-                key={provider.providerId}
+                key={`${provider.providerId}:${provider.accountKey || provider.accountEmail || provider.displayName || 'default'}`}
                 className="inline-flex items-center gap-1 rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-xs text-[var(--cf-text-1)]"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

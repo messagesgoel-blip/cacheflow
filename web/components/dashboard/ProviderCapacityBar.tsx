@@ -5,6 +5,7 @@ import { formatBytes } from '@/lib/providers/types'
 interface ProviderCapacityBarProps {
   providers: Array<{
     providerId: string
+    accountKey?: string
     accountEmail?: string
     displayName?: string
     quota?: { used: number; total: number }
@@ -75,7 +76,7 @@ export default function ProviderCapacityBar({ providers }: ProviderCapacityBarPr
             const colorClass = getThresholdColor(percent, provider.providerId)
 
             return (
-              <div key={`${provider.providerId}:${provider.accountEmail || provider.displayName || 'default'}`} className="space-y-2">
+              <div key={`${provider.providerId}:${provider.accountKey || provider.accountEmail || provider.displayName || 'default'}`} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
@@ -102,6 +103,11 @@ export default function ProviderCapacityBar({ providers }: ProviderCapacityBarPr
                   aria-valuenow={Math.round(clampedPercent)}
                   aria-valuemin={0}
                   aria-valuemax={100}
+                  aria-valuetext={
+                    isOverQuota
+                      ? `${Math.round(percent)}% used, ${formatBytes(provider.quota!.used - provider.quota!.total)} over quota`
+                      : `${Math.round(percent)}% used, ${formatBytes(freeBytes)} free`
+                  }
                   aria-label={`${getProviderDisplayName(provider.providerId, provider.displayName, provider.accountEmail)} storage usage`}
                 >
                   <div
@@ -129,7 +135,7 @@ export default function ProviderCapacityBar({ providers }: ProviderCapacityBarPr
           <div className="flex flex-wrap gap-2">
             {providersWithoutQuota.map((provider) => (
               <span
-                key={provider.providerId}
+                key={`${provider.providerId}:${provider.accountKey || provider.accountEmail || provider.displayName || 'default'}`}
                 className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs text-gray-600 dark:text-gray-300"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
