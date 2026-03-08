@@ -38,13 +38,7 @@ router.post('/', async (req, res) => {
       metadata
     });
 
-    // Sanitize output: do not expose internal fileId paths to client
-    const sanitizedResult = {
-      ...result,
-      fileId: result.fileId.split('/').pop() || 'uploaded-file'
-    };
-
-    res.json(sanitizedResult);
+    res.json(result);
   } catch (error) {
     console.error('Remote upload error:', error);
     
