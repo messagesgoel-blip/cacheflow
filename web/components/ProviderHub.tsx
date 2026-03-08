@@ -239,7 +239,13 @@ export default function ProviderHub() {
   return (
     <div className="mx-auto max-w-[1600px] p-6">
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-        <div className="cf-kicker mb-3">Providers</div>
+        <div>
+          <div className="cf-kicker mb-3">Providers</div>
+          <h1 className="mb-2 text-3xl font-semibold text-[var(--cf-text-0)]">Connected Providers</h1>
+          <p className="text-sm text-[var(--cf-text-1)]">
+            Operational view for real connected providers, verification state, and stored remote endpoints.
+          </p>
+        </div>
         <div className="ml-auto flex gap-3">
           <button
             type="button"
@@ -256,12 +262,6 @@ export default function ProviderHub() {
             Connect VPS / SFTP
           </button>
         </div>
-      </div>
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-semibold text-[var(--cf-text-0)]">Connected Providers</h1>
-        <p className="text-sm text-[var(--cf-text-1)]">
-          Manage real connected providers, inspect connection health, and remove stored credentials when needed.
-        </p>
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -319,6 +319,15 @@ export default function ProviderHub() {
                     <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${STATUS_CHIP[connection.status]}`}>
                       {connection.status === 'error' ? 'Auth Error' : connection.status}
                     </span>
+                  </div>
+
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div className="rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">
+                      {connection.provider === 'vps' ? 'Server-side remote' : 'OAuth provider'}
+                    </div>
+                    <div className="text-[11px] text-[var(--cf-text-2)]">
+                      {connection.lastSyncAt ? `Synced ${new Date(connection.lastSyncAt).toLocaleString()}` : 'No sync signal yet'}
+                    </div>
                   </div>
 
                   {connection.accountEmail && (
@@ -469,15 +478,19 @@ export default function ProviderHub() {
             </div>
           )}
 
-          <h2 className="cf-kicker mb-3">
-            Connect Provider
-          </h2>
+          <div className="mb-4">
+            <div className="cf-kicker mb-3">Connect</div>
+            <h2 className="text-xl font-semibold text-[var(--cf-text-0)]">Available Integrations</h2>
+            <p className="mt-1 text-sm text-[var(--cf-text-1)]">
+              Add another provider without leaving the current control plane.
+            </p>
+          </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {availableToConnect.map((provider) => (
               <div
                 key={provider.id}
                 data-testid={`cf-provider-connect-card-${provider.id}`}
-                className="cf-panel rounded-2xl p-5"
+                className="cf-panel rounded-[24px] p-5 transition-all hover:-translate-y-0.5"
               >
                 <div className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
                   {provider.id === 'vps' ? 'Server-side remote' : 'OAuth provider'}

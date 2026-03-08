@@ -174,11 +174,11 @@ test.describe('File Action Entry Points', () => {
   })
 
   test('Task 2.3: Single-click select and Right Panel', async ({ page }) => {
-    const firstRow = page.getByTestId('cf-file-row').first()
-    await expect(firstRow).toBeVisible()
+    const fileRow = page.getByTestId('cf-file-row').filter({ hasText: 'GOOGLE A.txt' }).first()
+    await expect(fileRow).toBeVisible()
     
-    // Click the row (not the checkbox or overflow)
-    await firstRow.click()
+    // Click the file row (not the checkbox or overflow)
+    await fileRow.click()
     
     const previewPanel = page.locator('[data-testid="cf-preview-panel"]')
     await expect(previewPanel).toBeVisible()

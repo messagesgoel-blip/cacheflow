@@ -1814,7 +1814,7 @@ function FileTable({ files, selectedFiles, focusedIndex, favorites, isFavoriting
   return (
     <table className="w-full text-left table-fixed">
       <thead className="sticky top-0 z-10 border-b border-[var(--cf-border)] bg-[var(--cf-table-head-bg)] font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
-        <tr><th className="px-4 py-3 w-10"></th><th className="px-4 py-3 w-8"></th><th className="px-4 py-3">Name</th>{showProviderBadge && <th className="px-4 py-3 w-32">Provider</th>}<th className="px-4 py-3 w-24">Size</th><th className="px-4 py-3 w-32">Modified</th><th className="px-4 py-3 w-12"></th></tr>
+        <tr><th className="px-4 py-3 w-10"></th><th className="px-2 py-3 w-10"></th><th className="px-4 py-3">Name</th>{showProviderBadge && <th className="px-4 py-3 w-36">Provider</th>}<th className="px-4 py-3 w-24">Size</th><th className="px-4 py-3 w-32">Modified</th><th className="px-4 py-3 w-12"></th></tr>
       </thead>
       <tbody className="divide-y divide-[var(--cf-divider-soft)]">
         {files.map((file: any, idx: number) => (
@@ -1861,23 +1861,34 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
-          <span className={`text-xl flex-shrink-0 ${isOpeningFolder ? 'animate-pulse' : ''}`}>{file.isFolder ? '📁' : getFileIcon(file.mimeType)}</span>
-          <div className="min-w-0 flex items-center gap-2">
-            <p className={`truncate text-sm font-semibold ${resolvedFileName === '[unnamed]' ? 'text-[var(--cf-amber)]' : 'text-[var(--cf-text-0)]'}`}>{resolvedFileName}</p>
-            {isOpeningFolder && (
-              <span className="whitespace-nowrap rounded-full border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--cf-blue)]">
-                Opening...
-              </span>
-            )}
-            {showDuplicateBadge && isDuplicate && (
-              <span className="whitespace-nowrap rounded-full border border-[rgba(167,139,250,0.28)] bg-[rgba(167,139,250,0.12)] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--cf-purple)]" title={`Also on ${providerCount - 1} other provider${providerCount > 2 ? 's' : ''}`}>
-                📋 {providerCount}x
-              </span>
-            )}
+          <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--cf-border)] ${file.isFolder ? 'bg-[rgba(74,158,255,0.12)] text-[var(--cf-blue)]' : 'bg-[rgba(255,255,255,0.03)] text-[var(--cf-text-2)]'} ${isOpeningFolder ? 'animate-pulse' : ''}`}>{file.isFolder ? '📁' : getFileIcon(file.mimeType)}</span>
+          <div className="min-w-0">
+            <div className="flex min-w-0 items-center gap-2">
+              <p className={`truncate text-sm font-semibold ${resolvedFileName === '[unnamed]' ? 'text-[var(--cf-amber)]' : 'text-[var(--cf-text-0)]'}`}>{resolvedFileName}</p>
+              {isOpeningFolder && (
+                <span className="whitespace-nowrap rounded-full border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--cf-blue)]">
+                  Opening...
+                </span>
+              )}
+              {showDuplicateBadge && isDuplicate && (
+                <span className="whitespace-nowrap rounded-full border border-[rgba(167,139,250,0.28)] bg-[rgba(167,139,250,0.12)] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--cf-purple)]" title={`Also on ${providerCount - 1} other provider${providerCount > 2 ? 's' : ''}`}>
+                  📋 {providerCount}x
+                </span>
+              )}
+            </div>
+            <div className="mt-1 flex items-center gap-2 text-[11px] text-[var(--cf-text-2)]">
+              <span className="font-mono">{file.isFolder ? 'Folder' : file.mimeType?.split('/')[1] || 'File'}</span>
+              {showProviderBadge && provider && (
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: provider.color }} />
+                  <span className="truncate">{providerLabel(file)}</span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </td>
-      {showProviderBadge && <td className="px-4 py-3"><div className="flex items-center gap-2 overflow-hidden"><span className="text-sm flex-shrink-0">{provider?.icon}</span><span className="truncate font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--cf-text-2)]">{providerLabel(file)}</span></div></td>}
+      {showProviderBadge && <td className="px-4 py-3"><div className="flex items-center gap-2 overflow-hidden"><span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: provider?.color || 'var(--cf-text-3)' }} /><span className="truncate font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--cf-text-2)]">{providerLabel(file)}</span></div></td>}
       <td className="px-4 py-3 font-mono text-[11px] font-medium text-[var(--cf-text-1)]">{file.isFolder ? '—' : formatBytes(file.size)}</td>
       <td className="px-4 py-3 font-mono text-[11px] font-medium tabular-nums text-[var(--cf-text-1)]">{file.modifiedTime?.split('T')[0]}</td>
       <td className="relative px-4 py-3"><button data-testid="cf-files-row-overflow" onClick={(e) => { e.stopPropagation(); setShowOverflow(!showOverflow) }} className="rounded-lg p-1.5 font-bold text-[var(--cf-text-2)] opacity-0 transition-all group-hover:opacity-100 hover:bg-[var(--cf-hover-bg)]">•••</button>
