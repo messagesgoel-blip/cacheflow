@@ -10,6 +10,7 @@ test('dashboard hero shows pooled quota and provider breakdown with current sess
       accountKey: 'g1',
       accountEmail: 'google-active@example.com',
       accountLabel: 'Google Drive Active',
+      quota: { used: 5 * 1024 * 1024 * 1024, total: 15 * 1024 * 1024 * 1024 },
     },
     {
       id: 'remote-b1',
@@ -18,6 +19,7 @@ test('dashboard hero shows pooled quota and provider breakdown with current sess
       accountKey: 'b1',
       accountEmail: 'box-degraded@example.com',
       accountLabel: 'Box Degraded',
+      quota: { used: 2 * 1024 * 1024 * 1024, total: 10 * 1024 * 1024 * 1024 },
     },
     {
       id: 'remote-d1',
@@ -26,6 +28,7 @@ test('dashboard hero shows pooled quota and provider breakdown with current sess
       accountKey: 'd1',
       accountEmail: 'dropbox-live@example.com',
       accountLabel: 'Dropbox Live',
+      quota: { used: 1 * 1024 * 1024 * 1024, total: 2 * 1024 * 1024 * 1024 },
     },
   ]
 

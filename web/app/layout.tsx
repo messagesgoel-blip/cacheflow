@@ -6,7 +6,6 @@ import ActionCenterProvider from '@/components/ActionCenterProvider'
 import { TransferQueueProvider } from '@/components/TransferQueueProvider'
 import { TransferProvider } from '@/context/TransferContext'
 import { TransferTray } from '@/components/transfers/TransferTray'
-import MissionControl from '@/components/MissionControl'
 
 export const metadata: Metadata = {
   title: 'CacheFlow',

@@ -16,9 +16,12 @@ export default function MissionControl() {
   const banners = useBanners()
   const { dismissBanner } = useActionCenter()
   const { transfers, activeCount } = useTransferContext()
-  const [activityData, setActivityData] = useState<number[]>([4, 7, 2, 8, 5, 10, 3, 6, 9, 4])
+  const [activityData, setActivityData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
   const [isMounted, setIsMounted] = useState(false)
   const [quotas, setQuotas] = useState<{ used: number; total: number }>({ used: 0, total: 0 })
+  const [realProviderCount, setRealProviderCount] = useState(0)
+
+  const [connections, setConnections] = useState<any[]>([])
 
   useEffect(() => {
     setIsMounted(true)
@@ -32,24 +35,30 @@ export default function MissionControl() {
         if (actPayload?.ok && Array.isArray(actPayload.data?.activity)) {
           setActivityData(prev => [...prev.slice(1), actPayload.data.activity.length % 12])
         } else {
-          setActivityData(prev => [...prev.slice(1), Math.floor(Math.random() * 6) + 2])
+          // Deterministic low signal fallback
+          setActivityData(prev => [...prev.slice(1), 0])
         }
 
-        // 2. Fetch Connections/Quotas for storage stats
+        // 2. Fetch Connections/Quotas for storage stats and provider count
         const connResult = await apiClient.getConnections()
         if (connResult.success && Array.isArray(connResult.data)) {
+          setConnections(connResult.data)
           let used = 0
           let total = 0
+          let count = 0
           connResult.data.forEach((conn: any) => {
+            count++
             if (conn.quota) {
               used += conn.quota.used || 0
               total += conn.quota.total || 0
             }
           })
           setQuotas({ used, total })
+          setRealProviderCount(count)
         }
       } catch (e) {
-        setActivityData(prev => [...prev.slice(1), Math.floor(Math.random() * 3) + 1])
+        // Deterministic fallback
+        setActivityData(prev => [...prev.slice(1), 0])
       }
     }
 
@@ -58,31 +67,54 @@ export default function MissionControl() {
     return () => clearInterval(interval)
   }, [])
 
-  const activeProgressBanner = useMemo(() => {
-    return banners.find(b => b.kind === 'progress')
-  }, [banners])
+  // Progress Prioritization Helper
+  const prioritizedTask = useMemo(() => {
+    const progressBanners = banners.filter(b => b.kind === 'progress')
+    
+    // 1. Connection/Bootstrap/Auth tasks
+    const authTask = progressBanners.find(b => 
+      b.key?.includes('auth') || 
+      b.key?.includes('conn') || 
+      b.title.toLowerCase().includes('connect') ||
+      b.title.toLowerCase().includes('authenticating')
+    )
+    if (authTask) return { type: 'banner' as const, task: authTask }
+
+    // 2. Active transfer tasks
+    const activeTransfers = transfers.filter(t => t.status === 'active' || t.status === 'waiting')
+    if (activeTransfers.length > 0) return { type: 'transfer' as const, tasks: activeTransfers }
+
+    // 3. Other progress tasks
+    if (progressBanners.length > 0) return { type: 'banner' as const, task: progressBanners[0] }
+
+    return null
+  }, [banners, transfers])
 
   const operationLabel = useMemo(() => {
-    if (activeProgressBanner) {
-      return `${activeProgressBanner.title}${activeProgressBanner.message ? `: ${activeProgressBanner.message}` : ''}`
+    if (!prioritizedTask) return null
+
+    if (prioritizedTask.type === 'banner') {
+      const b = prioritizedTask.task
+      return `${b.title}${b.message ? `: ${b.message}` : ''}`
     }
-    const active = transfers.filter(t => t.status === 'active' || t.status === 'waiting')
-    if (active.length === 0) return null
+
+    const active = prioritizedTask.tasks
     if (active.length === 1) {
       const t = active[0]
       const op = t.operation ? t.operation.charAt(0).toUpperCase() + t.operation.slice(1) : 'Processing'
       return `${op} "${t.fileName}"`
     }
     return `Coordinating ${active.length} parallel operations`
-  }, [transfers, activeProgressBanner])
+  }, [prioritizedTask])
 
   const aggregateProgress = useMemo(() => {
-    if (activeProgressBanner) return activeProgressBanner.progress ?? 0
-    const active = transfers.filter(t => t.status === 'active' || t.status === 'waiting')
-    if (active.length === 0) return null
+    if (!prioritizedTask) return null
+    if (prioritizedTask.type === 'banner') return prioritizedTask.task.progress ?? 0
+    
+    const active = prioritizedTask.tasks
     const totalProgress = active.reduce((sum, t) => sum + (t.progress || 0), 0)
     return Math.round(totalProgress / active.length)
-  }, [transfers, activeProgressBanner])
+  }, [prioritizedTask])
 
   const activeAlert = useMemo(() => {
     if (banners.length === 0) return null
@@ -94,15 +126,9 @@ export default function MissionControl() {
     return nonProgress[nonProgress.length - 1]
   }, [banners])
 
-  const connectedProviderCount = useMemo(() => {
-    // In real app, this would be from a provider context
-    // For test compatibility, we can infer from the storage hero's original data source or just use a sensible mock if it matches the test harness
-    return 3 // The test expects '3 providers connected'
-  }, [])
-
   if (!isMounted) return null
 
-  const hasSystemActivity = activeCount > 0 || banners.length > 0
+  const hasSystemActivity = prioritizedTask !== null || banners.length > 0
   const quotaPercent = quotas.total > 0 ? (quotas.used / quotas.total) * 100 : 0
 
   return (
@@ -123,7 +149,7 @@ export default function MissionControl() {
               </span>
             </div>
             <div className="mt-1 text-[10px] text-[var(--cf-text-3)] font-medium uppercase tracking-tight">
-              {connectedProviderCount} providers connected
+              {realProviderCount} provider{realProviderCount === 1 ? '' : 's'} connected
             </div>
           </div>
           
@@ -166,12 +192,12 @@ export default function MissionControl() {
                 Dismiss
               </button>
             </div>
-          ) : (activeCount > 0 || activeProgressBanner) ? (
+          ) : prioritizedTask ? (
             <div className="flex w-full flex-col px-2">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black text-[var(--cf-blue)] uppercase tracking-widest">
-                    {activeProgressBanner ? 'Task in progress' : `Processing ${activeCount} Operation${activeCount > 1 ? 's' : ''}`}
+                    {prioritizedTask.type === 'banner' ? 'Task in progress' : `Processing ${prioritizedTask.tasks.length} Operation${prioritizedTask.tasks.length > 1 ? 's' : ''}`}
                   </span>
                 </div>
                 <span className="font-mono text-[12px] font-bold text-[var(--cf-text-1)]">{aggregateProgress}%</span>
@@ -187,20 +213,31 @@ export default function MissionControl() {
               </div>
             </div>
           ) : (
-            <div className="flex w-full items-center justify-around gap-6 text-center">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--cf-text-3)]">Transfers</span>
-                <span className="mt-1 text-sm font-bold text-[var(--cf-text-1)]">{transfers.length} Total</span>
+            <div className="flex w-full items-center gap-6">
+              <div className="flex flex-col shrink-0">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--cf-text-3)]">Provider Breakdown</span>
+                <span className="mt-1 text-xs font-bold text-[var(--cf-text-1)]">Status Active</span>
               </div>
-              <div className="h-8 w-px bg-[var(--cf-border)]" />
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--cf-text-3)]">Connections</span>
-                <span className="mt-1 text-sm font-bold text-[var(--cf-blue)]">Live Session</span>
-              </div>
-              <div className="h-8 w-px bg-[var(--cf-border)]" />
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--cf-text-3)]">Uptime</span>
-                <span className="mt-1 text-sm font-bold text-[var(--cf-green)]">Healthy</span>
+              <div className="h-8 w-px bg-[var(--cf-border)] shrink-0" />
+              <div className="flex-1 flex items-center gap-4 overflow-x-auto no-scrollbar">
+                {connections.length > 0 ? connections.map((conn, idx) => {
+                  const pct = conn.quota ? Math.round((conn.quota.used / conn.quota.total) * 100) : 0;
+                  return (
+                    <div key={idx} className="flex flex-col min-w-[80px]">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="text-[9px] font-bold text-[var(--cf-text-2)] truncate max-w-[60px]">{conn.accountLabel || conn.provider}</span>
+                        <span className="text-[9px] font-mono font-medium text-[var(--cf-blue)]">{pct}%</span>
+                      </div>
+                      <div className="h-1 w-full bg-[var(--cf-bg3)] rounded-full overflow-hidden">
+                        <div className="h-full bg-[var(--cf-blue)]/60" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div className="text-[11px] text-[var(--cf-text-3)] font-medium">
+                    Waiting for provider hydration...
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -211,7 +248,7 @@ export default function MissionControl() {
           <div className="flex items-center justify-between mb-2">
             <div className="min-w-0">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--cf-text-2)] block truncate">Total Pooled Storage</span>
-              <span className="text-[9px] text-[var(--cf-text-3)] block mt-0.5">{transfers.length > 0 ? transfers.length : '0'} jobs tracked</span>
+              <span className="text-[9px] text-[var(--cf-text-3)] block mt-0.5">{transfers.length} jobs tracked</span>
             </div>
             <span className="text-[11px] font-mono font-bold text-[var(--cf-text-1)]">{Math.round(quotaPercent)}%</span>
           </div>

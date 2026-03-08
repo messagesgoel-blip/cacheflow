@@ -8,6 +8,7 @@ export interface MockConnection {
   accountEmail: string
   accountLabel: string
   accountName?: string
+  quota?: { used: number; total: number }
 }
 
 export interface MockFavorite {
