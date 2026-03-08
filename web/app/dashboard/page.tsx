@@ -151,17 +151,17 @@ export default function DashboardPage() {
           <StorageHero connectedProviders={connectedProviders} />
         </div>
 
-        <div className="mb-6 grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
+        <div className="mb-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <OnboardingChecklist connectedProviderCount={connectedProviders.length} />
           <QuickActionsPanel />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="mb-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="cf-panel rounded-[28px] p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <div className="cf-kicker mb-2">Command Coverage</div>
-                <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Provider summary density</h2>
+                <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Operational footprint summary</h2>
               </div>
               <div className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1 text-[11px] text-[var(--cf-text-2)]">
                 {providerTypes.length} provider types
@@ -189,9 +189,9 @@ export default function DashboardPage() {
                   accent: 'text-[var(--cf-amber)]',
                 },
                 {
-                  label: 'Opaque Remotes',
-                  value: String(opaqueCount),
-                  helper: 'Connected remotes without quota telemetry.',
+                  label: 'Server Nodes',
+                  value: String(vpsCount),
+                  helper: 'Managed VPS and SFTP remotes in the active shell.',
                   accent: 'text-[var(--cf-purple)]',
                 },
               ].map((card) => (
@@ -208,85 +208,58 @@ export default function DashboardPage() {
             <div className="mb-4">
               <div className="cf-kicker mb-2">Observed Mix</div>
               <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Current provider footprint</h2>
-              <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">Compact split between cloud coverage, server nodes, and quota telemetry.</p>
+              <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">Distribution across cloud coverage, server nodes, and quota reporting.</p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
               <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Cloud Providers</div>
-                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-blue)]">{cloudCount}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">OAuth-backed storage accounts.</p>
+                <div className="cf-kicker mb-2 text-[9px]">Quota Coverage</div>
+                <div className="mt-2 font-mono text-base font-bold text-[var(--cf-blue)]">
+                  {connectedProviders.length > 0 ? `${Math.round((quotaKnownCount / connectedProviders.length) * 100)}%` : '0%'} reported
+                </div>
               </div>
               <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">VPS / SFTP</div>
-                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-teal)]">{vpsCount}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Server-backed remotes connected to the control plane.</p>
-              </div>
-              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Quota Telemetry</div>
-                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-amber)]">{quotaKnownCount}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Accounts reporting size and usage to the dashboard.</p>
+                <div className="cf-kicker mb-2 text-[9px]">Storage Remotes</div>
+                <div className="mt-2 font-mono text-base font-bold text-[var(--cf-teal)]">
+                  {cloudCount} cloud • {vpsCount} server
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="cf-panel rounded-[28px] p-5">
-            <div className="mb-4">
-              <div className="cf-kicker mb-2">Provider Matrix</div>
-              <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Current provider footprint</h2>
-              <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">Compact operational view of cloud, server, and quota-reporting coverage.</p>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Live Clouds</div>
-                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-blue)]">{cloudCount}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">OAuth-backed storage accounts currently represented above.</p>
+            <div className="mb-5 flex items-center justify-between gap-3 border-b border-[var(--cf-border)] pb-4">
+              <div>
+                <div className="cf-kicker mb-1">Provider Matrix</div>
+                <h3 className="text-lg font-semibold text-[var(--cf-text-0)]">Hydrated account handles</h3>
+                <p className="mt-1 text-sm text-[var(--cf-text-1)]">Named identities available for fast browsing and routing context.</p>
               </div>
-              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Server Nodes</div>
-                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-teal)]">{vpsCount}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Directly managed VPS and SFTP remotes in the same shell.</p>
-              </div>
-              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="cf-kicker mb-2 text-[9px]">Identity Labels</div>
-                <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-amber)]">{accountLabels.length}</div>
-                <p className="mt-2 text-sm text-[var(--cf-text-2)]">Named handles surfaced for fast browsing and routing context.</p>
+              <div className="rounded-full border border-[var(--cf-border)] px-2.5 py-1 text-[11px] text-[var(--cf-text-2)]">
+                {accountLabels.length} tracked
               </div>
             </div>
-
-            <div className="mt-5 rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="cf-kicker mb-1 text-[9px]">Tracked Identities</div>
-                  <h3 className="text-sm font-semibold text-[var(--cf-text-0)]">Hydrated account handles</h3>
-                </div>
-                <div className="rounded-full border border-[var(--cf-border)] px-2.5 py-1 text-[11px] text-[var(--cf-text-2)]">
-                  {accountLabels.length}
-                </div>
-              </div>
-              <div className="space-y-2.5">
-                {accountLabels.length > 0 ? (
-                  accountLabels.map((label) => (
-                    <div key={label} className="flex items-center justify-between rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-3">
-                      <span className="truncate text-sm text-[var(--cf-text-1)]">{label}</span>
-                      <span className="rounded-full border border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.08)] px-2 py-1 text-[10px] font-medium text-[var(--cf-blue)]">
-                        Live
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-6 text-sm text-[var(--cf-text-2)]">
-                    No provider identities are currently hydrated.
+            
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              {accountLabels.length > 0 ? (
+                accountLabels.map((label) => (
+                  <div key={label} className="flex items-center justify-between rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-3">
+                    <span className="truncate text-sm text-[var(--cf-text-1)]">{label}</span>
+                    <span className="rounded-full border border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.08)] px-2 py-1 text-[10px] font-medium text-[var(--cf-blue)]">
+                      Live
+                    </span>
                   </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="col-span-full rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-6 text-sm text-[var(--cf-text-2)]">
+                  No provider identities are currently hydrated.
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="space-y-5">
+          <div className="flex flex-col gap-5">
             <RecentTransfersPanel />
             <RecentActivityPanel />
           </div>
