@@ -44,7 +44,7 @@ export default function SecuritySettingsPage() {
       }} />
       <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-6 sm:px-6">
         <section className="cf-panel overflow-hidden rounded-[32px]">
-          <div className="grid gap-5 border-b border-[var(--cf-border)] px-6 py-7 lg:grid-cols-[minmax(0,1.45fr)_360px] lg:px-8">
+          <div className="grid gap-5 border-b border-[var(--cf-border)] px-6 py-7 lg:grid-cols-[minmax(0,1.35fr)_420px] lg:px-8">
             <div>
               <div className="cf-kicker">Security Controls</div>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--cf-text-0)]">
@@ -53,6 +53,17 @@ export default function SecuritySettingsPage() {
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--cf-text-1)]">
                 This surface stays tied to the existing 2FA endpoints and session model. No credential storage or provider auth behavior changes here.
               </p>
+              <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                <div className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1.5 text-[11px] text-[var(--cf-text-2)]">
+                  HttpOnly session flow retained
+                </div>
+                <div className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1.5 text-[11px] text-[var(--cf-text-2)]">
+                  Existing 2FA endpoints only
+                </div>
+                <div className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1.5 text-[11px] text-[var(--cf-text-2)]">
+                  No provider auth changes
+                </div>
+              </div>
             </div>
             <div className="cf-subpanel rounded-[28px] p-5">
               <div className="cf-kicker">Coverage</div>
@@ -71,7 +82,7 @@ export default function SecuritySettingsPage() {
             </div>
           </div>
 
-          <div className="grid gap-5 px-6 py-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
+          <div className="grid gap-5 px-6 py-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-8">
             <TwoFAPanel />
             <aside className="cf-subpanel rounded-[28px] p-5">
               <div className="cf-kicker">Operational Notes</div>
@@ -81,6 +92,9 @@ export default function SecuritySettingsPage() {
                 </div>
                 <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
                   Disabling 2FA still uses the current password-confirm flow. No new backend policy has been introduced.
+                </div>
+                <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+                  Preference cleanup remains on the main settings page; this route stays focused on verification, activation, and recovery posture only.
                 </div>
               </div>
             </aside>

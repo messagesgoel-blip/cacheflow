@@ -148,7 +148,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
 
   return (
     <div className="px-6 py-6 lg:px-8" data-testid="cf-settings-panel">
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="cf-kicker">Preference Controls</div>
           <h2 className="mt-2 text-2xl font-semibold text-[var(--cf-text-0)]">Operational defaults</h2>
@@ -156,7 +156,10 @@ export default function SettingsPanel({}: SettingsPanelProps) {
             These values shape browser behavior, cache refresh cadence, and visual theme without changing server-side provider state.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1.5 text-[11px] text-[var(--cf-text-2)]">
+            Local browser preferences only
+          </div>
           <button
             type="button"
             onClick={() => setSettings(defaultSettings)}
@@ -176,7 +179,43 @@ export default function SettingsPanel({}: SettingsPanelProps) {
         </div>
       </div>
 
-      <div className="mb-5 grid gap-3 lg:grid-cols-4">
+      <div className="mb-5 grid gap-3 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="cf-kicker">Current Posture</div>
+              <h3 className="mt-2 text-lg font-semibold text-[var(--cf-text-0)]">Session-safe preference envelope</h3>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--cf-text-1)]">
+                Adjust cache, theme, and browser handling without changing provider credentials, server-side token vault state, or backend auth contracts.
+              </p>
+            </div>
+            <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${browserModeTone.className}`}>
+              {browserModeTone.label}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+              <div className="cf-kicker">Refresh Mode</div>
+              <div className="mt-2 text-lg font-semibold text-[var(--cf-teal)]">{settings.autoRefreshTokens ? 'Automatic' : 'Manual'}</div>
+              <p className="mt-1 text-xs leading-5 text-[var(--cf-text-1)]">OAuth refresh cadence follows your current privacy mode.</p>
+            </div>
+            <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+              <div className="cf-kicker">Cache Window</div>
+              <div className="mt-2 text-lg font-semibold text-[var(--cf-amber)]">
+                {settings.cacheTTLMinutes >= 60 ? `${settings.cacheTTLMinutes / 60}h` : `${settings.cacheTTLMinutes}m`}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-[var(--cf-text-1)]">Controls how aggressively folder listings refresh from providers.</p>
+            </div>
+            <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+              <div className="cf-kicker">Theme</div>
+              <div className="mt-2 text-lg font-semibold capitalize text-[var(--cf-purple)]">{settings.theme}</div>
+              <p className="mt-1 text-xs leading-5 text-[var(--cf-text-1)]">Updates the visual shell only. No behavior changes.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
           <div className="cf-kicker">Token Strategy</div>
           <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${browserModeTone.className}`}>
@@ -206,6 +245,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
           <div className="cf-kicker">Theme</div>
           <div className="mt-3 text-2xl font-semibold capitalize text-[var(--cf-purple)]">{settings.theme}</div>
           <p className="mt-3 text-xs leading-5 text-[var(--cf-text-1)]">Updates the visual shell only. No behavior changes.</p>
+        </div>
         </div>
       </div>
 
