@@ -30,6 +30,10 @@ This enables Linear auto-tracking of commits against issues.
   - summary of scope
   - tests run
   - deploy impact
+- On PR open, request CodeRabbit explicitly with:
+  - `@coderabbitai review`
+  - `@coderabbitai summary`
+- After requesting CodeRabbit review, lock all other follow-up work on that change until review is complete and findings are resolved or triaged.
 - If behavior changes, update affected tests in the same PR.
 - Do not treat a branch as done at PR open time; it is only done after tests pass, the change is committed, and it is deployed from a clean git worktree in `/opt/docker/apps/cacheflow`.
 
