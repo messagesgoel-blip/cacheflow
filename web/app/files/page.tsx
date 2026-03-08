@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import UnifiedFileBrowser from '@/components/UnifiedFileBrowser'
 import Navbar from '@/components/Navbar'
@@ -12,8 +12,13 @@ interface SessionResponse {
   }
 }
 
-export default function FilesPage() {
+function FilesBrowserShell({ token }: { token: string }) {
   const searchParams = useSearchParams()
+
+  return <UnifiedFileBrowser token={token} routeView={searchParams.get('view') === 'activity' ? 'activity' : undefined} />
+}
+
+export default function FilesPage() {
   const [token, setToken] = useState<string | null>(null)
   const [authenticated, setAuthenticated] = useState(false)
   const [email, setEmail] = useState('')
@@ -116,7 +121,15 @@ export default function FilesPage() {
         }}
       />
       <main className="mx-auto max-w-[1600px] p-4 md:p-6">
-        <UnifiedFileBrowser token={token || ''} routeView={searchParams.get('view') === 'activity' ? 'activity' : undefined} />
+        <Suspense
+          fallback={
+            <div className="cf-panel rounded-[28px] px-5 py-8 text-sm text-[var(--cf-text-2)]">
+              Loading files workspace…
+            </div>
+          }
+        >
+          <FilesBrowserShell token={token || ''} />
+        </Suspense>
       </main>
     </div>
   )
