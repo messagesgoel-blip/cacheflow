@@ -7,6 +7,7 @@ import { getProvider } from '@/lib/providers'
 import { tokenManager } from '@/lib/tokenManager'
 import { metadataCache } from '@/lib/metadataCache'
 import { useActionCenter } from './ActionCenterProvider'
+import { markOnboardingMilestone } from '@/lib/ui/onboardingMilestones'
 
 interface TransferQueueContextType {
   queue: TransferJob[]
@@ -85,6 +86,7 @@ export function TransferQueueProvider({ children }: { children: React.ReactNode 
         metadataCache.invalidateCache(job.targetProvider, targetAccountKey),
       ])
       if (typeof window !== 'undefined') {
+        markOnboardingMilestone('transferCompleted')
         window.dispatchEvent(new CustomEvent('cacheflow:transfer-complete', {
           detail: {
             jobId: job.id,

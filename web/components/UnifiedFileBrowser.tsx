@@ -23,6 +23,7 @@ import ShortcutHelp from '@/components/ShortcutHelp'
 import apiClient, { type ProviderConnection } from '@/lib/apiClient'
 import { isTextPreviewEligible, resolvePreviewType, type PreviewType } from '@/lib/files/previewUtils'
 import { buildTextPreviewRequest, resolveDirectPreviewUrl } from '@/lib/files/previewSource'
+import { markOnboardingMilestone } from '@/lib/ui/onboardingMilestones'
 
 interface UnifiedFileBrowserProps {
   token: string
@@ -1127,6 +1128,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       }
       await metadataCache.invalidateCache(target.providerId, target.accountKey)
       setRefreshKey((k) => k + 1)
+      markOnboardingMilestone('uploadCompleted')
       task.succeed(`${filesToUpload.length} file${filesToUpload.length > 1 ? 's' : ''}`)
     } catch (err: any) {
       task.fail(err?.message || 'Upload failed')

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import StorageHero from '@/components/dashboard/StorageHero'
+import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 import { tokenManager } from '@/lib/tokenManager'
 import { ProviderId } from '@/lib/providers/types'
 import apiClient from '@/lib/apiClient'
@@ -143,6 +144,10 @@ export default function DashboardPage() {
 
         <div className="mb-8">
           <StorageHero connectedProviders={connectedProviders} />
+        </div>
+
+        <div className="mb-8">
+          <OnboardingChecklist connectedProviderCount={connectedProviders.length} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
