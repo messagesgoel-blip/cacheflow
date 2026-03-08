@@ -225,6 +225,9 @@ export interface ConnectedProvider {
   accountEmail: string
   displayName: string
   accountKey?: string
+  host?: string
+  port?: number
+  username?: string
   connectedAt: number // Unix timestamp
   lastSyncedAt?: number
   quota?: ProviderQuota

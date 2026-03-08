@@ -6,9 +6,11 @@ function buildForwardHeaders(request: NextRequest, accessToken?: string | null):
   const authHeaderFromRequest = request.headers.get('authorization')
   const authHeader = authHeaderFromRequest || (accessToken ? `Bearer ${accessToken}` : null)
   const cookieHeader = request.headers.get('cookie')
+  const rangeHeader = request.headers.get('range')
   return {
     ...(authHeader ? { Authorization: authHeader } : {}),
     ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+    ...(rangeHeader ? { Range: rangeHeader } : {}),
     ...(request.headers.get('content-type')
       ? { 'Content-Type': request.headers.get('content-type') as string }
       : {}),
@@ -52,6 +54,10 @@ async function proxyRequest(
   if (disposition) headers.set('Content-Disposition', disposition)
   const contentLength = upstream.headers.get('content-length')
   if (contentLength) headers.set('Content-Length', contentLength)
+  const contentRange = upstream.headers.get('content-range')
+  if (contentRange) headers.set('Content-Range', contentRange)
+  const acceptRanges = upstream.headers.get('accept-ranges')
+  if (acceptRanges) headers.set('Accept-Ranges', acceptRanges)
 
   return new NextResponse(upstream.body, {
     status: upstream.status,

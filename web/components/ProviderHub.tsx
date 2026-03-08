@@ -19,12 +19,19 @@ interface ServerConnection {
   host?: string
   port?: number
   username?: string
+  lastTestedAt?: string
+  lastHostFingerprint?: string
+}
+
+type FingerprintDriftState = {
+  previousFingerprint: string
+  currentFingerprint: string
 }
 
 const STATUS_CHIP: Record<ServerConnection['status'], string> = {
-  connected: 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/40',
-  disconnected: 'text-gray-700 bg-gray-100 dark:text-gray-300 dark:bg-gray-700/50',
-  error: 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/40',
+  connected: 'border border-[rgba(74,222,128,0.3)] bg-[rgba(74,222,128,0.12)] text-[var(--cf-green)]',
+  disconnected: 'border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] text-[var(--cf-text-1)]',
+  error: 'border border-[rgba(255,92,92,0.28)] bg-[rgba(255,92,92,0.08)] text-[var(--cf-red)]',
 }
 
 const CONNECTABLE_PROVIDERS = PROVIDERS.filter((provider) => provider.id !== 'local')
@@ -38,6 +45,7 @@ export default function ProviderHub() {
   const [confirmDisconnectId, setConfirmDisconnectId] = useState<string | null>(null)
   const [disconnectingId, setDisconnectingId] = useState<string | null>(null)
   const [testedVpsIds, setTestedVpsIds] = useState<Set<string>>(new Set())
+  const [fingerprintDriftByConnection, setFingerprintDriftByConnection] = useState<Record<string, FingerprintDriftState>>({})
 
   const fetchConnections = useCallback(async () => {
     setLoading(true)
@@ -54,7 +62,22 @@ export default function ProviderHub() {
         return
       }
       const payload = await response.json()
-      setConnections(Array.isArray(payload.data) ? payload.data : [])
+      const nextConnections = Array.isArray(payload.data) ? payload.data : []
+      setConnections(nextConnections)
+      setFingerprintDriftByConnection((prev) => {
+        const next: Record<string, FingerprintDriftState> = {}
+        for (const connection of nextConnections) {
+          if (prev[connection.id]) next[connection.id] = prev[connection.id]
+        }
+        return next
+      })
+      setTestedVpsIds(
+        new Set(
+          nextConnections
+            .filter((connection: ServerConnection) => connection.provider === 'vps' && connection.lastTestedAt)
+            .map((connection: ServerConnection) => connection.id),
+        ),
+      )
     } catch {
       setError('Failed to load provider connections')
       setConnections([])
@@ -80,12 +103,26 @@ export default function ProviderHub() {
       void fetchConnections()
     }
     window.addEventListener('cacheflow:vps-connected', handler as EventListener)
+    window.addEventListener('cacheflow:vps-updated', handler as EventListener)
+    window.addEventListener('cacheflow:vps-tested', handler as EventListener)
     return () => {
       window.removeEventListener('cacheflow:vps-connected', handler as EventListener)
+      window.removeEventListener('cacheflow:vps-updated', handler as EventListener)
+      window.removeEventListener('cacheflow:vps-tested', handler as EventListener)
     }
   }, [fetchConnections])
 
   const availableToConnect = useMemo(() => CONNECTABLE_PROVIDERS, [])
+  const connectedCount = connections.length
+  const vpsCount = connections.filter((connection) => connection.provider === 'vps').length
+  const activeCount = connections.filter((connection) => connection.status === 'connected').length
+  const cloudCount = connections.filter((connection) => connection.provider !== 'vps').length
+  const summaryCards = [
+    { label: 'Connected', value: connectedCount.toString(), helper: `${activeCount} active sessions`, accent: 'text-[var(--cf-blue)]' },
+    { label: 'VPS Nodes', value: vpsCount.toString(), helper: `${Math.max(cloudCount, 0)} cloud remotes`, accent: 'text-[var(--cf-teal)]' },
+    { label: 'Protocols', value: String(new Set(connections.map((connection) => connection.provider === 'vps' ? 'sftp' : 'oauth')).size || 1), helper: 'OAuth + SFTP control plane', accent: 'text-[var(--cf-amber)]' },
+    { label: 'Connectable', value: availableToConnect.length.toString(), helper: 'Available from this shell', accent: 'text-[var(--cf-purple)]' },
+  ]
 
   const handleDisconnect = useCallback(
     async (connection: ServerConnection) => {
@@ -131,48 +168,151 @@ export default function ProviderHub() {
     [actions]
   )
 
+  const handleTestVps = useCallback(
+    async (connection: ServerConnection) => {
+      try {
+        const response = await fetch(`/api/providers/vps/${connection.id}/test`, {
+          method: 'POST',
+          credentials: 'include',
+        })
+        const payload = await response.json().catch(() => ({}))
+        if (!response.ok) {
+          throw new Error(payload?.detail || payload?.error || 'Connection test failed')
+        }
+
+        const previousHostFingerprint =
+          typeof payload?.previousHostFingerprint === 'string'
+            ? payload.previousHostFingerprint
+            : connection.lastHostFingerprint || ''
+        const nextHostFingerprint =
+          typeof payload?.hostFingerprint === 'string'
+            ? payload.hostFingerprint
+            : ''
+        const fingerprintChanged = detectFingerprintDrift(previousHostFingerprint, nextHostFingerprint, payload?.fingerprintChanged)
+
+        setTestedVpsIds((prev) => {
+          const next = new Set(prev)
+          next.add(connection.id)
+          return next
+        })
+
+        if (fingerprintChanged && previousHostFingerprint && nextHostFingerprint) {
+          setFingerprintDriftByConnection((prev) => ({
+            ...prev,
+            [connection.id]: {
+              previousFingerprint: previousHostFingerprint,
+              currentFingerprint: nextHostFingerprint,
+            },
+          }))
+          actions.notify({
+            kind: 'warning',
+            title: 'Host fingerprint changed',
+            message: `${connection.accountLabel || connection.accountName} returned a different SSH fingerprint. Verify host identity before trusting the new key.`,
+          })
+        } else {
+          setFingerprintDriftByConnection((prev) => {
+            if (!prev[connection.id]) return prev
+            const next = { ...prev }
+            delete next[connection.id]
+            return next
+          })
+          actions.notify({
+            kind: 'success',
+            title: 'Connection tested',
+            message: nextHostFingerprint
+              ? `${connection.accountLabel || connection.accountName} verified • ${shortFingerprint(nextHostFingerprint)}`
+              : `${connection.accountLabel || connection.accountName} is reachable`,
+          })
+        }
+        void fetchConnections()
+      } catch (err: any) {
+        actions.notify({
+          kind: 'error',
+          title: 'Connection test failed',
+          message: err?.message || 'Could not reach VPS',
+        })
+      }
+    },
+    [actions, fetchConnections],
+  )
+
   return (
-    <div className="p-6">
+    <div className="mx-auto max-w-[1600px] p-6">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div className="cf-kicker mb-3">Providers</div>
+        <div className="ml-auto flex gap-3">
+          <button
+            type="button"
+            onClick={() => openConnectModal('google')}
+            className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]"
+          >
+            + Add Cloud Provider
+          </button>
+          <button
+            type="button"
+            onClick={() => openConnectModal('vps')}
+            className="rounded-xl border border-[rgba(255,159,67,0.28)] bg-[rgba(255,159,67,0.12)] px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.18)]"
+          >
+            Connect VPS / SFTP
+          </button>
+        </div>
+      </div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Provider Connections</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage real connected providers and remove stored credentials when needed.
+        <h1 className="mb-2 text-3xl font-semibold text-[var(--cf-text-0)]">Connected Providers</h1>
+        <p className="text-sm text-[var(--cf-text-1)]">
+          Manage real connected providers, inspect connection health, and remove stored credentials when needed.
         </p>
       </div>
 
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {summaryCards.map((card) => (
+          <div key={card.label} className="cf-panel rounded-[22px] p-5">
+            <div className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
+              {card.label}
+            </div>
+            <div className={`text-2xl font-semibold ${card.accent}`}>{card.value}</div>
+            <div className="mt-2 text-sm text-[var(--cf-text-2)]">{card.helper}</div>
+          </div>
+        ))}
+      </div>
+
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+        <div className="mb-4 rounded-2xl border border-[rgba(255,92,92,0.28)] bg-[rgba(255,92,92,0.08)] px-4 py-3 text-sm text-[var(--cf-red)]">
           {error}
         </div>
       )}
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500" />
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />
         </div>
       ) : (
         <>
           {connections.length === 0 ? (
-            <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            <div className="cf-panel mb-6 rounded-2xl p-6 text-sm text-[var(--cf-text-1)]">
               No connected providers. Use the connect cards below to add your first provider.
             </div>
           ) : (
             <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {connections.map((connection) => (
+                (() => {
+                  const fingerprintDrift = fingerprintDriftByConnection[connection.id]
+                  return (
                 <div
                   key={`${connection.provider}:${connection.id}`}
                   data-testid={`cf-provider-card-${connection.id}`}
-                  className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-blue-900/30 dark:bg-gray-800"
+                  className="cf-panel relative overflow-hidden rounded-[24px] p-5 transition-all hover:-translate-y-0.5"
                 >
+                  <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(74,158,255,0.6),transparent)]" />
                   <div className="mb-3 flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-2xl dark:bg-blue-900/30">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] text-2xl">
                       {getProviderIcon(connection.provider as ProviderId)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                      <p className="truncate text-sm font-semibold text-[var(--cf-text-0)]">
                         {connection.accountLabel || connection.accountName}
                       </p>
-                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                      <p className="truncate text-xs text-[var(--cf-text-2)]">
                         {displayProviderName(connection.provider)}
                       </p>
                     </div>
@@ -182,36 +322,82 @@ export default function ProviderHub() {
                   </div>
 
                   {connection.accountEmail && (
-                    <p className="mb-3 truncate text-xs text-gray-500 dark:text-gray-400">
+                    <p className="mb-3 truncate font-mono text-xs text-[var(--cf-text-2)]">
                       {connection.accountEmail}
                     </p>
                   )}
 
                   {connection.provider === 'vps' && (
-                    <div className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-900/30 dark:text-gray-300">
+                    <div className="mb-3 rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3 text-xs text-[var(--cf-text-1)]">
                       <div className="flex items-center justify-between">
                         <span>Host: {maskHost(connection.host || '')}</span>
-                        <span className="rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-semibold dark:bg-gray-700">
+                        <span className="rounded-full border border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.1)] px-2 py-0.5 text-[10px] font-semibold text-[var(--cf-blue)]">
                           SFTP · :{connection.port || 22}
                         </span>
                       </div>
                       <div className="mt-1 flex items-center gap-1">
-                        <span className={`h-2 w-2 rounded-full ${testedVpsIds.has(connection.id) ? 'bg-green-500' : 'bg-gray-400'}`} />
+                        <span className={`h-2 w-2 rounded-full ${testedVpsIds.has(connection.id) ? 'bg-[var(--cf-green)]' : 'bg-[var(--cf-text-3)]'}`} />
                         <span>{testedVpsIds.has(connection.id) ? 'Connection tested' : 'Untested since startup'}</span>
                       </div>
+                      {connection.lastTestedAt ? (
+                        <div className="mt-2 rounded-lg border border-[rgba(16,185,129,0.18)] bg-[rgba(16,185,129,0.08)] p-2">
+                          <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-3)]">
+                            Last Verified
+                          </div>
+                          <div className="mt-1 text-[11px] text-[var(--cf-text-1)]">
+                            {new Date(connection.lastTestedAt).toLocaleString()}
+                          </div>
+                          {connection.lastHostFingerprint ? (
+                            <div className="mt-1 break-all font-mono text-[10px] text-[var(--cf-green)]" title={connection.lastHostFingerprint}>
+                              {shortFingerprint(connection.lastHostFingerprint)}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      {fingerprintDrift ? (
+                        <div className="mt-2 rounded-lg border border-[rgba(255,159,67,0.28)] bg-[rgba(255,159,67,0.1)] p-2">
+                          <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-amber)]">
+                            Fingerprint Changed
+                          </div>
+                          <div className="mt-1 text-[11px] text-[var(--cf-text-1)]">
+                            Previous host key and current test result do not match.
+                          </div>
+                          <div className="mt-2 break-all font-mono text-[10px] text-[var(--cf-text-2)]">
+                            Was: {shortFingerprint(fingerprintDrift.previousFingerprint)}
+                          </div>
+                          <div className="mt-1 break-all font-mono text-[10px] text-[var(--cf-amber)]">
+                            Now: {shortFingerprint(fingerprintDrift.currentFingerprint)}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   )}
 
+                  <div className="mb-4 grid grid-cols-2 gap-2">
+                    <div className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3">
+                      <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-3)]">Auth</div>
+                      <div className="mt-2 font-mono text-xs text-[var(--cf-text-1)]">
+                        {connection.provider === 'vps' ? 'PEM / SFTP' : 'OAuth session'}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3">
+                      <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-3)]">Last Sync</div>
+                      <div className="mt-2 font-mono text-xs text-[var(--cf-text-1)]">
+                        {connection.lastSyncAt ? new Date(connection.lastSyncAt).toLocaleString() : 'Untested'}
+                      </div>
+                    </div>
+                  </div>
+
                   {confirmDisconnectId === connection.id ? (
-                    <div className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/40 dark:bg-red-900/20">
-                      <p className="text-xs text-red-700 dark:text-red-300">
+                    <div className="space-y-3 rounded-xl border border-[rgba(255,92,92,0.28)] bg-[rgba(255,92,92,0.08)] p-3">
+                      <p className="text-xs text-[var(--cf-red)]">
                         Disconnect {displayProviderName(connection.provider)}? This will remove all stored credentials.
                       </p>
                       <div className="flex gap-2">
                         <button
                           type="button"
                           onClick={() => setConfirmDisconnectId(null)}
-                          className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                          className="flex-1 rounded-lg border border-[var(--cf-border)] px-2 py-1.5 text-xs font-medium text-[var(--cf-text-1)] hover:bg-[rgba(255,255,255,0.04)]"
                         >
                           Cancel
                         </button>
@@ -219,42 +405,71 @@ export default function ProviderHub() {
                           type="button"
                           onClick={() => void handleDisconnect(connection)}
                           disabled={disconnectingId === connection.id}
-                          className="flex-1 rounded-md bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                          className="flex-1 rounded-lg bg-[var(--cf-red)] px-2 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
                         >
                           {disconnectingId === connection.id ? 'Disconnecting…' : 'Disconnect'}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      {connection.provider === 'vps' && (
-                        <button
-                          type="button"
-                          data-testid={`cf-provider-open-${connection.id}`}
-                          onClick={() => {
-                            window.location.href = `/providers/vps/${connection.id}`
-                          }}
-                          className="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30"
-                        >
-                          Open Files
-                        </button>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {connection.provider === 'vps' ? (
+                        <>
+                          <button
+                            type="button"
+                            data-testid={`cf-provider-open-${connection.id}`}
+                            onClick={() => {
+                              window.location.href = `/providers/vps/${connection.id}`
+                            }}
+                            className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-3 py-2 text-sm font-medium text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]"
+                          >
+                            Open Files
+                          </button>
+                          <button
+                            type="button"
+                            data-testid={`cf-provider-test-${connection.id}`}
+                            onClick={() => void handleTestVps(connection)}
+                            className="rounded-xl border border-[rgba(16,185,129,0.28)] bg-[rgba(16,185,129,0.12)] px-3 py-2 text-sm font-medium text-[var(--cf-green)] hover:bg-[rgba(16,185,129,0.18)]"
+                          >
+                            Test Connection
+                          </button>
+                          <button
+                            type="button"
+                            data-testid={`cf-provider-edit-${connection.id}`}
+                            onClick={() =>
+                              openConnectModal('vps', {
+                                mode: 'edit',
+                                connection,
+                              })
+                            }
+                            className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm font-medium text-[var(--cf-text-1)] hover:bg-[rgba(255,255,255,0.06)]"
+                          >
+                            Edit Details
+                          </button>
+                        </>
+                      ) : (
+                        <div className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-center font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">
+                          Provider Ready
+                        </div>
                       )}
                       <button
                         type="button"
                         data-testid={`cf-provider-disconnect-${connection.id}`}
                         onClick={() => setConfirmDisconnectId(connection.id)}
-                        className="w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+                        className="rounded-xl border border-[rgba(255,92,92,0.28)] bg-[rgba(255,92,92,0.08)] px-3 py-2 text-sm font-medium text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.12)]"
                       >
                         Disconnect
                       </button>
                     </div>
                   )}
                 </div>
+                  )
+                })()
               ))}
             </div>
           )}
 
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <h2 className="cf-kicker mb-3">
             Connect Provider
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -262,21 +477,24 @@ export default function ProviderHub() {
               <div
                 key={provider.id}
                 data-testid={`cf-provider-connect-card-${provider.id}`}
-                className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                className="cf-panel rounded-2xl p-5"
               >
+                <div className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
+                  {provider.id === 'vps' ? 'Server-side remote' : 'OAuth provider'}
+                </div>
                 <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg text-2xl" style={{ backgroundColor: `${provider.color}22` }}>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--cf-border)] text-2xl" style={{ backgroundColor: `${provider.color}22` }}>
                     {getProviderIcon(provider.id)}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{provider.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{provider.description}</p>
+                    <p className="text-sm font-semibold text-[var(--cf-text-0)]">{provider.name}</p>
+                    <p className="text-xs text-[var(--cf-text-2)]">{provider.description}</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => openConnectModal(provider.id)}
-                  className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  className="w-full rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]"
                 >
                   Connect
                 </button>
@@ -291,6 +509,22 @@ export default function ProviderHub() {
 
 function displayProviderName(provider: string): string {
   return PROVIDERS.find((item) => item.id === provider)?.name || provider
+}
+
+function shortFingerprint(fingerprint: string): string {
+  const value = fingerprint.trim()
+  if (value.length <= 28) return value
+  return `${value.slice(0, 20)}…${value.slice(-8)}`
+}
+
+export function detectFingerprintDrift(
+  previousFingerprint?: string | null,
+  currentFingerprint?: string | null,
+  explicitChanged?: boolean,
+): boolean {
+  if (explicitChanged) return true
+  if (!previousFingerprint || !currentFingerprint) return false
+  return previousFingerprint !== currentFingerprint
 }
 
 const providerIconMap: Record<ProviderId, string> = {

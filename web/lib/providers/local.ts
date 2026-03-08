@@ -122,12 +122,16 @@ export class LocalProvider extends StorageProvider {
 
   async downloadFile(id: string, options?: DownloadOptions): Promise<Blob> {
     const token = localStorage.getItem('cf_token') || ''
+    const headers: Record<string, string> = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }
+    if (typeof options?.range?.start === 'number') {
+      headers.Range = `bytes=${options.range.start}-${typeof options.range.end === 'number' ? options.range.end : ''}`
+    }
     const response = await this.proxyFetch(`/api/files/download`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify({ id })
     })
     if (!response.ok) throw new Error('Download failed')

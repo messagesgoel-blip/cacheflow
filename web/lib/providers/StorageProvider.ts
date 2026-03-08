@@ -32,6 +32,10 @@ export interface UploadOptions {
 export interface DownloadOptions {
   onProgress?: (progress: number) => void
   abortSignal?: AbortSignal
+  range?: {
+    start: number
+    end?: number
+  }
 }
 
 export interface SearchOptions {

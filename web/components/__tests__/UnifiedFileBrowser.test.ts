@@ -1,5 +1,5 @@
 import type { FileMetadata } from '@/lib/providers/types'
-import { buildNextBreadcrumbStack } from '../UnifiedFileBrowser'
+import { buildNextBreadcrumbStack, buildStarterFileContent, buildStarterFileName } from '../UnifiedFileBrowser'
 
 describe('UnifiedFileBrowser folder breadcrumbs', () => {
   function createFolder(overrides: Partial<FileMetadata> = {}): FileMetadata {
@@ -47,5 +47,24 @@ describe('UnifiedFileBrowser folder breadcrumbs', () => {
     )
 
     expect(stack).toEqual([{ id: 'box-folder-123', name: 'tmp' }])
+  })
+
+  test('builds starter file names with the expected extension', () => {
+    expect(buildStarterFileName('notes', 'md')).toBe('notes.md')
+    expect(buildStarterFileName('notes.md', 'md')).toBe('notes.md')
+    expect(buildStarterFileName('', 'json')).toBe('data.json')
+    expect(buildStarterFileName('index', 'ts')).toBe('index.ts')
+    expect(buildStarterFileName('Component', 'tsx')).toBe('Component.tsx')
+    expect(buildStarterFileName('styles', 'css')).toBe('styles.css')
+    expect(buildStarterFileName('', 'xml')).toBe('document.xml')
+  })
+
+  test('returns starter file content for common templates', () => {
+    expect(buildStarterFileContent('txt')).toBe('')
+    expect(buildStarterFileContent('json')).toContain('{')
+    expect(buildStarterFileContent('html')).toContain('<!doctype html>')
+    expect(buildStarterFileContent('tsx')).toContain('return <div />')
+    expect(buildStarterFileContent('css')).toContain('color-scheme')
+    expect(buildStarterFileContent('xml')).toContain('<?xml')
   })
 })

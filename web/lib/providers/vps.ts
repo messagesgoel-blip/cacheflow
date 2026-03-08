@@ -307,9 +307,16 @@ export class VPSProvider extends StorageProvider {
     const connectionId = this.getConnectionId()
     if (!connectionId) throw new Error('Not connected')
 
+    const headers: Record<string, string> = {
+      ...getAuthHeader(),
+    }
+    if (typeof options?.range?.start === 'number') {
+      headers.Range = `bytes=${options.range.start}-${typeof options.range.end === 'number' ? options.range.end : ''}`
+    }
+
     const response = await fetch(
       this.getConnectionApiPath(connectionId, `/files/download?path=${encodeURIComponent(fileId)}`),
-      { headers: getAuthHeader() }
+      { headers }
     )
 
     if (!response.ok) {

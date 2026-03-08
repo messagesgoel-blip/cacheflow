@@ -59,6 +59,31 @@ function parseRemotePath(rawPath, fallback = '') {
   return rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
 }
 
+function parseSingleByteRange(rangeHeader, totalSize) {
+  if (!rangeHeader || typeof rangeHeader !== 'string') return null;
+  const match = /^bytes=(\d*)-(\d*)$/i.exec(rangeHeader.trim());
+  if (!match) return null;
+
+  const [, rawStart, rawEnd] = match;
+  if (totalSize <= 0) return null;
+
+  if (rawStart === '' && rawEnd === '') return null;
+
+  if (rawStart === '') {
+    const suffixLength = Number.parseInt(rawEnd, 10);
+    if (!Number.isFinite(suffixLength) || suffixLength <= 0) return null;
+    const start = Math.max(totalSize - suffixLength, 0);
+    return { start, end: totalSize - 1 };
+  }
+
+  const start = Number.parseInt(rawStart, 10);
+  const end = rawEnd === '' ? totalSize - 1 : Number.parseInt(rawEnd, 10);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  if (start < 0 || end < start || start >= totalSize) return null;
+
+  return { start, end: Math.min(end, totalSize - 1) };
+}
+
 function ensurePemFile(file) {
   if (!file || !file.buffer) throw new Error('PEM key file is required');
   const ext = path.extname(file.originalname || '').toLowerCase();
@@ -71,6 +96,7 @@ function ensurePemFile(file) {
 function dryRunSftpConnect({ host, port, username, privateKey }) {
   return new Promise((resolve, reject) => {
     const client = new Client();
+    let hostFingerprint = null;
     const timeout = setTimeout(() => {
       client.destroy();
       reject(new Error('SSH connection timed out'));
@@ -94,7 +120,9 @@ function dryRunSftpConnect({ host, port, username, privateKey }) {
             reject(readErr);
             return;
           }
-          resolve();
+          resolve({
+            hostFingerprint,
+          });
         });
       });
     });
@@ -109,14 +137,50 @@ function dryRunSftpConnect({ host, port, username, privateKey }) {
       port,
       username,
       privateKey,
+      hostHash: 'sha256',
+      hostVerifier: (hashedKey) => {
+        hostFingerprint = typeof hashedKey === 'string' ? `SHA256:${hashedKey}` : null;
+        return true;
+      },
       readyTimeout: 15000,
     });
   });
 }
 
+async function resolvePemTextForRequest(req, existingConnection) {
+  if (req.file) {
+    return ensurePemFile(req.file);
+  }
+
+  if (existingConnection?.pem_key && existingConnection?.pem_iv) {
+    return decryptPem(existingConnection.pem_key, existingConnection.pem_iv).toString('utf8');
+  }
+
+  throw new Error('PEM key file is required');
+}
+
+function parseConnectionInput(body = {}) {
+  const label = typeof body.label === 'string' ? body.label.trim() : '';
+  const host = typeof body.host === 'string' ? body.host.trim() : '';
+  const username = typeof body.username === 'string' ? body.username.trim() : '';
+  const port = parsePort(body.port);
+
+  return { label, host, username, port };
+}
+
+async function testVpsConnectionInput({ host, port, username, pemText }) {
+  return dryRunSftpConnect({
+    host,
+    port,
+    username,
+    privateKey: pemText,
+  });
+}
+
 async function getVpsConnection(id, userId) {
   const result = await pool.query(
-    `SELECT id, user_id, label, host, port, username, auth_method, pem_key, pem_iv, created_at, updated_at
+    `SELECT id, user_id, label, host, port, username, auth_method, pem_key, pem_iv,
+            last_tested_at, last_host_fingerprint, created_at, updated_at
      FROM vps_connections
      WHERE id = $1 AND user_id = $2`,
     [id, userId]
@@ -133,6 +197,8 @@ function toConnectionPayload(row) {
     port: row.port,
     username: row.username,
     authMethod: row.auth_method,
+    lastTestedAt: row.last_tested_at,
+    lastHostFingerprint: row.last_host_fingerprint,
     createdAt: row.created_at,
   };
 }
@@ -237,8 +303,7 @@ async function withSftpSession(connection, handler) {
 }
 
 router.post('/vps', upload.single('pemFile'), async (req, res) => {
-  const { label, host, username } = req.body || {};
-  const port = parsePort(req.body?.port);
+  const { label, host, username, port } = parseConnectionInput(req.body);
 
   if (!label || !host || !username) {
     return res.status(400).json({ error: 'label, host, and username are required' });
@@ -251,13 +316,9 @@ router.post('/vps', upload.single('pemFile'), async (req, res) => {
     return res.status(400).json({ error: err.message });
   }
 
+  let testResult;
   try {
-    await dryRunSftpConnect({
-      host,
-      port,
-      username,
-      privateKey: pemText,
-    });
+    testResult = await testVpsConnectionInput({ host, port, username, pemText });
   } catch (err) {
     return res.status(400).json({
       error: 'Connection test failed',
@@ -270,10 +331,11 @@ router.post('/vps', upload.single('pemFile'), async (req, res) => {
     const id = crypto.randomUUID();
     const inserted = await pool.query(
       `INSERT INTO vps_connections (
-         id, user_id, label, host, port, username, auth_method, pem_key, pem_iv, created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, 'pem', $7, $8, NOW(), NOW())
-       RETURNING id, label, host, port, username, auth_method, created_at`,
-      [id, req.user.id, label, host, port, username, encryptedPem.pemKey, encryptedPem.pemIv]
+         id, user_id, label, host, port, username, auth_method, pem_key, pem_iv,
+         last_tested_at, last_host_fingerprint, created_at, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, 'pem', $7, $8, NOW(), $9, NOW(), NOW())
+       RETURNING id, label, host, port, username, auth_method, last_tested_at, last_host_fingerprint, created_at`,
+      [id, req.user.id, label, host, port, username, encryptedPem.pemKey, encryptedPem.pemIv, testResult?.hostFingerprint || null]
     );
 
     await auditLog(req.user.id, 'vps_connect', 'provider', id, req, {
@@ -290,10 +352,39 @@ router.post('/vps', upload.single('pemFile'), async (req, res) => {
   }
 });
 
+router.post('/vps/test', upload.single('pemFile'), async (req, res) => {
+  const { host, username, port } = parseConnectionInput(req.body);
+  if (!host || !username) {
+    return res.status(400).json({ error: 'host and username are required' });
+  }
+
+  let pemText;
+  try {
+    pemText = await resolvePemTextForRequest(req);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  try {
+    const testResult = await testVpsConnectionInput({ host, port, username, pemText });
+    return res.json({
+      success: true,
+      message: 'Connection successful',
+      hostFingerprint: testResult?.hostFingerprint || null,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: 'Connection test failed',
+      detail: err.message,
+    });
+  }
+});
+
 router.get('/vps', async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, label, host, port, username, auth_method, created_at, updated_at
+              , last_tested_at, last_host_fingerprint
        FROM vps_connections
        WHERE user_id = $1
        ORDER BY created_at DESC`,
@@ -309,6 +400,147 @@ router.get('/vps', async (req, res) => {
     });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to retrieve VPS connections' });
+  }
+});
+
+router.post('/vps/:id/test', upload.single('pemFile'), async (req, res) => {
+  const connection = await getVpsConnection(req.params.id, req.user.id);
+  if (!connection) return res.status(404).json({ error: 'VPS connection not found' });
+
+  const { host, username, port } = parseConnectionInput({
+    host: req.body?.host ?? connection.host,
+    username: req.body?.username ?? connection.username,
+    port: req.body?.port ?? connection.port,
+  });
+
+  if (!host || !username) {
+    return res.status(400).json({ error: 'host and username are required' });
+  }
+
+  let pemText;
+  try {
+    pemText = await resolvePemTextForRequest(req, connection);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  try {
+    const testResult = await testVpsConnectionInput({ host, port, username, pemText });
+    const previousHostFingerprint = connection.last_host_fingerprint || null;
+    const nextHostFingerprint = testResult?.hostFingerprint || null;
+    const fingerprintChanged = Boolean(
+      previousHostFingerprint &&
+      nextHostFingerprint &&
+      previousHostFingerprint !== nextHostFingerprint
+    );
+    await pool.query(
+      `UPDATE vps_connections
+       SET last_tested_at = NOW(),
+           last_host_fingerprint = $1,
+           updated_at = NOW()
+       WHERE id = $2 AND user_id = $3`,
+      [nextHostFingerprint, connection.id, req.user.id]
+    );
+    await auditLog(req.user.id, 'vps_test', 'provider', connection.id, req, {
+      host,
+      port,
+      username,
+    });
+    return res.json({
+      success: true,
+      message: 'Connection successful',
+      hostFingerprint: nextHostFingerprint,
+      previousHostFingerprint,
+      fingerprintChanged,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      error: 'Connection test failed',
+      detail: err.message,
+    });
+  }
+});
+
+router.patch('/vps/:id', upload.single('pemFile'), async (req, res) => {
+  const connection = await getVpsConnection(req.params.id, req.user.id);
+  if (!connection) return res.status(404).json({ error: 'VPS connection not found' });
+
+  const fallbackBody = {
+    label: req.body?.label ?? connection.label,
+    host: req.body?.host ?? connection.host,
+    username: req.body?.username ?? connection.username,
+    port: req.body?.port ?? connection.port,
+  };
+  const { label, host, username, port } = parseConnectionInput(fallbackBody);
+
+  if (!label || !host || !username) {
+    return res.status(400).json({ error: 'label, host, and username are required' });
+  }
+
+  let pemText;
+  try {
+    pemText = await resolvePemTextForRequest(req, connection);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  let testResult;
+  try {
+    testResult = await testVpsConnectionInput({ host, port, username, pemText });
+  } catch (err) {
+    return res.status(400).json({
+      error: 'Connection test failed',
+      detail: err.message,
+    });
+  }
+
+  try {
+    const encryptedPem = req.file ? encryptPem(Buffer.from(pemText, 'utf8')) : null;
+    const updated = await pool.query(
+      `UPDATE vps_connections
+       SET label = $1,
+           host = $2,
+           port = $3,
+           username = $4,
+           pem_key = COALESCE($5, pem_key),
+           pem_iv = COALESCE($6, pem_iv),
+           last_tested_at = NOW(),
+           last_host_fingerprint = $7,
+           updated_at = NOW()
+       WHERE id = $8 AND user_id = $9
+       RETURNING id, label, host, port, username, auth_method, last_tested_at, last_host_fingerprint, created_at, updated_at`,
+      [
+        label,
+        host,
+        port,
+        username,
+        encryptedPem?.pemKey || null,
+        encryptedPem?.pemIv || null,
+        testResult?.hostFingerprint || null,
+        connection.id,
+        req.user.id,
+      ]
+    );
+
+    await auditLog(req.user.id, 'vps_update', 'provider', connection.id, req, {
+      label,
+      host,
+      port,
+      username,
+      keyUpdated: Boolean(req.file),
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        ...toConnectionPayload(updated.rows[0]),
+        updatedAt: updated.rows[0].updated_at,
+        provider: 'vps',
+      },
+    });
+  } catch (err) {
+    console.error('[providers:vps] update error:', err.message);
+    return res.status(500).json({ error: 'Failed to update VPS connection' });
   }
 });
 
@@ -359,14 +591,48 @@ router.get('/vps/:id/files/download', async (req, res) => {
       return res.status(400).json({ error: 'Cannot download a directory' });
     }
 
+    const totalSize = Number(stats.size || 0);
+    const range = parseSingleByteRange(req.headers.range, totalSize);
+    if (req.headers.range && !range && totalSize > 0) {
+      try { sftp.end(); } catch {}
+      vpsPool.release(connection.id, poolEntry, false);
+      res.setHeader('Content-Range', `bytes */${totalSize}`);
+      return res.status(416).json({ error: 'Requested range not satisfiable' });
+    }
+
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${path.basename(remotePath)}"`);
-    res.setHeader('Content-Length', String(Number(stats.size || 0)));
+    res.setHeader('Accept-Ranges', 'bytes');
 
-    const readStream = sftp.createReadStream(remotePath);
-    readStream.on('error', (err) => {
-      vpsPool.release(connection.id, poolEntry, true);
+    if (totalSize === 0) {
+      res.setHeader('Content-Length', '0');
       try { sftp.end(); } catch {}
+      vpsPool.release(connection.id, poolEntry, false);
+      return res.status(200).end();
+    }
+
+    const streamStart = range ? range.start : 0;
+    const streamEnd = range ? range.end : totalSize - 1;
+    const contentLength = streamEnd - streamStart + 1;
+
+    if (range) {
+      res.status(206);
+      res.setHeader('Content-Range', `bytes ${streamStart}-${streamEnd}/${totalSize}`);
+    }
+
+    res.setHeader('Content-Length', String(contentLength));
+
+    let released = false;
+    const release = (broken) => {
+      if (released) return;
+      released = true;
+      try { sftp.end(); } catch {}
+      vpsPool.release(connection.id, poolEntry, broken);
+    };
+
+    const readStream = sftp.createReadStream(remotePath, { start: streamStart, end: streamEnd });
+    readStream.on('error', (err) => {
+      release(true);
       if (!res.headersSent) {
         res.status(500).json({ error: 'Download failed', detail: err.message });
       } else {
@@ -374,13 +640,11 @@ router.get('/vps/:id/files/download', async (req, res) => {
       }
     });
     res.on('close', () => {
-      try { sftp.end(); } catch {}
-      if (poolEntry) vpsPool.release(connection.id, poolEntry, false);
+      release(false);
     });
 
     await pipeline(readStream, res);
-    try { sftp.end(); } catch {}
-    vpsPool.release(connection.id, poolEntry, false);
+    release(false);
   } catch (err) {
     if (poolEntry) vpsPool.release(connection.id, poolEntry, true);
     return res.status(400).json({ error: 'Download failed', detail: err.message });

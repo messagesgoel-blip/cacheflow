@@ -109,4 +109,26 @@ describe('VPSProvider file operations', () => {
       }),
     )
   })
+
+  test('downloadFile forwards byte ranges to the VPS API', async () => {
+    const provider = createProvider()
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      blob: async () => new Blob(['preview']),
+    } as Response)
+
+    await provider.downloadFile('/srv/storage/local/mock run/readme.txt', {
+      range: { start: 0, end: 65535 },
+    })
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/providers/vps/conn-1/files/download?path=%2Fsrv%2Fstorage%2Flocal%2Fmock%20run%2Freadme.txt',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+          Range: 'bytes=0-65535',
+        }),
+      }),
+    )
+  })
 })

@@ -51,6 +51,11 @@ export interface ProviderConnection {
   isDefault?: boolean;
   status: 'connected' | 'disconnected' | 'error';
   lastSyncAt?: string;
+  host?: string;
+  port?: number;
+  username?: string;
+  lastTestedAt?: string;
+  lastHostFingerprint?: string;
 }
 
 /**

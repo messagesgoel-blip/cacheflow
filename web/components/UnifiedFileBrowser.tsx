@@ -22,6 +22,7 @@ import ActivityFeed from '@/components/ActivityFeed'
 import ShortcutHelp from '@/components/ShortcutHelp'
 import apiClient, { type ProviderConnection } from '@/lib/apiClient'
 import { isTextPreviewEligible, resolvePreviewType, type PreviewType } from '@/lib/files/previewUtils'
+import { buildTextPreviewRequest, resolveDirectPreviewUrl } from '@/lib/files/previewSource'
 
 interface UnifiedFileBrowserProps {
   token: string
@@ -62,11 +63,21 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     url: string | null
     type: PreviewType
     textContent?: string
+    previewLoading?: boolean
+    revokeUrlOnClose?: boolean
     previewError?: string
   } | null>(null)
   const [clipboard, setClipboard] = useState<{ mode: 'copy' | 'move', file: FileMetadata } | null>(null)
   const [draggedFile, setDraggedFile] = useState<FileMetadata | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [showNewFolderModal, setShowNewFolderModal] = useState(false)
+  const [newFolderName, setNewFolderName] = useState('')
+  const [creatingFolder, setCreatingFolder] = useState(false)
+  const [showNewFileModal, setShowNewFileModal] = useState(false)
+  const [newFileName, setNewFileName] = useState('')
+  const [newFileTemplateId, setNewFileTemplateId] = useState<StarterFileTemplateId>('txt')
+  const [creatingFile, setCreatingFile] = useState(false)
+  const [creationTargetOverride, setCreationTargetOverride] = useState<CreationTargetOverride | null>(null)
   const [pendingFolderPath, setPendingFolderPath] = useState<string | null>(null)
   const uploadInputRef = useRef<HTMLInputElement | null>(null)
   const filesRef = useRef<FileMetadata[]>([])
@@ -274,7 +285,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                 provider: pid,
                 accessToken: existing?.accessToken || '',
                 accountEmail: conn.accountEmail || existing?.accountEmail || `${pid}@remote.local`,
-                displayName: conn.accountLabel || conn.accountName || existing?.displayName || accountKey,
+                displayName: conn.accountLabel || existing?.displayName || conn.accountName || accountKey,
                 accountId: (existing as any)?.accountId || accountKey,
                 accountKey,
                 expiresAt: existing?.expiresAt || null,
@@ -316,8 +327,11 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               providerId: pid,
               status,
               accountEmail: t.accountEmail || '',
-              displayName: t.displayName || serverConn?.accountLabel || serverConn?.accountName || `${pid}-${idx + 1}`,
+              displayName: serverConn?.accountLabel || t.displayName || serverConn?.accountName || `${pid}-${idx + 1}`,
               accountKey: t.accountKey,
+              host: serverConn?.host,
+              port: serverConn?.port,
+              username: serverConn?.username,
               connectedAt: serverConn?.lastSyncAt ? new Date(serverConn.lastSyncAt).getTime() : Date.now()
             })
             if (!loadingIds.includes(pid)) loadingIds.push(pid)
@@ -416,6 +430,14 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       window.removeEventListener('cacheflow:transfer-complete', handleTransferComplete)
     }
   }, [])
+
+  useEffect(() => {
+    return () => {
+      if (previewPanelFile?.revokeUrlOnClose && previewPanelFile.url) {
+        window.URL.revokeObjectURL(previewPanelFile.url)
+      }
+    }
+  }, [previewPanelFile])
 
   // Fetch logic
   useEffect(() => {
@@ -744,7 +766,9 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const handleFileOpen = async (file: FileMetadata) => {
     if (file.isFolder) { handleFolderClick(file); return }
     const safeName = file.name || 'untitled'
-    const isInlinePreview = isTextPreviewEligible({ size: file.size }) || file.mimeType?.startsWith('image/')
+    const normalizedFile = normalizeFileMetadata(file, { fallbackName: safeName })
+    const type = resolvePreviewType({ mimeType: file.mimeType, fileName: safeName })
+    const isInlinePreview = isTextPreviewEligible({ size: file.size }) || type === 'image'
     
     // FIX-01: Exact deviation-free structure
     const toastId = showToast({ title: isInlinePreview ? "Previewing" : "Opening", message: safeName });
@@ -754,15 +778,99 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
       if ((file as any).accountKey) tokenManager.setActiveToken(file.provider as any, (file as any).accountKey)
       const provider = getProvider(file.provider); if (!provider) throw new Error('Provider not available')
       provider.remoteId = (file as any).remoteId
-      const blob = await provider.downloadFile(file.id)
-      
-      const url = window.URL.createObjectURL(blob)
-      const type = resolvePreviewType({ mimeType: file.mimeType, fileName: safeName })
+
+      if (type === 'pdf' || type === 'other') {
+        setPreviewPanelFile({
+          file: normalizedFile,
+          url: null,
+          type,
+          previewLoading: false,
+        })
+        clearTimeout(safety);
+        dismissToast(toastId);
+        return
+      }
+
+      if (type === 'image') {
+        const directUrl = resolveDirectPreviewUrl(normalizedFile, activeAccountKey)
+        if (directUrl) {
+          setPreviewPanelFile({
+            file: normalizedFile,
+            url: directUrl,
+            type,
+            previewLoading: false,
+            revokeUrlOnClose: false,
+          })
+          clearTimeout(safety);
+          dismissToast(toastId);
+          return
+        }
+
+        setPreviewPanelFile({
+          file: normalizedFile,
+          url: null,
+          type,
+          previewLoading: true,
+        })
+
+        const blob = await provider.downloadFile(file.id)
+        const objectUrl = window.URL.createObjectURL(blob)
+        setPreviewPanelFile((prev) => {
+          if (!prev || prev.file.id !== normalizedFile.id) {
+            window.URL.revokeObjectURL(objectUrl)
+            return prev
+          }
+
+          if (prev.revokeUrlOnClose && prev.url) {
+            window.URL.revokeObjectURL(prev.url)
+          }
+
+          return {
+            ...prev,
+            url: objectUrl,
+            previewLoading: false,
+            revokeUrlOnClose: true,
+          }
+        })
+        clearTimeout(safety);
+        dismissToast(toastId);
+        return
+      }
+
+      setPreviewPanelFile({
+        file: normalizedFile,
+        url: null,
+        type,
+        previewLoading: true,
+      })
+
       let textContent: string | undefined
       if (type === 'text' && isTextPreviewEligible({ size: file.size })) {
-        textContent = await blob.text()
+        const previewRequest = buildTextPreviewRequest(normalizedFile, {
+          token,
+          fallbackAccountKey: activeAccountKey,
+        })
+
+        if (previewRequest) {
+          const response = await fetch(previewRequest.url, previewRequest.init)
+          if (!response.ok) {
+            throw new Error(`Preview failed: ${response.statusText}`)
+          }
+          textContent = await response.text()
+        } else {
+          const blob = await provider.downloadFile(file.id)
+          textContent = await blob.text()
+        }
       }
-      setPreviewPanelFile({ file: normalizeFileMetadata(file, { fallbackName: safeName }), url, type, textContent })
+
+      setPreviewPanelFile((prev) => {
+        if (!prev || prev.file.id !== normalizedFile.id) return prev
+        return {
+          ...prev,
+          textContent,
+          previewLoading: false,
+        }
+      })
       
       clearTimeout(safety);
       dismissToast(toastId);
@@ -774,9 +882,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         : err?.message ?? "Preview failed");
         
       setPreviewPanelFile({
-        file: normalizeFileMetadata(file, { fallbackName: safeName }),
+        file: normalizedFile,
         url: null,
-        type: resolvePreviewType({ mimeType: file.mimeType, fileName: safeName }),
+        type,
+        previewLoading: false,
         previewError: err?.message || 'Could not load preview',
       })
     }
@@ -815,6 +924,113 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     const fallback = connectedProviders[0]
     return fallback ? { providerId: fallback.providerId, accountKey: fallback.accountKey || '' } : null
   }, [selectedProvider, activeAccountKey, connectedProviders])
+
+  const writableTarget = useMemo(() => resolveUploadTarget(), [resolveUploadTarget])
+  const writeActionsDisabled = useMemo(
+    () => ['recent', 'starred', 'activity'].includes(selectedProvider) || !writableTarget,
+    [selectedProvider, writableTarget],
+  )
+  const writeTargetLabel = useMemo(() => {
+    if (!writableTarget) return 'No writable provider selected'
+    const account = connectedProviders.find(
+      (cp) => cp.providerId === writableTarget.providerId && cp.accountKey === writableTarget.accountKey,
+    )
+    const providerName =
+      PROVIDERS.find((provider) => provider.id === writableTarget.providerId)?.name || writableTarget.providerId
+    return account?.displayName ? `${providerName} · ${account.displayName}` : providerName
+  }, [connectedProviders, writableTarget])
+
+  const getCurrentFolderIdForProvider = useCallback(
+    (providerId: ProviderId) => (currentPath === '/' ? rootFolderId(providerId) : currentPath),
+    [currentPath],
+  )
+
+  const resolvedCreationTarget = useMemo(() => {
+    if (creationTargetOverride) return creationTargetOverride
+    if (!writableTarget) return null
+    return {
+      providerId: writableTarget.providerId,
+      accountKey: writableTarget.accountKey,
+      folderId: getCurrentFolderIdForProvider(writableTarget.providerId),
+      pathLabel: currentPath,
+      targetLabel: writeTargetLabel,
+    }
+  }, [creationTargetOverride, currentPath, getCurrentFolderIdForProvider, writableTarget, writeTargetLabel])
+
+  const emitVpsFilesChanged = useCallback(
+    (target: { providerId: ProviderId; accountKey: string }, folderPath: string) => {
+      if (target.providerId !== 'vps' || typeof window === 'undefined' || !target.accountKey) return
+      window.dispatchEvent(
+        new CustomEvent('cacheflow:vps-files-changed', {
+          detail: {
+            connectionId: target.accountKey,
+            folderPath,
+          },
+        }),
+      )
+    },
+    [],
+  )
+
+  const closeNewFolderModal = useCallback(() => {
+    if (creatingFolder) return
+    setShowNewFolderModal(false)
+    setNewFolderName('')
+    setCreationTargetOverride(null)
+  }, [creatingFolder])
+
+  const closeNewFileModal = useCallback(() => {
+    if (creatingFile) return
+    setShowNewFileModal(false)
+    setNewFileName('')
+    setNewFileTemplateId('txt')
+    setCreationTargetOverride(null)
+  }, [creatingFile])
+
+  const openNewFolderModal = useCallback(() => {
+    if (writeActionsDisabled) {
+      actions.notify({
+        kind: 'info',
+        title: 'Select a writable drive',
+        message: 'New folders can only be created inside a connected provider scope.',
+      })
+      return
+    }
+    setCreationTargetOverride(null)
+    setShowNewFolderModal(true)
+  }, [actions, writeActionsDisabled])
+
+  const openNewFileModal = useCallback(() => {
+    if (writeActionsDisabled) {
+      actions.notify({
+        kind: 'info',
+        title: 'Select a writable drive',
+        message: 'Starter files can only be created inside a connected provider scope.',
+      })
+      return
+    }
+    setCreationTargetOverride(null)
+    setShowNewFileModal(true)
+  }, [actions, writeActionsDisabled])
+
+  const openCreateInsideFolder = useCallback(
+    (folder: FileMetadata, kind: 'folder' | 'file') => {
+      if (!folder.isFolder) return
+      setCreationTargetOverride({
+        providerId: folder.provider,
+        accountKey: (folder as any).accountKey || '',
+        folderId: getFolderNavigationTarget(folder),
+        pathLabel: String(folder.path || folder.id),
+        targetLabel: `${providerLabel(folder)} · ${folder.name || '[unnamed folder]'}`,
+      })
+      if (kind === 'folder') {
+        setShowNewFolderModal(true)
+      } else {
+        setShowNewFileModal(true)
+      }
+    },
+    [],
+  )
 
   const handleUploadSelection = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const filesToUpload = Array.from(e.target.files || [])
@@ -931,6 +1147,128 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     setRefreshKey((k) => k + 1)
   }
 
+  const handleCreateFolder = async () => {
+    const name = newFolderName.trim()
+    if (!name) {
+      actions.notify({
+        kind: 'error',
+        title: 'Folder name required',
+        message: 'Enter a folder name before creating it.',
+      })
+      return
+    }
+
+    const target = resolvedCreationTarget
+    if (!target) {
+      actions.notify({
+        kind: 'error',
+        title: 'Create folder failed',
+        message: 'No connected provider is available for this action.',
+      })
+      return
+    }
+
+    const provider = getProvider(target.providerId)
+    if (!provider) {
+      actions.notify({
+        kind: 'error',
+        title: 'Create folder failed',
+        message: `Provider ${target.providerId} is not available.`,
+      })
+      return
+    }
+
+    if (target.accountKey) {
+      tokenManager.setActiveToken(target.providerId, target.accountKey)
+    }
+    const tokenData = tokenManager.getToken(target.providerId, target.accountKey)
+    provider.remoteId = (tokenData as any)?.remoteId
+
+    const folderId = target.folderId
+    const task = actions.startTask({
+      title: 'Creating folder',
+      message: name,
+      progress: null,
+    })
+
+    setCreatingFolder(true)
+    try {
+      await provider.createFolder(name, folderId)
+      await metadataCache.invalidateCache(target.providerId, target.accountKey || undefined, folderId)
+      emitVpsFilesChanged(target, target.pathLabel)
+      setRefreshKey((k) => k + 1)
+      task.succeed(name)
+      closeNewFolderModal()
+    } catch (err: any) {
+      task.fail(err?.message || 'Create folder failed')
+    } finally {
+      setCreatingFolder(false)
+    }
+  }
+
+  const handleCreateStarterFile = async () => {
+    const target = resolvedCreationTarget
+    if (!target) {
+      actions.notify({
+        kind: 'error',
+        title: 'Create file failed',
+        message: 'No connected provider is available for this action.',
+      })
+      return
+    }
+
+    const template = getStarterFileTemplate(newFileTemplateId)
+    const fileName = buildStarterFileName(newFileName, template.id)
+    if (!fileName) {
+      actions.notify({
+        kind: 'error',
+        title: 'File name required',
+        message: 'Enter a file name before creating it.',
+      })
+      return
+    }
+
+    const provider = getProvider(target.providerId)
+    if (!provider) {
+      actions.notify({
+        kind: 'error',
+        title: 'Create file failed',
+        message: `Provider ${target.providerId} is not available.`,
+      })
+      return
+    }
+
+    if (target.accountKey) {
+      tokenManager.setActiveToken(target.providerId, target.accountKey)
+    }
+    const tokenData = tokenManager.getToken(target.providerId, target.accountKey)
+    provider.remoteId = (tokenData as any)?.remoteId
+
+    const folderId = target.folderId
+    const task = actions.startTask({
+      title: 'Creating file',
+      message: fileName,
+      progress: null,
+    })
+
+    setCreatingFile(true)
+    try {
+      const file = new File([buildStarterFileContent(template.id)], fileName, {
+        type: template.mimeType,
+      })
+      await provider.uploadFile(file, { folderId })
+      await metadataCache.invalidateCache(target.providerId, target.accountKey || undefined, folderId)
+      emitVpsFilesChanged(target, target.pathLabel)
+      setRefreshKey((k) => k + 1)
+      task.succeed(fileName)
+      closeNewFileModal()
+    } catch (err: any) {
+      task.fail(err?.message || 'Create file failed')
+    } finally {
+      setCreatingFile(false)
+    }
+  }
+
   const handleFileDelete = async (file: FileMetadata) => {
     const safeName = file.name || 'untitled'
     const ok = await actions.confirm({ title: 'Delete?', message: `Delete "${safeName}"?`, confirmText: 'Delete', cancelText: 'Cancel' })
@@ -989,15 +1327,39 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   const currentTransferFolderPath = useMemo(() => {
     return breadcrumbStack[breadcrumbStack.length - 1]?.id || currentPath
   }, [breadcrumbStack, currentPath])
+  const visibleFolderCount = useMemo(() => sortedFiles.filter((file) => file.isFolder).length, [sortedFiles])
+  const visibleFileCount = useMemo(() => sortedFiles.filter((file) => !file.isFolder).length, [sortedFiles])
+  const visibleProviderCount = useMemo(
+    () => new Set(sortedFiles.map((file) => `${file.provider}:${(file as any).accountKey || 'default'}`)).size,
+    [sortedFiles],
+  )
+  const currentScopeLabel = useMemo(() => {
+    if (selectedProvider === 'all') return isAggregatedView ? 'Cross-provider index' : 'All providers'
+    if (selectedProvider === 'recent') return 'Recent'
+    if (selectedProvider === 'starred') return 'Starred'
+    if (selectedProvider === 'activity') return 'Activity'
+    return activeAccountName
+      ? `${PROVIDERS.find((provider) => provider.id === selectedProvider)?.name || selectedProvider} · ${activeAccountName}`
+      : PROVIDERS.find((provider) => provider.id === selectedProvider)?.name || selectedProvider
+  }, [activeAccountName, isAggregatedView, selectedProvider])
+  const quickStats = useMemo(
+    () => [
+      { label: 'Scope', value: currentScopeLabel, accent: 'text-[var(--cf-blue)]', helper: breadcrumbStack.length > 0 ? `Depth ${breadcrumbStack.length}` : 'Root view' },
+      { label: 'Folders', value: visibleFolderCount.toString(), accent: 'text-[var(--cf-teal)]', helper: `${visibleFileCount} files in current view` },
+      { label: 'Providers', value: visibleProviderCount.toString(), accent: 'text-[var(--cf-amber)]', helper: activeAccountKey ? 'Account scoped' : 'Shared surface' },
+      { label: 'Selection', value: selectedFiles.size.toString(), accent: 'text-[var(--cf-purple)]', helper: selectedFiles.size > 0 ? 'Actions unlocked' : 'No files selected' },
+    ],
+    [activeAccountKey, breadcrumbStack.length, currentScopeLabel, selectedFiles.size, visibleFileCount, visibleFolderCount, visibleProviderCount],
+  )
 
   return (
-    <div className="flex h-[calc(100vh-120px)] bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden -mx-4 md:-mx-6">
+    <div className="flex h-[calc(100vh-132px)] overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-bg)] shadow-[var(--cf-shadow-strong)]">
       <Sidebar connectedProviders={connectedProviders} selectedProvider={selectedProvider} activeAccountKey={activeAccountKey} onNavigate={handleSidebarNavigate} onDrop={(e, pid, key, fid) => {
         e.preventDefault(); const d = e.dataTransfer.getData('application/cacheflow-file'); if (!d) return
         const f = JSON.parse(d); const mode = (f.provider === pid && f.accountKey === key) ? 'move' : 'copy'
         addTransfer({ type: mode, file: f, targetProviderId: pid, targetAccountKey: key, targetFolderId: fid })
       }} />
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
         <input
           ref={uploadInputRef}
           type="file"
@@ -1107,20 +1469,127 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             setRenameModal({ open: false, file: null })
           }
         }} />}
+        {showNewFolderModal && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4">
+            <div className="w-full max-w-md rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] p-6 shadow-[var(--cf-shadow-strong)]">
+              <div className="mb-5">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">Create Folder</div>
+                <h3 className="mt-2 text-xl font-semibold text-[var(--cf-text-0)]">New folder</h3>
+                <p className="mt-2 text-sm text-[var(--cf-text-1)]">
+                  This will be created in <span className="font-medium text-[var(--cf-text-0)]">{resolvedCreationTarget?.targetLabel || writeTargetLabel}</span>.
+                </p>
+                <p className="mt-1 text-xs text-[var(--cf-text-2)]">{resolvedCreationTarget?.pathLabel || currentPath}</p>
+              </div>
+              <label className="block">
+                <span className="mb-2 block font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Folder Name</span>
+                <input
+                  data-testid="cf-new-folder-name"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  placeholder="New folder"
+                  className="w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] outline-none transition focus:border-[var(--cf-blue)]"
+                />
+              </label>
+              <div className="mt-5 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={closeNewFolderModal}
+                  className="rounded-xl border border-[var(--cf-border)] px-4 py-2 text-sm font-medium text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  data-testid="cf-create-folder-submit"
+                  onClick={() => void handleCreateFolder()}
+                  disabled={creatingFolder}
+                  className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-4 py-2 text-sm font-semibold text-[var(--cf-blue)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {creatingFolder ? 'Creating...' : 'Create Folder'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showNewFileModal && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4">
+            <div className="w-full max-w-lg rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] p-6 shadow-[var(--cf-shadow-strong)]">
+              <div className="mb-5">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">Create File</div>
+                <h3 className="mt-2 text-xl font-semibold text-[var(--cf-text-0)]">Starter file</h3>
+                <p className="mt-2 text-sm text-[var(--cf-text-1)]">
+                  Create a common file type directly in <span className="font-medium text-[var(--cf-text-0)]">{resolvedCreationTarget?.targetLabel || writeTargetLabel}</span>.
+                </p>
+                <p className="mt-1 text-xs text-[var(--cf-text-2)]">{resolvedCreationTarget?.pathLabel || currentPath}</p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
+                <label className="block">
+                  <span className="mb-2 block font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">File Name</span>
+                  <input
+                    data-testid="cf-new-file-name"
+                    value={newFileName}
+                    onChange={(e) => setNewFileName(e.target.value)}
+                    placeholder={getStarterFileTemplate(newFileTemplateId).suggestedBaseName}
+                    className="w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] outline-none transition focus:border-[var(--cf-blue)]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Template</span>
+                  <select
+                    data-testid="cf-new-file-template"
+                    value={newFileTemplateId}
+                    onChange={(e) => setNewFileTemplateId(e.target.value as StarterFileTemplateId)}
+                    className="w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] outline-none transition focus:border-[var(--cf-blue)]"
+                  >
+                    {STARTER_FILE_TEMPLATES.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.label} ({template.extension})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="mt-4 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Will Create</div>
+                <div className="mt-2 break-all text-sm font-medium text-[var(--cf-text-0)]">
+                  {buildStarterFileName(newFileName, newFileTemplateId)}
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={closeNewFileModal}
+                  className="rounded-xl border border-[var(--cf-border)] px-4 py-2 text-sm font-medium text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  data-testid="cf-create-file-submit"
+                  onClick={() => void handleCreateStarterFile()}
+                  disabled={creatingFile}
+                  className="rounded-xl border border-[rgba(0,201,167,0.28)] bg-[rgba(0,201,167,0.12)] px-4 py-2 text-sm font-semibold text-[var(--cf-teal)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {creatingFile ? 'Creating...' : 'Create File'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {showShortcutHelp && <ShortcutHelp onClose={() => setShowShortcutHelp(false)} />}
 
-        <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--cf-border)] bg-[var(--cf-toolbar-bg)] p-4 md:p-6">
           <UnifiedBreadcrumb selectedProvider={selectedProvider} activeAccountName={activeAccountName} stack={breadcrumbStack} onNavigateStack={handleBreadcrumbNavigate} onNavigateHome={() => handleSidebarNavigate('all')} />
           <div className="flex items-center gap-3">
             {selectedProvider === 'all' && !searchQuery && (
               <>
                 <div className="flex flex-wrap gap-2">
                   {/* View Toggles */}
-                  <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                  <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
                     <button
                       data-testid="cf-allproviders-view-toggle-grouped"
                       onClick={() => !isGroupedView && !isAggregatedView && toggleGroupedView()}
-                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${isGroupedView && !isAggregatedView ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                      className={`px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.18)] text-[var(--cf-blue)]' : 'text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)]'}`}
                       aria-pressed={isGroupedView && !isAggregatedView}
                       disabled={isAggregatedView}
                     >
@@ -1129,7 +1598,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                     <button
                       data-testid="cf-allproviders-view-toggle-flat"
                       onClick={() => isGroupedView && !isAggregatedView && toggleGroupedView()}
-                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${!isGroupedView && !isAggregatedView ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                      className={`px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${!isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.18)] text-[var(--cf-blue)]' : 'text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)]'}`}
                       aria-pressed={!isGroupedView && !isAggregatedView}
                       disabled={isAggregatedView}
                     >
@@ -1144,7 +1613,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                         }
                         setIsAggregatedView(prev => !prev);
                       }}
-                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${isAggregatedView ? 'bg-green-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                      className={`px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${isAggregatedView ? 'bg-[rgba(0,201,167,0.16)] text-[var(--cf-teal)]' : 'text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)]'}`}
                       aria-pressed={isAggregatedView}
                     >
                       Aggregated
@@ -1155,11 +1624,11 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                   {isAggregatedView && (
                     <>
                       {/* Provider Filter Dropdown */}
-                      <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                      <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
                         <select
                           value={aggregatedProviderFilter || 'all'}
                           onChange={(e) => setAggregatedProviderFilter(e.target.value as ProviderId | 'all' | null)}
-                          className="px-3 py-1.5 text-xs font-bold bg-transparent border-none focus:outline-none"
+                          className="border-none bg-transparent px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] focus:outline-none"
                           aria-label="Filter providers"
                         >
                           <option value="all">All Providers</option>
@@ -1173,11 +1642,11 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                       </div>
 
                       {/* Duplicates Only Toggle */}
-                      <div className="flex border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                      <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
                         <button
                           data-testid="cf-duplicates-filter-toggle"
                           onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)}
-                          className={`px-3 py-1.5 text-xs font-bold transition-colors ${showDuplicatesOnly ? 'bg-purple-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                          className={`px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${showDuplicatesOnly ? 'bg-[rgba(167,139,250,0.16)] text-[var(--cf-purple)]' : 'text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)]'}`}
                           aria-pressed={showDuplicatesOnly}
                         >
                           Duplicates Only
@@ -1189,24 +1658,40 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               </>
             )}
             <div className="relative">
-              <input data-testid="cf-global-search-input" type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-48 md:w-64 px-4 py-1.5 pl-9 border border-gray-300 dark:border-gray-700 rounded-full bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500" />
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <input data-testid="cf-global-search-input" type="text" placeholder="Search files across providers..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-64 rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-2 pl-10 text-sm text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[var(--cf-blue)] focus:outline-none md:w-80" />
+              <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--cf-text-3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
               {isSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500" /></div>}
             </div>
+            <button
+              data-testid="cf-action-new-folder"
+              onClick={openNewFolderModal}
+              disabled={writeActionsDisabled}
+              className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              New Folder
+            </button>
+            <button
+              data-testid="cf-action-new-file"
+              onClick={openNewFileModal}
+              disabled={writeActionsDisabled}
+              className="rounded-xl border border-[rgba(255,159,67,0.28)] bg-[rgba(255,159,67,0.12)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-amber)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              New File
+            </button>
             <button
               data-testid="cf-action-upload"
               onClick={() => uploadInputRef.current?.click()}
               disabled={uploading || connectedProviders.length === 0}
-              className="px-3 py-1.5 text-xs font-bold rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-xl border border-[rgba(0,201,167,0.28)] bg-[rgba(0,201,167,0.12)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-teal)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploading ? 'Uploading...' : 'Upload'}
             </button>
-            <button data-testid="files-refresh" onClick={() => void handleRefresh()} className="p-2 hover:bg-gray-100 rounded-lg"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+            <button data-testid="files-refresh" onClick={() => void handleRefresh()} className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
           </div>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24">
+          <div className="flex-1 overflow-y-auto p-4 pb-24 md:p-6">
             {error && (
               <div data-testid="cf-error-banner" className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -1218,48 +1703,105 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             : loading && files.length === 0 ? (
               /* UI-P1-T06: Loading state card */
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 max-w-sm text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Loading files...</h3>
-                  <p className="text-sm text-gray-500">Fetching your files from connected providers</p>
+                <div className="cf-panel max-w-sm rounded-[24px] p-8 text-center">
+                  <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]"></div>
+                  <h3 className="mb-2 text-lg font-semibold text-[var(--cf-text-0)]">Loading files...</h3>
+                  <p className="text-sm text-[var(--cf-text-1)]">Fetching your files from connected providers</p>
                 </div>
               </div>
             ) : !loading && files.length === 0 ? (
               /* UI-P1-T06: Empty state card */
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 max-w-sm text-center">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="cf-panel max-w-sm rounded-[24px] p-8 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
+                    <svg className="h-8 w-8 text-[var(--cf-text-2)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No files yet</h3>
-                  <p className="text-sm text-gray-500 mb-4">This folder is empty. Upload files or create a new folder to get started.</p>
+                  <h3 className="mb-2 text-lg font-semibold text-[var(--cf-text-0)]">No files yet</h3>
+                  <p className="mb-4 text-sm text-[var(--cf-text-1)]">This folder is empty. Upload files or create a new folder to get started.</p>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={openNewFolderModal}
+                      disabled={writeActionsDisabled}
+                      className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-4 py-2 text-sm font-semibold text-[var(--cf-blue)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      New Folder
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openNewFileModal}
+                      disabled={writeActionsDisabled}
+                      className="rounded-xl border border-[rgba(255,159,67,0.28)] bg-[rgba(255,159,67,0.12)] px-4 py-2 text-sm font-semibold text-[var(--cf-amber)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      New File
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="space-y-10">
+                <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  {quickStats.map((item) => (
+                    <div key={item.label} className="cf-panel rounded-[22px] p-5">
+                      <div className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
+                        {item.label}
+                      </div>
+                      <div className={`truncate text-2xl font-semibold ${item.accent}`}>
+                        {item.value}
+                      </div>
+                      <div className="mt-2 text-sm text-[var(--cf-text-2)]">
+                        {item.helper}
+                      </div>
+                    </div>
+                  ))}
+                </section>
+
                 {/* When aggregated mode is on, force flat list regardless of grouped/flat toggle */}
                 {isAggregatedView ? (
-                  <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
-                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={true} showDuplicateBadge={isAggregatedView} />
+                  <div className="overflow-hidden rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-elev)]">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cf-border)] bg-[var(--cf-panel-softer)] px-5 py-4">
+                      <div>
+                        <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">Aggregated Surface</div>
+                        <div className="mt-1 text-sm text-[var(--cf-text-1)]">Merged view for duplicate detection and cross-provider comparison.</div>
+                      </div>
+                      <div className="rounded-full border border-[rgba(167,139,250,0.28)] bg-[rgba(167,139,250,0.1)] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-purple)]">
+                        {sortedFiles.length} indexed items
+                      </div>
+                    </div>
+                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} onCreateFolderInFolder={openCreateInsideFolder} onCreateFileInFolder={openCreateInsideFolder} showProviderBadge={true} showDuplicateBadge={isAggregatedView} />
                   </div>
                 ) : groupedFiles ? groupedFiles.map(group => (
                   <section key={group.label} data-testid={`cf-allproviders-group-section-${group.accountKey}`} className="space-y-4">
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><span>{PROVIDERS.find(p => p.id === group.providerId)?.icon}</span> {group.label} • {group.files.length} ITEMS</h3>
-                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
-                      <FileTable files={group.files} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={false} showDuplicateBadge={isAggregatedView} />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h3 className="flex items-center gap-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[var(--cf-text-2)]"><span>{PROVIDERS.find(p => p.id === group.providerId)?.icon}</span> {group.label}</h3>
+                      <span className="rounded-full border border-[rgba(74,158,255,0.2)] bg-[rgba(74,158,255,0.08)] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-blue)]">
+                        {group.files.length} items
+                      </span>
+                    </div>
+                    <div className="overflow-hidden rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-elev)]">
+                      <FileTable files={group.files} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} onCreateFolderInFolder={openCreateInsideFolder} onCreateFileInFolder={openCreateInsideFolder} showProviderBadge={false} showDuplicateBadge={isAggregatedView} />
                     </div>
                   </section>
                 )) : (
-                  <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
-                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} showProviderBadge={selectedProvider === 'all' || !!searchQuery} showDuplicateBadge={isAggregatedView} />
+                  <div className="overflow-hidden rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-elev)]">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cf-border)] bg-[var(--cf-panel-softer)] px-5 py-4">
+                      <div>
+                        <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">File Surface</div>
+                        <div className="mt-1 text-sm text-[var(--cf-text-1)]">Live browser view for the current provider scope and folder depth.</div>
+                      </div>
+                      <div className="rounded-full border border-[rgba(0,201,167,0.24)] bg-[rgba(0,201,167,0.08)] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-teal)]">
+                        {sortedFiles.length} visible rows
+                      </div>
+                    </div>
+                    <FileTable files={sortedFiles} selectedFiles={selectedFiles} focusedIndex={focusedIndex} favorites={favorites} isFavoriting={isFavoriting} pendingFolderPath={pendingFolderPath} onSelect={(id: string) => { const n = new Set(selectedFiles); if (n.has(id)) n.delete(id); else n.add(id); setSelectedFiles(n) }} onFolderClick={handleFolderClick} onOpen={handleFileOpen} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} onToggleFavorite={handleToggleFavorite} onCreateFolderInFolder={openCreateInsideFolder} onCreateFileInFolder={openCreateInsideFolder} showProviderBadge={selectedProvider === 'all' || !!searchQuery} showDuplicateBadge={isAggregatedView} />
                   </div>
                 )}
               </div>
             )}
           </div>
-          {previewPanelFile && <PreviewPanel file={previewPanelFile.file} url={previewPanelFile.url} type={previewPanelFile.type} textContent={previewPanelFile.textContent} previewError={previewPanelFile.previewError} onClose={() => setPreviewPanelFile(null)} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} />}
+          {previewPanelFile && <PreviewPanel file={previewPanelFile.file} url={previewPanelFile.url} type={previewPanelFile.type} textContent={previewPanelFile.textContent} previewLoading={previewPanelFile.previewLoading} previewError={previewPanelFile.previewError} onClose={() => setPreviewPanelFile(null)} onDownload={handleFileDownload} onRename={handleFileRename} onMove={handleFileMove} onCopy={handleFileCopy} onDelete={handleFileDelete} />}
         </div>
         <SelectionToolbar selectedFiles={selectedFileObjects} onOpen={handleFileOpen} onDownload={(fs) => fs.length === 1 ? handleFileDownload(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Download', message: 'Coming soon!' })} onRename={handleFileRename} onMove={(fs) => setTransferModal({ open: true, mode: 'move', file: fs[0], initialFolderPath: currentTransferFolderPath })} onCopy={(fs) => setTransferModal({ open: true, mode: 'copy', file: fs[0], initialFolderPath: currentTransferFolderPath })} onDelete={(fs) => fs.length === 1 ? handleFileDelete(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Delete', message: 'Coming soon!' })} onClearSelection={() => setSelectedFiles(new Set())} />
         <TransferQueuePanel />
@@ -1268,28 +1810,33 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
   )
 }
 
-function FileTable({ files, selectedFiles, focusedIndex, favorites, isFavoriting, pendingFolderPath, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, showProviderBadge, showDuplicateBadge }: any) {
+function FileTable({ files, selectedFiles, focusedIndex, favorites, isFavoriting, pendingFolderPath, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, onCreateFolderInFolder, onCreateFileInFolder, showProviderBadge, showDuplicateBadge }: any) {
   return (
     <table className="w-full text-left table-fixed">
-      <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-400 uppercase text-[9px] font-black tracking-widest border-b border-gray-100 dark:border-gray-800">
+      <thead className="sticky top-0 z-10 border-b border-[var(--cf-border)] bg-[var(--cf-table-head-bg)] font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
         <tr><th className="px-4 py-3 w-10"></th><th className="px-4 py-3 w-8"></th><th className="px-4 py-3">Name</th>{showProviderBadge && <th className="px-4 py-3 w-32">Provider</th>}<th className="px-4 py-3 w-24">Size</th><th className="px-4 py-3 w-32">Modified</th><th className="px-4 py-3 w-12"></th></tr>
       </thead>
-      <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+      <tbody className="divide-y divide-[var(--cf-divider-soft)]">
         {files.map((file: any, idx: number) => (
-          <FileRow key={file.id} file={file} selected={selectedFiles.has(file.id)} focused={focusedIndex === idx} isFavorite={favorites.has(file.id)} isFavoriting={isFavoriting.has(file.id)} isOpeningFolder={pendingFolderPath === getFolderNavigationTarget(file)} onSelect={() => onSelect(file.id)} onFolderClick={onFolderClick} onOpen={onOpen} onDownload={onDownload} onRename={onRename} onMove={onMove} onCopy={onCopy} onDelete={onDelete} onToggleFavorite={onToggleFavorite} showProviderBadge={showProviderBadge} showDuplicateBadge={showDuplicateBadge} />
+          <FileRow key={file.id} file={file} selected={selectedFiles.has(file.id)} focused={focusedIndex === idx} isFavorite={favorites.has(file.id)} isFavoriting={isFavoriting.has(file.id)} isOpeningFolder={pendingFolderPath === getFolderNavigationTarget(file)} onSelect={() => onSelect(file.id)} onFolderClick={onFolderClick} onOpen={onOpen} onDownload={onDownload} onRename={onRename} onMove={onMove} onCopy={onCopy} onDelete={onDelete} onToggleFavorite={onToggleFavorite} onCreateFolderInFolder={onCreateFolderInFolder} onCreateFileInFolder={onCreateFileInFolder} showProviderBadge={showProviderBadge} showDuplicateBadge={showDuplicateBadge} />
         ))}
       </tbody>
     </table>
   )
 }
 
-function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningFolder, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, showProviderBadge, showDuplicateBadge }: any) {
+function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningFolder, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, onCreateFolderInFolder, onCreateFileInFolder, showProviderBadge, showDuplicateBadge }: any) {
   const provider = PROVIDERS.find(p => p.id === file.provider); const [showOverflow, setShowOverflow] = useState(false)
   const isDuplicate = file.isDuplicate || (file.providers && file.providers.length > 1)
   const providerCount = file.providers?.length || 1
   const resolvedFileName = file.name || '[unnamed]'
+  const handleOverflowAction = (e: any, action: () => void) => {
+    e.stopPropagation()
+    action()
+    setShowOverflow(false)
+  }
   return (
-    <tr draggable={!file.isFolder && !isOpeningFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={resolvedFileName} data-provider-id={file.provider || ''} data-account-key={(file as any).accountKey || ''} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'} ${focused ? 'ring-2 ring-blue-500/50 ring-inset z-10' : ''} ${isOpeningFolder ? 'bg-blue-50 dark:bg-blue-900/20 cursor-progress' : ''}`} onClick={() => isOpeningFolder ? undefined : file.isFolder ? onFolderClick(file) : onOpen(file)}>
+    <tr draggable={!file.isFolder && !isOpeningFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={resolvedFileName} data-provider-id={file.provider || ''} data-account-key={(file as any).accountKey || ''} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-[rgba(74,158,255,0.12)]' : 'hover:bg-[var(--cf-hover-bg)]'} ${focused ? 'ring-2 ring-[var(--cf-blue)]/50 ring-inset z-10' : ''} ${isOpeningFolder ? 'cursor-progress bg-[rgba(74,158,255,0.14)]' : 'cursor-pointer'}`} onClick={() => isOpeningFolder ? undefined : file.isFolder ? onFolderClick(file) : onOpen(file)}>
       <td className="px-4 py-3">
         <input
           type="checkbox"
@@ -1298,7 +1845,7 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
           checked={selected}
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => { e.stopPropagation(); onSelect() }}
-          className="rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity"
+          className="rounded border-[var(--cf-border-2)] bg-transparent text-[var(--cf-blue)] opacity-0 transition-opacity group-hover:opacity-100 checked:opacity-100"
         />
       </td>
       <td className="px-2 py-3">
@@ -1306,7 +1853,7 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
           data-testid="cf-row-star-toggle"
           data-loading={isFavoriting}
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(file) }}
-          className={`transition-colors ${isFavorite ? 'text-yellow-400' : 'text-gray-200 dark:text-gray-700 hover:text-gray-400'} ${isFavoriting ? 'animate-pulse opacity-50 cursor-wait' : ''}`}
+          className={`transition-colors ${isFavorite ? 'text-[var(--cf-amber)]' : 'text-[var(--cf-text-3)] hover:text-[var(--cf-text-1)]'} ${isFavoriting ? 'animate-pulse opacity-50 cursor-wait' : ''}`}
           disabled={isFavoriting}
         >
           ⭐
@@ -1316,25 +1863,25 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
         <div className="flex items-center gap-3 min-w-0">
           <span className={`text-xl flex-shrink-0 ${isOpeningFolder ? 'animate-pulse' : ''}`}>{file.isFolder ? '📁' : getFileIcon(file.mimeType)}</span>
           <div className="min-w-0 flex items-center gap-2">
-            <p className={`font-semibold text-sm truncate ${resolvedFileName === '[unnamed]' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'}`}>{resolvedFileName}</p>
+            <p className={`truncate text-sm font-semibold ${resolvedFileName === '[unnamed]' ? 'text-[var(--cf-amber)]' : 'text-[var(--cf-text-0)]'}`}>{resolvedFileName}</p>
             {isOpeningFolder && (
-              <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full whitespace-nowrap">
+              <span className="whitespace-nowrap rounded-full border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--cf-blue)]">
                 Opening...
               </span>
             )}
             {showDuplicateBadge && isDuplicate && (
-              <span className="px-1.5 py-0.5 text-[9px] font-bold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full border border-purple-200 dark:border-purple-800 whitespace-nowrap" title={`Also on ${providerCount - 1} other provider${providerCount > 2 ? 's' : ''}`}>
+              <span className="whitespace-nowrap rounded-full border border-[rgba(167,139,250,0.28)] bg-[rgba(167,139,250,0.12)] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--cf-purple)]" title={`Also on ${providerCount - 1} other provider${providerCount > 2 ? 's' : ''}`}>
                 📋 {providerCount}x
               </span>
             )}
           </div>
         </div>
       </td>
-      {showProviderBadge && <td className="px-4 py-3"><div className="flex items-center gap-2 overflow-hidden"><span className="text-sm flex-shrink-0">{provider?.icon}</span><span className="text-[9px] font-black text-gray-400 uppercase truncate">{providerLabel(file)}</span></div></td>}
-      <td className="px-4 py-3 text-[11px] font-medium text-gray-500">{file.isFolder ? '—' : formatBytes(file.size)}</td>
-      <td className="px-4 py-3 text-[11px] font-medium text-gray-500 tabular-nums">{file.modifiedTime?.split('T')[0]}</td>
-      <td className="px-4 py-3 relative"><button data-testid="cf-files-row-overflow" onClick={(e) => { e.stopPropagation(); setShowOverflow(!showOverflow) }} className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-400 transition-all font-bold">•••</button>
-        {showOverflow && <> <div className="absolute inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowOverflow(false) }} /> <div className="absolute right-4 top-full z-30 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-100"> <button onClick={() => { onOpen(file); setShowOverflow(false) }} className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 text-xs font-bold flex items-center gap-3"><span>👁️</span> Open</button> <button onClick={() => { onDownload(file); setShowOverflow(false) }} className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 text-xs font-bold flex items-center gap-3"><span>⬇️</span> Download</button> <div className="my-1 border-t border-gray-100 dark:border-gray-800" /> <button onClick={() => { onRename(file); setShowOverflow(false) }} className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 text-xs font-bold flex items-center gap-3"><span>✏️</span> Rename</button> <button onClick={() => { onMove(file); setShowOverflow(false) }} className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 text-xs font-bold flex items-center gap-3"><span>📦</span> Move</button> <button onClick={() => { onCopy(file); setShowOverflow(false) }} className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 text-xs font-bold flex items-center gap-3"><span>📄</span> Copy</button> <div className="my-1 border-t border-gray-100 dark:border-gray-800" /> <button onClick={() => { onDelete(file); setShowOverflow(false) }} className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 text-xs font-bold text-red-600 flex items-center gap-3"><span>🗑️</span> Delete</button> </div> </>}
+      {showProviderBadge && <td className="px-4 py-3"><div className="flex items-center gap-2 overflow-hidden"><span className="text-sm flex-shrink-0">{provider?.icon}</span><span className="truncate font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--cf-text-2)]">{providerLabel(file)}</span></div></td>}
+      <td className="px-4 py-3 font-mono text-[11px] font-medium text-[var(--cf-text-1)]">{file.isFolder ? '—' : formatBytes(file.size)}</td>
+      <td className="px-4 py-3 font-mono text-[11px] font-medium tabular-nums text-[var(--cf-text-1)]">{file.modifiedTime?.split('T')[0]}</td>
+      <td className="relative px-4 py-3"><button data-testid="cf-files-row-overflow" onClick={(e) => { e.stopPropagation(); setShowOverflow(!showOverflow) }} className="rounded-lg p-1.5 font-bold text-[var(--cf-text-2)] opacity-0 transition-all group-hover:opacity-100 hover:bg-[var(--cf-hover-bg)]">•••</button>
+        {showOverflow && <> <div className="absolute inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowOverflow(false) }} /> <div className="absolute right-4 top-full z-30 w-52 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-menu-bg)] py-2 shadow-2xl animate-in fade-in zoom-in-95 duration-100"> <button onClick={(e) => handleOverflowAction(e, () => onOpen(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>👁️</span> Open</button> <button onClick={(e) => handleOverflowAction(e, () => onDownload(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>⬇️</span> Download</button> {file.isFolder && <><div className="my-1 border-t border-[var(--cf-border)]" /> <button data-testid="cf-files-row-new-folder-here" onClick={(e) => handleOverflowAction(e, () => onCreateFolderInFolder(file, 'folder'))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-blue)] hover:bg-[var(--cf-hover-bg)]"><span>📁</span> New Folder Here</button> <button data-testid="cf-files-row-new-file-here" onClick={(e) => handleOverflowAction(e, () => onCreateFileInFolder(file, 'file'))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-amber)] hover:bg-[var(--cf-hover-bg)]"><span>📝</span> New File Here</button></>} <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onRename(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>✏️</span> Rename</button> <button onClick={(e) => handleOverflowAction(e, () => onMove(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📦</span> Move</button> <button onClick={(e) => handleOverflowAction(e, () => onCopy(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📄</span> Copy</button> <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onDelete(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.08)]"><span>🗑️</span> Delete</button> </div> </>}
       </td>
     </tr>
   )
@@ -1442,4 +1989,50 @@ function rootFolderId(p: ProviderId) {
     case 'webdav': case 'vps': case 'yandex': return '/'
     default: return 'root'
   }
+}
+
+type StarterFileTemplateId = 'txt' | 'md' | 'json' | 'csv' | 'html' | 'js' | 'ts' | 'tsx' | 'css' | 'xml'
+
+type CreationTargetOverride = {
+  providerId: ProviderId
+  accountKey: string
+  folderId: string
+  pathLabel: string
+  targetLabel: string
+}
+
+type StarterFileTemplate = {
+  id: StarterFileTemplateId
+  label: string
+  extension: string
+  mimeType: string
+  suggestedBaseName: string
+  content: string
+}
+
+const STARTER_FILE_TEMPLATES: StarterFileTemplate[] = [
+  { id: 'txt', label: 'Text', extension: '.txt', mimeType: 'text/plain', suggestedBaseName: 'notes', content: '' },
+  { id: 'md', label: 'Markdown', extension: '.md', mimeType: 'text/markdown', suggestedBaseName: 'README', content: '# New Document\n' },
+  { id: 'json', label: 'JSON', extension: '.json', mimeType: 'application/json', suggestedBaseName: 'data', content: '{\n  \n}\n' },
+  { id: 'csv', label: 'CSV', extension: '.csv', mimeType: 'text/csv', suggestedBaseName: 'data', content: 'column1,column2\n' },
+  { id: 'html', label: 'HTML', extension: '.html', mimeType: 'text/html', suggestedBaseName: 'index', content: '<!doctype html>\n<html>\n  <head>\n    <meta charset="utf-8" />\n    <title>New Document</title>\n  </head>\n  <body>\n  </body>\n</html>\n' },
+  { id: 'js', label: 'JavaScript', extension: '.js', mimeType: 'text/javascript', suggestedBaseName: 'script', content: 'export {}\n' },
+  { id: 'ts', label: 'TypeScript', extension: '.ts', mimeType: 'text/typescript', suggestedBaseName: 'index', content: 'export {}\n' },
+  { id: 'tsx', label: 'TSX', extension: '.tsx', mimeType: 'text/tsx', suggestedBaseName: 'Component', content: 'export function Component() {\n  return <div />\n}\n' },
+  { id: 'css', label: 'CSS', extension: '.css', mimeType: 'text/css', suggestedBaseName: 'styles', content: ':root {\n  color-scheme: light dark;\n}\n' },
+  { id: 'xml', label: 'XML', extension: '.xml', mimeType: 'application/xml', suggestedBaseName: 'document', content: '<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root />\n' },
+]
+
+function getStarterFileTemplate(templateId: StarterFileTemplateId): StarterFileTemplate {
+  return STARTER_FILE_TEMPLATES.find((template) => template.id === templateId) || STARTER_FILE_TEMPLATES[0]
+}
+
+export function buildStarterFileName(rawName: string, templateId: StarterFileTemplateId): string {
+  const template = getStarterFileTemplate(templateId)
+  const baseName = rawName.trim() || template.suggestedBaseName
+  return baseName.toLowerCase().endsWith(template.extension) ? baseName : `${baseName}${template.extension}`
+}
+
+export function buildStarterFileContent(templateId: StarterFileTemplateId): string {
+  return getStarterFileTemplate(templateId).content
 }

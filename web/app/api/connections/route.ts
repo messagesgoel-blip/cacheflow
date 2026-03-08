@@ -38,6 +38,8 @@ interface ProviderConnection {
   host?: string;
   port?: number;
   username?: string;
+  lastTestedAt?: string;
+  lastHostFingerprint?: string;
 }
 
 interface BackendVpsConnection {
@@ -50,6 +52,8 @@ interface BackendVpsConnection {
   authMethod: string;
   createdAt?: string;
   updatedAt?: string;
+  lastTestedAt?: string;
+  lastHostFingerprint?: string;
 }
 
 // Types for explicit error surfaces
@@ -156,6 +160,8 @@ function mapVpsToConnection(vps: BackendVpsConnection): ProviderConnection {
     host: vps.host,
     port: vps.port,
     username: vps.username,
+    lastTestedAt: vps.lastTestedAt,
+    lastHostFingerprint: vps.lastHostFingerprint,
   };
 }
 

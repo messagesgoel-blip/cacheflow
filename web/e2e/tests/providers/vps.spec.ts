@@ -61,8 +61,15 @@ const QA_PASSWORD = process.env.PLAYWRIGHT_QA_PASSWORD || 'admin123'
 const SAVED_VPS_SOURCE_LABEL = process.env.PLAYWRIGHT_VPS_SOURCE_LABEL || 'OCI'
 const SAVED_VPS_TARGET_LABEL = process.env.PLAYWRIGHT_VPS_TARGET_LABEL || 'test remote'
 const MOCK_RUN_PATH = '/srv/storage/local/mock run'
+const MOCK_RUN_ARCHIVE_PATH = `${MOCK_RUN_PATH}/archive`
 const SAVED_VPS_SOURCE_ID = '03f733ac-68dd-4f6b-83ee-0fca06a8888a'
 const SAVED_VPS_TARGET_ID = '0e57f4e0-3964-4757-afcd-5286faf294e2'
+const QA_ARTIFACT_PATTERN = /^pw[-_]/
+
+type VpsDirectoryEntry = {
+  name: string
+  type: 'dir' | 'file'
+}
 
 function maskedHost(host: string): string {
   const ipv4 = host.match(/^(\d+\.\d+\.\d+)\.\d+$/)
@@ -130,7 +137,9 @@ async function openProviders(page: Page) {
     await page.goto('/providers', { waitUntil: 'domcontentloaded' })
   }
   await expect(page).toHaveURL(/\/providers/, { timeout: 30_000 })
-  await expect(page.getByRole('heading', { name: /Provider Connections/i })).toBeVisible({ timeout: 30_000 })
+  await expect(
+    page.getByRole('heading', { name: /Connected Providers|Provider Connections/i }),
+  ).toBeVisible({ timeout: 30_000 })
 }
 
 async function openVpsModal(page: Page) {
@@ -151,8 +160,13 @@ async function connectNode(page: Page, node: VpsNode, label: string, port = node
   await modal.locator('input[type="number"]').first().fill(String(port))
   await modal.getByPlaceholder('username').fill(node.username)
   await modal.locator('input[type="file"]').setInputFiles(node.pemPath)
+  await modal.getByRole('button', { name: 'Test Connection' }).click()
 
-  await modal.getByRole('button', { name: 'Test & Connect' }).click()
+  if (port === node.port) {
+    await expect(modal.getByText(/Connection successful/i)).toBeVisible({ timeout: 30_000 })
+    await expect(modal.getByText(/Host Fingerprint/i)).toBeVisible({ timeout: 30_000 })
+    await modal.getByRole('button', { name: 'Save VPS' }).click()
+  }
 }
 
 async function disconnectProvider(page: Page, label: string) {
@@ -171,6 +185,24 @@ async function openSavedVpsBrowser(page: Page, label: string) {
   await expect(card).toBeVisible({ timeout: 30_000 })
   await card.getByRole('button', { name: /Open Files/i }).click()
   await expect(page).toHaveURL(/\/providers\/vps\//, { timeout: 20_000 })
+}
+
+async function editSavedVpsLabel(page: Page, currentLabel: string, nextLabel: string) {
+  await openProviders(page)
+  const card = cardByLabel(page, currentLabel)
+  await expect(card).toBeVisible({ timeout: 30_000 })
+  await card.getByRole('button', { name: /Edit Details/i }).click()
+
+  const modal = page.locator('div.fixed.inset-0').filter({
+    has: page.getByRole('heading', { name: 'Edit VPS / SFTP' }),
+  })
+  await expect(modal).toBeVisible({ timeout: 10_000 })
+
+  const labelInput = modal.getByPlaceholder('OCI Node 1')
+  await labelInput.fill(nextLabel)
+  await modal.getByRole('button', { name: /Save Changes/i }).click()
+  await expect(modal).toHaveCount(0, { timeout: 30_000 })
+  await expect(cardByLabel(page, nextLabel)).toBeVisible({ timeout: 30_000 })
 }
 
 async function openMockRunInVpsBrowser(page: Page) {
@@ -265,6 +297,13 @@ async function openFolderInUnifiedBrowser(page: Page, folderName: string) {
   throw lastError instanceof Error ? lastError : new Error(`Failed to open folder ${folderName}`)
 }
 
+async function ensureFolderOpenInUnifiedBrowser(page: Page, folderName: string) {
+  await waitForUnifiedBrowserIdle(page)
+  const breadcrumbText = (await page.getByTestId('cf-breadcrumb').textContent()) || ''
+  if (breadcrumbText.includes(folderName)) return
+  await openFolderInUnifiedBrowser(page, folderName)
+}
+
 async function expectUnifiedBrowserFile(page: Page, fileName: string) {
   await expect(
     page.locator('[data-testid="cf-file-row"]').filter({ hasText: fileName }).first(),
@@ -338,6 +377,103 @@ async function uploadFileToUnifiedBrowser(
   const fileInput = main.locator('input[type="file"]').first()
   await fileInput.setInputFiles(file)
   await expectUnifiedBrowserFile(page, file.name)
+}
+
+async function createFolderInUnifiedBrowser(page: Page, folderName: string) {
+  await page.getByTestId('cf-action-new-folder').click()
+  await page.getByTestId('cf-new-folder-name').fill(folderName)
+  await page.getByTestId('cf-create-folder-submit').click()
+  await expectUnifiedBrowserFile(page, folderName)
+}
+
+async function createStarterFileInUnifiedBrowser(
+  page: Page,
+  baseName: string,
+  template: 'txt' | 'md' | 'json' | 'csv' | 'html' | 'js' | 'ts' | 'tsx' | 'css' | 'xml',
+) {
+  const extensionMap: Record<typeof template, string> = {
+    txt: '.txt',
+    md: '.md',
+    json: '.json',
+    csv: '.csv',
+    html: '.html',
+    js: '.js',
+    ts: '.ts',
+    tsx: '.tsx',
+    css: '.css',
+    xml: '.xml',
+  }
+  const fileName = `${baseName}${extensionMap[template]}`
+
+  await page.getByTestId('cf-action-new-file').click()
+  await page.getByTestId('cf-new-file-name').fill(baseName)
+  await page.getByTestId('cf-new-file-template').selectOption(template)
+  await page.getByTestId('cf-create-file-submit').click()
+  await expectUnifiedBrowserFile(page, fileName)
+
+  return fileName
+}
+
+async function openRowOverflow(page: Page, rowName: string) {
+  const row = page
+    .locator('[data-testid="cf-file-row"]')
+    .filter({ hasText: rowName })
+    .first()
+  await expect(row).toBeVisible({ timeout: 60_000 })
+  await row.getByTestId('cf-files-row-overflow').click()
+  return row
+}
+
+function buildVpsFilesApiPath(connectionId: string, remotePath: string) {
+  return `/api/providers/vps/${encodeURIComponent(connectionId)}/files?path=${encodeURIComponent(remotePath)}`
+}
+
+async function listVpsDirectoryViaApi(
+  page: Page,
+  connectionId: string,
+  remotePath: string,
+): Promise<VpsDirectoryEntry[]> {
+  const response = await page.request.get(buildVpsFilesApiPath(connectionId, remotePath), {
+    failOnStatusCode: false,
+  })
+  expect(response.ok(), `Expected to list ${remotePath} via VPS API`).toBeTruthy()
+  return (await response.json()) as VpsDirectoryEntry[]
+}
+
+async function deleteVpsPathViaApi(page: Page, connectionId: string, remotePath: string) {
+  const response = await page.request.delete(buildVpsFilesApiPath(connectionId, remotePath), {
+    failOnStatusCode: false,
+  })
+
+  if (response.ok()) return
+
+  const payload = await response.json().catch(() => ({}))
+  const detail = [payload?.error, payload?.detail].filter(Boolean).join(' ')
+  if (response.status() === 404 || /no such file|not found/i.test(detail)) {
+    return
+  }
+
+  throw new Error(`Failed to delete ${remotePath} via VPS API (${response.status()}): ${detail || 'unknown error'}`)
+}
+
+async function cleanupPwArtifactsInDirectory(page: Page, connectionId: string, remotePath: string) {
+  const initialEntries = await listVpsDirectoryViaApi(page, connectionId, remotePath)
+  const artifacts = initialEntries.filter((entry) => QA_ARTIFACT_PATTERN.test(entry.name))
+
+  for (const entry of artifacts.filter((item) => item.type === 'file')) {
+    await deleteVpsPathViaApi(page, connectionId, `${remotePath}/${entry.name}`)
+  }
+
+  for (const entry of artifacts.filter((item) => item.type === 'dir')) {
+    await deleteVpsPathViaApi(page, connectionId, `${remotePath}/${entry.name}`)
+  }
+
+  const remainingArtifacts = (await listVpsDirectoryViaApi(page, connectionId, remotePath))
+    .filter((entry) => QA_ARTIFACT_PATTERN.test(entry.name))
+    .map((entry) => entry.name)
+    .sort()
+
+  expect(remainingArtifacts, `Expected ${remotePath} to be free of pw-* QA artifacts`).toEqual([])
 }
 
 async function stubSavedVpsConnections(page: Page) {
@@ -680,5 +816,89 @@ test.describe('VPS saved connections — mock run QA', () => {
     await selectFileInUnifiedBrowser(page, fileName)
     await deleteSelectedFileInUnifiedBrowser(page)
     await expectUnifiedBrowserFileMissing(page, fileName)
+  })
+
+  test('saved VPS test connection shows fingerprint on the provider card', async ({ page }) => {
+    await openProviders(page)
+    const card = cardByLabel(page, SAVED_VPS_SOURCE_LABEL)
+    await expect(card).toBeVisible({ timeout: 30_000 })
+
+    await card.getByRole('button', { name: /Test Connection/i }).click()
+
+    await expect(card.getByText(/Last Verified/i)).toBeVisible({ timeout: 30_000 })
+    await expect(card.getByText(/SHA256:/i)).toBeVisible({ timeout: 30_000 })
+  })
+
+  test('editing a saved VPS label updates providers and files and then restores it', async ({ page }) => {
+    const originalLabel = SAVED_VPS_SOURCE_LABEL
+    const temporaryLabel = `${originalLabel} QA ${Date.now()}`
+
+    await editSavedVpsLabel(page, originalLabel, temporaryLabel)
+
+    await goToFiles(page)
+    await selectSidebarAccount(page, temporaryLabel)
+
+    await editSavedVpsLabel(page, temporaryLabel, originalLabel)
+
+    await goToFiles(page)
+    await selectSidebarAccount(page, originalLabel)
+  })
+
+  test('new folder and starter file can be created inside mock run', async ({ page }) => {
+    const folderName = `pw-folder-${Date.now()}`
+    const baseFileName = `pw-notes-${Date.now()}`
+
+    await stubSavedVpsConnections(page)
+
+    await goToFiles(page)
+    await selectSidebarAccount(page, SAVED_VPS_SOURCE_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+
+    await createFolderInUnifiedBrowser(page, folderName)
+    const fileName = await createStarterFileInUnifiedBrowser(page, baseFileName, 'md')
+
+    await selectFileInUnifiedBrowser(page, fileName)
+    await deleteSelectedFileInUnifiedBrowser(page)
+    await expectUnifiedBrowserFileMissing(page, fileName)
+
+    await refreshUnifiedBrowser(page)
+    await selectFileInUnifiedBrowser(page, folderName)
+    await deleteSelectedFileInUnifiedBrowser(page)
+    await expectUnifiedBrowserFileMissing(page, folderName)
+  })
+
+  test('folder row menu can create into that folder with extended starter templates', async ({ page }) => {
+    const nestedFolderName = `pw-inner-${Date.now()}`
+    const baseFileName = `pw-style-${Date.now()}`
+    const expectedFileName = `${baseFileName}.css`
+
+    await stubSavedVpsConnections(page)
+    await cleanupPwArtifactsInDirectory(page, SAVED_VPS_SOURCE_ID, MOCK_RUN_ARCHIVE_PATH)
+
+    await goToFiles(page)
+    await selectSidebarAccount(page, SAVED_VPS_SOURCE_LABEL)
+    await openMockRunInUnifiedBrowser(page)
+
+    await openRowOverflow(page, 'archive')
+    await page.getByTestId('cf-files-row-new-folder-here').click()
+    await page.getByTestId('cf-new-folder-name').fill(nestedFolderName)
+    await page.getByTestId('cf-create-folder-submit').click()
+    await expect(page.getByTestId('cf-new-folder-name')).toHaveCount(0, { timeout: 30_000 })
+
+    await openRowOverflow(page, 'archive')
+    await page.getByTestId('cf-files-row-new-file-here').click()
+    await page.getByTestId('cf-new-file-name').fill(baseFileName)
+    await page.getByTestId('cf-new-file-template').selectOption('css')
+    await page.getByTestId('cf-create-file-submit').click()
+    await expect(page.getByTestId('cf-new-file-name')).toHaveCount(0, { timeout: 30_000 })
+
+    await ensureFolderOpenInUnifiedBrowser(page, 'archive')
+    await expectUnifiedBrowserFile(page, nestedFolderName)
+    await expectUnifiedBrowserFile(page, expectedFileName)
+
+    await cleanupPwArtifactsInDirectory(page, SAVED_VPS_SOURCE_ID, MOCK_RUN_ARCHIVE_PATH)
+    await refreshUnifiedBrowser(page)
+    await expectUnifiedBrowserFileMissing(page, expectedFileName)
+    await expectUnifiedBrowserFileMissing(page, nestedFolderName)
   })
 })
