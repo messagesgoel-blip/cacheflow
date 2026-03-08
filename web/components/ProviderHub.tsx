@@ -158,10 +158,34 @@ export default function ProviderHub() {
   const activeCount = connections.filter((connection) => connection.status === 'connected').length
   const cloudCount = connections.filter((connection) => connection.provider !== 'vps').length
   const summaryCards = [
-    { label: 'Connected', value: connectedCount.toString(), helper: `${activeCount} active sessions`, accent: 'text-[var(--cf-blue)]' },
-    { label: 'VPS Nodes', value: vpsCount.toString(), helper: `${Math.max(cloudCount, 0)} cloud remotes`, accent: 'text-[var(--cf-teal)]' },
-    { label: 'Protocols', value: String(new Set(connections.map((connection) => connection.provider === 'vps' ? 'sftp' : 'oauth')).size || 1), helper: 'OAuth + SFTP control plane', accent: 'text-[var(--cf-amber)]' },
-    { label: 'Connectable', value: availableToConnect.length.toString(), helper: 'Available from this shell', accent: 'text-[var(--cf-purple)]' },
+    {
+      label: 'Connected',
+      value: connectedCount.toString(),
+      helper: `${activeCount} active sessions`,
+      detail: `${Math.max(connectedCount - activeCount, 0)} inactive or degraded`,
+      accent: 'text-[var(--cf-blue)]',
+    },
+    {
+      label: 'VPS Nodes',
+      value: vpsCount.toString(),
+      helper: `${Math.max(cloudCount, 0)} cloud remotes`,
+      detail: 'Server-side endpoints with direct verification',
+      accent: 'text-[var(--cf-teal)]',
+    },
+    {
+      label: 'Protocols',
+      value: String(new Set(connections.map((connection) => connection.provider === 'vps' ? 'sftp' : 'oauth')).size || 1),
+      helper: 'OAuth + SFTP control plane',
+      detail: 'No additional client storage paths introduced',
+      accent: 'text-[var(--cf-amber)]',
+    },
+    {
+      label: 'Connectable',
+      value: availableToConnect.length.toString(),
+      helper: 'Available from this shell',
+      detail: `${availableCloudProviders.length} cloud, ${availableServerProviders.length} server`,
+      accent: 'text-[var(--cf-purple)]',
+    },
   ]
 
   const handleDisconnect = useCallback(
@@ -278,7 +302,7 @@ export default function ProviderHub() {
 
   return (
     <div className="mx-auto max-w-[1600px] p-6">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="cf-kicker mb-2">Providers</div>
           <h1 className="mb-2 text-[28px] font-semibold leading-tight text-[var(--cf-text-0)]">Connected Providers</h1>
@@ -290,30 +314,44 @@ export default function ProviderHub() {
           <button
             type="button"
             onClick={() => openConnectModal('google')}
-            className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm font-medium text-[var(--cf-text-0)] hover:bg-[rgba(255,255,255,0.08)]"
+            className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] px-3.5 py-2 text-sm font-medium text-[var(--cf-text-0)] hover:bg-[rgba(255,255,255,0.08)]"
           >
             Add Cloud Provider
           </button>
           <button
             type="button"
             onClick={() => openConnectModal('vps')}
-            className="rounded-xl border border-[rgba(255,159,67,0.22)] bg-[rgba(255,159,67,0.1)] px-3 py-2 text-sm font-medium text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.16)]"
+            className="rounded-2xl border border-[rgba(255,159,67,0.22)] bg-[rgba(255,159,67,0.1)] px-3.5 py-2 text-sm font-medium text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.16)]"
           >
             Connect VPS / SFTP
           </button>
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 rounded-[28px] border border-[var(--cf-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-4">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="cf-kicker">Provider Summary</div>
+            <h2 className="mt-2 text-lg font-semibold text-[var(--cf-text-0)]">Current control plane footprint</h2>
+            <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">High-signal split between live remotes, server nodes, and available connection paths.</p>
+          </div>
+          <div className="rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] px-3 py-1.5 text-[12px] text-[var(--cf-text-2)]">
+            {activeCount}/{Math.max(connectedCount, 1)} active
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
-          <div key={card.label} className="cf-panel rounded-[22px] p-4">
+          <div key={card.label} className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
             <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
               {card.label}
             </div>
             <div className={`text-[26px] font-semibold leading-none ${card.accent}`}>{card.value}</div>
             <div className="mt-2 text-sm text-[var(--cf-text-2)]">{card.helper}</div>
+            <div className="mt-1 text-xs text-[var(--cf-text-3)]">{card.detail}</div>
           </div>
         ))}
+        </div>
       </div>
 
       {error && (
@@ -501,7 +539,7 @@ export default function ProviderHub() {
                                       onClick={() => {
                                         window.location.href = `/providers/vps/${connection.id}`
                                       }}
-                                      className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm font-medium text-[var(--cf-text-0)] hover:bg-[rgba(255,255,255,0.08)]"
+                                      className="rounded-2xl border border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.12)] px-3 py-2 text-sm font-medium text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]"
                                     >
                                       Open Files
                                     </button>
@@ -509,7 +547,7 @@ export default function ProviderHub() {
                                       type="button"
                                       data-testid={`cf-provider-test-${connection.id}`}
                                       onClick={() => void handleTestVps(connection)}
-                                      className="rounded-xl border border-[rgba(16,185,129,0.22)] bg-[rgba(16,185,129,0.1)] px-3 py-2 text-sm font-medium text-[var(--cf-green)] hover:bg-[rgba(16,185,129,0.16)]"
+                                      className="rounded-2xl border border-[rgba(16,185,129,0.22)] bg-[rgba(16,185,129,0.1)] px-3 py-2 text-sm font-medium text-[var(--cf-green)] hover:bg-[rgba(16,185,129,0.16)]"
                                     >
                                       Test Connection
                                     </button>
@@ -522,21 +560,22 @@ export default function ProviderHub() {
                                           connection,
                                         })
                                       }
-                                      className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm font-medium text-[var(--cf-text-1)] hover:bg-[rgba(255,255,255,0.06)]"
+                                      className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm font-medium text-[var(--cf-text-1)] hover:bg-[rgba(255,255,255,0.06)]"
                                     >
                                       Edit Details
                                     </button>
                                   </>
                                 ) : (
-                                  <div className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-center text-sm font-medium text-[var(--cf-text-1)]">
-                                    Provider Ready
+                                  <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-left text-sm text-[var(--cf-text-1)]">
+                                    <div className="font-medium text-[var(--cf-text-0)]">Provider Ready</div>
+                                    <div className="mt-1 text-xs text-[var(--cf-text-2)]">OAuth remote is connected and available for browsing flows.</div>
                                   </div>
                                 )}
                                 <button
                                   type="button"
                                   data-testid={`cf-provider-disconnect-${connection.id}`}
                                   onClick={() => setConfirmDisconnectId(connection.id)}
-                                  className="rounded-xl border border-[rgba(255,92,92,0.24)] bg-[rgba(255,92,92,0.08)] px-3 py-2 text-sm font-medium text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.12)]"
+                                  className="rounded-2xl border border-[rgba(255,92,92,0.24)] bg-[rgba(255,92,92,0.08)] px-3 py-2 text-sm font-medium text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.12)]"
                                 >
                                   Disconnect
                                 </button>
@@ -552,13 +591,6 @@ export default function ProviderHub() {
             </div>
           )}
 
-          <div className="mb-4">
-            <div className="cf-kicker mb-2">Connect</div>
-            <h2 className="text-[22px] font-semibold leading-tight text-[var(--cf-text-0)]">Available Integrations</h2>
-            <p className="mt-1 text-sm text-[var(--cf-text-1)]">
-              Add another provider without leaving the current control plane.
-            </p>
-          </div>
           <div className="space-y-5">
             {[
               {
@@ -571,16 +603,32 @@ export default function ProviderHub() {
                 title: 'Server-side Remotes',
                 providers: availableServerProviders,
               },
-            ].map((group) => (
+              ].map((group) => (
               group.providers.length > 0 ? (
-                <section key={group.key}>
+                <section key={group.key} className="rounded-[28px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.02)] p-4">
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div>
+                      <div className="cf-kicker mb-2">{group.key === 'cloud-connect' ? 'Connect' : 'Server Connect'}</div>
+                      <h2 className="text-[22px] font-semibold leading-tight text-[var(--cf-text-0)]">
+                        {group.key === 'cloud-connect' ? 'Available Integrations' : group.title}
+                      </h2>
+                      <p className="mt-1 text-sm text-[var(--cf-text-1)]">
+                        {group.key === 'cloud-connect'
+                          ? 'Add another provider without leaving the current control plane.'
+                          : 'Direct server-side remotes share the same shell without altering cloud provider behavior.'}
+                      </p>
+                    </div>
+                    <div className="rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-xs text-[var(--cf-text-2)]">
+                      {group.providers.length} available
+                    </div>
+                  </div>
                   <h3 className="mb-3 text-sm font-semibold text-[var(--cf-text-1)]">{group.title}</h3>
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                     {group.providers.map((provider) => (
                       <div
                         key={provider.id}
                         data-testid={`cf-provider-connect-card-${provider.id}`}
-                        className="cf-panel rounded-[22px] p-4 transition-all hover:-translate-y-0.5"
+                        className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4 transition-all hover:-translate-y-0.5"
                       >
                         <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
                           {provider.id === 'vps' ? 'Server-side remote' : 'OAuth provider'}
@@ -597,7 +645,11 @@ export default function ProviderHub() {
                         <button
                           type="button"
                           onClick={() => openConnectModal(provider.id)}
-                          className="w-full rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm font-medium text-[var(--cf-text-0)] hover:bg-[rgba(255,255,255,0.08)]"
+                          className={`w-full rounded-2xl border px-3 py-2 text-sm font-medium transition ${
+                            provider.id === 'vps'
+                              ? 'border-[rgba(255,159,67,0.22)] bg-[rgba(255,159,67,0.1)] text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.16)]'
+                              : 'border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] text-[var(--cf-text-0)] hover:bg-[rgba(255,255,255,0.08)]'
+                          }`}
                         >
                           Connect
                         </button>
