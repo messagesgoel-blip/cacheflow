@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import StorageHero from '@/components/dashboard/StorageHero'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel'
+import RecentTransfersPanel from '@/components/dashboard/RecentTransfersPanel'
 import { tokenManager } from '@/lib/tokenManager'
 import { ProviderId } from '@/lib/providers/types'
 import apiClient from '@/lib/apiClient'
@@ -153,13 +154,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="cf-panel rounded-2xl p-5">
+          <div className="cf-panel rounded-[24px] p-4">
             <h3 className="cf-kicker mb-2">Connected Providers</h3>
             <p className="font-mono text-[28px] font-bold text-[var(--cf-blue)]">{connectedProviders.length}</p>
             <p className="mt-2 text-sm text-[var(--cf-text-2)]">Accounts online in the current control plane session.</p>
           </div>
 
-          <div className="cf-panel rounded-2xl p-5">
+          <div className="cf-panel rounded-[24px] p-4">
             <h3 className="cf-kicker mb-2">Tracked Accounts</h3>
             <p className="font-mono text-[28px] font-bold text-[var(--cf-teal)]">
               {connectedProviders.filter((p) => (p.accountEmail || p.displayName)).length}
@@ -167,7 +168,7 @@ export default function DashboardPage() {
             <p className="mt-2 text-sm text-[var(--cf-text-2)]">Named identities available for browsing and quota rollup.</p>
           </div>
 
-          <div className="cf-panel rounded-2xl p-5">
+          <div className="cf-panel rounded-[24px] p-4">
             <h3 className="cf-kicker mb-2">Coverage</h3>
             <p className="font-mono text-[28px] font-bold text-[var(--cf-amber)]">
               {providerTypes.length}
@@ -176,46 +177,63 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="cf-panel rounded-[28px] p-5">
-            <div className="cf-kicker mb-3">Provider Matrix</div>
+            <div className="mb-4">
+              <div className="cf-kicker mb-2">Provider Matrix</div>
+              <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Current provider footprint</h2>
+              <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">Compact operational view of cloud, server, and quota-reporting coverage.</p>
+            </div>
+
             <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">Cloud Providers</div>
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+                <div className="cf-kicker mb-2 text-[9px]">Cloud Providers</div>
                 <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-blue)]">{connectedProviders.length - vpsCount}</div>
                 <p className="mt-2 text-sm text-[var(--cf-text-2)]">OAuth-backed storage accounts.</p>
               </div>
-              <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">VPS / SFTP</div>
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+                <div className="cf-kicker mb-2 text-[9px]">VPS / SFTP</div>
                 <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-teal)]">{vpsCount}</div>
                 <p className="mt-2 text-sm text-[var(--cf-text-2)]">Server-backed remotes connected to the control plane.</p>
               </div>
-              <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
-                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">Quota Telemetry</div>
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+                <div className="cf-kicker mb-2 text-[9px]">Quota Telemetry</div>
                 <div className="mt-2 font-mono text-[26px] font-bold text-[var(--cf-amber)]">{quotaKnownCount}</div>
                 <p className="mt-2 text-sm text-[var(--cf-text-2)]">Accounts reporting size and usage to the dashboard.</p>
               </div>
             </div>
+
+            <div className="mt-5 rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="cf-kicker mb-1 text-[9px]">Tracked Identities</div>
+                  <h3 className="text-sm font-semibold text-[var(--cf-text-0)]">Hydrated account handles</h3>
+                </div>
+                <div className="rounded-full border border-[var(--cf-border)] px-2.5 py-1 text-[11px] text-[var(--cf-text-2)]">
+                  {accountLabels.length}
+                </div>
+              </div>
+              <div className="space-y-2.5">
+                {accountLabels.length > 0 ? (
+                  accountLabels.map((label) => (
+                    <div key={label} className="flex items-center justify-between rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-3">
+                      <span className="truncate text-sm text-[var(--cf-text-1)]">{label}</span>
+                      <span className="rounded-full border border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.08)] px-2 py-1 text-[10px] font-medium text-[var(--cf-blue)]">
+                        Live
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-6 text-sm text-[var(--cf-text-2)]">
+                    No provider identities are currently hydrated.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="cf-panel rounded-[28px] p-5">
-            <div className="cf-kicker mb-3">Tracked Identities</div>
-            <div className="space-y-3">
-              {accountLabels.length > 0 ? (
-                accountLabels.map((label) => (
-                  <div key={label} className="flex items-center justify-between rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-3">
-                    <span className="truncate text-sm text-[var(--cf-text-1)]">{label}</span>
-                    <span className="rounded-full border border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.08)] px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)]">
-                      Live
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-6 text-sm text-[var(--cf-text-2)]">
-                  No provider identities are currently hydrated.
-                </div>
-              )}
-            </div>
+          <div className="space-y-5">
+            <RecentTransfersPanel />
           </div>
         </div>
       </div>

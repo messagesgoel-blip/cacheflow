@@ -178,6 +178,10 @@ export default function SchedulesPage() {
     setEditingJob(null)
   }
 
+  const activeJobs = jobs.filter((job) => job.enabled).length
+  const pausedJobs = jobs.filter((job) => !job.enabled).length
+  const upcomingJobs = jobs.filter((job) => Boolean(job.nextRunAt)).length
+
   const handleLogout = () => {
     localStorage.removeItem('cf_token')
     localStorage.removeItem('cf_email')
@@ -186,41 +190,70 @@ export default function SchedulesPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="cf-shell-page flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Loading...</p>
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />
+          <p className="mt-2 text-[var(--cf-text-1)]">Loading...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="cf-shell-page">
       <Navbar email={email} onLogout={handleLogout} />
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-          <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+      <main data-testid="cf-schedules-page" className="mx-auto max-w-[1400px] px-4 py-6">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="cf-kicker mb-2">Schedules</div>
+            <h1 className="text-[28px] font-semibold leading-tight text-[var(--cf-text-0)]">Scheduled Jobs</h1>
+            <p className="mt-2 max-w-3xl text-sm text-[var(--cf-text-1)]">
+              Manage automated backup, sync, cleanup, and token-refresh tasks with the current control plane job API.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2.5 text-sm font-medium text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.2)]"
+          >
+            New Job
+          </button>
+        </div>
+
+        <div className="mb-6 grid gap-4 sm:grid-cols-3">
+          <div className="cf-panel rounded-[24px] p-4">
+            <div className="cf-kicker mb-2">Active Jobs</div>
+            <div className="font-mono text-[28px] font-bold text-[var(--cf-blue)]">{activeJobs}</div>
+            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Schedules currently enabled and ready to execute.</p>
+          </div>
+          <div className="cf-panel rounded-[24px] p-4">
+            <div className="cf-kicker mb-2">Paused Jobs</div>
+            <div className="font-mono text-[28px] font-bold text-[var(--cf-amber)]">{pausedJobs}</div>
+            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Schedules retained in the system but not currently running.</p>
+          </div>
+          <div className="cf-panel rounded-[24px] p-4">
+            <div className="cf-kicker mb-2">Upcoming Runs</div>
+            <div className="font-mono text-[28px] font-bold text-[var(--cf-teal)]">{upcomingJobs}</div>
+            <p className="mt-2 text-sm text-[var(--cf-text-2)]">Jobs with a next scheduled execution already computed.</p>
+          </div>
+        </div>
+
+        <div className="cf-panel rounded-[30px]">
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--cf-border)] px-6 py-5">
             <div>
-              <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Scheduled Jobs</h1>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                Manage automated backup, sync, and maintenance tasks
+              <div className="cf-kicker mb-2">Queue</div>
+              <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">Automation registry</h2>
+              <p className="mt-1 text-sm text-[var(--cf-text-2)]">
+                Review cadence, last execution, and current job state in one place.
               </p>
             </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Job
-            </button>
+            <div className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1.5 text-[12px] text-[var(--cf-text-2)]">
+              {jobs.length} total job{jobs.length === 1 ? '' : 's'}
+            </div>
           </div>
 
           {error && (
-            <div className="mx-6 mt-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
+            <div className="mx-6 mt-4 rounded-2xl border border-[rgba(255,92,92,0.2)] bg-[rgba(255,92,92,0.08)] p-4 text-sm text-[var(--cf-red)]">
               {error}
               <button
                 onClick={() => setError(null)}
@@ -233,19 +266,19 @@ export default function SchedulesPage() {
 
           <div className="p-6">
             {loading ? (
-              <div className="text-center py-12 text-gray-400">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="py-14 text-center text-[var(--cf-text-2)]">
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />
                 <p className="mt-2">Loading scheduled jobs...</p>
               </div>
             ) : jobs.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-                <svg className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] py-14 text-center">
+                <svg className="mx-auto mb-4 h-12 w-12 text-[var(--cf-text-3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-gray-500 dark:text-gray-400 mb-4">No scheduled jobs yet</p>
+                <p className="mb-4 text-[var(--cf-text-1)]">No scheduled jobs yet</p>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                  className="text-sm text-[var(--cf-blue)] hover:underline"
                 >
                   Create your first scheduled job →
                 </button>

@@ -57,70 +57,82 @@ export default function JobCard({
   onDelete,
 }: JobCardProps) {
   return (
-    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-      <div className="flex items-center gap-4 flex-1 min-w-0">
-        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-          <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div
+      data-testid={`cf-schedule-job-${job.id}`}
+      className="group flex items-start justify-between gap-4 rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4 transition hover:border-[rgba(255,255,255,0.16)] hover:bg-[rgba(255,255,255,0.05)]"
+    >
+      <div className="flex min-w-0 flex-1 items-start gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.12)] text-[var(--cf-blue)] shadow-[0_12px_28px_rgba(0,0,0,0.18)]">
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={jobTypeIcon} />
           </svg>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium text-gray-900 dark:text-white truncate">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-[var(--cf-text-0)]">
               {job.name}
             </h3>
-            <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300">
+            <span className="rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-2 py-0.5 text-[10px] font-medium text-[var(--cf-text-2)]">
               {jobTypeLabel}
             </span>
-            <span className={`px-2 py-0.5 text-xs rounded-full ${
+            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
               job.enabled
-                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
+                ? 'border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.12)] text-[var(--cf-green)]'
+                : 'border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] text-[var(--cf-text-2)]'
             }`}>
               {job.enabled ? 'Active' : 'Paused'}
             </span>
           </div>
 
-          <div className="flex items-center gap-4 mt-1 text-xs text-gray-500 dark:text-gray-400">
-            <span className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {formatCronDescription(job.cronExpression)}
-            </span>
-            <span className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Next: {formatDate(job.nextRunAt)}
-            </span>
-            <span className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Last: {formatDate(job.lastRunAt)}
-            </span>
+          <div className="mt-3 grid gap-2 text-[11px] text-[var(--cf-text-2)] sm:grid-cols-3">
+            <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] px-3 py-2">
+              <div className="cf-kicker mb-1 text-[9px]">Schedule</div>
+              <span className="flex items-center gap-1.5">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {formatCronDescription(job.cronExpression)}
+              </span>
+            </div>
+            <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] px-3 py-2">
+              <div className="cf-kicker mb-1 text-[9px]">Next Run</div>
+              <span className="flex items-center gap-1.5">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {formatDate(job.nextRunAt)}
+              </span>
+            </div>
+            <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] px-3 py-2">
+              <div className="cf-kicker mb-1 text-[9px]">Last Run</div>
+              <span className="flex items-center gap-1.5">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {formatDate(job.lastRunAt)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 ml-4">
+      <div className="ml-2 flex shrink-0 items-center gap-2">
         <button
           onClick={onToggle}
-          className={`p-2 rounded-lg transition-colors ${
+          className={`rounded-xl border p-2.5 transition ${
             job.enabled
-              ? 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
-              : 'text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20'
+              ? 'border-[rgba(255,159,67,0.22)] text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.1)]'
+              : 'border-[rgba(74,222,128,0.22)] text-[var(--cf-green)] hover:bg-[rgba(74,222,128,0.1)]'
           }`}
           title={job.enabled ? 'Pause job' : 'Enable job'}
         >
           {job.enabled ? (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -129,20 +141,20 @@ export default function JobCard({
 
         <button
           onClick={onEdit}
-          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+          className="rounded-xl border border-[var(--cf-border)] p-2.5 text-[var(--cf-text-2)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-blue)]"
           title="Edit job"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           </svg>
         </button>
 
         <button
           onClick={onDelete}
-          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+          className="rounded-xl border border-[rgba(255,92,92,0.2)] p-2.5 text-[var(--cf-text-2)] transition hover:bg-[rgba(255,92,92,0.08)] hover:text-[var(--cf-red)]"
           title="Delete job"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
