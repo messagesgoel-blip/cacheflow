@@ -187,11 +187,6 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
         throw new Error('Not authenticated')
       }
 
-      // Find the selected connection to get more details if needed
-      const selectedConn = connectedProviders.find(
-        cp => cp.providerId === targetProvider && cp.accountKey === targetAccountKey
-      )
-
       const requestBody = {
         url: url.trim(),
         provider: targetProvider,
