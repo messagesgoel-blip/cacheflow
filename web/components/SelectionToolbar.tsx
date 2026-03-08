@@ -111,7 +111,7 @@ function ToolbarButton({ label, onClick, icon }: { label: string, onClick: () =>
       <svg className="w-5 h-5 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         {icon}
       </svg>
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-70 group-hover:opacity-100">{label}</span>
+      <span className="text-sm font-semibold text-[var(--cf-text-1)] opacity-90 group-hover:text-[var(--cf-text-0)]">{label}</span>
     </button>
   )
 }

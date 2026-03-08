@@ -1609,12 +1609,12 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
             <UnifiedBreadcrumb selectedProvider={selectedProvider} activeAccountName={activeAccountName} stack={breadcrumbStack} onNavigateStack={handleBreadcrumbNavigate} onNavigateHome={() => handleSidebarNavigate('all')} />
           </div>
           <div className="flex max-w-full flex-col items-stretch gap-3 lg:items-end">
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <span className={`cf-chip ${writeActionsDisabled ? '' : 'cf-chip-teal'}`}>
-                {writeActionsDisabled ? 'Read Only Scope' : 'Write Target Ready'}
+            <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
+              <span className="cf-micro-label">
+                {writeActionsDisabled ? 'Read Only Scope' : 'Write Target'}
               </span>
               {!writeActionsDisabled && (
-                <span className="cf-chip max-w-full truncate normal-case text-[11px] font-medium tracking-normal">
+                <span className="truncate font-medium text-[var(--cf-text-1)]">
                   {resolvedCreationTarget?.targetLabel || writeTargetLabel}
                 </span>
               )}
@@ -1707,7 +1707,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               data-testid="cf-action-new-folder"
               onClick={openNewFolderModal}
               disabled={writeActionsDisabled}
-              className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)] disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3.5 py-2 text-sm font-semibold text-[var(--cf-text-1)] transition-colors hover:border-[rgba(74,158,255,0.22)] hover:text-[var(--cf-text-0)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               New Folder
             </button>
@@ -1715,7 +1715,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               data-testid="cf-action-new-file"
               onClick={openNewFileModal}
               disabled={writeActionsDisabled}
-              className="rounded-xl border border-[rgba(255,159,67,0.28)] bg-[rgba(255,159,67,0.12)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-amber)] disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3.5 py-2 text-sm font-semibold text-[var(--cf-text-1)] transition-colors hover:border-[rgba(255,159,67,0.22)] hover:text-[var(--cf-text-0)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               New File
             </button>
@@ -1723,7 +1723,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               data-testid="cf-action-upload"
               onClick={() => uploadInputRef.current?.click()}
               disabled={uploading || connectedProviders.length === 0}
-              className="rounded-xl border border-[rgba(0,201,167,0.28)] bg-[rgba(0,201,167,0.12)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-teal)] disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-[rgba(0,201,167,0.26)] bg-[rgba(0,201,167,0.1)] px-3.5 py-2 text-sm font-semibold text-[var(--cf-teal)] transition-colors hover:bg-[rgba(0,201,167,0.16)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploading ? 'Uploading...' : 'Upload'}
             </button>
@@ -1922,9 +1922,9 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
               )}
             </div>
             <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-[0.12em] text-[var(--cf-text-2)]">
-              <span>{file.isFolder ? 'Folder' : file.mimeType?.split('/')[1] || 'File'}</span>
+              <span className="text-[11px] font-medium normal-case tracking-normal">{file.isFolder ? 'Folder' : file.mimeType?.split('/')[1] || 'File'}</span>
               {showProviderBadge && provider && (
-                <span className="inline-flex min-w-0 items-center gap-1">
+                <span className="inline-flex min-w-0 items-center gap-1 text-[11px] font-medium normal-case tracking-normal">
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: provider.color }} />
                   <span className="truncate">{providerLabel(file)}</span>
                 </span>
@@ -1937,7 +1937,7 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
       <td className="px-4 py-3.5 font-mono text-[11px] font-medium text-[var(--cf-text-1)]">{file.isFolder ? '—' : formatBytes(file.size)}</td>
       <td className="px-4 py-3.5 font-mono text-[11px] font-medium tabular-nums text-[var(--cf-text-1)]">{file.modifiedTime?.split('T')[0]}</td>
       <td className="relative px-4 py-3.5"><button data-testid="cf-files-row-overflow" onClick={(e) => { e.stopPropagation(); setShowOverflow(!showOverflow) }} className="rounded-xl border border-transparent bg-transparent p-1.5 font-bold text-[var(--cf-text-2)] opacity-0 transition-all group-hover:border-[var(--cf-border)] group-hover:bg-[var(--cf-panel-soft)] group-hover:opacity-100 hover:bg-[var(--cf-hover-bg)]">•••</button>
-        {showOverflow && <> <div className="absolute inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowOverflow(false) }} /> <div className="absolute right-4 top-full z-30 w-52 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-menu-bg)] py-2 shadow-2xl animate-in fade-in zoom-in-95 duration-100"> <button onClick={(e) => handleOverflowAction(e, () => onOpen(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>👁️</span> Open</button> <button onClick={(e) => handleOverflowAction(e, () => onDownload(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>⬇️</span> Download</button> {file.isFolder && <><div className="my-1 border-t border-[var(--cf-border)]" /> <button data-testid="cf-files-row-new-folder-here" onClick={(e) => handleOverflowAction(e, () => onCreateFolderInFolder(file, 'folder'))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)] hover:bg-[var(--cf-hover-bg)]"><span>📁</span> New Folder Here</button> <button data-testid="cf-files-row-new-file-here" onClick={(e) => handleOverflowAction(e, () => onCreateFileInFolder(file, 'file'))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-amber)] hover:bg-[var(--cf-hover-bg)]"><span>📝</span> New File Here</button></>} <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onRename(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>✏️</span> Rename</button> <button onClick={(e) => handleOverflowAction(e, () => onMove(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📦</span> Move</button> <button onClick={(e) => handleOverflowAction(e, () => onCopy(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📄</span> Copy</button> <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onDelete(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.08)]"><span>🗑️</span> Delete</button> </div> </>}
+        {showOverflow && <> <div className="absolute inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowOverflow(false) }} /> <div className="absolute right-4 top-full z-30 w-52 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-menu-bg)] py-2 shadow-2xl animate-in fade-in zoom-in-95 duration-100"> <button onClick={(e) => handleOverflowAction(e, () => onOpen(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-semibold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>👁️</span> Open</button> <button onClick={(e) => handleOverflowAction(e, () => onDownload(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-semibold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>⬇️</span> Download</button> {file.isFolder && <><div className="my-1 border-t border-[var(--cf-border)]" /> <button data-testid="cf-files-row-new-folder-here" onClick={(e) => handleOverflowAction(e, () => onCreateFolderInFolder(file, 'folder'))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-semibold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📁</span> New Folder Here</button> <button data-testid="cf-files-row-new-file-here" onClick={(e) => handleOverflowAction(e, () => onCreateFileInFolder(file, 'file'))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-semibold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📝</span> New File Here</button></>} <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onRename(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-semibold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>✏️</span> Rename</button> <button onClick={(e) => handleOverflowAction(e, () => onMove(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-semibold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📦</span> Move</button> <button onClick={(e) => handleOverflowAction(e, () => onCopy(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-semibold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📄</span> Copy</button> <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onDelete(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-semibold text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.08)]"><span>🗑️</span> Delete</button> </div> </>}
       </td>
     </tr>
   )
