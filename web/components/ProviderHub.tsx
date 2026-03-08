@@ -112,6 +112,19 @@ export default function ProviderHub() {
     }
   }, [fetchConnections])
 
+  useEffect(() => {
+    const handleCloudConnect = () => openConnectModal('google')
+    const handleVpsConnect = () => openConnectModal('vps')
+
+    window.addEventListener('cacheflow:command-connect-cloud', handleCloudConnect)
+    window.addEventListener('cacheflow:command-connect-vps', handleVpsConnect)
+
+    return () => {
+      window.removeEventListener('cacheflow:command-connect-cloud', handleCloudConnect)
+      window.removeEventListener('cacheflow:command-connect-vps', handleVpsConnect)
+    }
+  }, [openConnectModal])
+
   const availableToConnect = useMemo(() => CONNECTABLE_PROVIDERS, [])
   const connectedCount = connections.length
   const vpsCount = connections.filter((connection) => connection.provider === 'vps').length

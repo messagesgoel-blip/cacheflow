@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import CommandPalette from './CommandPalette'
 import ThemeToggle from './ThemeToggle'
 
 interface NavbarProps {
@@ -51,6 +52,7 @@ export default function Navbar({ email, onLogout }: NavbarProps) {
         </div>
         </div>
         <div className="flex items-center gap-3">
+          <CommandPalette />
           <div className="hidden rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-1 md:block">
             <ThemeToggle />
           </div>

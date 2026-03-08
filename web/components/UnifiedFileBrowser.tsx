@@ -1013,6 +1013,30 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
     setShowNewFileModal(true)
   }, [actions, writeActionsDisabled])
 
+  useEffect(() => {
+    const handleCommandUpload = () => {
+      if (connectedProviders.length === 0) {
+        actions.notify({
+          kind: 'info',
+          title: 'No connected provider',
+          message: 'Connect a provider before uploading files.',
+        })
+        return
+      }
+      uploadInputRef.current?.click()
+    }
+
+    window.addEventListener('cacheflow:command-upload', handleCommandUpload)
+    window.addEventListener('cacheflow:command-new-folder', openNewFolderModal)
+    window.addEventListener('cacheflow:command-new-file', openNewFileModal)
+
+    return () => {
+      window.removeEventListener('cacheflow:command-upload', handleCommandUpload)
+      window.removeEventListener('cacheflow:command-new-folder', openNewFolderModal)
+      window.removeEventListener('cacheflow:command-new-file', openNewFileModal)
+    }
+  }, [actions, connectedProviders.length, openNewFileModal, openNewFolderModal])
+
   const openCreateInsideFolder = useCallback(
     (folder: FileMetadata, kind: 'folder' | 'file') => {
       if (!folder.isFolder) return
