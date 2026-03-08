@@ -7,6 +7,7 @@
  * Connects to Redis db=4 (workers namespace) matching lib/redis/client.ts.
  */
 
+const { randomUUID } = require('crypto');
 const { Queue } = require('bullmq');
 const Redis = require('ioredis');
 
@@ -42,7 +43,7 @@ function getQueue() {
  */
 async function addTransferJob(data) {
   const queue = getQueue();
-  const jobId = `transfer-${data.userId}-${Date.now()}`;
+  const jobId = `transfer-${data.userId}-${randomUUID()}`;
   const priority = (data.fileSize || 0) >= 50 * 1024 * 1024 ? 5 : 10;
 
   const job = await queue.add(jobId, data, { jobId, priority });
