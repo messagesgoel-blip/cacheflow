@@ -1628,7 +1628,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                     <button
                       data-testid="cf-allproviders-view-toggle-grouped"
                       onClick={() => !isGroupedView && !isAggregatedView && toggleGroupedView()}
-                      className={`px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.18)] text-[var(--cf-blue)]' : 'text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)]'}`}
+                      className={`px-3.5 py-2 text-sm font-semibold transition-colors ${isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.14)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'} disabled:cursor-not-allowed disabled:opacity-50`}
                       aria-pressed={isGroupedView && !isAggregatedView}
                       disabled={isAggregatedView}
                     >
@@ -1637,7 +1637,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                     <button
                       data-testid="cf-allproviders-view-toggle-flat"
                       onClick={() => isGroupedView && !isAggregatedView && toggleGroupedView()}
-                      className={`px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${!isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.18)] text-[var(--cf-blue)]' : 'text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)]'}`}
+                      className={`px-3.5 py-2 text-sm font-semibold transition-colors ${!isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.14)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'} disabled:cursor-not-allowed disabled:opacity-50`}
                       aria-pressed={!isGroupedView && !isAggregatedView}
                       disabled={isAggregatedView}
                     >
@@ -1652,7 +1652,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                         }
                         setIsAggregatedView(prev => !prev);
                       }}
-                      className={`px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${isAggregatedView ? 'bg-[rgba(0,201,167,0.16)] text-[var(--cf-teal)]' : 'text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)]'}`}
+                      className={`px-3.5 py-2 text-sm font-semibold transition-colors ${isAggregatedView ? 'bg-[rgba(0,201,167,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
                       aria-pressed={isAggregatedView}
                     >
                       Aggregated
@@ -1667,7 +1667,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                         <select
                           value={aggregatedProviderFilter || 'all'}
                           onChange={(e) => setAggregatedProviderFilter(e.target.value as ProviderId | 'all' | null)}
-                          className="border-none bg-transparent px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] focus:outline-none"
+                          className="border-none bg-transparent px-3.5 py-2 text-sm font-semibold text-[var(--cf-text-1)] focus:outline-none"
                           aria-label="Filter providers"
                         >
                           <option value="all">All Providers</option>
@@ -1685,7 +1685,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                         <button
                           data-testid="cf-duplicates-filter-toggle"
                           onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)}
-                          className={`px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${showDuplicatesOnly ? 'bg-[rgba(167,139,250,0.16)] text-[var(--cf-purple)]' : 'text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)]'}`}
+                          className={`px-3.5 py-2 text-sm font-semibold transition-colors ${showDuplicatesOnly ? 'bg-[rgba(167,139,250,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
                           aria-pressed={showDuplicatesOnly}
                         >
                           Duplicates Only

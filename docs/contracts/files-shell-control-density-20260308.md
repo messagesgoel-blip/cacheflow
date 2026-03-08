@@ -8,6 +8,12 @@ The first typography pass over-applied mono and chip styling to the files toolba
 
 - Reduced the files toolbar from pill-heavy chips to a compact `Write Target` label/value treatment.
 - Changed `New Folder`, `New File`, and `Upload` to compact UI-font buttons instead of loud uppercase mono pills.
+- Changed the all-provider view/filter controls left of search to the same compact UI-font treatment:
+  - `Grouped`
+  - `Flat`
+  - `Aggregated`
+  - provider filter select
+  - `Duplicates Only`
 - Softened the selection toolbar action labels to match the rest of the shell.
 - Reverted file-row metadata and overflow-menu actions to compact UI text instead of forced uppercase mono.
 
