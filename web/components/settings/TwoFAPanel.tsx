@@ -262,8 +262,8 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
           <div className="cf-kicker">Status</div>
           <div className={`mt-3 text-2xl font-semibold ${settings.enabled ? 'text-[var(--cf-teal)]' : 'text-[var(--cf-blue)]'}`}>
             {settings.enabled ? 'Enabled' : 'Pending'}
@@ -274,14 +274,14 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
               : 'Enable to protect account access with a time-based code.'}
           </p>
         </div>
-        <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
           <div className="cf-kicker">Last Used</div>
           <div className="mt-3 text-sm font-semibold text-[var(--cf-text-0)]">
             {settings.lastUsed ? new Date(settings.lastUsed).toLocaleString() : 'No 2FA sign-in yet'}
           </div>
           <p className="mt-2 text-xs leading-5 text-[var(--cf-text-1)]">Tracks recent OTP usage only after successful activation.</p>
         </div>
-        <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
           <div className="cf-kicker">Recovery</div>
           <div className="mt-3 text-sm font-semibold text-[var(--cf-text-0)]">
             {settings.backupCodesRemaining !== undefined ? `${settings.backupCodesRemaining} codes remaining` : 'Codes shown during setup'}
@@ -307,7 +307,7 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
       )}
 
       {!settings.enabled && setupState && (
-        <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+        <div className="grid gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
           <div className="rounded-[24px] border border-[var(--cf-border)] bg-white p-4">
             <div className="cf-kicker text-slate-500">Authenticator QR</div>
             <div className="mt-4 inline-block rounded-2xl border border-slate-200 p-2">
@@ -317,7 +317,7 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
               Scan with your authenticator app. The secret only needs manual entry if QR scanning is unavailable.
             </p>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-5">
               <div className="cf-kicker">Verification</div>
               <p className="mt-2 text-sm leading-6 text-[var(--cf-text-1)]">
@@ -366,7 +366,7 @@ export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {
       )}
 
       {settings.enabled && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>

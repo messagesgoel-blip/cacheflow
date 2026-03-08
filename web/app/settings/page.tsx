@@ -44,7 +44,7 @@ export default function SettingsPage() {
       }} />
       <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-6 sm:px-6">
         <section className="cf-panel overflow-hidden rounded-[32px]">
-          <div className="grid gap-6 border-b border-[var(--cf-border)] px-6 py-7 lg:grid-cols-[minmax(0,1.45fr)_360px] lg:px-8">
+          <div className="grid gap-5 border-b border-[var(--cf-border)] px-6 py-7 lg:grid-cols-[minmax(0,1.45fr)_360px] lg:px-8">
             <div>
               <div className="cf-kicker">Preferences Surface</div>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--cf-text-0)]">
@@ -56,18 +56,18 @@ export default function SettingsPage() {
             </div>
             <div className="cf-subpanel rounded-[28px] p-5">
               <div className="cf-kicker">Current Profile</div>
-              <div className="mt-4 space-y-4">
+              <div className="mt-4 space-y-3">
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-[var(--cf-text-2)]">Session Email</div>
                   <div className="mt-1 text-sm font-medium text-[var(--cf-text-0)]">{email}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+                  <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
                     <div className="cf-kicker">Scope</div>
                     <div className="mt-2 text-lg font-semibold text-[var(--cf-blue)]">Local</div>
                     <p className="mt-1 text-xs leading-5 text-[var(--cf-text-1)]">UI preferences only</p>
                   </div>
-                  <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+                  <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
                     <div className="cf-kicker">Mode</div>
                     <div className="mt-2 text-lg font-semibold text-[var(--cf-teal)]">Safe</div>
                     <p className="mt-1 text-xs leading-5 text-[var(--cf-text-1)]">No provider auth changes</p>

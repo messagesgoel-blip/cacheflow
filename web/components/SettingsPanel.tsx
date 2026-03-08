@@ -66,7 +66,7 @@ function SettingsCard({
         <h2 className="text-lg font-semibold text-[var(--cf-text-0)]">{title}</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--cf-text-1)]">{description}</p>
       </div>
-      <div className="mt-5 space-y-4">{children}</div>
+      <div className="mt-4 space-y-3">{children}</div>
     </section>
   )
 }
@@ -83,12 +83,12 @@ function SettingRow({
   helper?: ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-semibold text-[var(--cf-text-0)]">{title}</h3>
           <p className="mt-1 text-sm leading-6 text-[var(--cf-text-1)]">{description}</p>
-          {helper ? <div className="mt-3">{helper}</div> : null}
+          {helper ? <div className="mt-2.5">{helper}</div> : null}
         </div>
         <div className="flex-shrink-0">{trailing}</div>
       </div>
@@ -176,7 +176,7 @@ export default function SettingsPanel({}: SettingsPanelProps) {
         </div>
       </div>
 
-      <div className="mb-6 grid gap-4 lg:grid-cols-4">
+      <div className="mb-5 grid gap-3 lg:grid-cols-4">
         <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
           <div className="cf-kicker">Token Strategy</div>
           <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${browserModeTone.className}`}>
@@ -209,8 +209,8 @@ export default function SettingsPanel({}: SettingsPanelProps) {
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="space-y-6">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="space-y-5">
           <SettingsCard
             kicker="Privacy"
             title="Token and session behavior"

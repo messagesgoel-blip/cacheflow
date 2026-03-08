@@ -80,8 +80,8 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[linear-gradient(145deg,rgba(24,29,40,0.98),rgba(11,14,20,0.98))] p-6 text-[var(--cf-text-0)] shadow-[0_24px_80px_rgba(0,0,0,0.34)]">
-      <div className="mb-6 flex items-start justify-between gap-6">
+    <div className="overflow-hidden rounded-[30px] border border-[var(--cf-border)] bg-[linear-gradient(145deg,rgba(24,29,40,0.98),rgba(11,14,20,0.98))] p-6 text-[var(--cf-text-0)] shadow-[0_24px_80px_rgba(0,0,0,0.34)]">
+      <div className="mb-5 flex items-start justify-between gap-6">
         <div>
           <div className="cf-kicker mb-2">Overview</div>
           <h2 className="mb-1 text-[28px] font-semibold leading-tight">Total Pooled Storage</h2>
@@ -94,26 +94,29 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+      <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
           <p className="cf-kicker mb-1.5">Used</p>
           <p className="font-mono text-[26px] font-bold text-[var(--cf-teal)]">{formatBytes(aggregateQuota.used)}</p>
         </div>
-        <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
           <p className="cf-kicker mb-1.5">Total Available</p>
           <p className="font-mono text-[26px] font-bold text-[var(--cf-blue)]">{formatBytes(aggregateQuota.total)}</p>
         </div>
-        <div className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
+        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
           <p className="cf-kicker mb-1.5">Free</p>
           <p className="font-mono text-[26px] font-bold text-[var(--cf-amber)]">{formatBytes(aggregateQuota.total - aggregateQuota.used)}</p>
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1.45fr_0.95fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
         <div>
-          <div className="mb-2 flex justify-between text-sm">
-            <span className="cf-kicker">Usage</span>
-            <span className="font-mono text-[11px] text-[var(--cf-text-2)]">{Math.round(aggregateQuota.percent)}%</span>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <div className="cf-kicker">Usage</div>
+              <div className="mt-1 text-sm text-[var(--cf-text-1)]">Combined quota from providers that report telemetry.</div>
+            </div>
+            <span className="rounded-full border border-[var(--cf-border)] px-2.5 py-1 font-mono text-[11px] text-[var(--cf-text-2)]">{Math.round(aggregateQuota.percent)}%</span>
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-[var(--cf-bg3)]">
             <div
@@ -128,7 +131,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
               { label: 'Opaque remotes', value: String(providersWithoutQuota.length), accent: 'text-[var(--cf-amber)]' },
               { label: 'Free headroom', value: formatBytes(Math.max(aggregateQuota.total - aggregateQuota.used, 0)), accent: 'text-[var(--cf-purple)]' },
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5">
+              <div key={item.label} className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5">
                 <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">{item.label}</div>
                 <div className={`mt-2 truncate font-mono text-base font-bold ${item.accent}`}>{item.value}</div>
               </div>
@@ -136,15 +139,23 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
           </div>
         </div>
 
-        <div className="rounded-[24px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4">
-          <div className="cf-kicker mb-3">Priority Providers</div>
+        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <div className="cf-kicker">Priority Providers</div>
+              <div className="mt-1 text-sm text-[var(--cf-text-1)]">Top contributors by used space or live remote presence.</div>
+            </div>
+            <span className="rounded-full border border-[var(--cf-border)] px-2.5 py-1 text-[11px] text-[var(--cf-text-2)]">
+              {Math.min(Math.max(topProviders.length, providersWithoutQuota.length), 4)} shown
+            </span>
+          </div>
           <div className="space-y-3">
             {(topProviders.length > 0 ? topProviders : providersWithoutQuota.slice(0, 4)).map((provider) => {
               const total = provider.quota?.total || 0
               const used = provider.quota?.used || 0
               const percent = total > 0 ? Math.round((used / total) * 100) : 0
               return (
-                <div key={`${provider.providerId}:${provider.accountEmail || provider.displayName}`} className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5">
+                <div key={`${provider.providerId}:${provider.accountEmail || provider.displayName}`} className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-3.5">
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="truncate text-[13px] font-medium text-[var(--cf-text-0)]">
                       {getProviderDisplayName(provider.providerId, provider.displayName, provider.accountEmail)}
