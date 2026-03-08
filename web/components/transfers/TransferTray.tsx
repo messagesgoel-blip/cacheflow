@@ -154,7 +154,7 @@ export const TransferTray: React.FC = () => {
       className="fixed bottom-4 z-50 w-[22rem] max-h-[32rem] overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)]"
     >
       {/* Header */}
-      <div className="border-b border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
+      <div className="border-b border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3.5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="cf-kicker">Transfers</div>
@@ -165,7 +165,7 @@ export const TransferTray: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             {activeCount > 0 && (
-              <span className="rounded-full border border-[var(--cf-border)] px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">
+              <span className="rounded-full border border-[var(--cf-border)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--cf-text-2)]">
                 {activeCount} active
               </span>
             )}
@@ -179,18 +179,18 @@ export const TransferTray: React.FC = () => {
           </div>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <div className="rounded-2xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] px-3 py-2">
-            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">Active</div>
+          <div className="rounded-[18px] border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] px-3 py-2">
+            <div className="cf-kicker text-[9px]">Active</div>
             <div className="mt-1 text-base font-semibold text-[var(--cf-blue)]">{activeTransfers.length}</div>
           </div>
-          <div className="rounded-2xl border border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.1)] px-3 py-2">
-            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">Done</div>
+          <div className="rounded-[18px] border border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.1)] px-3 py-2">
+            <div className="cf-kicker text-[9px]">Done</div>
             <div className="mt-1 text-base font-semibold text-[var(--cf-green)]">
               {completedTransfers.filter((transfer) => transfer.status === 'completed').length}
             </div>
           </div>
-          <div className="rounded-2xl border border-[rgba(255,92,92,0.22)] bg-[rgba(255,92,92,0.08)] px-3 py-2">
-            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)]">Failed</div>
+          <div className="rounded-[18px] border border-[rgba(255,92,92,0.22)] bg-[rgba(255,92,92,0.08)] px-3 py-2">
+            <div className="cf-kicker text-[9px]">Failed</div>
             <div className="mt-1 text-base font-semibold text-[var(--cf-red)]">
               {completedTransfers.filter((transfer) => transfer.status === 'failed').length}
             </div>
@@ -239,7 +239,7 @@ export const TransferTray: React.FC = () => {
         {completedTransfers.length > 0 && (
           <>
             {activeTransfers.length > 0 && (
-              <div className="px-2 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--cf-text-3)]">
+              <div className="px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--cf-text-3)]">
                 Completed
               </div>
             )}
@@ -264,8 +264,10 @@ export const TransferTray: React.FC = () => {
 
         {/* Empty state */}
         {activeTransfers.length === 0 && completedTransfers.length === 0 && (
-          <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-8 text-center text-[var(--cf-text-2)]">
-            <p className="text-sm">No transfers</p>
+          <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-6 text-center text-[var(--cf-text-2)]">
+            <div className="cf-kicker mb-2">Queue</div>
+            <p className="text-sm font-medium text-[var(--cf-text-1)]">No transfers</p>
+            <p className="mt-1 text-xs">Transfer activity will appear here once a copy or move starts.</p>
           </div>
         )}
       </div>

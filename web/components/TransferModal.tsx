@@ -193,7 +193,7 @@ export default function TransferModal({
   return (
     <div
       data-testid="transfer-modal-overlay"
-      className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-[1200] flex items-center justify-center bg-[rgba(6,8,12,0.72)] p-4 backdrop-blur-sm"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget && !isSubmitting) onClose()
       }}
@@ -203,7 +203,7 @@ export default function TransferModal({
         className="w-full max-w-3xl overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="border-b border-[var(--cf-border)] px-6 py-5">
+        <div className="border-b border-[var(--cf-border)] px-5 py-4 sm:px-6 sm:py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="cf-kicker">{mode === 'copy' ? 'Transfer Copy' : 'Transfer Move'}</div>
@@ -222,19 +222,19 @@ export default function TransferModal({
             </button>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <div className="rounded-2xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] p-4">
-              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Source</div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="rounded-[20px] border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] p-4">
+              <div className="cf-kicker mb-1 text-[9px]">Source</div>
               <div className="mt-2 text-sm font-semibold text-[var(--cf-text-0)]">{sourceProviderName}</div>
               <div className="mt-1 truncate text-[11px] text-[var(--cf-text-2)]">{file.name}</div>
             </div>
-            <div className="rounded-2xl border border-[rgba(0,201,167,0.22)] bg-[rgba(0,201,167,0.1)] p-4">
-              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Destination</div>
+            <div className="rounded-[20px] border border-[rgba(0,201,167,0.22)] bg-[rgba(0,201,167,0.1)] p-4">
+              <div className="cf-kicker mb-1 text-[9px]">Destination</div>
               <div className="mt-2 text-sm font-semibold text-[var(--cf-text-0)]">{targetProviderName}</div>
               <div className="mt-1 truncate text-[11px] text-[var(--cf-text-2)]">{destinationPath}</div>
             </div>
-            <div className="rounded-2xl border border-[rgba(255,159,67,0.22)] bg-[rgba(255,159,67,0.1)] p-4">
-              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Action</div>
+            <div className="rounded-[20px] border border-[rgba(255,159,67,0.22)] bg-[rgba(255,159,67,0.1)] p-4">
+              <div className="cf-kicker mb-1 text-[9px]">Action</div>
               <div className="mt-2 text-sm font-semibold text-[var(--cf-text-0)]">{mode === 'copy' ? 'Duplicate into target' : 'Move into target'}</div>
               <div className="mt-1 text-[11px] text-[var(--cf-text-2)]">
                 {mode === 'copy' ? 'Source remains untouched.' : 'Source will be removed after transfer.'}
@@ -243,15 +243,15 @@ export default function TransferModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 p-6 md:grid-cols-[1.05fr_1fr]">
+        <div className="grid grid-cols-1 gap-4 p-5 sm:p-6 md:grid-cols-[1.05fr_1fr]">
           <div>
-            <label className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Target provider</label>
+            <label className="cf-kicker text-[9px]">Target provider</label>
             <select
               aria-label="Target provider"
               value={targetProviderId}
               onChange={(event) => setTargetProviderId(event.target.value as ProviderId)}
               disabled={isSubmitting}
-              className="mt-2 w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] disabled:opacity-50"
+              className="mt-2 w-full rounded-[18px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] disabled:opacity-50"
             >
               {availableProviders.map((providerId) => (
                 <option key={providerId} value={providerId}>
@@ -260,13 +260,13 @@ export default function TransferModal({
               ))}
             </select>
 
-            <label className="mt-5 block font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Target account</label>
+            <label className="mt-4 block cf-kicker text-[9px]">Target account</label>
             <select
               aria-label="Target account"
               value={targetAccountKey}
               onChange={(event) => setTargetAccountKey(event.target.value)}
               disabled={isSubmitting}
-              className="mt-2 w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] disabled:opacity-50"
+              className="mt-2 w-full rounded-[18px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] disabled:opacity-50"
             >
               {tokens.map((token, index) => {
                 const key = token.accountKey || token.accountEmail || `${targetProviderId}-${index}`
@@ -278,8 +278,8 @@ export default function TransferModal({
               })}
             </select>
 
-            <label className="mt-5 block font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Destination folder</label>
-            <div data-testid="transfer-dest-path" className="mt-2 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 font-mono text-sm text-[var(--cf-text-0)] truncate">
+            <label className="mt-4 block cf-kicker text-[9px]">Destination folder</label>
+            <div data-testid="transfer-dest-path" className="mt-2 rounded-[18px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 font-mono text-sm text-[var(--cf-text-0)] truncate">
               {destinationPath}
             </div>
 
@@ -289,7 +289,7 @@ export default function TransferModal({
                   key={`${segment.id}-${index}`}
                   onClick={() => !isSubmitting && setStack((previous) => previous.slice(0, index + 1))}
                   disabled={isSubmitting}
-                  className="rounded-full border border-[var(--cf-border)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] disabled:opacity-50"
+                  className="rounded-full border border-[var(--cf-border)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] disabled:opacity-50"
                 >
                   {index === 0 ? '/' : segment.label}
                 </button>
@@ -297,13 +297,13 @@ export default function TransferModal({
             </div>
           </div>
 
-          <div className="flex h-[320px] flex-col overflow-hidden rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-bg)]">
+          <div className="flex h-[320px] flex-col overflow-hidden rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-bg)]">
             <div className="flex items-center justify-between border-b border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
               <div>
-                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Folder browser</div>
+                <div className="cf-kicker text-[9px]">Folder browser</div>
                 <div className="mt-1 text-sm font-medium text-[var(--cf-text-0)]">Choose a destination</div>
               </div>
-              {loading && <div className="animate-pulse font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--cf-blue)]">Loading</div>}
+              {loading && <div className="animate-pulse text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--cf-blue)]">Loading</div>}
             </div>
 
             {error && (
@@ -311,7 +311,7 @@ export default function TransferModal({
                 <p>{error}</p>
                 <button
                   onClick={() => void loadFolders()}
-                  className="text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] underline"
+                  className="text-left text-[10px] font-semibold uppercase tracking-[0.08em] underline"
                 >
                   Retry
                 </button>
@@ -320,7 +320,11 @@ export default function TransferModal({
 
             <div className="flex-1 overflow-auto">
               {folders.length === 0 && !loading && !error ? (
-                <div className="px-4 py-8 text-center text-sm text-[var(--cf-text-2)]">No folders found</div>
+                <div className="px-4 py-8">
+                  <div className="rounded-[18px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-5 text-center text-sm text-[var(--cf-text-2)]">
+                    No folders found
+                  </div>
+                </div>
               ) : (
                 folders.map((folder) => (
                   <button
@@ -329,7 +333,7 @@ export default function TransferModal({
                     disabled={isSubmitting}
                     className="group flex w-full items-center gap-3 border-b border-[var(--cf-border)]/70 px-4 py-3 text-left text-sm text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] disabled:opacity-50"
                   >
-                    <span className="rounded-xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] px-2 py-1 text-[12px] transition group-hover:scale-105">
+                    <span className="rounded-[10px] border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] px-2 py-1 text-[12px] transition group-hover:scale-105">
                       📁
                     </span>
                     <span className="truncate">{folder.name}</span>
@@ -340,18 +344,18 @@ export default function TransferModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-[var(--cf-border)] px-6 py-5">
+        <div className="flex items-center justify-end gap-3 border-t border-[var(--cf-border)] px-5 py-4 sm:px-6 sm:py-5">
           <button
             onClick={() => !isSubmitting && onClose()}
             disabled={isSubmitting}
-            className="rounded-xl border border-[var(--cf-border)] px-4 py-2 text-sm font-medium text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] disabled:opacity-50"
+            className="rounded-xl border border-[var(--cf-border)] px-4 py-2.5 text-sm font-medium text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex items-center gap-2 rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2 text-sm font-semibold text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.2)] disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2.5 text-sm font-semibold text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.2)] disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

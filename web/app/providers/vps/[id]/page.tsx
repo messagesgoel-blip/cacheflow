@@ -174,9 +174,9 @@ export default function VpsBrowserPage() {
   return (
     <div className="cf-shell-page min-h-screen">
       <Navbar email="Account" onLogout={() => router.push('/login')} />
-      <main className="mx-auto max-w-[1500px] p-6">
+      <main className="mx-auto max-w-[1500px] p-5 sm:p-6">
         <div data-testid="cf-vps-detail-shell" className="cf-panel overflow-hidden rounded-[32px]">
-          <div className="grid gap-5 border-b border-[var(--cf-border)] px-6 py-6 lg:grid-cols-[minmax(0,1.4fr)_360px]">
+          <div className="grid gap-4 border-b border-[var(--cf-border)] px-5 py-5 sm:px-6 sm:py-6 lg:grid-cols-[minmax(0,1.4fr)_360px]">
             <div>
               <div className="cf-kicker">VPS Detail</div>
               <h1 className="mt-3 text-[28px] font-semibold tracking-tight text-[var(--cf-text-0)]">VPS File Browser</h1>
@@ -184,30 +184,30 @@ export default function VpsBrowserPage() {
                 Focused shell for safe QA work inside the saved VPS connection. Keep browser operations inside the mock run tree.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
-                <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+                <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
                   <div className="cf-kicker">Connection ID</div>
                   <div className="mt-2 font-mono text-sm text-[var(--cf-text-1)]">{id}</div>
                 </div>
-                <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+                <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
                   <div className="cf-kicker">Current Path</div>
                   <div className="mt-2 font-mono text-sm text-[var(--cf-text-1)]">{path}</div>
                 </div>
               </div>
             </div>
-            <div className="cf-subpanel rounded-[28px] p-5">
+            <div className="cf-subpanel rounded-[28px] p-4 sm:p-5">
               <div className="cf-kicker">Guardrails</div>
               <div className="mt-4 space-y-3">
-                <div className="rounded-[24px] border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.08)] p-4 text-sm text-[var(--cf-text-1)]">
+                <div className="rounded-[20px] border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.08)] p-4 text-sm text-[var(--cf-text-1)]">
                   Manual VPS auth is preserved. Keep QA work inside <code>{MOCK_RUN_PATH}</code>.
                 </div>
-                <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4 text-sm text-[var(--cf-text-1)]">
+                <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4 text-sm text-[var(--cf-text-1)]">
                   Open <code>Mock Run</code> first, stay inside that tree, and retry from the same path instead of `/` if a root-level action is flaky.
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-[var(--cf-border)] px-6 py-5">
+          <div className="border-b border-[var(--cf-border)] px-5 py-4 sm:px-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="cf-toolbar-card flex flex-wrap items-center gap-2 rounded-[20px] px-2 py-2">
                 <span className="cf-micro-label px-2">Navigation</span>
@@ -266,32 +266,32 @@ export default function VpsBrowserPage() {
             </div>
           </div>
 
-          <div className="px-6 py-5">
+          <div className="px-5 py-4 sm:px-6 sm:py-5">
             {error && (
               <div className="mb-4 rounded-[20px] border border-[rgba(255,92,92,0.24)] bg-[rgba(255,92,92,0.08)] px-4 py-3 text-sm text-[var(--cf-red)]">
                 {error}
               </div>
             )}
 
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
                 <div className="cf-kicker">Visible Items</div>
                 <div className="mt-3 font-mono text-[26px] font-bold text-[var(--cf-blue)]">{items.length}</div>
                 <div className="mt-2 text-sm text-[var(--cf-text-2)]">Current folder rows returned by the saved VPS connection.</div>
               </div>
-              <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
                 <div className="cf-kicker">Directory State</div>
                 <div className="mt-3 text-sm font-semibold text-[var(--cf-text-0)]">{loading ? 'Loading' : items.length === 0 ? 'Empty' : 'Ready'}</div>
                 <div className="mt-2 text-sm text-[var(--cf-text-2)]">Use mock paths only for QA file changes.</div>
               </div>
-              <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
+              <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
                 <div className="cf-kicker">Current Path</div>
                 <div className="mt-3 truncate font-mono text-sm text-[var(--cf-text-0)]">{path}</div>
                 <div className="mt-2 text-sm text-[var(--cf-text-2)]">Displayed after each browse, upload, mkdir, or delete action.</div>
               </div>
             </div>
 
-            <div className="mt-5 overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)]">
+            <div className="mt-4 overflow-hidden rounded-[26px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)]">
               <table className="w-full text-sm">
                 <thead className="border-b border-[var(--cf-border)] bg-[var(--cf-table-head-bg)] text-left font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
                   <tr>
@@ -305,14 +305,21 @@ export default function VpsBrowserPage() {
                 <tbody className="divide-y divide-[var(--cf-divider-soft)]">
                   {loading ? (
                     <tr>
-                      <td className="px-4 py-6 text-[var(--cf-text-2)]" colSpan={5}>
-                        Loading...
+                      <td className="px-4 py-8" colSpan={5}>
+                        <div className="flex items-center justify-center gap-3 text-[var(--cf-text-2)]">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--cf-blue)]/25 border-t-[var(--cf-blue)]" />
+                          <span>Loading...</span>
+                        </div>
                       </td>
                     </tr>
                   ) : items.length === 0 ? (
                     <tr>
-                      <td className="px-4 py-6 text-[var(--cf-text-2)]" colSpan={5}>
-                        Empty directory
+                      <td className="px-4 py-10" colSpan={5}>
+                        <div className="mx-auto max-w-md rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-5 text-center">
+                          <div className="cf-kicker mb-2">Directory</div>
+                          <div className="text-sm font-semibold text-[var(--cf-text-0)]">Empty directory</div>
+                          <div className="mt-1 text-sm text-[var(--cf-text-2)]">Upload a file or create a folder inside the current mock-path scope.</div>
+                        </div>
                       </td>
                     </tr>
                   ) : (
@@ -325,7 +332,7 @@ export default function VpsBrowserPage() {
                               <button
                                 type="button"
                                 onClick={() => void load(remotePath)}
-                                className="text-[var(--cf-blue)] hover:underline"
+                                className="rounded-lg px-1 py-1 text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.08)]"
                               >
                                 {item.name}
                               </button>

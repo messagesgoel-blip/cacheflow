@@ -222,10 +222,10 @@ export const TransferItem: React.FC<TransferItemProps> = ({
   const operationDisplay = operation ? operation.charAt(0).toUpperCase() + operation.slice(1) : '';
 
   return (
-    <div className="mb-3 rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] p-4 transition-colors hover:bg-[var(--cf-panel-soft)]">
+    <div className="mb-2.5 rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] p-3.5 transition-colors hover:bg-[var(--cf-panel-soft)]">
       <div className="flex items-start gap-3">
         {/* Status Icon */}
-        <span className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border text-base ${itemTone(status)}`}>{getStatusIcon(status)}</span>
+        <span className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[10px] border text-sm ${itemTone(status)}`}>{getStatusIcon(status)}</span>
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">
@@ -279,7 +279,7 @@ export const TransferItem: React.FC<TransferItemProps> = ({
 
           {/* Chunked Progress Display */}
           {isChunked && totalChunks && totalChunks > 1 && (
-            <div className="mt-3">
+            <div className="mt-2.5">
               {/* Chunk visualization */}
               <div className="mb-2 flex gap-0.5">
                 {chunkStatuses.map((chunk, idx) => (

@@ -1772,29 +1772,68 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
             : loading && files.length === 0 ? (
               /* UI-P1-T06: Loading state card */
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="cf-panel max-w-sm rounded-[24px] p-8 text-center">
-                  <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]"></div>
-                  <h3 className="mb-2 text-lg font-semibold text-[var(--cf-text-0)]">Loading files...</h3>
-                  <p className="text-sm text-[var(--cf-text-1)]">Fetching your files from connected providers</p>
+                <div className="cf-panel max-w-xl rounded-[26px] p-5 sm:p-6">
+                  <div className="mb-4 flex items-center justify-between gap-4 border-b border-[var(--cf-border)] pb-4">
+                    <div>
+                      <div className="cf-kicker mb-2">Files</div>
+                      <h3 className="text-lg font-semibold text-[var(--cf-text-0)]">Loading files...</h3>
+                      <p className="mt-1 text-sm text-[var(--cf-text-1)]">Fetching the current file scope from connected providers.</p>
+                    </div>
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[rgba(74,158,255,0.24)] bg-[rgba(74,158,255,0.08)]">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--cf-blue)]/25 border-t-[var(--cf-blue)]" />
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+                      <div className="cf-kicker mb-1">View</div>
+                      <div className="text-sm font-semibold text-[var(--cf-text-0)]">{isAggregatedView ? 'Aggregated' : isGroupedView ? 'Grouped' : 'Flat'}</div>
+                    </div>
+                    <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+                      <div className="cf-kicker mb-1">Path</div>
+                      <div className="truncate font-mono text-xs text-[var(--cf-text-1)]">{currentPath}</div>
+                    </div>
+                    <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+                      <div className="cf-kicker mb-1">Providers</div>
+                      <div className="text-sm font-semibold text-[var(--cf-text-0)]">{connectedProviders.length || 0} connected</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : !loading && files.length === 0 ? (
               /* UI-P1-T06: Empty state card */
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="cf-panel max-w-sm rounded-[24px] p-8 text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
-                    <svg className="h-8 w-8 text-[var(--cf-text-2)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
+                <div className="cf-panel max-w-xl rounded-[26px] p-5 sm:p-6">
+                  <div className="mb-4 flex items-start justify-between gap-4 border-b border-[var(--cf-border)] pb-4">
+                    <div>
+                      <div className="cf-kicker mb-2">Files</div>
+                      <h3 className="text-lg font-semibold text-[var(--cf-text-0)]">No files yet</h3>
+                      <p className="mt-1 text-sm text-[var(--cf-text-1)]">This folder is empty. Create content or upload a file into the current writable scope.</p>
+                    </div>
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)]">
+                      <svg className="h-6 w-6 text-[var(--cf-text-2)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    </div>
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold text-[var(--cf-text-0)]">No files yet</h3>
-                  <p className="mb-4 text-sm text-[var(--cf-text-1)]">This folder is empty. Upload files or create a new folder to get started.</p>
-                  <div className="flex flex-wrap justify-center gap-3">
+                  <div className="grid gap-3 sm:grid-cols-[1.2fr_0.8fr]">
+                    <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
+                      <div className="cf-kicker mb-2">Current Scope</div>
+                      <div className="text-sm font-semibold text-[var(--cf-text-0)]">{writeTargetLabel}</div>
+                      <div className="mt-1 truncate font-mono text-xs text-[var(--cf-text-2)]">{currentPath}</div>
+                    </div>
+                    <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
+                      <div className="cf-kicker mb-2">Next Step</div>
+                      <div className="text-sm text-[var(--cf-text-1)]">
+                        {writeActionsDisabled ? 'Switch to a writable provider scope to create content here.' : 'Use one of the actions below to seed this directory.'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-3">
                     <button
                       type="button"
                       onClick={openNewFolderModal}
                       disabled={writeActionsDisabled}
-                      className="rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.12)] px-4 py-2 text-sm font-semibold text-[var(--cf-blue)] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm font-medium text-[var(--cf-text-1)] transition hover:border-[rgba(74,158,255,0.18)] hover:text-[var(--cf-text-0)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       New Folder
                     </button>
@@ -1802,9 +1841,17 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                       type="button"
                       onClick={openNewFileModal}
                       disabled={writeActionsDisabled}
-                      className="rounded-xl border border-[rgba(255,159,67,0.28)] bg-[rgba(255,159,67,0.12)] px-4 py-2 text-sm font-semibold text-[var(--cf-amber)] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm font-medium text-[var(--cf-text-1)] transition hover:border-[rgba(255,159,67,0.18)] hover:text-[var(--cf-text-0)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       New File
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => uploadInputRef.current?.click()}
+                      disabled={uploading || connectedProviders.length === 0}
+                      className="rounded-xl border border-[rgba(0,201,167,0.24)] bg-[rgba(0,201,167,0.08)] px-4 py-2.5 text-sm font-medium text-[var(--cf-teal)] transition hover:bg-[rgba(0,201,167,0.13)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {uploading ? 'Uploading...' : 'Upload'}
                     </button>
                   </div>
                 </div>
