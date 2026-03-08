@@ -73,9 +73,14 @@ export default function ConnectProviderModal() {
         undefined
 
       tokenManager.saveToken(providerId, {
-        ...providerToken,
         provider: providerId,
+        accessToken: '',
+        refreshToken: undefined,
         accountKey: connectedAccountKey,
+        accountId: providerToken.accountId,
+        accountEmail: providerToken.accountEmail,
+        displayName: providerToken.displayName,
+        expiresAt: null,
       } as any, remoteId)
 
       actions.notify({
@@ -90,9 +95,6 @@ export default function ConnectProviderModal() {
         }),
       )
     } catch (err: any) {
-      if (connectedAccountKey) {
-        tokenManager.removeToken(modalState.providerId as ProviderId, connectedAccountKey)
-      }
       actions.notify({ kind: 'error', title: 'Connection Failed', message: err.message })
     } finally {
       setConnecting(false)

@@ -7,7 +7,7 @@
 ## Changes
 - updated `ConnectProviderModal` to persist successful OAuth results to `/api/remotes`
 - added missing web-side `/api/remotes` proxy route so browser requests can reach the backend remotes API
-- rollback local token state if server-side remote persistence fails
+- keep only remote metadata in browser state after a successful save; OAuth tokens remain server-side
 - dispatch `cacheflow:remote-connected` so `ProviderHub` refreshes without a full page reload
 - normalized `google_drive` to `google` in `/api/connections` mapping so legacy rows remain visible
 
@@ -17,3 +17,4 @@
 
 ## Notes
 - this fixes the mismatch where OAuth completed successfully but no `user_remotes` row was created, so the providers/files surfaces had nothing server-backed to display
+- saved cloud remotes now persist across future builds and deploys because the source of truth is the server-side `user_remotes` record, not browser token storage

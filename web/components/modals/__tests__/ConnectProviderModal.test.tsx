@@ -70,7 +70,7 @@ describe('ConnectProviderModal', () => {
     }
   })
 
-  test('persists a successful OAuth connect to server remotes before reloading', async () => {
+  test('persists a successful OAuth connect to server remotes without storing browser tokens', async () => {
     connect.mockResolvedValue({
       provider: 'google',
       accessToken: 'access-123',
@@ -119,7 +119,10 @@ describe('ConnectProviderModal', () => {
       expect.objectContaining({
         provider: 'google',
         accountKey: 'google-account-1',
-        accessToken: 'access-123',
+        accessToken: '',
+        refreshToken: undefined,
+        expiresAt: null,
+        accountEmail: 'user@example.com',
       }),
       'remote-g1',
     )
@@ -137,7 +140,7 @@ describe('ConnectProviderModal', () => {
     expect(removeToken).not.toHaveBeenCalled()
   })
 
-  test('removes the local token when server persistence fails', async () => {
+  test('shows an error when server persistence fails after OAuth', async () => {
     connect.mockResolvedValue({
       provider: 'google',
       accessToken: 'access-123',
@@ -157,14 +160,14 @@ describe('ConnectProviderModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Authorize' }))
 
     await waitFor(() => {
-      expect(removeToken).toHaveBeenCalledWith('google', 'google-account-1')
+      expect(notify).toHaveBeenCalledWith({
+        kind: 'error',
+        title: 'Connection Failed',
+        message: 'Failed to save provider connection',
+      })
     })
 
-    expect(notify).toHaveBeenCalledWith({
-      kind: 'error',
-      title: 'Connection Failed',
-      message: 'Failed to save provider connection',
-    })
+    expect(removeToken).not.toHaveBeenCalled()
     expect(dispatchEventSpy).not.toHaveBeenCalled()
   })
 })
