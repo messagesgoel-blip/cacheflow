@@ -158,10 +158,10 @@ export default function CommandPalette() {
         type="button"
         data-testid="cf-command-palette-trigger"
         onClick={() => setOpen(true)}
-        className="hidden min-w-[280px] items-center justify-between rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-2 text-left text-sm text-[var(--cf-text-2)] transition hover:border-[var(--cf-border-2)] hover:text-[var(--cf-text-0)] lg:flex"
+        className="hidden min-w-[248px] items-center justify-between rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3.5 py-1.5 text-left text-[13px] text-[var(--cf-text-2)] transition hover:border-[var(--cf-border-2)] hover:text-[var(--cf-text-0)] lg:flex"
       >
-        <span>Jump to page or action</span>
-        <span className="rounded-lg border border-[var(--cf-border)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
+        <span className="truncate pr-3">Jump to page or action</span>
+        <span className="rounded-md border border-[var(--cf-border)] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
           Ctrl K
         </span>
       </button>
