@@ -328,15 +328,15 @@ export default function ProviderHub() {
         </div>
       </div>
 
-      <div className="mb-6 rounded-[28px] border border-[var(--cf-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-4">
+      <div className="mb-6 rounded-[28px] border border-[var(--cf-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="cf-kicker">Provider Summary</div>
-            <h2 className="mt-2 text-lg font-semibold text-[var(--cf-text-0)]">Current control plane footprint</h2>
+            <div className="cf-kicker">Operational Summary</div>
+            <h2 className="mt-2 text-lg font-semibold text-[var(--cf-text-0)]">Control plane connectivity</h2>
             <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">High-signal split between live remotes, server nodes, and available connection paths.</p>
           </div>
           <div className="rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] px-3 py-1.5 text-[12px] text-[var(--cf-text-2)]">
-            {activeCount}/{Math.max(connectedCount, 1)} active
+            {activeCount}/{Math.max(connectedCount, 1)} active sessions
           </div>
         </div>
 
@@ -367,11 +367,11 @@ export default function ProviderHub() {
       ) : (
         <>
           {connections.length === 0 ? (
-            <div className="cf-panel mb-6 rounded-2xl p-6 text-sm text-[var(--cf-text-1)]">
+            <div className="cf-panel mb-8 rounded-2xl p-6 text-sm text-[var(--cf-text-1)]">
               No connected providers. Use the connect cards below to add your first provider.
             </div>
           ) : (
-            <div className="mb-8 space-y-6">
+            <div className="mb-10 space-y-8">
               {[
                 {
                   key: 'cloud',
@@ -390,7 +390,7 @@ export default function ProviderHub() {
               ].map((section) => (
                 section.connections.length > 0 ? (
                   <section key={section.key} data-testid={section.testId}>
-                    <div className="mb-3 flex items-end justify-between gap-3">
+                    <div className="mb-4 flex items-end justify-between gap-3 border-b border-[var(--cf-border)] pb-3">
                       <div>
                         <div className="cf-kicker mb-1">{section.key === 'cloud' ? 'Cloud' : 'Server Nodes'}</div>
                         <h2 className="text-[20px] font-semibold leading-tight text-[var(--cf-text-0)]">{section.title}</h2>
@@ -591,61 +591,63 @@ export default function ProviderHub() {
             </div>
           )}
 
-          <div className="space-y-5">
+          <div className="space-y-8">
+            <div className="mb-4">
+              <div className="cf-kicker mb-2">Connect</div>
+              <h2 className="text-[28px] font-semibold leading-tight text-[var(--cf-text-0)]">Available Integrations</h2>
+              <p className="mt-2 text-sm text-[var(--cf-text-1)]">
+                Add another provider or server-side remote without leaving the current control plane.
+              </p>
+            </div>
+            
             {[
               {
                 key: 'cloud-connect',
                 title: 'Cloud Providers',
+                description: 'OAuth-backed storage accounts currently available for integration.',
                 providers: availableCloudProviders,
               },
               {
                 key: 'server-connect',
                 title: 'Server-side Remotes',
+                description: 'Direct VPS and SFTP remotes that share the same shell context.',
                 providers: availableServerProviders,
               },
               ].map((group) => (
               group.providers.length > 0 ? (
-                <section key={group.key} className="rounded-[28px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.02)] p-4">
-                  <div className="mb-4 flex items-start justify-between gap-3">
+                <section key={group.key} className="rounded-[28px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.02)] p-6">
+                  <div className="mb-5 flex flex-wrap items-start justify-between gap-3 border-b border-[var(--cf-border)] pb-4">
                     <div>
-                      <div className="cf-kicker mb-2">{group.key === 'cloud-connect' ? 'Connect' : 'Server Connect'}</div>
-                      <h2 className="text-[22px] font-semibold leading-tight text-[var(--cf-text-0)]">
-                        {group.key === 'cloud-connect' ? 'Available Integrations' : group.title}
-                      </h2>
-                      <p className="mt-1 text-sm text-[var(--cf-text-1)]">
-                        {group.key === 'cloud-connect'
-                          ? 'Add another provider without leaving the current control plane.'
-                          : 'Direct server-side remotes share the same shell without altering cloud provider behavior.'}
-                      </p>
+                      <h3 className="text-xl font-semibold text-[var(--cf-text-0)]">{group.title}</h3>
+                      <p className="mt-1.5 text-sm text-[var(--cf-text-1)]">{group.description}</p>
                     </div>
                     <div className="rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-xs text-[var(--cf-text-2)]">
                       {group.providers.length} available
                     </div>
                   </div>
-                  <h3 className="mb-3 text-sm font-semibold text-[var(--cf-text-1)]">{group.title}</h3>
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {group.providers.map((provider) => (
                       <div
                         key={provider.id}
                         data-testid={`cf-provider-connect-card-${provider.id}`}
-                        className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4 transition-all hover:-translate-y-0.5"
+                        className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-5 transition-all hover:-translate-y-0.5"
                       >
                         <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
                           {provider.id === 'vps' ? 'Server-side remote' : 'OAuth provider'}
                         </div>
-                        <div className="mb-3 flex items-center gap-3">
+                        <div className="mb-4 flex items-center gap-3">
                           <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--cf-border)] text-[22px]" style={{ backgroundColor: `${provider.color}22` }}>
                             {getProviderIcon(provider.id)}
                           </div>
                           <div>
-                            <p className="text-[13px] font-semibold text-[var(--cf-text-0)]">{provider.name}</p>
-                            <p className="text-[11px] text-[var(--cf-text-2)]">{provider.description}</p>
+                            <p className="text-[14px] font-semibold text-[var(--cf-text-0)]">{provider.name}</p>
+                            <p className="text-[11px] leading-relaxed text-[var(--cf-text-2)]">{provider.description}</p>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => openConnectModal(provider.id)}
-                          className={`w-full rounded-2xl border px-3 py-2 text-sm font-medium transition ${
+                          className={`w-full rounded-2xl border px-3 py-2.5 text-sm font-medium transition ${
                             provider.id === 'vps'
                               ? 'border-[rgba(255,159,67,0.22)] bg-[rgba(255,159,67,0.1)] text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.16)]'
                               : 'border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] text-[var(--cf-text-0)] hover:bg-[rgba(255,255,255,0.08)]'
