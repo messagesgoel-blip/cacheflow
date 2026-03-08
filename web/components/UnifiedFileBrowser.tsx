@@ -1604,9 +1604,22 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
         )}
         {showShortcutHelp && <ShortcutHelp onClose={() => setShowShortcutHelp(false)} />}
 
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--cf-border)] bg-[var(--cf-toolbar-bg)] p-4 md:p-6">
-          <UnifiedBreadcrumb selectedProvider={selectedProvider} activeAccountName={activeAccountName} stack={breadcrumbStack} onNavigateStack={handleBreadcrumbNavigate} onNavigateHome={() => handleSidebarNavigate('all')} />
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--cf-border)] bg-[var(--cf-toolbar-bg)] p-4 md:p-6">
+          <div className="min-w-0 flex-1">
+            <UnifiedBreadcrumb selectedProvider={selectedProvider} activeAccountName={activeAccountName} stack={breadcrumbStack} onNavigateStack={handleBreadcrumbNavigate} onNavigateHome={() => handleSidebarNavigate('all')} />
+          </div>
+          <div className="flex max-w-full flex-col items-stretch gap-3 lg:items-end">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <span className={`cf-chip ${writeActionsDisabled ? '' : 'cf-chip-teal'}`}>
+                {writeActionsDisabled ? 'Read Only Scope' : 'Write Target Ready'}
+              </span>
+              {!writeActionsDisabled && (
+                <span className="cf-chip max-w-full truncate normal-case text-[11px] font-medium tracking-normal">
+                  {resolvedCreationTarget?.targetLabel || writeTargetLabel}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-3">
             {selectedProvider === 'all' && !searchQuery && (
               <>
                 <div className="flex flex-wrap gap-2">
@@ -1683,10 +1696,12 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                 </div>
               </>
             )}
-            <div className="relative">
-              <input data-testid="cf-global-search-input" type="text" placeholder="Search files across providers..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-64 rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-2 pl-10 text-sm text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[var(--cf-blue)] focus:outline-none md:w-80" />
-              <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--cf-text-3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              {isSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500" /></div>}
+            <div className="cf-toolbar-card rounded-2xl p-1">
+              <div className="relative">
+                <input data-testid="cf-global-search-input" type="text" placeholder="Search files across providers..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-64 rounded-[14px] border border-transparent bg-transparent px-4 py-2.5 pl-10 text-sm text-[var(--cf-text-0)] placeholder:text-[var(--cf-text-3)] focus:border-[rgba(74,158,255,0.28)] focus:bg-[var(--cf-panel-softer)] focus:outline-none md:w-80" />
+                <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--cf-text-3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                {isSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500" /></div>}
+              </div>
             </div>
             <button
               data-testid="cf-action-new-folder"
@@ -1713,15 +1728,19 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
               {uploading ? 'Uploading...' : 'Upload'}
             </button>
             <button data-testid="files-refresh" onClick={() => void handleRefresh()} className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+            </div>
           </div>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
           <div className="flex-1 overflow-y-auto p-4 pb-24 md:p-6">
             {error && (
-              <div data-testid="cf-error-banner" className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
+              <div data-testid="cf-error-banner" className="mb-6 flex items-center gap-3 rounded-[20px] border border-[rgba(255,92,92,0.24)] bg-[rgba(255,92,92,0.1)] px-4 py-3 text-[var(--cf-red)]">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <p className="text-sm font-medium">{error}</p>
+                <div className="min-w-0">
+                  <div className="cf-micro-label text-[var(--cf-red)]">Load Status</div>
+                  <p className="mt-1 text-sm font-medium text-[var(--cf-red)]">{error}</p>
+                </div>
               </div>
             )}
             {selectedProvider === 'activity' ? <ActivityFeed />
@@ -1771,7 +1790,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                 <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                   {quickStats.map((item) => (
                     <div key={item.label} className="cf-panel rounded-[22px] p-5">
-                      <div className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
+                      <div className="cf-micro-label mb-3">
                         {item.label}
                       </div>
                       <div className={`truncate text-2xl font-semibold ${item.accent}`}>
@@ -1789,10 +1808,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                   <div className="overflow-hidden rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-elev)]">
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cf-border)] bg-[var(--cf-panel-softer)] px-5 py-4">
                       <div>
-                        <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">Aggregated Surface</div>
+                        <div className="cf-micro-label">Aggregated Surface</div>
                         <div className="mt-1 text-sm text-[var(--cf-text-1)]">Merged view for duplicate detection and cross-provider comparison.</div>
                       </div>
-                      <div className="rounded-full border border-[rgba(167,139,250,0.28)] bg-[rgba(167,139,250,0.1)] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-purple)]">
+                      <div className="cf-chip">
                         {sortedFiles.length} indexed items
                       </div>
                     </div>
@@ -1814,10 +1833,10 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
                   <div className="overflow-hidden rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-elev)]">
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--cf-border)] bg-[var(--cf-panel-softer)] px-5 py-4">
                       <div>
-                        <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">File Surface</div>
+                        <div className="cf-micro-label">File Surface</div>
                         <div className="mt-1 text-sm text-[var(--cf-text-1)]">Live browser view for the current provider scope and folder depth.</div>
                       </div>
-                      <div className="rounded-full border border-[rgba(0,201,167,0.24)] bg-[rgba(0,201,167,0.08)] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-teal)]">
+                      <div className="cf-chip cf-chip-teal">
                         {sortedFiles.length} visible rows
                       </div>
                     </div>
@@ -1838,7 +1857,7 @@ export default function UnifiedFileBrowser({ token }: UnifiedFileBrowserProps) {
 
 function FileTable({ files, selectedFiles, focusedIndex, favorites, isFavoriting, pendingFolderPath, onSelect, onFolderClick, onOpen, onDownload, onRename, onMove, onCopy, onDelete, onToggleFavorite, onCreateFolderInFolder, onCreateFileInFolder, showProviderBadge, showDuplicateBadge }: any) {
   return (
-    <table className="w-full text-left table-fixed">
+    <table className="w-full table-fixed text-left">
       <thead className="sticky top-0 z-10 border-b border-[var(--cf-border)] bg-[var(--cf-table-head-bg)] font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
         <tr><th className="px-4 py-3 w-10"></th><th className="px-2 py-3 w-10"></th><th className="px-4 py-3">Name</th>{showProviderBadge && <th className="px-4 py-3 w-36">Provider</th>}<th className="px-4 py-3 w-24">Size</th><th className="px-4 py-3 w-32">Modified</th><th className="px-4 py-3 w-12"></th></tr>
       </thead>
@@ -1863,7 +1882,7 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
   }
   return (
     <tr draggable={!file.isFolder && !isOpeningFolder} data-testid="cf-file-row" data-file-id={file.id} data-file-name={resolvedFileName} data-provider-id={file.provider || ''} data-account-key={(file as any).accountKey || ''} onDragStart={(e) => { e.dataTransfer.setData('application/cacheflow-file', JSON.stringify(file)); e.dataTransfer.effectAllowed = 'copyMove' }} className={`group transition-all duration-200 ${selected ? 'bg-[rgba(74,158,255,0.12)]' : 'hover:bg-[var(--cf-hover-bg)]'} ${focused ? 'ring-2 ring-[var(--cf-blue)]/50 ring-inset z-10' : ''} ${isOpeningFolder ? 'cursor-progress bg-[rgba(74,158,255,0.14)]' : 'cursor-pointer'}`} onClick={() => isOpeningFolder ? undefined : file.isFolder ? onFolderClick(file) : onOpen(file)}>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3.5">
         <input
           type="checkbox"
           data-testid="cf-row-checkbox"
@@ -1874,7 +1893,7 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
           className="rounded border-[var(--cf-border-2)] bg-transparent text-[var(--cf-blue)] opacity-0 transition-opacity group-hover:opacity-100 checked:opacity-100"
         />
       </td>
-      <td className="px-2 py-3">
+      <td className="px-2 py-3.5">
         <button
           data-testid="cf-row-star-toggle"
           data-loading={isFavoriting}
@@ -1885,12 +1904,12 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
           ⭐
         </button>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3.5">
         <div className="flex items-center gap-3 min-w-0">
           <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--cf-border)] ${file.isFolder ? 'bg-[rgba(74,158,255,0.12)] text-[var(--cf-blue)]' : 'bg-[rgba(255,255,255,0.03)] text-[var(--cf-text-2)]'} ${isOpeningFolder ? 'animate-pulse' : ''}`}>{file.isFolder ? '📁' : getFileIcon(file.mimeType)}</span>
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
-              <p className={`truncate text-sm font-semibold ${resolvedFileName === '[unnamed]' ? 'text-[var(--cf-amber)]' : 'text-[var(--cf-text-0)]'}`}>{resolvedFileName}</p>
+              <p className={`truncate text-sm font-medium ${resolvedFileName === '[unnamed]' ? 'text-[var(--cf-amber)]' : 'text-[var(--cf-text-0)]'}`}>{resolvedFileName}</p>
               {isOpeningFolder && (
                 <span className="whitespace-nowrap rounded-full border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--cf-blue)]">
                   Opening...
@@ -1902,10 +1921,10 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
                 </span>
               )}
             </div>
-            <div className="mt-1 flex items-center gap-2 text-[11px] text-[var(--cf-text-2)]">
-              <span className="font-mono">{file.isFolder ? 'Folder' : file.mimeType?.split('/')[1] || 'File'}</span>
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-[0.12em] text-[var(--cf-text-2)]">
+              <span>{file.isFolder ? 'Folder' : file.mimeType?.split('/')[1] || 'File'}</span>
               {showProviderBadge && provider && (
-                <span className="inline-flex items-center gap-1">
+                <span className="inline-flex min-w-0 items-center gap-1">
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: provider.color }} />
                   <span className="truncate">{providerLabel(file)}</span>
                 </span>
@@ -1914,11 +1933,11 @@ function FileRow({ file, selected, focused, isFavorite, isFavoriting, isOpeningF
           </div>
         </div>
       </td>
-      {showProviderBadge && <td className="px-4 py-3"><div className="flex items-center gap-2 overflow-hidden"><span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: provider?.color || 'var(--cf-text-3)' }} /><span className="truncate font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--cf-text-2)]">{providerLabel(file)}</span></div></td>}
-      <td className="px-4 py-3 font-mono text-[11px] font-medium text-[var(--cf-text-1)]">{file.isFolder ? '—' : formatBytes(file.size)}</td>
-      <td className="px-4 py-3 font-mono text-[11px] font-medium tabular-nums text-[var(--cf-text-1)]">{file.modifiedTime?.split('T')[0]}</td>
-      <td className="relative px-4 py-3"><button data-testid="cf-files-row-overflow" onClick={(e) => { e.stopPropagation(); setShowOverflow(!showOverflow) }} className="rounded-lg p-1.5 font-bold text-[var(--cf-text-2)] opacity-0 transition-all group-hover:opacity-100 hover:bg-[var(--cf-hover-bg)]">•••</button>
-        {showOverflow && <> <div className="absolute inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowOverflow(false) }} /> <div className="absolute right-4 top-full z-30 w-52 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-menu-bg)] py-2 shadow-2xl animate-in fade-in zoom-in-95 duration-100"> <button onClick={(e) => handleOverflowAction(e, () => onOpen(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>👁️</span> Open</button> <button onClick={(e) => handleOverflowAction(e, () => onDownload(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>⬇️</span> Download</button> {file.isFolder && <><div className="my-1 border-t border-[var(--cf-border)]" /> <button data-testid="cf-files-row-new-folder-here" onClick={(e) => handleOverflowAction(e, () => onCreateFolderInFolder(file, 'folder'))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-blue)] hover:bg-[var(--cf-hover-bg)]"><span>📁</span> New Folder Here</button> <button data-testid="cf-files-row-new-file-here" onClick={(e) => handleOverflowAction(e, () => onCreateFileInFolder(file, 'file'))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-amber)] hover:bg-[var(--cf-hover-bg)]"><span>📝</span> New File Here</button></>} <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onRename(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>✏️</span> Rename</button> <button onClick={(e) => handleOverflowAction(e, () => onMove(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📦</span> Move</button> <button onClick={(e) => handleOverflowAction(e, () => onCopy(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📄</span> Copy</button> <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onDelete(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left text-xs font-bold text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.08)]"><span>🗑️</span> Delete</button> </div> </>}
+      {showProviderBadge && <td className="px-4 py-3.5"><div className="flex items-center gap-2 overflow-hidden"><span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: provider?.color || 'var(--cf-text-3)' }} /><span className="truncate font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--cf-text-2)]">{providerLabel(file)}</span></div></td>}
+      <td className="px-4 py-3.5 font-mono text-[11px] font-medium text-[var(--cf-text-1)]">{file.isFolder ? '—' : formatBytes(file.size)}</td>
+      <td className="px-4 py-3.5 font-mono text-[11px] font-medium tabular-nums text-[var(--cf-text-1)]">{file.modifiedTime?.split('T')[0]}</td>
+      <td className="relative px-4 py-3.5"><button data-testid="cf-files-row-overflow" onClick={(e) => { e.stopPropagation(); setShowOverflow(!showOverflow) }} className="rounded-xl border border-transparent bg-transparent p-1.5 font-bold text-[var(--cf-text-2)] opacity-0 transition-all group-hover:border-[var(--cf-border)] group-hover:bg-[var(--cf-panel-soft)] group-hover:opacity-100 hover:bg-[var(--cf-hover-bg)]">•••</button>
+        {showOverflow && <> <div className="absolute inset-0 z-10" onClick={(e) => { e.stopPropagation(); setShowOverflow(false) }} /> <div className="absolute right-4 top-full z-30 w-52 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-menu-bg)] py-2 shadow-2xl animate-in fade-in zoom-in-95 duration-100"> <button onClick={(e) => handleOverflowAction(e, () => onOpen(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>👁️</span> Open</button> <button onClick={(e) => handleOverflowAction(e, () => onDownload(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>⬇️</span> Download</button> {file.isFolder && <><div className="my-1 border-t border-[var(--cf-border)]" /> <button data-testid="cf-files-row-new-folder-here" onClick={(e) => handleOverflowAction(e, () => onCreateFolderInFolder(file, 'folder'))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-blue)] hover:bg-[var(--cf-hover-bg)]"><span>📁</span> New Folder Here</button> <button data-testid="cf-files-row-new-file-here" onClick={(e) => handleOverflowAction(e, () => onCreateFileInFolder(file, 'file'))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-amber)] hover:bg-[var(--cf-hover-bg)]"><span>📝</span> New File Here</button></>} <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onRename(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>✏️</span> Rename</button> <button onClick={(e) => handleOverflowAction(e, () => onMove(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📦</span> Move</button> <button onClick={(e) => handleOverflowAction(e, () => onCopy(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)]"><span>📄</span> Copy</button> <div className="my-1 border-t border-[var(--cf-border)]" /> <button onClick={(e) => handleOverflowAction(e, () => onDelete(file))} className="flex w-full items-center gap-3 px-4 py-2 text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.08)]"><span>🗑️</span> Delete</button> </div> </>}
       </td>
     </tr>
   )

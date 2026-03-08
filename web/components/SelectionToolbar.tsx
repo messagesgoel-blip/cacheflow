@@ -32,12 +32,12 @@ export default function SelectionToolbar({
   return (
     <div
       data-testid="cf-selection-toolbar"
-      className="fixed bottom-8 left-1/2 z-[100] flex w-[min(92vw,960px)] -translate-x-1/2 items-center justify-between gap-4 rounded-[22px] border border-[var(--cf-border-2)] bg-[var(--cf-menu-bg)] px-4 py-3 text-[var(--cf-text-0)] shadow-[var(--cf-shadow-strong)] animate-in fade-in slide-in-from-bottom-4 duration-300"
+      className="fixed bottom-8 left-1/2 z-[100] flex w-[min(92vw,960px)] -translate-x-1/2 items-center justify-between gap-4 rounded-[24px] border border-[var(--cf-border-2)] bg-[var(--cf-menu-bg)] px-4 py-3 text-[var(--cf-text-0)] shadow-[var(--cf-shadow-strong)] animate-in fade-in slide-in-from-bottom-4 duration-300"
     >
       <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={onClearSelection}
-          className="rounded-full p-1 transition-colors hover:bg-[var(--cf-hover-bg-strong)]"
+          className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-2 transition-colors hover:bg-[var(--cf-hover-bg-strong)]"
           title="Clear selection"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +45,7 @@ export default function SelectionToolbar({
           </svg>
         </button>
         <div className="min-w-0">
-          <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Selection Surface</div>
+          <div className="cf-micro-label">Selection Surface</div>
           <div className="truncate text-sm font-semibold text-[var(--cf-text-0)]">
             {count} item{count !== 1 ? 's' : ''} selected
           </div>
@@ -106,7 +106,7 @@ function ToolbarButton({ label, onClick, icon }: { label: string, onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="group flex items-center gap-2 rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 transition-colors hover:bg-[var(--cf-hover-bg-strong)]"
+      className="group flex items-center gap-2 rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2 transition-colors hover:border-[rgba(74,158,255,0.18)] hover:bg-[var(--cf-hover-bg-strong)]"
     >
       <svg className="w-5 h-5 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         {icon}

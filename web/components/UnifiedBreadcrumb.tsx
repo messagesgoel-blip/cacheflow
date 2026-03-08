@@ -27,47 +27,50 @@ export default function UnifiedBreadcrumb({
   }
 
   return (
-    <div 
+    <div
       data-testid="cf-breadcrumb"
-      className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 font-mono text-[11px] text-[var(--cf-text-2)]"
+      className="min-w-0"
     >
-      <button
-        data-testid="cf-breadcrumb-crumb-home"
-        onClick={onNavigateHome}
-        className="rounded-full border border-[var(--cf-border)] bg-[var(--cf-panel-softer)] px-3 py-1 text-[var(--cf-text-1)] transition-colors hover:text-[var(--cf-blue)]"
-      >
-        All Files
-      </button>
+      <div className="cf-micro-label">Navigation Path</div>
+      <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 overflow-x-auto whitespace-nowrap font-mono text-[11px] text-[var(--cf-text-2)]">
+        <button
+          data-testid="cf-breadcrumb-crumb-home"
+          onClick={onNavigateHome}
+          className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1.5 text-[var(--cf-text-1)] transition-colors hover:border-[rgba(74,158,255,0.24)] hover:text-[var(--cf-blue)]"
+        >
+          All Files
+        </button>
 
-      {selectedProvider !== 'all' && (
-        <>
-          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-          <button
-            onClick={() => onNavigateStack(-1)}
-            className="font-medium text-[var(--cf-text-0)] transition-colors hover:text-[var(--cf-blue)]"
-          >
-            {getProviderName()}
-            {activeAccountName && ` (${activeAccountName})`}
-          </button>
-        </>
-      )}
+        {selectedProvider !== 'all' && (
+          <>
+            <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            <button
+              onClick={() => onNavigateStack(-1)}
+              className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1.5 text-[var(--cf-text-0)] transition-colors hover:border-[rgba(74,158,255,0.24)] hover:text-[var(--cf-blue)]"
+            >
+              {getProviderName()}
+            </button>
+            {activeAccountName && <span className="cf-chip">{activeAccountName}</span>}
+          </>
+        )}
 
-      {stack.map((segment, idx) => (
-        <div key={`${segment.id}-${idx}`} className="flex items-center gap-2">
-          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-          <button
-            data-testid={`cf-breadcrumb-crumb-${idx}`}
-            onClick={() => onNavigateStack(idx)}
-            className="max-w-[150px] truncate transition-colors hover:text-[var(--cf-blue)]"
-          >
-            {segment.name}
-          </button>
-        </div>
-      ))}
+        {stack.map((segment, idx) => (
+          <div key={`${segment.id}-${idx}`} className="flex min-w-0 items-center gap-2">
+            <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            <button
+              data-testid={`cf-breadcrumb-crumb-${idx}`}
+              onClick={() => onNavigateStack(idx)}
+              className="max-w-[180px] truncate rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-1.5 transition-colors hover:border-[rgba(74,158,255,0.24)] hover:text-[var(--cf-blue)]"
+            >
+              {segment.name}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
