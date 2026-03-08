@@ -4,6 +4,9 @@ const authMw = require('../middleware/auth');
 const router = express.Router();
 router.use(authMw);
 
+// In-memory transfer registry for the control plane.
+// Actual data movement is dispatched by BullMQ workers via progressBridge;
+// this map tracks metadata for status queries and cancellation.
 const activeTransfers = new Map();
 
 router.get('/progress/:taskId', (req, res) => {

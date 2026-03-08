@@ -1,5 +1,7 @@
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
+import dns from 'dns/promises';
+import { isIP } from 'net';
 
 const MAX_REMOTE_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10 GB
 const DOWNLOAD_TIMEOUT_MS = 300_000; // 5 minutes
@@ -21,6 +23,22 @@ interface RemoteUploadResult {
   uploadedAt: string;
 }
 
+function isPrivateIP(ip: string): boolean {
+  const patterns = [
+    /^127\.\d+\.\d+\.\d+$/,
+    /^10\.\d+\.\d+\.\d+$/,
+    /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/,
+    /^192\.168\.\d+\.\d+$/,
+    /^0\.0\.0\.0$/,
+    /^::1$/,
+    /^169\.254\.\d+\.\d+$/,
+    /^fc00:/i,
+    /^fd[0-9a-f]{2}:/i,
+    /^fe80:/i,
+  ];
+  return patterns.some(p => p.test(ip));
+}
+
 export function validateRemoteUrl(url: string): void {
   let parsed: URL;
   try {
@@ -33,25 +51,44 @@ export function validateRemoteUrl(url: string): void {
     throw new Error('Only HTTP and HTTPS URLs are supported');
   }
 
-  // Block private/internal IPs to prevent SSRF
+  // Block literal private hostnames
   const hostname = parsed.hostname.toLowerCase();
-  const blockedPatterns = [
-    /^localhost$/,
-    /^127\.\d+\.\d+\.\d+$/,
-    /^10\.\d+\.\d+\.\d+$/,
-    /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/,
-    /^192\.168\.\d+\.\d+$/,
-    /^0\.0\.0\.0$/,
-    /^\[?::1\]?$/,
-    /^169\.254\.\d+\.\d+$/,
-    /^fc00:/i,
-    /^fe80:/i,
-  ];
+  if (hostname === 'localhost' || isPrivateIP(hostname)) {
+    throw new Error('URLs pointing to private or internal networks are not allowed');
+  }
+}
 
-  for (const pattern of blockedPatterns) {
-    if (pattern.test(hostname)) {
-      throw new Error('URLs pointing to private or internal networks are not allowed');
+/**
+ * Resolve hostname and verify all IPs are public before connecting.
+ * This prevents DNS rebinding and redirect-based SSRF.
+ */
+export async function validateResolvedIPs(hostname: string): Promise<void> {
+  // If hostname is already an IP, check it directly
+  if (isIP(hostname)) {
+    if (isPrivateIP(hostname)) {
+      throw new Error('URL resolves to a private or internal IP address');
     }
+    return;
+  }
+
+  try {
+    const addresses = await dns.resolve4(hostname).catch(() => [] as string[]);
+    const addresses6 = await dns.resolve6(hostname).catch(() => [] as string[]);
+    const allIPs = [...addresses, ...addresses6];
+
+    if (allIPs.length === 0) {
+      throw new Error('Could not resolve hostname');
+    }
+
+    for (const ip of allIPs) {
+      if (isPrivateIP(ip)) {
+        throw new Error(`URL resolves to a private or internal IP address (${ip})`);
+      }
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('private')) throw err;
+    if (err instanceof Error && err.message.includes('resolve')) throw err;
+    throw new Error(`DNS resolution failed for ${hostname}`);
   }
 }
 
@@ -61,10 +98,25 @@ export async function remoteUpload(options: RemoteUploadOptions): Promise<Remote
 
   validateRemoteUrl(url);
 
+  // Resolve DNS and verify all IPs are public before connecting
+  const parsedUrl = new URL(url);
+  await validateResolvedIPs(parsedUrl.hostname);
+
   const response = await fetch(url, {
     signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
-    redirect: 'follow',
+    redirect: 'manual', // Handle redirects manually to check each hop
   });
+
+  // If redirect, validate the new location before following
+  if (response.status >= 300 && response.status < 400) {
+    const location = response.headers.get('location');
+    if (location) {
+      validateRemoteUrl(location);
+      const redirectUrl = new URL(location, url);
+      await validateResolvedIPs(redirectUrl.hostname);
+    }
+    throw new Error(`Redirect to ${location} — client should retry with validated URL`);
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to download from URL: ${response.status} ${response.statusText}`);

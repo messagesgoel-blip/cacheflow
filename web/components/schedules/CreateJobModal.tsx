@@ -54,6 +54,9 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
       setJobType(job.jobType)
       setCronExpression(job.cronExpression)
       setEnabled(job.enabled)
+      // Restore throttle from job metadata
+      const jobThrottle = (job as any).throttle?.maxBytesPerSecond ?? null
+      setThrottle(jobThrottle)
       // Check if it's a custom cron
       const isPreset = CRON_PRESETS.some(p => p.value === job.cronExpression)
       setShowCustomCron(!isPreset)
@@ -255,11 +258,14 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
             <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">
               Bandwidth Throttle
             </label>
-            <div className="grid grid-cols-5 gap-2">
+            <div role="radiogroup" aria-label="Bandwidth throttle" className="grid grid-cols-5 gap-2">
               {THROTTLE_PRESETS.map((preset) => (
                 <button
                   key={String(preset.value)}
                   type="button"
+                  role="radio"
+                  aria-checked={throttle === preset.value}
+                  data-testid={`throttle-preset-${preset.value ?? 'unlimited'}`}
                   onClick={() => setThrottle(preset.value)}
                   className={`rounded-[14px] border p-2 text-center transition ${
                     throttle === preset.value

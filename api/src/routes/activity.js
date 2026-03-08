@@ -10,8 +10,8 @@ router.use(authMw);
  * Query params: limit, offset, action, provider
  */
 router.get('/', async (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
-  const offset = parseInt(req.query.offset) || 0;
+  const limit = Math.max(0, Math.min(parseInt(req.query.limit) || 50, 200));
+  const offset = Math.max(0, parseInt(req.query.offset) || 0);
   const { action, provider, type } = req.query;
 
   try {

@@ -103,8 +103,8 @@ class ScheduledJobWorker {
   }
 
   public async addJob(
-    jobType: string, 
-    payload: any, 
+    jobType: string,
+    payload: any,
     userId?: string,
     opts?: {
       delay?: number; // milliseconds to delay
@@ -114,6 +114,7 @@ class ScheduledJobWorker {
         timezone?: string;
       };
       jobId?: string; // custom job id
+      throttle?: ThrottleConfig;
     }
   ): Promise<Job> {
     const jobData: ScheduledJobData = {
@@ -121,7 +122,8 @@ class ScheduledJobWorker {
       jobType,
       payload,
       userId,
-      createdAt: new Date()
+      createdAt: new Date(),
+      throttle: opts?.throttle,
     };
 
     const job = await this.queue.add(jobType, jobData, {

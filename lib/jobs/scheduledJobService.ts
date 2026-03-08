@@ -59,9 +59,20 @@ export class ScheduledJobService {
       return null;
     }
 
+    const { throttle, ...rest } = data;
+    const updateData: Record<string, any> = { ...rest };
+
+    if (throttle !== undefined) {
+      // Merge throttle into existing metadata JSON
+      const existing = typeof existingJob.metadata === 'string'
+        ? JSON.parse(existingJob.metadata)
+        : (existingJob.metadata ?? {});
+      updateData.metadata = JSON.stringify({ ...existing, throttle });
+    }
+
     return await prisma.scheduledJob.update({
       where: { id },
-      data,
+      data: updateData,
     });
   }
 

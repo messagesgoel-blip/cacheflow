@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
     // Validate throttle if provided
     if (data.throttle && data.throttle.maxBytesPerSecond !== null) {
       const bps = data.throttle.maxBytesPerSecond;
-      if (typeof bps !== 'number' || bps < 0) {
-        return Response.json({ error: 'throttle.maxBytesPerSecond must be a non-negative number or null' }, { status: 400 });
+      if (!Number.isFinite(bps) || bps < 0) {
+        return Response.json({ error: 'throttle.maxBytesPerSecond must be a non-negative finite number or null' }, { status: 400 });
       }
     }
 
@@ -72,6 +72,7 @@ export async function PUT(request: NextRequest) {
     if (data.jobType !== undefined) updateData.jobType = data.jobType;
     if (data.cronExpression !== undefined) updateData.cronExpression = data.cronExpression;
     if (data.enabled !== undefined) updateData.enabled = data.enabled;
+    if (data.throttle !== undefined) updateData.throttle = data.throttle;
 
     const job = await scheduledJobService.updateJob(id, updateData);
     if (!job) {
