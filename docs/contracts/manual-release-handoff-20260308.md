@@ -4,8 +4,10 @@ Date: 2026-03-08
 
 Target repo state:
 - Branch: `main`
-- Commit: `27786e01b1041ac1cfe961add5106f07e544dd85`
-- Short SHA: `27786e0`
+- Current HEAD: `9bc56271f916a7e52f50c6315622a4fe733a6351`
+- Current short SHA: `9bc5627`
+- Last product-code commit in this release stack: `27786e01b1041ac1cfe961add5106f07e544dd85`
+- Last product-code short SHA: `27786e0`
 
 Current baseline:
 - Workspace git status is clean at `27786e0`.
@@ -17,6 +19,7 @@ Included commit stack:
 - `2595da6` `Finish VPS edit and test flow`
 - `b67a803` `Optimize preview range loading`
 - `27786e0` `Refresh application shell surfaces`
+- `9bc5627` `Add manual release handoff`
 
 Important deployment note:
 - `deploy.sh` only rebuilds and recreates `web`.
