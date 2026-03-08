@@ -16,4 +16,9 @@ Commits: git commit --no-verify; do not commit .next/, node_modules/, coverage/,
 
 Definition of done: no change is considered done until it is tested, committed, and deployed from a clean git worktree in `/opt/docker/apps/cacheflow`. Do not treat uncommitted local changes or dirty-tree builds as done for live.
 
+## Branch Naming
+All feature branches must follow: `feat/LIN-{issue-id}-{short-description}`
+Example: `feat/LIN-42-oauth-token-fix`
+This enables Linear auto-tracking of commits against issues.
+
 Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.
