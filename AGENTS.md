@@ -21,4 +21,16 @@ All feature branches must follow: `feat/LIN-{issue-id}-{short-description}`
 Example: `feat/LIN-42-oauth-token-fix`
 This enables Linear auto-tracking of commits against issues.
 
+## Pull Requests
+- Open a PR for feature work before it is considered ready for review or merge.
+- Every PR branch must follow `feat/LIN-{issue-id}-{short-description}` so Linear can associate commits with the issue.
+- PR title should include the Linear key when applicable.
+- PR description must include:
+  - linked Linear issue
+  - summary of scope
+  - tests run
+  - deploy impact
+- If behavior changes, update affected tests in the same PR.
+- Do not treat a branch as done at PR open time; it is only done after tests pass, the change is committed, and it is deployed from a clean git worktree in `/opt/docker/apps/cacheflow`.
+
 Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.
