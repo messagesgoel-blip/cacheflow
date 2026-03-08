@@ -8,6 +8,10 @@ import { normalizePath } from '@/lib/utils/path'
 
 type Mode = 'copy' | 'move'
 
+function providerName(providerId: ProviderId): string {
+  return PROVIDERS.find((provider) => provider.id === providerId)?.name || providerId
+}
+
 export default function TransferModal({
   isOpen,
   mode,
@@ -26,7 +30,7 @@ export default function TransferModal({
   onSubmit: (args: { targetProviderId: ProviderId; targetAccountKey: string; targetFolderId: string }) => Promise<void>
 }) {
   const availableProviders = useMemo(() => {
-    return connectedProviderIds.filter((pid) => tokenManager.getTokens(pid).some((t) => !t.disabled))
+    return connectedProviderIds.filter((pid) => tokenManager.getTokens(pid).some((token) => !token.disabled))
   }, [connectedProviderIds])
 
   const [targetProviderId, setTargetProviderId] = useState<ProviderId>('google')
@@ -40,8 +44,7 @@ export default function TransferModal({
   const currentFolderId = stack[stack.length - 1]?.id || ''
 
   const destinationPath = useMemo(() => {
-    const labels = stack.map(s => s.label)
-    // Avoid double slash if root is already /
+    const labels = stack.map((segment) => segment.label)
     return normalizePath(...labels)
   }, [stack])
 
@@ -62,9 +65,10 @@ export default function TransferModal({
       setError(null)
       return
     }
+
     const sourceProvider = file?.provider as ProviderId | undefined
     const differentProvider = sourceProvider
-      ? availableProviders.find((pid) => pid !== sourceProvider)
+      ? availableProviders.find((providerId) => providerId !== sourceProvider)
       : undefined
 
     if (differentProvider) {
@@ -77,30 +81,31 @@ export default function TransferModal({
       return
     }
 
-    if (availableProviders.length) {
+    if (availableProviders.length > 0) {
       setTargetProviderId(availableProviders[0])
     }
-  }, [isOpen])
+  }, [isOpen, file, availableProviders])
 
   useEffect(() => {
-    const handleGlobalEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && !isSubmitting) {
-        e.preventDefault()
-        e.stopPropagation()
+    const handleGlobalEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen && !isSubmitting) {
+        event.preventDefault()
+        event.stopPropagation()
         onClose()
       }
     }
+
     window.addEventListener('keydown', handleGlobalEsc)
     return () => window.removeEventListener('keydown', handleGlobalEsc)
   }, [isOpen, isSubmitting, onClose])
 
   useEffect(() => {
     if (!isOpen) return
-    const tokens = tokenManager.getTokens(targetProviderId).filter((t) => !t.disabled)
+    const tokens = tokenManager.getTokens(targetProviderId).filter((token) => !token.disabled)
     const key = tokens[0]?.accountKey || tokens[0]?.accountEmail || ''
     setTargetAccountKey(key)
     setStack(buildInitialStack(targetProviderId, file, currentFolderPath))
-  }, [isOpen, targetProviderId])
+  }, [isOpen, targetProviderId, file, currentFolderPath])
 
   useEffect(() => {
     if (!isOpen) return
@@ -117,16 +122,18 @@ export default function TransferModal({
 
   async function loadFolders() {
     if (!isOpen) return
+
     setLoading(true)
     setError(null)
+
     try {
       if (targetAccountKey) {
         tokenManager.setActiveToken(targetProviderId, targetAccountKey)
       }
+
       const provider = getProvider(targetProviderId)
       if (!provider) throw new Error('Provider not available')
-      
-      // Ensure provider instance has the correct remoteId for this specific account
+
       const currentToken = tokenManager.getToken(targetProviderId, targetAccountKey)
       provider.remoteId = (currentToken as any)?.remoteId
 
@@ -137,16 +144,18 @@ export default function TransferModal({
       const folderIdForApi = needsVpsRootCorrection
         ? normalizePath(currentFolderPath || '/')
         : currentFolderId || rootFolderId(targetProviderId)
+
       if (needsVpsRootCorrection) {
         setStack(buildInitialStack(targetProviderId, file, currentFolderPath))
       }
-      const res = await provider.listFiles({ folderId: folderIdForApi })
-      const onlyFolders = res.files.filter((f) => f.isFolder)
-      onlyFolders.sort((a, b) => a.name.localeCompare(b.name))
+
+      const response = await provider.listFiles({ folderId: folderIdForApi })
+      const onlyFolders = response.files.filter((entry) => entry.isFolder)
+      onlyFolders.sort((left, right) => left.name.localeCompare(right.name))
       setFolders(onlyFolders)
-    } catch (e: any) {
-      console.error('[TransferModal] Failed to load folders:', e)
-      setError(e?.message || 'Failed to load folders')
+    } catch (err: any) {
+      console.error('[TransferModal] Failed to load folders:', err)
+      setError(err?.message || 'Failed to load folders')
       setFolders([])
     } finally {
       setLoading(false)
@@ -155,12 +164,16 @@ export default function TransferModal({
 
   if (!isOpen || !file) return null
 
-  const tokens = tokenManager.getTokens(targetProviderId).filter((t) => !t.disabled)
+  const tokens = tokenManager.getTokens(targetProviderId).filter((token) => !token.disabled)
+  const sourceProviderName = providerName(file.provider as ProviderId)
+  const targetProviderName = providerName(targetProviderId)
 
   const handleSubmit = async () => {
     if (isSubmitting) return
+
     setError(null)
     setIsSubmitting(true)
+
     try {
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Operation timed out')), 60000))
       await Promise.race([
@@ -169,9 +182,8 @@ export default function TransferModal({
           targetAccountKey,
           targetFolderId: currentFolderId || rootFolderId(targetProviderId),
         }),
-        timeoutPromise
+        timeoutPromise,
       ])
-      // Success is handled by parent unmounting us
     } catch (err: any) {
       setError(err?.message || 'Transfer failed')
       setIsSubmitting(false)
@@ -181,116 +193,146 @@ export default function TransferModal({
   return (
     <div
       data-testid="transfer-modal-overlay"
-      className="fixed inset-0 z-[1200] bg-black/50 flex items-center justify-center p-4"
-      onPointerDown={(e) => {
-        if (e.target === e.currentTarget && !isSubmitting) onClose()
+      className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/60 p-4"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget && !isSubmitting) onClose()
       }}
     >
-      <div data-testid="transfer-modal-content" className="w-full max-w-2xl rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-5 border-b border-gray-200 dark:border-gray-800">
+      <div
+        data-testid="transfer-modal-content"
+        className="w-full max-w-3xl overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="border-b border-[var(--cf-border)] px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-base font-semibold text-gray-900 dark:text-gray-100">{mode === 'copy' ? 'Copy' : 'Move'} file</div>
-              <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 truncate">{file.name}</div>
+              <div className="cf-kicker">{mode === 'copy' ? 'Transfer Copy' : 'Transfer Move'}</div>
+              <div className="mt-2 text-lg font-semibold text-[var(--cf-text-0)]">{mode === 'copy' ? 'Copy file' : 'Move file'}</div>
+              <div className="mt-1 truncate text-sm text-[var(--cf-text-1)]">{file.name}</div>
             </div>
             <button
               onClick={() => !isSubmitting && onClose()}
               disabled={isSubmitting}
-              className="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-500 disabled:opacity-50"
+              className="rounded-xl p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] disabled:opacity-50"
               aria-label="Close"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] p-4">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Source</div>
+              <div className="mt-2 text-sm font-semibold text-[var(--cf-text-0)]">{sourceProviderName}</div>
+              <div className="mt-1 truncate text-[11px] text-[var(--cf-text-2)]">{file.name}</div>
+            </div>
+            <div className="rounded-2xl border border-[rgba(0,201,167,0.22)] bg-[rgba(0,201,167,0.1)] p-4">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Destination</div>
+              <div className="mt-2 text-sm font-semibold text-[var(--cf-text-0)]">{targetProviderName}</div>
+              <div className="mt-1 truncate text-[11px] text-[var(--cf-text-2)]">{destinationPath}</div>
+            </div>
+            <div className="rounded-2xl border border-[rgba(255,159,67,0.22)] bg-[rgba(255,159,67,0.1)] p-4">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Action</div>
+              <div className="mt-2 text-sm font-semibold text-[var(--cf-text-0)]">{mode === 'copy' ? 'Duplicate into target' : 'Move into target'}</div>
+              <div className="mt-1 text-[11px] text-[var(--cf-text-2)]">
+                {mode === 'copy' ? 'Source remains untouched.' : 'Source will be removed after transfer.'}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-5 p-6 md:grid-cols-[1.05fr_1fr]">
           <div>
-            <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Target provider</label>
+            <label className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Target provider</label>
             <select
               aria-label="Target provider"
               value={targetProviderId}
-              onChange={(e) => setTargetProviderId(e.target.value as ProviderId)}
+              onChange={(event) => setTargetProviderId(event.target.value as ProviderId)}
               disabled={isSubmitting}
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+              className="mt-2 w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] disabled:opacity-50"
             >
-              {availableProviders.map((pid) => (
-                <option key={pid} value={pid}>
-                  {PROVIDERS.find((p) => p.id === pid)?.name || pid}
+              {availableProviders.map((providerId) => (
+                <option key={providerId} value={providerId}>
+                  {providerName(providerId)}
                 </option>
               ))}
             </select>
 
-            <label className="mt-4 block text-xs font-semibold text-gray-700 dark:text-gray-300">Target account</label>
+            <label className="mt-5 block font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Target account</label>
             <select
               aria-label="Target account"
               value={targetAccountKey}
-              onChange={(e) => setTargetAccountKey(e.target.value)}
+              onChange={(event) => setTargetAccountKey(event.target.value)}
               disabled={isSubmitting}
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+              className="mt-2 w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] disabled:opacity-50"
             >
-              {tokens.map((t, idx) => {
-                const k = t.accountKey || t.accountEmail || `${targetProviderId}-${idx}`
+              {tokens.map((token, index) => {
+                const key = token.accountKey || token.accountEmail || `${targetProviderId}-${index}`
                 return (
-                  <option key={k} value={k}>
-                    {t.displayName || t.accountEmail || `${targetProviderId}-${idx + 1}`}
+                  <option key={key} value={key}>
+                    {token.displayName || token.accountEmail || `${targetProviderId}-${index + 1}`}
                   </option>
                 )
               })}
             </select>
 
-            <label className="mt-4 block text-xs font-semibold text-gray-700 dark:text-gray-300">Destination folder</label>
-            <div data-testid="transfer-dest-path" className="mt-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 text-sm text-gray-900 dark:text-gray-100 font-mono truncate">
+            <label className="mt-5 block font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Destination folder</label>
+            <div data-testid="transfer-dest-path" className="mt-2 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 font-mono text-sm text-[var(--cf-text-0)] truncate">
               {destinationPath}
             </div>
-            
-            <div className="mt-2 flex flex-wrap gap-1">
-              {stack.map((s, i) => (
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              {stack.map((segment, index) => (
                 <button
-                  key={`${s.id}-${i}`}
-                  onClick={() => !isSubmitting && setStack((prev) => prev.slice(0, i + 1))}
+                  key={`${segment.id}-${index}`}
+                  onClick={() => !isSubmitting && setStack((previous) => previous.slice(0, index + 1))}
                   disabled={isSubmitting}
-                  className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
+                  className="rounded-full border border-[var(--cf-border)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] disabled:opacity-50"
                 >
-                  {i === 0 ? '/' : s.label}
+                  {index === 0 ? '/' : segment.label}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col h-[300px]">
-            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-              <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">Folders</div>
-              {loading && <div className="text-xs text-gray-500 animate-pulse">Loading…</div>}
+          <div className="flex h-[320px] flex-col overflow-hidden rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-bg)]">
+            <div className="flex items-center justify-between border-b border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+              <div>
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Folder browser</div>
+                <div className="mt-1 text-sm font-medium text-[var(--cf-text-0)]">Choose a destination</div>
+              </div>
+              {loading && <div className="animate-pulse font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--cf-blue)]">Loading</div>}
             </div>
-            
+
             {error && (
-              <div className="px-4 py-3 text-sm text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-900/20 flex flex-col gap-2">
+              <div className="flex flex-col gap-2 border-b border-[rgba(255,92,92,0.2)] bg-[rgba(255,92,92,0.08)] px-4 py-3 text-sm text-[var(--cf-red)]">
                 <p>{error}</p>
-                <button 
-                  onClick={() => loadFolders()}
-                  className="text-xs font-semibold underline text-left"
+                <button
+                  onClick={() => void loadFolders()}
+                  className="text-left font-mono text-[10px] font-bold uppercase tracking-[0.12em] underline"
                 >
                   Retry
                 </button>
               </div>
             )}
-            
+
             <div className="flex-1 overflow-auto">
               {folders.length === 0 && !loading && !error ? (
-                <div className="px-4 py-6 text-sm text-gray-500 text-center italic">No folders found</div>
+                <div className="px-4 py-8 text-center text-sm text-[var(--cf-text-2)]">No folders found</div>
               ) : (
-                folders.map((f) => (
+                folders.map((folder) => (
                   <button
-                    key={f.id}
-                    onClick={() => !isSubmitting && setStack((prev) => [...prev, { id: f.id, label: f.name }])}
+                    key={folder.id}
+                    onClick={() => !isSubmitting && setStack((previous) => [...previous, { id: folder.id, label: folder.name }])}
                     disabled={isSubmitting}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2 disabled:opacity-50 group"
+                    className="group flex w-full items-center gap-3 border-b border-[var(--cf-border)]/70 px-4 py-3 text-left text-sm text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] disabled:opacity-50"
                   >
-                    <span className="group-hover:scale-110 transition-transform">📁</span>
-                    <span className="truncate">{f.name}</span>
+                    <span className="rounded-xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] px-2 py-1 text-[12px] transition group-hover:scale-105">
+                      📁
+                    </span>
+                    <span className="truncate">{folder.name}</span>
                   </button>
                 ))
               )}
@@ -298,22 +340,22 @@ export default function TransferModal({
           </div>
         </div>
 
-        <div className="p-5 border-t border-gray-200 dark:border-gray-800 flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-3 border-t border-[var(--cf-border)] px-6 py-5">
           <button
             onClick={() => !isSubmitting && onClose()}
             disabled={isSubmitting}
-            className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-xl border border-[var(--cf-border)] px-4 py-2 text-sm font-medium text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            className="flex items-center gap-2 rounded-xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2 text-sm font-semibold text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.2)] disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--cf-blue)]/25 border-t-[var(--cf-blue)]" />
                 {mode === 'copy' ? 'Copying...' : 'Moving...'}
               </>
             ) : (
