@@ -299,4 +299,4 @@ npx playwright test e2e/localhost-qa.spec.ts  # Completes without timeout
 
 ---
 
-**Begin with Task 1. Report progress after each task completes.**
+**This is an audit-only prompt: review Task 1 and report proposed changes; begin execution only after explicit approval.**

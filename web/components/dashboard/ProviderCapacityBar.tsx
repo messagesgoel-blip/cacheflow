@@ -5,6 +5,7 @@ import { formatBytes } from '@/lib/providers/types'
 interface ProviderCapacityBarProps {
   providers: Array<{
     providerId: string
+    accountKey?: string
     accountEmail?: string
     displayName?: string
     quota?: { used: number; total: number }
@@ -44,6 +45,12 @@ function getProviderDisplayName(providerId: string, displayName?: string, accoun
 }
 
 export default function ProviderCapacityBar({ providers }: ProviderCapacityBarProps) {
+  const getThresholdColor = (pct: number, providerId: string) => {
+    if (pct >= 95) return 'bg-[var(--cf-red)]'
+    if (pct >= 80) return 'bg-[var(--cf-amber)]'
+    return providerColors[providerId] || 'bg-blue-500'
+  }
+
   const providersWithQuota = providers.filter(p => p.quota && p.quota.total > 0)
   const providersWithoutQuota = providers.filter(p => !p.quota || p.quota.total === 0)
 
@@ -63,10 +70,13 @@ export default function ProviderCapacityBar({ providers }: ProviderCapacityBarPr
             const percent = provider.quota!.total > 0
               ? (provider.quota!.used / provider.quota!.total) * 100
               : 0
-            const colorClass = providerColors[provider.providerId] || 'bg-blue-500'
+            const clampedPercent = Math.max(0, Math.min(percent, 100))
+            const freeBytes = Math.max(0, provider.quota!.total - provider.quota!.used)
+            const isOverQuota = provider.quota!.used > provider.quota!.total
+            const colorClass = getThresholdColor(percent, provider.providerId)
 
             return (
-              <div key={provider.providerId} className="space-y-2">
+              <div key={`${provider.providerId}:${provider.accountKey || provider.accountEmail || provider.displayName || 'default'}`} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
@@ -77,20 +87,39 @@ export default function ProviderCapacityBar({ providers }: ProviderCapacityBarPr
                     <span className="font-medium text-gray-900 dark:text-white text-sm">
                       {getProviderDisplayName(provider.providerId, provider.displayName, provider.accountEmail)}
                     </span>
+                    {percent >= 95 ? (
+                      <span className="text-[10px]" title="Critical: Over 95% capacity">🚨</span>
+                    ) : percent >= 80 ? (
+                      <span className="text-[10px]" title="Warning: Over 80% capacity">⚠️</span>
+                    ) : null}
                   </div>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {formatBytes(provider.quota!.used)} / {formatBytes(provider.quota!.total)}
                   </span>
                 </div>
-                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={Math.round(clampedPercent)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuetext={
+                    isOverQuota
+                      ? `${Math.round(percent)}% used, ${formatBytes(provider.quota!.used - provider.quota!.total)} over quota`
+                      : `${Math.round(percent)}% used, ${formatBytes(freeBytes)} free`
+                  }
+                  aria-label={`${getProviderDisplayName(provider.providerId, provider.displayName, provider.accountEmail)} storage usage`}
+                >
                   <div
                     className={`h-full transition-all duration-500 ${colorClass}`}
-                    style={{ width: `${Math.min(percent, 100)}%` }}
+                    style={{ width: `${clampedPercent}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                   <span>{Math.round(percent)}% used</span>
-                  <span>{formatBytes(provider.quota!.total - provider.quota!.used)} free</span>
+                  <span>
+                    {isOverQuota ? `${formatBytes(provider.quota!.used - provider.quota!.total)} over quota` : `${formatBytes(freeBytes)} free`}
+                  </span>
                 </div>
               </div>
             )
@@ -106,7 +135,7 @@ export default function ProviderCapacityBar({ providers }: ProviderCapacityBarPr
           <div className="flex flex-wrap gap-2">
             {providersWithoutQuota.map((provider) => (
               <span
-                key={provider.providerId}
+                key={`${provider.providerId}:${provider.accountKey || provider.accountEmail || provider.displayName || 'default'}`}
                 className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs text-gray-600 dark:text-gray-300"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -139,9 +139,15 @@ export default function Sidebar({
   }
 
   const getUsageColor = (percent: number) => {
-    if (percent > 90) return 'bg-[var(--cf-red)]'
-    if (percent > 75) return 'bg-[var(--cf-amber)]'
+    if (percent >= 95) return 'bg-[var(--cf-red)]'
+    if (percent >= 80) return 'bg-[var(--cf-amber)]'
     return 'bg-[var(--cf-blue)]'
+  }
+
+  const getStorageStatusLabel = (percent: number) => {
+    if (percent >= 95) return { text: 'Storage Critical', className: 'text-[var(--cf-red)]' }
+    if (percent >= 80) return { text: 'Storage Low', className: 'text-[var(--cf-amber)]' }
+    return null
   }
 
   const getAccountLabel = (account: ConnectedProvider) =>
@@ -195,12 +201,18 @@ export default function Sidebar({
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--cf-bg3)]">
               <div
                 className={`h-full transition-all duration-500 ${getUsageColor(aggregateQuota.percent)}`}
-                style={{ width: `${aggregateQuota.percent}%` }}
+                style={{ width: `${Math.max(0, Math.min(aggregateQuota.percent, 100))}%` }}
               />
             </div>
             <p className="mt-2 font-mono text-[10px] text-[var(--cf-text-1)]">
               {formatBytes(aggregateQuota.used)} of {formatBytes(aggregateQuota.total)} used
             </p>
+            {(() => {
+              const status = getStorageStatusLabel(aggregateQuota.percent)
+              return status ? (
+                <p className={`mt-1 font-mono text-[10px] font-semibold ${status.className}`}>{status.text}</p>
+              ) : null
+            })()}
           </div>
         </div>
       )}
@@ -290,12 +302,19 @@ export default function Sidebar({
                         <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--cf-bg3)]">
                           <div
                             className={`h-full ${getUsageColor(usagePercent)}`}
-                            style={{ width: `${usagePercent}%` }}
+                            style={{ width: `${Math.max(0, Math.min(usagePercent, 100))}%` }}
                           />
                         </div>
                         <div className="mt-0.5 flex justify-between font-mono text-[8px] tracking-[0.08em] text-[var(--cf-text-3)]">
                           <span>{formatBytes(quota.used)}</span>
-                          <span>{Math.round(usagePercent)}%</span>
+                          {(() => {
+                            const status = getStorageStatusLabel(usagePercent)
+                            return status ? (
+                              <span className={status.className}>{status.text}</span>
+                            ) : (
+                              <span>{Math.round(usagePercent)}%</span>
+                            )
+                          })()}
                         </div>
                       </div>
                     )}
