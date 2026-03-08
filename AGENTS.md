@@ -17,16 +17,16 @@ Commits: git commit --no-verify; do not commit .next/, node_modules/, coverage/,
 Definition of done: no change is considered done until it is tested, committed, and deployed from a clean git worktree in `/opt/docker/apps/cacheflow`. Do not treat uncommitted local changes or dirty-tree builds as done for live.
 
 ## Branch Naming
-All feature branches must follow: `feat/LIN-{issue-id}-{short-description}`
-Example: `feat/LIN-42-oauth-token-fix`
-This enables Linear auto-tracking of commits against issues.
+All feature branches must follow: `feat/URM-{issue-id}-{short-description}`
+Example: `feat/URM-42-oauth-token-fix`
+This enables issue auto-tracking of commits against issues.
 
 ## Pull Requests
 - Open a PR for feature work before it is considered ready for review or merge.
-- Every PR branch must follow `feat/LIN-{issue-id}-{short-description}` so Linear can associate commits with the issue.
-- PR title should include the Linear key when applicable.
+- Every PR branch must follow `feat/URM-{issue-id}-{short-description}` so the issue tracker can associate commits with the issue.
+- PR title should include the issue key when applicable.
 - PR description must include:
-  - linked Linear issue
+  - linked issue
   - summary of scope
   - tests run
   - deploy impact

@@ -1,7 +1,7 @@
-## Linear
+## Issue
 
-- Issue: `LIN-`
-- Branch: `feat/LIN-{issue-id}-{short-description}`
+- Issue: `URM-`
+- Branch: `feat/URM-{issue-id}-{short-description}`
 
 ## CodeRabbit
 
@@ -37,8 +37,8 @@ Notes:
 
 ## Checklist
 
-- [ ] PR title includes the Linear key when applicable
-- [ ] Branch name follows `feat/LIN-{issue-id}-{short-description}`
+- [ ] PR title includes the issue key when applicable
+- [ ] Branch name follows `feat/URM-{issue-id}-{short-description}`
 - [ ] CodeRabbit review requested with `@coderabbitai review`
 - [ ] CodeRabbit summary requested with `@coderabbitai summary`
 - [ ] Tests were updated in the same PR if behavior changed
