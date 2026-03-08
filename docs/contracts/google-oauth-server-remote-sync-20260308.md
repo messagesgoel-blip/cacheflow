@@ -6,6 +6,7 @@
 
 ## Changes
 - updated `ConnectProviderModal` to persist successful OAuth results to `/api/remotes`
+- added missing web-side `/api/remotes` proxy route so browser requests can reach the backend remotes API
 - rollback local token state if server-side remote persistence fails
 - dispatch `cacheflow:remote-connected` so `ProviderHub` refreshes without a full page reload
 - normalized `google_drive` to `google` in `/api/connections` mapping so legacy rows remain visible
