@@ -4,6 +4,32 @@ set -euo pipefail
 REPO_DIR="/opt/docker/apps/cacheflow"
 COMPOSE_FILE="infra/docker-compose.yml"
 APP_SERVICES=(api worker web)
+OPTIONAL_COMPOSE_FILES=(
+  "infra/docker-compose.tailnet.yml"
+)
+
+compose_args() {
+  local args=(-f "$COMPOSE_FILE")
+  local file
+
+  for file in "${OPTIONAL_COMPOSE_FILES[@]}"; do
+    if [[ -f "$file" ]]; then
+      args+=(-f "$file")
+    fi
+  done
+
+  printf '%s\n' "${args[@]}"
+}
+
+collect_app_services() {
+  local services=("${APP_SERVICES[@]}")
+
+  if [[ -f "infra/docker-compose.tailnet.yml" ]]; then
+    services+=(web-tailnet)
+  fi
+
+  printf '%s\n' "${services[@]}"
+}
 
 require_clean_git() {
   if [[ -n "$(git status --short)" ]]; then
@@ -70,6 +96,9 @@ prune_cacheflow_images() {
 
 cd "$REPO_DIR"
 
+mapfile -t COMPOSE_ARGS < <(compose_args)
+mapfile -t DEPLOY_SERVICES < <(collect_app_services)
+
 echo "==> Checking git worktree..."
 require_clean_git
 
@@ -81,15 +110,15 @@ SHA=$(git rev-parse --short HEAD)
 IMAGE="cacheflow:$SHA"
 
 echo "==> Building API and worker images..."
-docker compose -f "$COMPOSE_FILE" build api worker
+docker compose "${COMPOSE_ARGS[@]}" build api worker
 
 echo "==> Building image $IMAGE..."
 docker build -t "$IMAGE" -t cacheflow:latest .
 
 echo "==> Deploying..."
-CACHEFLOW_IMAGE="$IMAGE" docker compose -f "$COMPOSE_FILE" up -d --force-recreate "${APP_SERVICES[@]}"
+CACHEFLOW_IMAGE="$IMAGE" docker compose "${COMPOSE_ARGS[@]}" up -d --force-recreate "${DEPLOY_SERVICES[@]}"
 
 prune_cacheflow_images
 
 echo "==> Done. Live image: $IMAGE"
-docker compose -f "$COMPOSE_FILE" ps "${APP_SERVICES[@]}"
+docker compose "${COMPOSE_ARGS[@]}" ps "${DEPLOY_SERVICES[@]}"
