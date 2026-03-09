@@ -54,7 +54,36 @@ class VaultSessionManager {
     const remaining = session.expiresAt.getTime() - now.getTime();
     return Math.max(0, remaining);
   }
+
+  /**
+   * Get vault by ID (stub - implement with actual storage)
+   */
+  static async getById(vaultId: string): Promise<VaultSession | null> {
+    console.warn('[vaultSession] getById not implemented, returning null');
+    return null;
+  }
+
+  /**
+   * Validate TOTP code (stub - implement with actual TOTP verification)
+   */
+  static async validateTOTP(vaultId: string, code: string): Promise<boolean> {
+    console.warn('[vaultSession] validateTOTP not implemented, returning false');
+    return false;
+  }
+
+  /**
+   * Validate PIN (stub - implement with actual PIN verification)
+   */
+  static async validatePIN(vaultId: string, pin: string): Promise<boolean> {
+    console.warn('[vaultSession] validatePIN not implemented, returning false');
+    return false;
+  }
 }
+
+// Re-export for backwards compatibility with route imports
+export const getVaultById = VaultSessionManager.getById;
+export const validateVaultTOTP = VaultSessionManager.validateTOTP;
+export const validateVaultPIN = VaultSessionManager.validatePIN;
 
 export type { VaultSession };
 export { VaultSessionManager };
