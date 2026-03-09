@@ -4,6 +4,86 @@ set -euo pipefail
 REPO_DIR="/opt/docker/apps/cacheflow"
 COMPOSE_FILE="infra/docker-compose.yml"
 APP_SERVICES=(api worker web)
+OPTIONAL_COMPOSE_FILE_SERVICES=(
+  "infra/docker-compose.tailnet.yml:web-tailnet"
+)
+
+compose_args() {
+  local args=(-f "$COMPOSE_FILE")
+  local entry file services
+
+  for entry in "${OPTIONAL_COMPOSE_FILE_SERVICES[@]}"; do
+    IFS=':' read -r file services <<< "$entry"
+    if [[ -f "$file" ]]; then
+      args+=(-f "$file")
+    fi
+  done
+
+  printf '%s\n' "${args[@]}"
+}
+
+collect_app_services() {
+  local services=("${APP_SERVICES[@]}")
+  local entry file extra_services
+
+  for entry in "${OPTIONAL_COMPOSE_FILE_SERVICES[@]}"; do
+    IFS=':' read -r file extra_services <<< "$entry"
+    [[ -f "$file" ]] || continue
+    read -r -a extra_service_array <<< "$extra_services"
+    services+=("${extra_service_array[@]}")
+  done
+
+  printf '%s\n' "${services[@]}"
+}
+
+verify_deploy() {
+  local attempts=30
+  local delay_seconds=2
+  local all_ready=0
+  local service container_id state health
+
+  echo "==> Verifying deployed services..."
+
+  for ((attempt = 1; attempt <= attempts; attempt+=1)); do
+    all_ready=1
+
+    for service in "${DEPLOY_SERVICES[@]}"; do
+      container_id="$(docker compose "${COMPOSE_ARGS[@]}" ps -q "$service")"
+      if [[ -z "$container_id" ]]; then
+        all_ready=0
+        break
+      fi
+
+      state="$(docker inspect --format '{{.State.Status}}' "$container_id")"
+      health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$container_id")"
+
+      case "$state:$health" in
+        running:healthy|running:none)
+          ;;
+        exited:*|dead:*|removing:*|restarting:unhealthy|running:unhealthy)
+          echo "==> Deployment verification failed for service $service (state=$state, health=$health)." >&2
+          docker compose "${COMPOSE_ARGS[@]}" logs --tail 100 "${DEPLOY_SERVICES[@]}"
+          exit 1
+          ;;
+        *)
+          all_ready=0
+          break
+          ;;
+      esac
+    done
+
+    if (( all_ready == 1 )); then
+      return 0
+    fi
+
+    sleep "$delay_seconds"
+  done
+
+  echo "==> Deployment verification timed out." >&2
+  docker compose "${COMPOSE_ARGS[@]}" ps "${DEPLOY_SERVICES[@]}"
+  docker compose "${COMPOSE_ARGS[@]}" logs --tail 100 "${DEPLOY_SERVICES[@]}"
+  exit 1
+}
 
 require_clean_git() {
   if [[ -n "$(git status --short)" ]]; then
@@ -77,19 +157,24 @@ echo "==> Pulling latest from git..."
 git fetch origin main
 git merge --ff-only FETCH_HEAD
 
+mapfile -t COMPOSE_ARGS < <(compose_args)
+mapfile -t DEPLOY_SERVICES < <(collect_app_services)
+
 SHA=$(git rev-parse --short HEAD)
 IMAGE="cacheflow:$SHA"
 
 echo "==> Building API and worker images..."
-docker compose -f "$COMPOSE_FILE" build api worker
+docker compose "${COMPOSE_ARGS[@]}" build api worker
 
 echo "==> Building image $IMAGE..."
 docker build -t "$IMAGE" -t cacheflow:latest .
 
 echo "==> Deploying..."
-CACHEFLOW_IMAGE="$IMAGE" docker compose -f "$COMPOSE_FILE" up -d --force-recreate "${APP_SERVICES[@]}"
+CACHEFLOW_IMAGE="$IMAGE" docker compose "${COMPOSE_ARGS[@]}" up -d --force-recreate "${DEPLOY_SERVICES[@]}"
+
+verify_deploy
 
 prune_cacheflow_images
 
 echo "==> Done. Live image: $IMAGE"
-docker compose -f "$COMPOSE_FILE" ps "${APP_SERVICES[@]}"
+docker compose "${COMPOSE_ARGS[@]}" ps "${DEPLOY_SERVICES[@]}"
