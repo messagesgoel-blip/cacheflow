@@ -26,9 +26,11 @@
 ## Local async review
 
 - `scripts/coderabbit-local-review.sh start --type committed` launches a background review for the current branch.
-- Default mode is `--prompt-only` so agent-facing output lands in `logs/coderabbit-local-<branch>.log`.
-- Status is persisted to `monitoring/coderabbit-local-<branch>.yaml`.
-- `.githooks/pre-push` and `scripts/finish_task.sh` launch this async review instead of blocking on CLI completion.
+- The canonical shared command is `coderabbit-local-review`; the repo script delegates to it.
+- Default mode is `--prompt-only` so agent-facing output lands in `.git/coderabbit/logs/<branch>.log`.
+- Status is persisted to `.git/coderabbit/status/<branch>.yaml`.
+- The shared Git hooks in `/home/sanjay/.config/git/hooks` launch local reviews for any repo using the global hooks path.
+- CacheFlow’s `.githooks/pre-commit`, `.githooks/pre-push`, and `scripts/finish_task.sh` also launch the same shared command so repo-local hooks stay aligned.
 
 ## Review Logic (lib/coderabbit/)
 

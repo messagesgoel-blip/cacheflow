@@ -37,4 +37,3 @@ docs/sprints-task-dashboard.md
 monitoring/cacheflow_metrics.yaml
 monitoring/cacheflow_sprint_tasks.yaml
 monitoring/cacheflow_task_state.yaml
-monitoring/coderabbit-local-*.yaml

@@ -39,15 +39,8 @@ fi
 
 echo ""
 echo "=== Local CodeRabbit reviews ==="
-local_files=("$ROOT"/monitoring/coderabbit-local-*.yaml)
-if [ ${#local_files[@]} -eq 0 ]; then
-  echo "  (none)"
+if command -v coderabbit-local-review >/dev/null 2>&1; then
+  coderabbit-local-review status 2>/dev/null | sed 's/^/  /' || echo "  (none for current branch)"
 else
-  for file in "${local_files[@]}"; do
-    branch=$(grep "^branch:" "$file" | cut -d" " -f2-)
-    status=$(grep "^status:" "$file" | cut -d" " -f2-)
-    head=$(grep "^head:" "$file" | cut -d" " -f2-)
-    note=$(grep "^note:" "$file" | cut -d" " -f2-)
-    echo "  ${branch}: ${status} @ ${head} | ${note}"
-  done
+  echo "  coderabbit-local-review not installed"
 fi
