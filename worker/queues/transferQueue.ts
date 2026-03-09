@@ -84,7 +84,7 @@ export async function addTransferJob(data: TransferJobData): Promise<Job<Transfe
   
   const job = await transferQueue.add(jobId, data, {
     jobId,
-    priority: data.fileSize > 50 * 1024 * 1024 ? 10 : 5, // Higher priority for large files
+    priority: data.fileSize >= 50 * 1024 * 1024 ? 5 : 10, // Lower numbers run first in BullMQ
   });
 
   console.log(`[TransferQueue] Added job ${job.id} for ${data.fileName} (${data.fileSize} bytes)`);

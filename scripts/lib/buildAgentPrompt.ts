@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import * as path from "node:path";
-import type { Agent, Task } from "./types";
+import type { Agent, Task } from "../../lib/orchestration/types";
 
 const ROLE_TEXT: Record<Agent, string> = {
   opencode:

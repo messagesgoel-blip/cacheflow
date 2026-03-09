@@ -35,14 +35,15 @@ router.post('/', async (req, res) => {
       url,
       provider,
       filename,
-      metadata
+      metadata,
+      user: req.user,
     });
 
     res.json(result);
   } catch (error) {
     console.error('Remote upload error:', error);
     
-    if (error.message?.includes('timeout')) {
+    if (error.name === 'AbortError' || error.code === 'ABORT_ERR' || error.message?.includes('timeout')) {
       return res.status(504).json({
         error: 'Timeout downloading from remote URL'
       });

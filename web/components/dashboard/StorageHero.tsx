@@ -35,6 +35,7 @@ function getProviderDisplayName(providerId: string, displayName?: string, accoun
 }
 
 export default function StorageHero({ connectedProviders }: StorageHeroProps) {
+  const titleId = 'storage-hero-status-icon'
   const aggregateQuota = useMemo(() => {
     let used = 0
     let total = 0
@@ -97,7 +98,8 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
               <p className="text-sm text-[var(--cf-text-1)]">{connectedProviders.length} provider{connectedProviders.length !== 1 ? 's' : ''} connected</p>
             </div>
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--cf-border-2)] bg-[rgba(74,158,255,0.12)] backdrop-blur-sm">
-              <svg className="h-7 w-7 text-[var(--cf-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg aria-labelledby={titleId} role="img" className="h-7 w-7 text-[var(--cf-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <title id={titleId}>Storage usage status</title>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
               </svg>
             </div>
@@ -114,7 +116,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
             </div>
             <div className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4">
               <p className="cf-kicker mb-1.5">Free</p>
-              <p className="font-mono text-[24px] font-bold text-[var(--cf-amber)]">{formatBytes(Math.max(0, aggregateQuota.total - aggregateQuota.used))}</p>
+              <p className={`font-mono text-[24px] font-bold ${aggregateQuota.percent >= 80 ? 'text-[var(--cf-amber)]' : 'text-[var(--cf-text-1)]'}`}>{formatBytes(Math.max(0, aggregateQuota.total - aggregateQuota.used))}</p>
             </div>
           </div>
         </div>

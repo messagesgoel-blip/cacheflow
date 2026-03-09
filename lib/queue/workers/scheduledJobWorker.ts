@@ -1,10 +1,7 @@
 import { Worker, Job, Queue } from 'bullmq';
 import { getRedisClient } from '../../redis/client';
 import { executeJob } from '../../jobs/jobEngine';
-
-interface ThrottleConfig {
-  maxBytesPerSecond: number | null;
-}
+import type { ThrottleConfig } from '../../jobs/types';
 
 interface ScheduledJobData {
   jobId: string;

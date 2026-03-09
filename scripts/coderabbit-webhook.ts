@@ -48,7 +48,7 @@ function verifySignature(req: Request): boolean {
 async function handleCodeRabbitReview(payload: GitHubReviewPayload): Promise<void> {
   const pr = payload.pull_request?.number;
   const body = payload.review?.body ?? "";
-  if (!Number.isInteger(pr)) {
+  if (!Number.isInteger(pr) || (pr as number) <= 0) {
     return;
   }
 

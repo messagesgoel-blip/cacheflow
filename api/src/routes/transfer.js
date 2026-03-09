@@ -1,6 +1,6 @@
 const express = require('express');
 const authMw = require('../middleware/auth');
-const { addTransferJob, cancelTransferJob } = require('../services/transferService');
+const { addTransferJob, cancelTransferJob, getTransferJob } = require('../services/transferService');
 
 const router = express.Router();
 router.use(authMw);
@@ -12,12 +12,24 @@ router.use(authMw);
 // sticky-session deployments. Use Redis-backed state for horizontal scaling.
 const activeTransfers = new Map();
 
-router.get('/progress/:taskId', (req, res) => {
+router.get('/progress/:taskId', async (req, res) => {
   const { taskId } = req.params;
   const transfer = activeTransfers.get(taskId);
 
   if (!transfer || transfer.owner !== req.user.id) {
     return res.status(404).json({ success: false, error: 'Transfer not found' });
+  }
+
+  try {
+    const job = await getTransferJob(transfer.jobId || taskId);
+    if (job) {
+      const progress = typeof job.progress === 'number' ? job.progress : transfer.progress || 0;
+      const state = await job.getState();
+      transfer.progress = progress;
+      transfer.status = state;
+    }
+  } catch (err) {
+    console.warn(`[transfer] Failed to refresh progress for ${taskId}:`, err.message);
   }
 
   res.json({ success: true, taskId, progress: transfer.progress || 0, status: transfer.status || 'unknown' });
@@ -31,13 +43,14 @@ router.post('/start', async (req, res) => {
   }
 
   try {
+    const parsedFileSize = parseInt(fileSize, 10) || 0;
     const job = await addTransferJob({
       userId: req.user.id,
       sourceProvider,
       destProvider,
       fileId,
       fileName: fileName || 'unknown',
-      fileSize: parseInt(fileSize, 10) || 0,
+      fileSize: parsedFileSize,
       sourceFolderId,
       destFolderId,
       operation: 'copy',
@@ -52,7 +65,7 @@ router.post('/start', async (req, res) => {
       destProvider,
       fileId,
       fileName: fileName || 'unknown',
-      fileSize: parseInt(fileSize, 10) || 0,
+      fileSize: parsedFileSize,
       progress: 0,
       status: 'queued',
       createdAt: new Date().toISOString(),

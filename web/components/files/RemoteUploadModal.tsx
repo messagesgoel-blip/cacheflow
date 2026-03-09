@@ -182,11 +182,6 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
     setLoading(true)
 
     try {
-      const token = localStorage.getItem('cf_token')
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-
       const requestBody = {
         url: url.trim(),
         provider: targetProvider,
@@ -200,8 +195,8 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(requestBody),
       })
 
@@ -214,13 +209,13 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
       // Show success notification
       actions.notify({
         kind: 'success',
-        title: 'Remote Upload Started',
-        message: filename || extractFilename(url) || 'File is being downloaded',
+        title: 'Remote Upload Complete',
+        message: filename || extractFilename(url) || 'File uploaded successfully',
       })
 
       onClose()
-    } catch (err: any) {
-      setError(err.message || 'Failed to start remote upload')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to start remote upload')
     } finally {
       setLoading(false)
     }

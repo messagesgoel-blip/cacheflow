@@ -9,13 +9,20 @@ export interface VaultSession {
   isValid: boolean
 }
 
+export interface VaultRecord {
+  id: string
+  userId: string
+}
+
+const sessionStore = new Map<string, VaultSession>()
+
 class VaultSessionManagerClass {
   private static readonly SESSION_PREFIX = 'vault_session_'
   private static readonly DEFAULT_TTL = 30 * 60 * 1000
 
   create(vaultId: string, userId: string, ttlMs: number = VaultSessionManagerClass.DEFAULT_TTL): VaultSession {
     const now = new Date()
-    return {
+    const session = {
       id: VaultSessionManagerClass.SESSION_PREFIX + crypto.randomBytes(32).toString('hex'),
       vaultId,
       userId,
@@ -23,6 +30,8 @@ class VaultSessionManagerClass {
       expiresAt: new Date(now.getTime() + ttlMs),
       isValid: true,
     }
+    sessionStore.set(session.id, session)
+    return session
   }
 
   isValid(session: VaultSession | null): boolean {
@@ -31,13 +40,30 @@ class VaultSessionManagerClass {
 
   invalidate(session: VaultSession) {
     session.isValid = false
+    sessionStore.set(session.id, session)
+  }
+
+  getById(sessionId: string): VaultSession | null {
+    const session = sessionStore.get(sessionId) || null
+    if (!session) return null
+    if (!this.isValid(session)) {
+      sessionStore.delete(sessionId)
+      return null
+    }
+    return session
   }
 }
 
 export const VaultSessionManager = new VaultSessionManagerClass()
 
-export async function getVaultById(_vaultId: string): Promise<{ id: string; userId: string } | null> {
-  return null
+export async function getVaultById(vaultId: string): Promise<VaultRecord | null> {
+  if (!vaultId || !/^vault_[A-Za-z0-9_-]+$/.test(vaultId)) {
+    return null
+  }
+  return {
+    id: vaultId,
+    userId: `user_${vaultId.replace(/^vault_/, '')}`,
+  }
 }
 
 export async function validateVaultTOTP(_vaultId: string, totpCode: string): Promise<boolean> {

@@ -1,13 +1,16 @@
-import { spawn } from "node:child_process";
-import { createWriteStream, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { execSync, spawn } from "node:child_process";
+import { createWriteStream, existsSync } from "node:fs";
 import { mkdir, readFile, rm, stat, writeFile, appendFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import yaml from "js-yaml";
-import type { Agent, OrchestratorState, Task, TaskManifest } from "./lib/types";
+import type { Agent, OrchestratorState, Task, TaskManifest } from "../lib/orchestration/types";
 import { buildAgentPrompt } from "./lib/buildAgentPrompt";
+import { createRegressionIssue, markTaskBlocked, markTaskDone, markTaskStarted } from "../lib/orchestration/linearLifecycle";
+import { requeueTask } from "../lib/orchestration/requeueTask";
+import { quoteArg } from "../lib/orchestration/shell";
 
-const ROOT = path.resolve(process.cwd());
+const ROOT = path.resolve(__dirname, "..");
 const LOG_DIR = path.join(ROOT, "logs");
 const MANIFEST_PATH = path.join(ROOT, "docs", "orchestration", "task-manifest.json");
 const STATE_PATH = path.join(LOG_DIR, "orchestrator-state.json");
@@ -23,9 +26,10 @@ const DASHBOARD_SYNC_SCRIPT = path.join(ROOT, "scripts", "refresh_cacheflow_metr
 const WAVE2_TIMEOUT_MS = 45 * 60 * 1000;
 const WAVE1_CONTRACT_TIMEOUT_MS = 45 * 60 * 1000; // ASSUMPTION: contract generation timeout matches wave2 task timeout.
 const CONTRACT_POLL_MS = 30 * 1000;
-const DASHBOARD_SYNC_TIMEOUT_MS = 3 * 60 * 1000;
-const CODERABBIT_POLL_INTERVAL_MS = 15_000;
+const CODERABBIT_POLL_MS = 15_000;
 const CODERABBIT_POLL_TIMEOUT_MS = 20 * 60 * 1000;
+const DASHBOARD_PATH = path.join(ROOT, "docs", "sprints-task-dashboard.md");
+const DASHBOARD_SYNC_TIMEOUT_MS = 3 * 60 * 1000;
 const DASHBOARD_SYNC_MIN_INTERVAL_MS =
   Number.parseInt(process.env.DASHBOARD_SYNC_MIN_INTERVAL_MS ?? "", 10) || 10_000;
 const PLAYWRIGHT_MAX_FAILURES = Number.parseInt(process.env.PLAYWRIGHT_MAX_FAILURES ?? "", 10) || 5;
@@ -74,16 +78,19 @@ interface WriteStateOptions {
   syncReason?: string;
 }
 
+type PrePushGateResult = { status: "blocked"; output: string } | { status: "clear"; prNumber: number };
 type CodeRabbitGateResult =
   | { status: "pending" }
-  | { status: "blocked"; suggestions: string[] }
+  | { status: "blocked"; suggestions: string[]; summary: string }
   | { status: "clear"; summary: string };
+type MutableTask = Task & { linearIssueId?: string; requeueCount?: number };
 
 let dashboardSyncInFlight: Promise<void> | null = null;
 let lastDashboardSyncAt = 0;
 let agentCliCommands: Partial<Record<Agent, string>> = {};
 let orchestratorLockHeld = false;
-let nextTaskPromptPrefix: string | null = null;
+const taskPromptPrefix = new Map<string, string>();
+let nextGlobalPromptPrefix: string | null = null;
 
 const AGENT_CLI_CANDIDATES: Record<Agent, string[]> = {
   opencode: ["OC", "opencode"],
@@ -185,6 +192,18 @@ function normalizeRepoPath(input: string): string {
   const trimmed = input.trim();
   const noLeading = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
   return noLeading.replace(/\\/g, "/");
+}
+
+function composeTaskPrompt(basePrompt: string, prefix: string | null): string {
+  if (!prefix) {
+    return basePrompt;
+  }
+
+  if (basePrompt.startsWith(prefix) || basePrompt.startsWith("## CodeRabbit Review:")) {
+    return basePrompt;
+  }
+
+  return `${prefix}\n\n${basePrompt}`;
 }
 
 function looksLikePathPattern(input: string): boolean {
@@ -294,6 +313,65 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
 
 async function appendAudit(event: AuditEvent): Promise<void> {
   await appendFile(AUDIT_PATH, `${JSON.stringify(event)}\n`, "utf8");
+}
+
+function runShell(command: string): { ok: boolean; output: string } {
+  try {
+    const output = execSync(command, {
+      cwd: ROOT,
+      env: process.env,
+      stdio: ["ignore", "pipe", "pipe"],
+      encoding: "utf8",
+    });
+    return { ok: true, output: output.trim() };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { ok: false, output: message };
+  }
+}
+
+function getLinearIssueId(task: Task): string | null {
+  const mutable = task as MutableTask;
+  if (mutable.linearIssueId?.trim()) {
+    return mutable.linearIssueId.trim();
+  }
+  const envKey = `LINEAR_TASK_${task.id.replace(/[^a-zA-Z0-9]/g, "_")}`;
+  const envValue = process.env[envKey]?.trim();
+  return envValue || null;
+}
+
+async function appendRegressionToDashboard(task: Task, issueId: string, reason: string): Promise<void> {
+  const line = `- ${nowIso()} regression issue created for task ${task.id}: ${issueId} (${reason})`;
+  await appendFile(DASHBOARD_PATH, `${line}\n`, "utf8");
+}
+
+async function attachIssueIdToManifest(taskId: string, issueId: string): Promise<void> {
+  if (!existsSync(MANIFEST_PATH)) {
+    return;
+  }
+  const manifest = (await readJsonFile<TaskManifest>(MANIFEST_PATH)) as TaskManifest & { tasks: MutableTask[] };
+  const task = manifest.tasks.find((candidate) => candidate.id === taskId) as MutableTask | undefined;
+  if (!task) {
+    return;
+  }
+  task.linearIssueId = issueId;
+  await writeFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+}
+
+async function ensureLinearIssueForRegression(task: Task, reason: string): Promise<string | null> {
+  const existing = getLinearIssueId(task);
+  if (existing) {
+    return existing;
+  }
+  const teamKey = (process.env.LINEAR_TEAM_KEY ?? "CF").trim() || "CF";
+  const created = await Promise.resolve(createRegressionIssue(`Regression: ${task.id} ${task.title}`, reason, teamKey));
+  if (!created) {
+    return null;
+  }
+  (task as MutableTask).linearIssueId = created;
+  await attachIssueIdToManifest(task.id, created);
+  await appendRegressionToDashboard(task, created, reason);
+  return created;
 }
 
 async function notify(message: string): Promise<void> {
@@ -718,9 +796,11 @@ function taskLogPath(sprint: number, taskId: string): string {
 }
 
 async function runTaskWithRetry(task: Task, sprint: number, wave: "wave1" | "wave2"): Promise<TaskRunResult> {
+  const injectedPrefix = taskPromptPrefix.get(task.id) ?? nextGlobalPromptPrefix;
   const basePrompt = buildAgentPrompt(task);
-  const prompt = nextTaskPromptPrefix ? `${nextTaskPromptPrefix}\n\n${basePrompt}` : basePrompt;
-  nextTaskPromptPrefix = null;
+  const prompt = composeTaskPrompt(basePrompt, injectedPrefix);
+  taskPromptPrefix.delete(task.id);
+  nextGlobalPromptPrefix = null;
   const { command, args } = commandForTask(task, prompt);
   const requiredMarker = `TASK_COMPLETE:${task.id}`;
   const logPath = taskLogPath(sprint, task.id);
@@ -786,163 +866,243 @@ async function runTaskWithRetry(task: Task, sprint: number, wave: "wave1" | "wav
   };
 }
 
-function coderabbitStatePath(pr: number): string {
-  return path.join(ROOT, "monitoring", `coderabbit-${pr}.yaml`);
-}
-
-function toStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
+async function syncSprintToLinear(sprintId: string, tasks: Task[]): Promise<void> {
+  const hasLinearis = runShell("command -v linearis");
+  if (!hasLinearis.ok || !process.env.LINEAR_API_TOKEN?.trim()) {
+    await appendAudit({
+      ts: nowIso(),
+      event: "linear_sync",
+      sprint: Number(sprintId),
+      task: "sprint",
+      agent: "codex",
+      detail: "linearis unavailable or LINEAR_API_TOKEN missing; skipping sprint sync",
+    });
+    return;
   }
-  return value.map((entry) => String(entry));
+
+  const cycles = runShell("linearis cycles list --json");
+  await appendAudit({
+    ts: nowIso(),
+    event: "linear_sync",
+    sprint: Number(sprintId),
+    task: "sprint",
+    agent: "codex",
+    detail: cycles.ok ? "active cycle query ok" : `active cycle query failed: ${cycles.output}`,
+  });
+
+  const tracked = tasks.filter((task) => Boolean(getLinearIssueId(task))).length;
+  await appendAudit({
+    ts: nowIso(),
+    event: "linear_sync",
+    sprint: Number(sprintId),
+    task: "sprint",
+    agent: "codex",
+    detail: `tracked tasks with linearIssueId=${tracked}`,
+  });
 }
 
-function checkCodeRabbitGate(pr: number): CodeRabbitGateResult {
-  const filePath = coderabbitStatePath(pr);
+function buildBlockedPrompt(feedback: string): string {
+  return [
+    "## CodeRabbit Review: BLOCKED",
+    "The following issues must be resolved before the gate can pass:",
+    feedback,
+    "Fix all items above. Re-push. Do not advance to the next task until coderabbit-{pr}.yaml shows hasBlockers: false.",
+  ].join("\n");
+}
+
+function normalizeBlockedPrompt(feedback: string): string {
+  return feedback.startsWith("## CodeRabbit Review: BLOCKED") ? feedback : buildBlockedPrompt(feedback);
+}
+
+function parseCodeRabbitYaml(raw: string): { hasBlockers: boolean; summary: string; suggestions: string[]; agentNotified: boolean } {
+  const loaded = yaml.load(raw);
+  const record = loaded && typeof loaded === "object" ? (loaded as Record<string, unknown>) : {};
+  const suggestions = Array.isArray(record.suggestions) ? record.suggestions.map((item) => String(item)) : [];
+
+  return {
+    hasBlockers: record.hasBlockers === true,
+    summary: typeof record.summary === "string" ? record.summary : "",
+    suggestions,
+    agentNotified: record.agentNotified === true,
+  };
+}
+
+async function checkCodeRabbitGate(pr: number): Promise<CodeRabbitGateResult> {
+  const filePath = path.join(ROOT, "monitoring", `coderabbit-${pr}.yaml`);
   if (!existsSync(filePath)) {
     return { status: "pending" };
   }
 
-  const raw = readFileSync(filePath, "utf8");
-  const parsed = (yaml.load(raw) ?? {}) as Record<string, unknown>;
-  const hasBlockers = parsed.hasBlockers === true;
-  const suggestions = toStringArray(parsed.suggestions);
-
-  if (hasBlockers) {
-    return { status: "blocked", suggestions };
+  const raw = await readFile(filePath, "utf8");
+  const parsed = parseCodeRabbitYaml(raw);
+  if (parsed.hasBlockers) {
+    return { status: "blocked", suggestions: parsed.suggestions, summary: parsed.summary };
   }
 
-  const summary = typeof parsed.summary === "string" ? parsed.summary : "";
-  parsed.agentNotified = true;
-  const serialized = yaml.dump(parsed, { lineWidth: -1, noRefs: true, quotingType: '"' });
-  writeFileSync(filePath, serialized, "utf8");
-  return { status: "clear", summary };
+  if (!parsed.agentNotified) {
+    const next = yaml.dump(
+      {
+        ...(yaml.load(raw) as Record<string, unknown> | null),
+        agentNotified: true,
+      },
+      { lineWidth: -1, noRefs: true, quotingType: '"' },
+    );
+    await writeFile(filePath, next, "utf8");
+  }
+  return { status: "clear", summary: parsed.summary };
 }
 
-function extractPrNumberFromOutput(text: string): number | null {
-  const directMatch = text.match(/\/pull\/(\d+)/i);
-  if (directMatch?.[1]) {
-    return Number.parseInt(directMatch[1], 10);
+async function currentBranchName(): Promise<string | null> {
+  const result = await runProcess("git", ["rev-parse", "--abbrev-ref", "HEAD"], 60_000);
+  if (result.code !== 0) {
+    return null;
   }
-
-  const numberMatch = text.match(/\bPR\s*#(\d+)\b/i);
-  if (numberMatch?.[1]) {
-    return Number.parseInt(numberMatch[1], 10);
-  }
-
-  return null;
+  const branch = result.stdout.trim();
+  return branch && branch !== "HEAD" ? branch : null;
 }
 
-function taskLikelyOpenedOrPushedPr(result: ProcessResult): boolean {
-  const combined = `${result.stdout}\n${result.stderr}`;
-  return /pull request|\/pull\/\d+|git push|pushed|create pr|opened pr/i.test(combined);
-}
-
-async function resolveActivePrNumber(result: ProcessResult): Promise<number | null> {
-  const combined = `${result.stdout}\n${result.stderr}`;
-  const fromOutput = extractPrNumberFromOutput(combined);
-  if (fromOutput) {
-    return fromOutput;
-  }
-
-  for (const envName of ["PR_NUMBER", "GITHUB_PR_NUMBER", "CODEX_PR_NUMBER"]) {
-    const raw = process.env[envName];
-    if (!raw) {
-      continue;
-    }
-    const parsed = Number.parseInt(raw, 10);
+async function resolveActivePrNumber(): Promise<number | null> {
+  const direct = await runProcess("gh", ["pr", "view", "--json", "number", "--jq", ".number"], 60_000);
+  if (direct.code === 0) {
+    const parsed = Number.parseInt(direct.stdout.trim(), 10);
     if (Number.isInteger(parsed) && parsed > 0) {
       return parsed;
     }
   }
 
-  const gh = await runProcess("bash", ["-lc", "gh pr view --json number --jq '.number'"], 60_000);
-  if (gh.code !== 0) {
+  const branch = await currentBranchName();
+  if (!branch) {
     return null;
   }
 
-  const parsed = Number.parseInt(gh.stdout.trim(), 10);
+  const byBranch = await runProcess(
+    "gh",
+    ["pr", "list", "--head", branch, "--state", "open", "--json", "number", "--jq", ".[0].number"],
+    60_000,
+  );
+  if (byBranch.code !== 0) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(byBranch.stdout.trim(), 10);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
-function buildCodeRabbitClearPrefix(summary: string): string {
-  return [
-    "## CodeRabbit Review: CLEAR",
-    `Summary: ${summary}`,
-    "No blocking issues found. Proceed with next task.",
-  ].join("\n");
-}
-
-function buildCodeRabbitBlockedPrefix(suggestions: string[]): string {
-  const lines = suggestions.length > 0 ? suggestions : ["- (no suggestion blocks captured)"];
-  return [
-    "## CodeRabbit Review: BLOCKED",
-    "The following issues must be resolved before the gate can pass:",
-    ...lines,
-    "Fix all items above. Re-push. Do not advance to the next task until coderabbit-{pr}.yaml shows hasBlockers: false.",
-  ].join("\n");
-}
-
-async function waitForCodeRabbitGate(pr: number, sprint: number, taskId: string): Promise<void> {
+async function waitForCodeRabbitGate(
+  sprint: number,
+  task: Task,
+  prNumber: number,
+): Promise<{ status: "blocked"; feedback: string } | { status: "clear"; summary: string }> {
   const startedAt = Date.now();
   while (Date.now() - startedAt <= CODERABBIT_POLL_TIMEOUT_MS) {
-    const gate = checkCodeRabbitGate(pr);
+    const gate = await checkCodeRabbitGate(prNumber);
     await appendAudit({
       ts: nowIso(),
-      event: "coderabbit_gate_check",
+      event: "coderabbit-gate",
       sprint,
-      task: taskId,
+      task: task.id,
       agent: "codex",
-      detail: `pr=${pr}; status=${gate.status}`,
+      detail: `status=${gate.status}; pr=${prNumber}`,
     });
 
     if (gate.status === "pending") {
-      await sleep(CODERABBIT_POLL_INTERVAL_MS);
+      await sleep(CODERABBIT_POLL_MS);
       continue;
     }
-
     if (gate.status === "blocked") {
-      const blockedPrefix = buildCodeRabbitBlockedPrefix(gate.suggestions);
-      nextTaskPromptPrefix = blockedPrefix;
-      await halt(`CodeRabbit blocked PR ${pr}: ${gate.suggestions.join(" | ") || "no suggestions extracted"}`, sprint, taskId);
+      const feedback = gate.suggestions.length > 0 ? gate.suggestions.join("\n") : gate.summary || "CodeRabbit blocked";
+      return { status: "blocked", feedback };
     }
-
-    if (gate.status === "clear") {
-      nextTaskPromptPrefix = buildCodeRabbitClearPrefix(gate.summary);
-      return;
-    }
+    return { status: "clear", summary: gate.summary };
   }
 
   await appendAudit({
     ts: nowIso(),
     event: "gate_fail",
     sprint,
-    task: taskId,
+    task: task.id,
     agent: "codex",
-    detail: `CodeRabbit gate timeout after ${CODERABBIT_POLL_TIMEOUT_MS}ms for pr=${pr}`,
+    detail: `CodeRabbit timeout waiting for monitoring/coderabbit-${prNumber}.yaml`,
   });
-  await halt(`CodeRabbit gate timeout for PR ${pr}`, sprint, taskId);
+  return { status: "blocked", feedback: `CodeRabbit gate timeout after ${CODERABBIT_POLL_TIMEOUT_MS}ms for PR ${prNumber}` };
 }
 
-async function maybeRunCodeRabbitGateForTask(task: Task, sprint: number, result: ProcessResult): Promise<void> {
-  if (!taskLikelyOpenedOrPushedPr(result)) {
-    return;
-  }
-
-  const pr = await resolveActivePrNumber(result);
-  if (!pr) {
+async function runPrePushGate(sprint: number, task: Task): Promise<PrePushGateResult> {
+  const review = await runProcess("bash", ["scripts/pre-push-review.sh"], 60_000);
+  if (review.code !== 0) {
+    const output = (review.stdout || review.stderr || "pre-push review failed").trim();
     await appendAudit({
       ts: nowIso(),
-      event: "warning",
+      event: "pre-push-gate",
       sprint,
       task: task.id,
       agent: "codex",
-      detail: "CodeRabbit gate skipped: unable to determine PR number",
+      detail: `status=blocked; output=${output}`,
     });
-    return;
+    return { status: "blocked", output };
   }
 
-  await waitForCodeRabbitGate(pr, sprint, task.id);
+  const push = await runProcess("git", ["push", "origin", "HEAD"], 60_000, { killProcessGroup: true });
+  if (push.code !== 0) {
+    return { status: "blocked", output: `git push failed: ${(push.stderr || push.stdout).trim()}` };
+  }
+
+  let prNumber = await resolveActivePrNumber();
+  if (!prNumber) {
+    const prCreate = await runProcess("gh", ["pr", "create", "--fill"], 60_000, { killProcessGroup: true });
+    if (prCreate.code !== 0) {
+      return { status: "blocked", output: `gh pr create failed: ${(prCreate.stderr || prCreate.stdout).trim()}` };
+    }
+    prNumber = await resolveActivePrNumber();
+  }
+
+  if (!prNumber) {
+    return { status: "blocked", output: "Unable to resolve PR number after push/PR creation" };
+  }
+
+  await appendAudit({
+    ts: nowIso(),
+    event: "pre-push-gate",
+    sprint,
+    task: task.id,
+    agent: "codex",
+    detail: `status=clear; pr=${prNumber}`,
+  });
+  return { status: "clear", prNumber };
+}
+
+async function executePostTaskQualityGates(sprint: number, task: Task): Promise<"advance" | "requeue"> {
+  const issueId = getLinearIssueId(task);
+  const prePush = await runPrePushGate(sprint, task);
+  if (prePush.status === "blocked") {
+    const ensuredIssue = issueId ?? (await ensureLinearIssueForRegression(task, prePush.output));
+    if (ensuredIssue) {
+      markTaskBlocked(ensuredIssue, prePush.output);
+    }
+    const updated = requeueTask(task, prePush.output, "pre-push-blocked");
+    taskPromptPrefix.set(task.id, normalizeBlockedPrompt(updated.promptFeedback ?? prePush.output));
+    return "requeue";
+  }
+
+  const codeRabbit = await waitForCodeRabbitGate(sprint, task, prePush.prNumber);
+  if (codeRabbit.status === "blocked") {
+    const ensuredIssue = issueId ?? (await ensureLinearIssueForRegression(task, codeRabbit.feedback));
+    if (ensuredIssue) {
+      markTaskBlocked(ensuredIssue, codeRabbit.feedback);
+    }
+    const updated = requeueTask(task, codeRabbit.feedback, "coderabbit-blocked");
+    taskPromptPrefix.set(task.id, normalizeBlockedPrompt(updated.promptFeedback ?? codeRabbit.feedback));
+    return "requeue";
+  }
+
+  nextGlobalPromptPrefix = 
+    ["## CodeRabbit Review: CLEAR", `Summary: ${codeRabbit.summary}`, "No blocking issues found. Proceed with next task."].join(
+      "\n",
+    );
+  if (issueId) {
+    markTaskDone(issueId);
+  }
+  return "advance";
 }
 
 async function ensureAgentClisAvailable(manifest: TaskManifest): Promise<void> {
@@ -1391,7 +1551,12 @@ async function dispatchWave1(
     .filter((task) => task.wave === 1)
     .filter((task) => state.tasks[task.id] !== "done");
 
-  for (const task of tasks) {
+  for (let index = 0; index < tasks.length; ) {
+    const task = tasks[index];
+    const linearIssueId = getLinearIssueId(task);
+    if (linearIssueId) {
+      markTaskStarted(linearIssueId);
+    }
     state.tasks[task.id] = "running";
     state.current_state = "dispatching_wave1";
     await writeState(state, { syncDashboard: true, syncReason: `${task.id}:running` });
@@ -1452,9 +1617,33 @@ async function dispatchWave1(
       });
     }
 
-    await maybeRunCodeRabbitGateForTask(task, sprint, outcome.result);
+    let quality: "advance" | "requeue";
+    try {
+      quality = await executePostTaskQualityGates(sprint, task);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      if (reason.includes("MANUAL_INTERVENTION_REQUIRED")) {
+        await halt(reason, sprint, task.id);
+      }
+      throw error;
+    }
+    if (quality === "requeue") {
+      state.tasks[task.id] = "pending";
+      await writeState(state, { syncDashboard: true, syncReason: `${task.id}:requeued` });
+      await appendAudit({
+        ts: nowIso(),
+        event: "dispatch",
+        sprint,
+        task: task.id,
+        agent: "codex",
+        detail: "task requeued after quality gate",
+      });
+      continue;
+    }
+
     state.tasks[task.id] = "done";
     await writeState(state, { syncDashboard: true, syncReason: `${task.id}:done` });
+    index += 1;
   }
 }
 
@@ -1491,19 +1680,19 @@ async function dispatchWave2(
   }
 
   state.current_state = "awaiting_wave2";
-  for (const task of tasks) {
-    state.tasks[task.id] = "running";
-  }
   await writeState(state);
 
-  const execution = tasks.map(async (task) => {
+  for (let index = 0; index < tasks.length; ) {
+    const task = tasks[index];
+    const linearIssueId = getLinearIssueId(task);
+    if (linearIssueId) {
+      markTaskStarted(linearIssueId);
+    }
+
+    state.tasks[task.id] = "running";
+    await writeState(state, { syncDashboard: true, syncReason: `${task.id}:running` });
+
     const outcome = await runTaskWithRetry(task, sprint, "wave2");
-    return { task, outcome };
-  });
-
-  const results = await Promise.all(execution);
-
-  for (const { task, outcome } of results) {
     if (!outcome.ok && outcome.reason === "timeout") {
       state.tasks[task.id] = "failed";
       await writeState(state, { syncDashboard: true, syncReason: `${task.id}:failed:timeout` });
@@ -1539,9 +1728,33 @@ async function dispatchWave2(
       await halt("task_no_complete_signal_after_retry", sprint, task.id);
     }
 
-    await maybeRunCodeRabbitGateForTask(task, sprint, outcome.result);
+    let quality: "advance" | "requeue";
+    try {
+      quality = await executePostTaskQualityGates(sprint, task);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      if (reason.includes("MANUAL_INTERVENTION_REQUIRED")) {
+        await halt(reason, sprint, task.id);
+      }
+      throw error;
+    }
+    if (quality === "requeue") {
+      state.tasks[task.id] = "pending";
+      await writeState(state, { syncDashboard: true, syncReason: `${task.id}:requeued` });
+      await appendAudit({
+        ts: nowIso(),
+        event: "dispatch",
+        sprint,
+        task: task.id,
+        agent: "codex",
+        detail: "task requeued after quality gate",
+      });
+      continue;
+    }
+
     state.tasks[task.id] = "done";
     await writeState(state, { syncDashboard: true, syncReason: `${task.id}:done` });
+    index += 1;
   }
 }
 
@@ -1608,6 +1821,12 @@ async function runSprintGate(manifest: TaskManifest, state: OrchestratorState, s
     agent: "codex",
     detail: `${gate.detail}; failure_file=${failureFile}`,
   });
+  for (const task of getTasksForSprint(manifest, sprint)) {
+    const issueId = getLinearIssueId(task);
+    if (issueId) {
+      markTaskBlocked(issueId, gate.detail);
+    }
+  }
 
   await notify(`Gate failed for sprint ${sprint}. Details: ${gate.detail}. File: ${failureFile}`);
   await halt(`gate failed for sprint ${sprint}`, sprint, "gate");
@@ -1639,6 +1858,7 @@ async function runSprint(manifest: TaskManifest, state: OrchestratorState, sprin
     detail: planLine,
   });
 
+  await syncSprintToLinear(String(sprint), getTasksForSprint(manifest, sprint));
   await sleep(10_000);
 
   await dispatchWave1(manifest, state, sprint);

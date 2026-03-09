@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { appendFile, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { OrchestratorState, TaskManifest } from "./lib/types";
+import type { OrchestratorState, TaskManifest } from "../lib/orchestration/types";
 
 const ROOT = path.resolve(process.cwd());
 const LOG_DIR = path.join(ROOT, "logs");

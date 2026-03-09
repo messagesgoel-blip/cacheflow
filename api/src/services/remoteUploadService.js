@@ -2,6 +2,8 @@ const { Readable, PassThrough } = require('stream');
 const { finished } = require('stream/promises');
 const dns = require('dns/promises');
 const { isIP } = require('net');
+const path = require('path');
+const pool = require('../db/client');
 
 const MAX_REMOTE_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10 GB
 const DOWNLOAD_TIMEOUT_MS = 300000; // 5 minutes
@@ -76,7 +78,28 @@ async function validateResolvedIPs(hostname) {
 }
 
 async function remoteUpload(options) {
-  const { url, provider, filename, metadata = {} } = options;
+  const { url, provider, filename, metadata = {}, user } = options;
+
+  if (!metadata.accountKey) {
+    throw new Error('accountKey is required in metadata');
+  }
+
+  if (!user?.id) {
+    throw new Error('Authenticated user is required');
+  }
+
+  const remoteLookup = await pool.query(
+    `SELECT provider FROM user_remotes WHERE user_id = $1 AND account_key = $2 AND disabled = FALSE LIMIT 1`,
+    [user.id, metadata.accountKey],
+  );
+  if (!remoteLookup.rows.length) {
+    throw new Error('Remote account not found for user/accountKey');
+  }
+
+  const resolvedProvider = String(remoteLookup.rows[0].provider || '').toLowerCase();
+  if (provider && provider.toLowerCase() !== resolvedProvider) {
+    throw new Error('Provider/accountKey mismatch');
+  }
 
   validateRemoteUrl(url);
 
@@ -92,8 +115,6 @@ async function remoteUpload(options) {
       signal: controller.signal,
       redirect: 'manual', // Handle redirects manually to check each hop
     });
-
-    clearTimeout(timeoutId);
 
     // If redirect, resolve relative Location first, then validate
     if (response.status >= 300 && response.status < 400) {
@@ -114,6 +135,9 @@ async function remoteUpload(options) {
       throw new Error('Response body is empty');
     }
 
+    // Handshake validated (headers + body stream presence); stop handshake timer.
+    clearTimeout(timeoutId);
+
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     const contentLength = response.headers.get('content-length');
     const size = contentLength ? parseInt(contentLength, 10) : 0;
@@ -122,7 +146,7 @@ async function remoteUpload(options) {
       throw new Error(`File too large: ${size} bytes exceeds limit of ${MAX_REMOTE_FILE_SIZE} bytes`);
     }
 
-    const actualFilename = filename || generateFilenameFromUrl(url);
+    const actualFilename = sanitizeFilename(filename) || generateFilenameFromUrl(url);
 
     // Stream directly to provider with a size-limiting PassThrough.
     // No full-body buffering — bytes are counted on the fly.
@@ -141,7 +165,7 @@ async function remoteUpload(options) {
     const nodeStream = Readable.fromWeb(response.body);
     const stream = nodeStream.pipe(sizeGuard);
 
-    const uploadResult = await uploadToProvider(provider, stream, actualFilename, {
+    const uploadResult = await uploadToProvider(resolvedProvider, stream, actualFilename, {
       contentType,
       metadata
     });
@@ -149,7 +173,7 @@ async function remoteUpload(options) {
     return {
       success: true,
       fileId: uploadResult.fileId,
-      provider,
+      provider: resolvedProvider,
       size: receivedBytes,
       contentType,
       uploadedAt: new Date().toISOString(),
@@ -162,8 +186,18 @@ async function remoteUpload(options) {
 
 async function uploadToProvider(provider, stream, filename, options) {
   switch (provider.toLowerCase()) {
+    case 'google':
     case 'aws_s3':
+    case 'local':
+    case 'box':
+    case 'dropbox':
+    case 'filen':
+    case 'pcloud':
+    case 'webdav':
+    case 'vps':
+    case 'yandex':
       return uploadToS3(stream, filename, options);
+    case 'onedrive':
     case 'gcp':
       return uploadToGCP(stream, filename, options);
     case 'azure':
@@ -210,7 +244,10 @@ function generateFilenameFromUrl(url) {
     const filename = pathname.split('/').pop();
     
     if (filename && filename !== '') {
-      return filename;
+      const cleaned = sanitizeFilename(filename);
+      if (cleaned) {
+        return cleaned;
+      }
     }
     
     return `remote-file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.tmp`;
@@ -219,8 +256,35 @@ function generateFilenameFromUrl(url) {
   }
 }
 
+function sanitizeFilename(input) {
+  if (!input) {
+    return '';
+  }
+
+  let decoded = String(input).trim();
+  try {
+    decoded = decodeURIComponent(decoded);
+  } catch {
+    // Keep original if the input is not URI-encoded.
+  }
+
+  const cleaned = path.basename(decoded)
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: Control character stripping is intentional for untrusted filenames.
+    .replace(/[\x00-\x1f\x7f/\\]/g, '')
+    .replace(/\.{2,}/g, '.')
+    .trim();
+
+  if (!cleaned) {
+    return '';
+  }
+
+  const safe = cleaned.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 255);
+  return safe;
+}
+
 module.exports = {
   remoteUpload,
   validateRemoteUrl,
   validateResolvedIPs,
+  sanitizeFilename,
 };

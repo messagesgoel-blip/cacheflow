@@ -1,3 +1,13 @@
+export type CodeRabbitSeverity = "none" | "low" | "medium" | "high" | "critical";
+
+export const BLOCKED_TEMPLATE = [
+  "The latest CodeRabbit review for PR #{{pr}} found blocking issues.",
+  "",
+  "{{feedback}}",
+  "",
+  "Review state is saved in `monitoring/coderabbit-{{pr}}.yaml`.",
+].join("\n");
+
 function stripMarkdown(input: string): string {
   return input
     .replace(/```[\s\S]*?```/g, " ")
@@ -52,20 +62,46 @@ function hasIssuesSectionActions(body: string): boolean {
   return false;
 }
 
+function detectHighestSeverity(body: string): CodeRabbitSeverity {
+  if (/\bseverity\s*:\s*critical\b/i.test(body) || /\bcritical\b/i.test(body)) {
+    return "critical";
+  }
+
+  if (/\bseverity\s*:\s*high\b/i.test(body) || /\bhigh\b/i.test(body)) {
+    return "high";
+  }
+
+  if (/\bseverity\s*:\s*medium\b/i.test(body) || /\bmedium\b/i.test(body)) {
+    return "medium";
+  }
+
+  if (/\bseverity\s*:\s*low\b/i.test(body) || /\blow\b/i.test(body)) {
+    return "low";
+  }
+
+  return "none";
+}
+
 export function parseCodeRabbitReview(body: string): {
   hasBlockers: boolean;
+  severity: CodeRabbitSeverity;
   suggestions: string[];
   summary: string;
   raw: string;
 } {
-  const raw = body ?? "";
+  const raw = typeof body === "string" ? body : "";
   const suggestions = extractSuggestions(raw);
-  const hasHighSeverity = /\bseverity\s*:\s*high\b/i.test(raw);
+  const severity = detectHighestSeverity(raw);
   const hasEmergency = raw.includes("🚨");
   const hasIssuesActions = hasIssuesSectionActions(raw);
 
   return {
-    hasBlockers: hasEmergency || hasIssuesActions || hasHighSeverity,
+    hasBlockers:
+      hasEmergency ||
+      hasIssuesActions ||
+      severity === "critical" ||
+      severity === "high",
+    severity,
     suggestions,
     summary: firstParagraph(raw),
     raw,
