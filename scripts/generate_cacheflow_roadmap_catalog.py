@@ -46,7 +46,14 @@ def stage_item(stage_key: str) -> dict:
 
 
 def parse_roadmap_items() -> list[dict]:
-    lines = ROADMAP_FILE.read_text().splitlines()
+    if not ROADMAP_FILE.exists():
+        print(f"generate_cacheflow_roadmap_catalog: roadmap file not found: {ROADMAP_FILE}")
+        return []
+    try:
+        lines = ROADMAP_FILE.read_text().splitlines()
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"generate_cacheflow_roadmap_catalog: failed to read roadmap {ROADMAP_FILE}: {exc}")
+        return []
     items = [stage_item("V1-0"), stage_item("V1-1")]
     current_stage = ""
 

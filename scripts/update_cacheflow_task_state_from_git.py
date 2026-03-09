@@ -5,6 +5,7 @@ import argparse
 import json
 import re
 import subprocess
+import sys
 
 from cacheflow_paths import resolve_base, run_git
 
@@ -75,7 +76,7 @@ def main() -> None:
     status_flag = "--under-review" if args.event == "review" else "--complete"
     subprocess.run(
         [
-            "python3",
+            sys.executable,
             str(UPDATE_SCRIPT),
             status_flag,
             *task_ids,
@@ -88,7 +89,7 @@ def main() -> None:
         check=True,
     )
     if args.refresh:
-        subprocess.run([str(REFRESH_SCRIPT)], cwd=str(BASE), check=True)
+        subprocess.run(["bash", str(REFRESH_SCRIPT)], cwd=str(BASE), check=True)
 
 
 if __name__ == "__main__":

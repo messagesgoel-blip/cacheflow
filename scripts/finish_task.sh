@@ -147,6 +147,7 @@ if [ "${#test_cmds[@]}" -gt 0 ]; then
 fi
 
 commit_created=0
+published_work=0
 if [ "$skip_commit" -eq 0 ]; then
   if [ "$stage_all" -eq 1 ]; then
     git add -A
@@ -169,12 +170,21 @@ if [ "$skip_commit" -eq 0 ]; then
 fi
 
 if [ "$skip_push" -eq 0 ]; then
+  if git rev-parse --verify '@{upstream}' >/dev/null 2>&1; then
+    if [ "$(git rev-list --count '@{upstream}..HEAD')" -gt 0 ]; then
+      published_work=1
+    fi
+  else
+    published_work=1
+  fi
   git pull --rebase --autostash
   git push
-  if [ "$commit_created" -eq 1 ]; then
+  if [ "$published_work" -eq 1 ]; then
     if ! python3 scripts/update_cacheflow_task_state_from_git.py --event review --commit HEAD --selector "$task_key" --refresh; then
       echo "finish-task: warning: post-push task-state update failed for $task_key" >&2
     fi
+  else
+    echo "finish-task: no commits published; skipping task-state update"
   fi
 elif [ "$commit_created" -eq 1 ]; then
   echo "finish-task: skipping task-state update because push was skipped"

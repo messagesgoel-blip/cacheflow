@@ -11,6 +11,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/lib/hooks/useToast';
+import { formatBytes } from '../../../lib/utils/formatBytes';
 
 export interface QuotaInfo {
   used: number;
@@ -51,13 +52,6 @@ export function useQuotaAlerts(
     return (quota.used / quota.total) * 100;
   }, []);
 
-  const formatBytes = useCallback((bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-  }, []);
-
   useEffect(() => {
     if (!enabled) return;
 
@@ -93,7 +87,7 @@ export function useQuotaAlerts(
         criticalProviders.current.delete(providerKey);
       }
     });
-  }, [quotas, enabled, warningThreshold, criticalThreshold, calculatePercent, getProviderKey, formatBytes, warning, error]);
+  }, [quotas, enabled, warningThreshold, criticalThreshold, calculatePercent, getProviderKey, warning, error]);
 
   // Provide a way to reset alert state (useful when provider is reconnected)
   const resetAlerts = useCallback(() => {

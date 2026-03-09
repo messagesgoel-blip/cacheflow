@@ -515,12 +515,26 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
     done_history, done_history_by_id = load_done_history()
     state_out = {}
     changes = []
-    commit_full = args.source_commit.strip() or run_git(["rev-parse", "HEAD"])
-    commit_short = commit_full[:12]
-    message = args.source_message.strip() or run_git(["log", "-1", "--pretty=%s"])
+    commit_full = args.source_commit.strip()
+    commit_short = commit_full[:12] if commit_full else ""
+    message = args.source_message.strip()
+    provenance_loaded = False
     timestamp = now_iso()
     selectors = _status_map(args)
     active_locks = load_active_locks()
+
+    def ensure_provenance() -> tuple[str, str]:
+        nonlocal commit_full, commit_short, message, provenance_loaded
+        if not provenance_loaded:
+            if not commit_full:
+                commit_full = run_git(["rev-parse", "HEAD"])
+                commit_short = commit_full[:12]
+            elif not commit_short:
+                commit_short = commit_full[:12]
+            if not message:
+                message = run_git(["log", "-1", "--pretty=%s"])
+            provenance_loaded = True
+        return commit_short, message
 
     for task in tasks:
         key = task["task_key"]
@@ -564,10 +578,11 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
 
         if target_status:
             if target_status == "done":
+                commit_short_value, message_value = ensure_provenance()
                 record["status"] = "done"
-                record["commit"] = commit_short
+                record["commit"] = commit_short_value
                 record["done_at"] = timestamp
-                record["changelog"] = args.note.strip() or message
+                record["changelog"] = args.note.strip() or message_value
             else:
                 record["status"] = target_status
                 if target_status in ("planned", "pending", "running", "under_review"):
@@ -582,9 +597,10 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
             record["status"] = status
 
         if status in DONE_STATES and not record.get("commit"):
-            record["commit"] = commit_short
+            commit_short_value, message_value = ensure_provenance()
+            record["commit"] = commit_short_value
             record["done_at"] = record.get("done_at") or timestamp
-            record["changelog"] = record.get("changelog") or (args.note.strip() or message)
+            record["changelog"] = record.get("changelog") or (args.note.strip() or message_value)
 
         task["status"] = status
         task["commit"] = record.get("commit", "")
@@ -758,7 +774,7 @@ def write_yaml(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False))
 
 
-def record_history(changes: list[dict], tasks: list[dict]) -> None:
+def record_history(changes: list[dict], tasks: list[dict], source_commit: str = "", source_message: str = "") -> None:
     if not changes:
         return
     history = []
@@ -767,18 +783,22 @@ def record_history(changes: list[dict], tasks: list[dict]) -> None:
             history = yaml.safe_load(HISTORY_FILE.read_text()) or []
         except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
             print(f"update_cacheflow_metrics: failed to load existing task history {HISTORY_FILE}: {exc}", file=sys.stderr)
-            history = []
+            return
     if not isinstance(history, list):
-        history = []
+        print(
+            f"update_cacheflow_metrics: expected list in {HISTORY_FILE}, got {type(history).__name__}; skipping history write",
+            file=sys.stderr,
+        )
+        return
 
     done_keys = [c["task_key"] for c in changes if c["to"] == "done"]
     done_key_set = set(done_keys)
     done_records = [task for task in tasks if task["task_key"] in done_key_set]
-    commit_full = next((str(task.get("commit", "")).strip() for task in done_records if str(task.get("commit", "")).strip()), "")
-    message = next((str(task.get("changelog", "")).strip() for task in done_records if str(task.get("changelog", "")).strip()), "")
-    if not commit_full:
+    commit_full = source_commit.strip()
+    if not commit_full and done_records:
         commit_full = run_git(["rev-parse", "HEAD"])
-    if not message:
+    message = source_message.strip()
+    if not message and done_records:
         message = run_git(["log", "-1", "--pretty=%s"])
     done_ids = sorted(
         {
@@ -811,7 +831,7 @@ def main() -> None:
     write_yaml(SPRINT_TASKS_FILE, {"generated_at": metrics["generated_at"], "tasks": tasks})
     write_yaml(STATE_FILE, state_out)
     write_yaml(METRICS_FILE, metrics)
-    record_history(changes, tasks)
+    record_history(changes, tasks, args.source_commit, args.source_message)
 
     print(f"wrote {len(tasks)} task entries to {SPRINT_TASKS_FILE}")
     print(f"wrote metrics to {METRICS_FILE}")

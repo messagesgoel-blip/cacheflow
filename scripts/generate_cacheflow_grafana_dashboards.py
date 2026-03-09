@@ -196,6 +196,7 @@ def main() -> None:
     ):
         if obsolete.exists():
             obsolete.unlink()
+            print(f"removed obsolete dashboard: {obsolete.name}")
     print("generated 2 Grafana dashboards")
 
 

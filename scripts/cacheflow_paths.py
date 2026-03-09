@@ -15,6 +15,14 @@ def resolve_base() -> Path:
 
 
 def run_git(args: list[str], cwd: Path | None = None) -> str:
+    """Run a trusted git command and return stripped stdout.
+
+    Args:
+        args: Hardcoded git subcommands/flags only. Do not pass untrusted or
+            user-controlled input here; callers are responsible for ensuring any
+            assembled args remain trusted literals.
+        cwd: Working directory; defaults to resolve_base().
+    """
     working_dir = cwd or resolve_base()
     return (
         subprocess.run(

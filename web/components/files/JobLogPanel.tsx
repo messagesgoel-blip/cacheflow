@@ -34,7 +34,7 @@ export interface JobLogPanelProps {
 /** Worker log entry from /api/jobs/logs endpoint */
 interface WorkerLogEvent {
   jobId: string;
-  jobType: 'transfer' | 'scheduled';
+  jobType: 'transfer' | 'scheduled' | 'rate_limit';
   userId: string;
   level: 'info' | 'warn' | 'error' | 'debug';
   message: string;
