@@ -17,6 +17,11 @@
 | scripts/linear-create-issue.sh <TITLE> <TEAM> | Create ticket, returns ID |
 | scripts/pre-push-review.sh | Run CodeRabbit before push, exits 1 on blockers |
 | scripts/setup-dev-tools.sh | One-shot install of all tools |
+| scripts/coderabbit-webhook.ts | Entry point for review completion events |
+
+## Review Logic (lib/coderabbit/)
+- `parseReview.ts` — extracts structure from CodeRabbit payloads
+- `writeReviewState.ts` — persists review signal for orchestrator triage
 
 ## GitHub Actions
 - `.github/workflows/coderabbit-pre-merge.yml` — runs on agent-opened PRs only
