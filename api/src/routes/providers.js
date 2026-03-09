@@ -8,7 +8,7 @@ const pool = require('../db/client');
 const authMw = require('../middleware/auth');
 const { auditLog } = require('../middleware/audit');
 const vpsPool = require('../services/vpsConnectionPool');
-const { Client } = require('ssh2');
+const { Client, utils: sshUtils } = require('ssh2');
 
 const router = express.Router();
 router.use(authMw);
@@ -152,11 +152,17 @@ async function resolvePemTextForRequest(req, existingConnection) {
     return ensurePemFile(req.file);
   }
 
+  if (req.body?.pemText) {
+    const pem = String(req.body.pemText).trim();
+    if (!pem.startsWith('-----BEGIN')) throw new Error('Invalid PEM format');
+    return pem;
+  }
+
   if (existingConnection?.pem_key && existingConnection?.pem_iv) {
     return decryptPem(existingConnection.pem_key, existingConnection.pem_iv).toString('utf8');
   }
 
-  throw new Error('PEM key file is required');
+  throw new Error('PEM key file or text is required');
 }
 
 function parseConnectionInput(body = {}) {
@@ -302,6 +308,40 @@ async function withSftpSession(connection, handler) {
   }
 }
 
+router.post('/vps/generate-key', async (req, res) => {
+  try {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519', {
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+
+    const parsed = sshUtils.parseKey(publicKey);
+    const publicSSH = `ssh-ed25519 ${parsed.getPublicSSH().toString('base64')} cacheflow-vps`;
+
+    return res.json({
+      publicKey: publicSSH,
+      privateKey,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to generate SSH key pair' });
+  }
+});
+
+router.get('/vps/:id/public-key', async (req, res) => {
+  const connection = await getVpsConnection(req.params.id, req.user.id);
+  if (!connection) return res.status(404).json({ error: 'VPS connection not found' });
+
+  try {
+    const privateKeyPem = decryptPem(connection.pem_key, connection.pem_iv).toString('utf8');
+    const parsed = sshUtils.parseKey(privateKeyPem);
+    const type = parsed.type === 'ed25519' ? 'ssh-ed25519' : 'ssh-rsa';
+    const publicSSH = `${type} ${parsed.getPublicSSH().toString('base64')} cacheflow-vps`;
+    return res.json({ publicKey: publicSSH });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to retrieve public key' });
+  }
+});
+
 router.post('/vps', upload.single('pemFile'), async (req, res) => {
   const { label, host, username, port } = parseConnectionInput(req.body);
 
@@ -311,7 +351,7 @@ router.post('/vps', upload.single('pemFile'), async (req, res) => {
 
   let pemText;
   try {
-    pemText = ensurePemFile(req.file);
+    pemText = await resolvePemTextForRequest(req);
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
@@ -495,7 +535,8 @@ router.patch('/vps/:id', upload.single('pemFile'), async (req, res) => {
   }
 
   try {
-    const encryptedPem = req.file ? encryptPem(Buffer.from(pemText, 'utf8')) : null;
+    const keyUpdated = Boolean(req.file || req.body?.pemText);
+    const encryptedPem = keyUpdated ? encryptPem(Buffer.from(pemText, 'utf8')) : null;
     const updated = await pool.query(
       `UPDATE vps_connections
        SET label = $1,
@@ -527,7 +568,7 @@ router.patch('/vps/:id', upload.single('pemFile'), async (req, res) => {
       host,
       port,
       username,
-      keyUpdated: Boolean(req.file),
+      keyUpdated,
     });
 
     return res.json({

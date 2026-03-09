@@ -26,7 +26,7 @@ const TEXT_EXTENSIONS = new Set([
   'yaml',
 ])
 
-export type PreviewType = 'image' | 'pdf' | 'text' | 'other'
+export type PreviewType = 'image' | 'pdf' | 'text' | 'video' | 'audio' | 'other'
 
 export function resolvePreviewType(input: { mimeType?: string; fileName?: string }): PreviewType {
   const mimeType = (input.mimeType || '').toLowerCase().trim()
@@ -34,6 +34,8 @@ export function resolvePreviewType(input: { mimeType?: string; fileName?: string
   const ext = (input.fileName || '').toLowerCase().split('.').pop() || ''
 
   if (mimeMain.startsWith('image/')) return 'image'
+  if (mimeMain.startsWith('video/')) return 'video'
+  if (mimeMain.startsWith('audio/')) return 'audio'
   if (mimeMain === 'application/pdf') return 'pdf'
   if (TEXT_MIME_PREFIXES.some((prefix) => mimeMain.startsWith(prefix))) return 'text'
   if (TEXT_MIME_EXACT.has(mimeMain)) return 'text'
@@ -45,4 +47,9 @@ export function resolvePreviewType(input: { mimeType?: string; fileName?: string
 export function isTextPreviewEligible(input: { size?: number }): boolean {
   const size = typeof input.size === 'number' ? input.size : 0
   return size <= 1024 * 1024
+}
+
+export function isMediaStreamable(input: { size?: number }): boolean {
+  const size = typeof input.size === 'number' ? input.size : 0
+  return size <= 10 * 1024 * 1024 * 1024
 }

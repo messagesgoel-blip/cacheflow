@@ -160,6 +160,28 @@ export default function StaleFileList({ token }: StaleFileListProps) {
     }
   }
 
+  async function handlePermanentDelete(fileId: string) {
+    if (!confirm('Are you sure you want to permanently delete this file? This cannot be undone.')) return
+    
+    setActionLoading(true)
+    try {
+      const res = await fetch(`${API}/cleanup/stale/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (res.ok) {
+        setFiles(files.filter(f => f.id !== fileId))
+      }
+    } catch (err) {
+      console.error('Failed to delete file permanently:', err)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   const filteredFiles = filter === 'all' ? files : files.filter(f => f.status === filter)
 
   if (loading) {
@@ -304,6 +326,13 @@ export default function StaleFileList({ token }: StaleFileListProps) {
                         className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
                       >
                         Trash
+                      </button>
+                      <button
+                        onClick={() => handlePermanentDelete(file.id)}
+                        disabled={actionLoading}
+                        className="text-xs bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-2 py-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/40"
+                      >
+                        Delete
                       </button>
                     </div>
                   </td>

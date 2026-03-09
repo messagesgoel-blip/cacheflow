@@ -1,6 +1,7 @@
 import { Readable } from 'stream'
 import { AppError } from '../errors/AppError'
 import { ErrorCode } from '../errors/ErrorCode'
+import * as trash from './dropbox/trash'
 import type { ProviderAdapter } from './ProviderAdapter.interface'
 import type {
   AbortResumableUploadRequest,
@@ -18,6 +19,7 @@ import type {
   DisconnectRequest,
   DownloadStreamRequest,
   DownloadStreamResponse,
+  EmptyTrashRequest,
   FinalizeResumableUploadRequest,
   FinalizeResumableUploadResponse,
   GetFileRequest,
@@ -26,8 +28,12 @@ import type {
   GetQuotaResponse,
   GetResumableUploadStatusRequest,
   GetResumableUploadStatusResponse,
+  ListFileVersionsRequest,
+  ListFileVersionsResponse,
   ListFilesRequest,
   ListFilesResponse,
+  ListTrashRequest,
+  ListTrashResponse,
   MoveFileRequest,
   MoveFileResponse,
   ProviderDescriptor,
@@ -36,6 +42,8 @@ import type {
   RefreshAuthResponse,
   RenameFileRequest,
   RenameFileResponse,
+  RestoreFileRequest,
+  RestoreFileVersionRequest,
   RevokeShareLinkRequest,
   SearchFilesRequest,
   SearchFilesResponse,
@@ -63,6 +71,8 @@ export const dropboxDescriptor: ProviderDescriptor = {
     supportsChunkResume: true,
     supportsStreamingTransfer: true,
     supportsServerSideCopy: true,
+    supportsTrash: true,
+    supportsVersioning: true,
   },
 }
 
@@ -487,8 +497,35 @@ export class DropboxAdapter implements ProviderAdapter {
   }
 
   async deleteFile(request: DeleteFileRequest): Promise<void> {
-    const { context, auth, fileId } = request
-    await dbxPost('/files/delete_v2', auth.accessToken, { path: fileId }, context.abortSignal)
+    const { context, auth, fileId, permanent } = request
+    if (permanent) {
+      // Dropbox doesn't have a simple "permanent" flag in delete_v2.
+      // Some accounts have a permanently_delete endpoint, but it's restricted.
+      // We'll just use delete_v2 for now.
+      await dbxPost('/files/delete_v2', auth.accessToken, { path: fileId }, context.abortSignal)
+    } else {
+      await dbxPost('/files/delete_v2', auth.accessToken, { path: fileId }, context.abortSignal)
+    }
+  }
+
+  async listTrash(request: ListTrashRequest): Promise<ListTrashResponse> {
+    return trash.listTrash(request)
+  }
+
+  async restoreFile(request: RestoreFileRequest): Promise<void> {
+    return trash.restoreFile(request)
+  }
+
+  async emptyTrash(request: EmptyTrashRequest): Promise<void> {
+    return trash.emptyTrash(request)
+  }
+
+  async listFileVersions(request: ListFileVersionsRequest): Promise<ListFileVersionsResponse> {
+    return trash.listFileVersions(request)
+  }
+
+  async restoreFileVersion(request: RestoreFileVersionRequest): Promise<void> {
+    return trash.restoreFileVersion(request)
   }
 
   async downloadStream(request: DownloadStreamRequest): Promise<DownloadStreamResponse> {

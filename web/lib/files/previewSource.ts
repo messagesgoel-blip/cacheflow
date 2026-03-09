@@ -24,6 +24,52 @@ export function resolveDirectPreviewUrl(
   return null
 }
 
+export function resolveMediaStreamUrl(
+  file: FileMetadata,
+  fallbackAccountKey?: string,
+): string | null {
+  const accountKey = String((file as any).accountKey || fallbackAccountKey || '')
+  const fileId = file.id
+  const provider = file.provider
+
+  if (provider === 'vps' && accountKey) {
+    return `/api/remotes/${encodeURIComponent(accountKey)}/stream?path=${encodeURIComponent(fileId)}`
+  }
+
+  if (provider === 'local') {
+    return `/api/files/stream?id=${encodeURIComponent(fileId)}`
+  }
+
+  return `/api/remotes/${encodeURIComponent(accountKey || 'default')}/stream?fileId=${encodeURIComponent(fileId)}&provider=${encodeURIComponent(provider)}`
+}
+
+export function buildMediaStreamRequest(
+  file: FileMetadata,
+  options: {
+    token?: string
+    fallbackAccountKey?: string
+    range?: string
+  } = {},
+): PreviewFetchRequest | null {
+  const streamUrl = resolveMediaStreamUrl(file, options.fallbackAccountKey)
+  if (!streamUrl) return null
+
+  const authHeaders = buildAuthHeaders(options.token)
+  const headers: Record<string, string> = { ...authHeaders }
+  if (options.range) {
+    headers['Range'] = options.range
+  }
+
+  return {
+    url: streamUrl,
+    init: {
+      method: 'GET',
+      credentials: 'include',
+      headers,
+    },
+  }
+}
+
 export function buildTextPreviewRequest(
   file: FileMetadata,
   options: {

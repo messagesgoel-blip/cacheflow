@@ -14,6 +14,7 @@ import type {
   DisconnectRequest,
   DownloadStreamRequest,
   DownloadStreamResponse,
+  EmptyTrashRequest,
   FinalizeResumableUploadRequest,
   FinalizeResumableUploadResponse,
   GetFileRequest,
@@ -22,8 +23,12 @@ import type {
   GetQuotaResponse,
   GetResumableUploadStatusRequest,
   GetResumableUploadStatusResponse,
+  ListFileVersionsRequest,
+  ListFileVersionsResponse,
   ListFilesRequest,
   ListFilesResponse,
+  ListTrashRequest,
+  ListTrashResponse,
   MoveFileRequest,
   MoveFileResponse,
   ProviderDescriptor,
@@ -31,6 +36,8 @@ import type {
   RefreshAuthResponse,
   RenameFileRequest,
   RenameFileResponse,
+  RestoreFileRequest,
+  RestoreFileVersionRequest,
   RevokeShareLinkRequest,
   SearchFilesRequest,
   SearchFilesResponse,
@@ -81,6 +88,15 @@ export interface ProviderAdapter {
 
   createShareLink(request: CreateShareLinkRequest): Promise<CreateShareLinkResponse>
   revokeShareLink(request: RevokeShareLinkRequest): Promise<void>
+
+  // Trash support
+  listTrash?(request: ListTrashRequest): Promise<ListTrashResponse>
+  restoreFile?(request: RestoreFileRequest): Promise<void>
+  emptyTrash?(request: EmptyTrashRequest): Promise<void>
+
+  // Versioning support
+  listFileVersions?(request: ListFileVersionsRequest): Promise<ListFileVersionsResponse>
+  restoreFileVersion?(request: RestoreFileVersionRequest): Promise<void>
 }
 
 export type ProviderParityCheckId =
@@ -89,6 +105,8 @@ export type ProviderParityCheckId =
   | 'file_mutation'
   | 'stream_transfer'
   | 'resumable_transfer'
+  | 'trash'
+  | 'versioning'
 
 export interface ProviderParityCheck {
   id: ProviderParityCheckId
@@ -131,5 +149,15 @@ export const PROVIDER_PARITY_CHECKLIST: ReadonlyArray<ProviderParityCheck> = [
       'finalizeResumableUpload',
       'abortResumableUpload',
     ],
+  },
+  {
+    id: 'trash',
+    title: 'Trash parity',
+    requiredMethods: ['listTrash', 'restoreFile', 'emptyTrash'],
+  },
+  {
+    id: 'versioning',
+    title: 'Versioning parity',
+    requiredMethods: ['listFileVersions', 'restoreFileVersion'],
   },
 ]

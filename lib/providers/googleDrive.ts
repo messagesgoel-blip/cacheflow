@@ -1,6 +1,7 @@
 import { Readable } from 'stream'
 import { AppError } from '../errors/AppError'
 import { ErrorCode } from '../errors/ErrorCode'
+import * as trash from './googleDrive/trash'
 import type { ProviderAdapter } from './ProviderAdapter.interface'
 import type {
   AbortResumableUploadRequest,
@@ -18,6 +19,7 @@ import type {
   DisconnectRequest,
   DownloadStreamRequest,
   DownloadStreamResponse,
+  EmptyTrashRequest,
   FinalizeResumableUploadRequest,
   FinalizeResumableUploadResponse,
   GetFileRequest,
@@ -26,8 +28,12 @@ import type {
   GetQuotaResponse,
   GetResumableUploadStatusRequest,
   GetResumableUploadStatusResponse,
+  ListFileVersionsRequest,
+  ListFileVersionsResponse,
   ListFilesRequest,
   ListFilesResponse,
+  ListTrashRequest,
+  ListTrashResponse,
   MoveFileRequest,
   MoveFileResponse,
   ProviderDescriptor,
@@ -37,6 +43,8 @@ import type {
   RenameFileRequest,
   RenameFileResponse,
   ResumableUploadSession,
+  RestoreFileRequest,
+  RestoreFileVersionRequest,
   RevokeShareLinkRequest,
   SearchFilesRequest,
   SearchFilesResponse,
@@ -53,7 +61,7 @@ const GOOGLE_UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3'
 const GOOGLE_AUTH_API = 'https://oauth2.googleapis.com'
 
 const FILE_FIELDS =
-  'id,name,mimeType,size,parents,md5Checksum,createdTime,modifiedTime,webViewLink'
+  'id,name,mimeType,size,parents,md5Checksum,createdTime,modifiedTime,webViewLink,trashed,explicitlyTrashed'
 
 export const googleDriveDescriptor: ProviderDescriptor = {
   id: 'google',
@@ -67,6 +75,8 @@ export const googleDriveDescriptor: ProviderDescriptor = {
     supportsChunkResume: true,
     supportsStreamingTransfer: true,
     supportsServerSideCopy: true,
+    supportsTrash: true,
+    supportsVersioning: true,
   },
 }
 
@@ -543,8 +553,32 @@ export class GoogleDriveAdapter implements ProviderAdapter {
   }
 
   async deleteFile(request: DeleteFileRequest): Promise<void> {
-    const { context, auth, fileId } = request
-    await driveDelete(`/files/${fileId}`, auth.accessToken, context.abortSignal)
+    const { context, auth, fileId, permanent } = request
+    if (permanent) {
+      await driveDelete(`/files/${fileId}`, auth.accessToken, context.abortSignal)
+    } else {
+      await drivePatch(`/files/${fileId}`, auth.accessToken, { trashed: true }, context.abortSignal)
+    }
+  }
+
+  async listTrash(request: ListTrashRequest): Promise<ListTrashResponse> {
+    return trash.listTrash(request)
+  }
+
+  async restoreFile(request: RestoreFileRequest): Promise<void> {
+    return trash.restoreFile(request)
+  }
+
+  async emptyTrash(request: EmptyTrashRequest): Promise<void> {
+    return trash.emptyTrash(request)
+  }
+
+  async listFileVersions(request: ListFileVersionsRequest): Promise<ListFileVersionsResponse> {
+    return trash.listFileVersions(request)
+  }
+
+  async restoreFileVersion(request: RestoreFileVersionRequest): Promise<void> {
+    return trash.restoreFileVersion(request)
   }
 
   async downloadStream(request: DownloadStreamRequest): Promise<DownloadStreamResponse> {

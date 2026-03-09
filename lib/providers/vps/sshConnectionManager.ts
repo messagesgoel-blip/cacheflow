@@ -36,6 +36,8 @@ export interface SSHAuthConfig {
   privateKey?: string;
   /** Optional passphrase for an encrypted private key. */
   passphrase?: string;
+  /** Expected SHA256 fingerprint (e.g. 'SHA256:...'). If provided, connection fails on mismatch. */
+  hostFingerprint?: string;
   /** Connection timeout in milliseconds (default: 10 000). */
   connectTimeoutMs?: number;
 }
@@ -366,6 +368,22 @@ export class SSHConnectionManager extends EventEmitter {
         port: config.port,
         username: config.username,
         readyTimeout: config.connectTimeoutMs ?? 10_000,
+        hostHash: 'sha256',
+        hostVerifier: (hashedKey: string) => {
+          const actualFingerprint = `SHA256:${hashedKey}`;
+          if (config.hostFingerprint && config.hostFingerprint !== actualFingerprint) {
+            this.emit('fingerprint-mismatch', {
+              id: config.id,
+              expected: config.hostFingerprint,
+              actual: actualFingerprint,
+            });
+            // We return true here but let the client throw on mismatch if we want to be strict,
+            // or we can reject the promise. Actually, ssh2 expects true/false.
+            // If we return false, it will close the connection and throw an error.
+            return false;
+          }
+          return true;
+        },
         // Harden: reject unknown host key algorithms that allow downgrade attacks.
         algorithms: {
           serverHostKey: [
