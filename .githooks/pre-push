@@ -4,4 +4,4 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$repo_root"
 
-bash scripts/pre-push-review.sh
+bash scripts/coderabbit-local-review.sh start --type committed

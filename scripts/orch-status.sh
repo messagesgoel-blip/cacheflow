@@ -28,11 +28,26 @@ tail -n 10 "$ROOT/logs/codex-audit.jsonl" 2>/dev/null | jq -r '[.ts,.event,.stat
 echo ""
 echo "=== Pending CodeRabbit reviews ==="
 shopt -s nullglob
-files=("$ROOT"/monitoring/coderabbit-*.yaml)
+files=("$ROOT"/monitoring/coderabbit-[0-9]*.yaml)
 if [ ${#files[@]} -eq 0 ]; then
   echo "  (none)"
 else
   printf '%s\n' "${files[@]}" \
   | xargs -I{} sh -c 'echo "  PR $(grep "^pr:" {} | cut -d" " -f2): $(grep "^status:" {} | cut -d" " -f2) | blockers=$(grep "^hasBlockers:" {} | cut -d" " -f2) | notified=$(grep "^agentNotified:" {} | cut -d" " -f2)"' \
   || true
+fi
+
+echo ""
+echo "=== Local CodeRabbit reviews ==="
+local_files=("$ROOT"/monitoring/coderabbit-local-*.yaml)
+if [ ${#local_files[@]} -eq 0 ]; then
+  echo "  (none)"
+else
+  for file in "${local_files[@]}"; do
+    branch=$(grep "^branch:" "$file" | cut -d" " -f2-)
+    status=$(grep "^status:" "$file" | cut -d" " -f2-)
+    head=$(grep "^head:" "$file" | cut -d" " -f2-)
+    note=$(grep "^note:" "$file" | cut -d" " -f2-)
+    echo "  ${branch}: ${status} @ ${head} | ${note}"
+  done
 fi

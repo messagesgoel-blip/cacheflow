@@ -170,6 +170,7 @@ if [ "$skip_commit" -eq 0 ]; then
 fi
 
 if [ "$skip_push" -eq 0 ]; then
+  git pull --rebase --autostash
   if git rev-parse --verify '@{upstream}' >/dev/null 2>&1; then
     if [ "$(git rev-list --count '@{upstream}..HEAD')" -gt 0 ]; then
       published_work=1
@@ -178,11 +179,10 @@ if [ "$skip_push" -eq 0 ]; then
     published_work=1
   fi
   if [ "$published_work" -eq 1 ]; then
-    bash scripts/pre-push-review.sh
+    bash scripts/coderabbit-local-review.sh start --type committed
   else
-    echo "finish-task: no unpublished commits; skipping CodeRabbit pre-push review"
+    echo "finish-task: no unpublished commits; skipping local CodeRabbit review launch"
   fi
-  git pull --rebase --autostash
   git push
   if [ "$published_work" -eq 1 ]; then
     if ! python3 scripts/update_cacheflow_task_state_from_git.py --event review --commit HEAD --selector "$task_key" --refresh; then
