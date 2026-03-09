@@ -181,8 +181,10 @@ if [ "$skip_push" -eq 0 ]; then
   if [ "$published_work" -eq 1 ]; then
     if command -v coderabbit-local-review >/dev/null 2>&1; then
       coderabbit-local-review start --type committed
+      echo "coderabbit-review-poll: coderabbit-local-review poll"
     else
       bash scripts/coderabbit-local-review.sh start --type committed
+      echo "coderabbit-review-poll: bash scripts/coderabbit-local-review.sh poll"
     fi
   else
     echo "finish-task: no unpublished commits; skipping local CodeRabbit review launch"

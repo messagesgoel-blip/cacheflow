@@ -26,6 +26,7 @@
 ## Local async review
 
 - `scripts/coderabbit-local-review.sh start --type committed` launches a background review for the current branch.
+- `coderabbit-local-review poll` waits up to 5 minutes for the current branch review to finish and prints the final status file when it does.
 - The canonical shared command is `coderabbit-local-review`; the repo script delegates to it.
 - Default mode is `--prompt-only` so agent-facing output lands in `.git/coderabbit/logs/<branch>.log`.
 - Status is persisted to `.git/coderabbit/status/<branch>.yaml`.
