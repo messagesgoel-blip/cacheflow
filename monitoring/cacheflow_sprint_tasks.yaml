@@ -1,4 +1,4 @@
-generated_at: '2026-03-09T04:52:31+00:00'
+generated_at: '2026-03-09T12:38:57+00:00'
 tasks:
 - id: '0.1'
   description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
@@ -15,9 +15,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.1'
   description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
     \ this"
@@ -33,9 +33,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.1'
   description: "Define and commit ProviderAdapter interface \u2014 all adapters implement\
     \ this"
@@ -51,9 +51,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.2'
   description: Define AppError taxonomy and ErrorCode enum
   sprint: 0
@@ -68,9 +68,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.2'
   description: Define AppError taxonomy and ErrorCode enum
   sprint: 0
@@ -85,9 +85,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.3'
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
   sprint: 0
@@ -102,9 +102,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.3'
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
   sprint: 0
@@ -119,9 +119,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.3'
   description: "Define complete Prisma schema baseline \u2014 all tables, all relationships"
   sprint: 0
@@ -136,9 +136,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.4'
   description: "Allocate Redis namespaces \u2014 document and enforce db separation"
   sprint: 0
@@ -153,9 +153,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.4'
   description: "Allocate Redis namespaces \u2014 document and enforce db separation"
   sprint: 0
@@ -170,9 +170,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.5'
   description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
     \ strategy"
@@ -188,9 +188,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.5'
   description: "Define streaming pipeline pattern \u2014 pipeline() + backpressure\
     \ strategy"
@@ -206,9 +206,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.6'
   description: "Define singleton refresh promise pattern \u2014 prevent concurrent\
     \ token refresh race"
@@ -224,9 +224,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.7'
   description: "Define BullMQ \u2192 SSE bridge via Redis pub/sub"
   sprint: 0
@@ -241,9 +241,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.9'
   description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
     \ and block serverless/edge deployment configs in CI"
@@ -260,9 +260,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '0.9'
   description: "Stateful deployment guard \u2014 enforce long-running runtime targets\
     \ and block serverless/edge deployment configs in CI"
@@ -279,9 +279,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: 0.4a
   description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
     \ deterministic UI behavior and default toast fallback"
@@ -297,9 +297,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: 0.4a
   description: "ErrorCode \u2192 UI action contract doc; map all ErrorCode enums to\
     \ deterministic UI behavior and default toast fallback"
@@ -315,9 +315,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.1'
   description: Create global HTTP interceptor for all /api/remotes proxy calls
   sprint: 1
@@ -332,9 +332,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.1'
   description: Create global HTTP interceptor for all /api/remotes proxy calls
   sprint: 1
@@ -349,9 +349,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.2'
   description: Implement silent token refresh endpoint
   sprint: 1
@@ -366,9 +366,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.3'
   description: Migrate from localStorage TokenManager to HttpOnly cookies
   sprint: 1
@@ -383,9 +383,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.4'
   description: "Token Vault v1 \u2014 encrypted at-rest provider credentials"
   sprint: 1
@@ -400,9 +400,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.4'
   description: "Token Vault v1 \u2014 encrypted at-rest provider credentials"
   sprint: 1
@@ -417,9 +417,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.5'
   description: "Multi-account schema \u2014 up to 3 accounts per provider"
   sprint: 1
@@ -434,9 +434,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.12'
   description: "Audit upload pipeline \u2014 locate all UUID injection points"
   sprint: 1
@@ -451,9 +451,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.13'
   description: Fix upload pipeline to preserve original File.name
   sprint: 1
@@ -469,9 +469,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.14'
   description: Write and run migration script in staging
   sprint: 1
@@ -486,9 +486,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.15'
   description: Validate and apply migration to production
   sprint: 1
@@ -503,9 +503,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.16'
   description: Connections page and sidebar read from single server state store
   sprint: 1
@@ -520,9 +520,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.18'
   description: "Security baseline \u2014 remove defaults, harden secrets"
   sprint: 1
@@ -537,9 +537,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.18'
   description: "Security baseline \u2014 remove defaults, harden secrets"
   sprint: 1
@@ -554,9 +554,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.6'
   description: Remove client-side token sync pattern entirely
   sprint: 1
@@ -571,9 +571,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.7'
   description: Write Playwright token expiry test
   sprint: 1
@@ -588,9 +588,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.8'
   description: Replace shared modal boolean with provider discriminator enum
   sprint: 1
@@ -605,9 +605,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.9'
   description: Implement correct forms for WebDAV and VPS/SFTP modals
   sprint: 1
@@ -622,9 +622,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.10'
   description: Clear modal state on close and provider switch
   sprint: 1
@@ -639,9 +639,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.11'
   description: "Write Playwright modal test \u2014 all 9 provider Connect buttons"
   sprint: 1
@@ -656,9 +656,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.17'
   description: Replace SESSION_EXPIRED raw text with actionable component
   sprint: 1
@@ -673,9 +673,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '1.19'
   description: "Security audit test \u2014 verify no secrets in API responses"
   sprint: 1
@@ -690,9 +690,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.2'
   description: Implement file upload with progress and toast
   sprint: 2
@@ -707,9 +707,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.13'
   description: "TOTP setup flow \u2014 QR generation, verification, backup codes"
   sprint: 2
@@ -724,9 +724,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: OPS-E2E-READY
   description: Add Playwright preflight wait-for-api on 127.0.0.1:8100
   sprint: 2
@@ -742,9 +742,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: UI-P1-T02
   description: Fix 401 proxy failures for connected remotes (/api/remotes/:id/proxy)
   sprint: 2
@@ -759,9 +759,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: UI-P1-T04
   description: Restore file actions path (rename/move/download/delete) for connected
     drives
@@ -777,9 +777,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: UI-P1-T05
   description: Add explicit UI error surfaces for failed sync/proxy/favorites requests
   sprint: 2
@@ -794,9 +794,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.1'
   description: Add persistent Upload / New Folder / Refresh action bar
   sprint: 2
@@ -811,9 +811,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.3'
   description: 'File table: single click select + right panel, double click open'
   sprint: 2
@@ -828,9 +828,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.4'
   description: Three-dot row menu + right-click context menu (identical)
   sprint: 2
@@ -845,9 +845,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.5'
   description: Write E2E tests for all file action entry points
   sprint: 2
@@ -862,9 +862,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.5'
   description: Write E2E tests for all file action entry points
   sprint: 2
@@ -879,9 +879,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.6'
   description: "Fix preview panel mount \u2014 \"Opening\" toast must open a panel;\
     \ enforce CSP for image/PDF/text previews with Playwright zero-CSP-error verification"
@@ -897,9 +897,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.7'
   description: 'Unsupported file types: immediate Download CTA via server-proxied
     /api/remotes/{uuid}/download/{fileId}; never expose raw provider URLs'
@@ -915,9 +915,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.8'
   description: "E2E preview tests \u2014 supported and unsupported types"
   sprint: 2
@@ -932,9 +932,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.9'
   description: "Merge Cloud Drives / Providers / Integrations \u2192 Connections"
   sprint: 2
@@ -949,9 +949,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.10'
   description: "File table visual polish \u2014 skeleton loaders, hover, separators"
   sprint: 2
@@ -966,9 +966,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.11'
   description: Sidebar collapsible accordion per provider group
   sprint: 2
@@ -983,9 +983,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.12'
   description: "Responsive layout pass \u2014 375px viewport minimum"
   sprint: 2
@@ -1000,9 +1000,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.14'
   description: TOTP login challenge UI
   sprint: 2
@@ -1017,9 +1017,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.15'
   description: 'Settings: manage 2FA, backup codes, last-used timestamp'
   sprint: 2
@@ -1034,9 +1034,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '2.16'
   description: "E2E 2FA tests \u2014 full enable/use/disable cycle"
   sprint: 2
@@ -1051,9 +1051,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: OPS-QA-WATCH
   description: 'Run QA watcher loop: detect dependency unlocks, claim ready Gemini
     E2E tasks, and emit blocker reports'
@@ -1069,9 +1069,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: UI-P1-T01
   description: Fix Cloud Drives page empty or unclear connected state
   sprint: 2
@@ -1086,9 +1086,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: UI-P1-T03
   description: Fix preview panel open reliability from file rows and overflow Open
   sprint: 2
@@ -1103,9 +1103,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: UI-P1-T06
   description: Add clear loading, empty, and error state cards in file pane
   sprint: 2
@@ -1120,9 +1120,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.2'
   description: Server-Sent Events (SSE) for real-time transfer progress
   sprint: 3
@@ -1137,9 +1137,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.3'
   description: Every file operation produces tray entry + toast
   sprint: 3
@@ -1154,9 +1154,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.5'
   description: 'Chunked upload: files >50MB use provider resumable upload APIs'
   sprint: 3
@@ -1172,9 +1172,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.6'
   description: 'Auto-resume: resume interrupted upload from last successful chunk'
   sprint: 3
@@ -1189,9 +1189,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.9'
   description: "Server streams source \u2192 CacheFlow \u2192 target without disk\
     \ write"
@@ -1207,9 +1207,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.10'
   description: BullMQ background job queue for async transfers
   sprint: 3
@@ -1224,9 +1224,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.10'
   description: BullMQ background job queue for async transfers
   sprint: 3
@@ -1241,9 +1241,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.14'
   description: "Provider health indicators \u2014 green means it actually works"
   sprint: 3
@@ -1258,9 +1258,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.15'
   description: "Rate limit handling layer \u2014 per-provider request queue"
   sprint: 3
@@ -1275,9 +1275,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.1'
   description: "Persistent Transfer Manager Tray \u2014 always visible when active"
   sprint: 3
@@ -1293,9 +1293,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.4'
   description: "Tray E2E \u2014 entry survives navigation, retry works on failure"
   sprint: 3
@@ -1310,9 +1310,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.7'
   description: 'Tray: chunk-level progress for large files'
   sprint: 3
@@ -1327,9 +1327,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.8'
   description: "Auto-resume E2E test \u2014 network drop mid-transfer \u26A0\uFE0F\
     \ Human verify"
@@ -1345,9 +1345,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.11'
   description: "Conflict resolution modal \u2014 shared component used everywhere"
   sprint: 3
@@ -1362,9 +1362,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.12'
   description: "Zero-disk verification test + tab-close survival test \u26A0\uFE0F\
     \ Human verify"
@@ -1380,9 +1380,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.13'
   description: "Storage pooling dashboard \u2014 promote aggregate to hero position"
   sprint: 3
@@ -1397,9 +1397,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '3.16'
   description: Dashboard + health E2E tests
   sprint: 3
@@ -1414,9 +1414,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.1'
   description: "Define provider parity checklist \u2014 every provider must pass all\
     \ 5"
@@ -1432,9 +1432,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.2'
   description: "Add 2\u20133 additional providers to reach 3\u20134 gold-standard\
     \ total"
@@ -1450,9 +1450,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.4'
   description: SSH2 connection manager with LRU session reuse
   sprint: 4
@@ -1467,9 +1467,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.5'
   description: AES-256-GCM encrypted credential storage for VPS/WebDAV
   sprint: 4
@@ -1484,9 +1484,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.7'
   description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
     \ (all links vs password-only)"
@@ -1502,9 +1502,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.7'
   description: "Share link creation \u2014 enforce 2FA scope selected in /docs/decisions/share-link-2fa-scope.md\
     \ (all links vs password-only)"
@@ -1520,9 +1520,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.8'
   description: "Share link proxy \u2014 hides underlying provider"
   sprint: 4
@@ -1537,9 +1537,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.9'
   description: "Abuse controls \u2014 rate limits, throttling, link access logging"
   sprint: 4
@@ -1554,9 +1554,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.12'
   description: "Remote upload v1 \u2014 HTTP/HTTPS URL to chosen provider"
   sprint: 4
@@ -1571,9 +1571,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.13'
   description: Smart auto-placement engine v1
   sprint: 4
@@ -1588,9 +1588,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.3'
   description: E2E parity tests for each new provider
   sprint: 4
@@ -1605,9 +1605,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.6'
   description: VPS parity test + credential security test
   sprint: 4
@@ -1622,9 +1622,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.10'
   description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
     \ prompt behavior must match /docs/decisions/share-link-2fa-scope.md"
@@ -1640,9 +1640,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.10'
   description: "Share link UI \u2014 right-click \u2192 Get Share Link panel; 2FA\
     \ prompt behavior must match /docs/decisions/share-link-2fa-scope.md"
@@ -1658,9 +1658,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.11'
   description: "E2E share link tests \u2014 create, access, expire, revoke"
   sprint: 4
@@ -1675,9 +1675,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.14'
   description: "Remote upload UI \u2014 dropdown in Upload action menu"
   sprint: 4
@@ -1692,9 +1692,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '4.15'
   description: E2E remote upload + placement tests
   sprint: 4
@@ -1709,9 +1709,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.1'
   description: Scheduled job data model and Schedules management UI
   sprint: 5
@@ -1726,9 +1726,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.2'
   description: "BullMQ cron worker \u2014 jobs run server-side, browser closed"
   sprint: 5
@@ -1743,9 +1743,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.5'
   description: Vault data model and enable/disable API
   sprint: 5
@@ -1760,9 +1760,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.6'
   description: "Vault access gate \u2014 TOTP or PIN required to unlock"
   sprint: 5
@@ -1777,9 +1777,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.9'
   description: "Duplicate detection \u2014 filename + size cross-provider comparison"
   sprint: 5
@@ -1794,9 +1794,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.11'
   description: "Global cross-provider search v1 \u2014 name/metadata, ephemeral cache"
   sprint: 5
@@ -1811,9 +1811,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.3'
   description: "Schedules page UI \u2014 create, edit, pause, delete jobs"
   sprint: 5
@@ -1828,9 +1828,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.4'
   description: "E2E scheduled job test \u2014 runs with browser closed \u26A0\uFE0F\
     \ Human verify"
@@ -1846,9 +1846,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.7'
   description: "Vault UI \u2014 lock icon in sidebar, hidden from All Files; non-encryption\
     \ disclaimer at setup, unlock modal, and folder header; user-facing name follows\
@@ -1866,9 +1866,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.8'
   description: "E2E vault tests \u2014 enable, lock, unlock, auto-lock"
   sprint: 5
@@ -1883,9 +1883,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.10'
   description: Stale file detection + cleanup UI
   sprint: 5
@@ -1900,9 +1900,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.12'
   description: Search UI + performance test
   sprint: 5
@@ -1917,9 +1917,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '5.13'
   description: E2E search + duplicate detection tests
   sprint: 5
@@ -1934,9 +1934,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '6.1'
   description: "Version 1 essentials \u2014 quota alerts + remote URL import"
   sprint: 6
@@ -1954,9 +1954,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '6.2'
   description: "Version 1 essentials \u2014 real-time terminal + log view"
   sprint: 6
@@ -1972,9 +1972,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '6.3'
   description: "Version 1 essentials \u2014 scheduled backups + bandwidth throttle"
   sprint: 6
@@ -1992,9 +1992,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '6.4'
   description: "Version 1 completion \u2014 media streaming polish"
   sprint: 6
@@ -2010,9 +2010,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '6.5'
   description: "Version 1 completion \u2014 file versioning + trash bin"
   sprint: 6
@@ -2029,9 +2029,9 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
 - id: '6.6'
   description: "Version 1 completion \u2014 VPS/SFTP key lifecycle"
   sprint: 6
@@ -2048,6 +2048,6 @@ tasks:
   roadmap_version: '1'
   roadmap_version_title: Version 1
   status: done
-  commit: 94c0d8158b69
-  done_at: '2026-03-09T04:52:31+00:00'
-  changelog: 'feat: add CodeRabbit webhook gate and orchestrator integration'
+  commit: 1b3542173862
+  done_at: '2026-03-09T12:38:57+00:00'
+  changelog: 'docs: add contracts for 6.2 and 6.3'
