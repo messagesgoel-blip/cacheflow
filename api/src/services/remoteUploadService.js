@@ -115,8 +115,6 @@ async function remoteUpload(options) {
       redirect: 'manual', // Handle redirects manually to check each hop
     });
 
-    clearTimeout(timeoutId);
-
     // If redirect, resolve relative Location first, then validate
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get('location');
@@ -135,6 +133,9 @@ async function remoteUpload(options) {
     if (!response.body) {
       throw new Error('Response body is empty');
     }
+
+    // Handshake validated (headers + body stream presence); stop handshake timer.
+    clearTimeout(timeoutId);
 
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     const contentLength = response.headers.get('content-length');
