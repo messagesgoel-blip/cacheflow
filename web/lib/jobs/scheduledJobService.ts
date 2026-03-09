@@ -1,9 +1,14 @@
+interface ThrottleConfig {
+  maxBytesPerSecond: number | null
+}
+
 interface JobRecord {
   id: string
   name: string
   jobType: string
   cronExpression: string
   enabled: boolean
+  throttle?: ThrottleConfig
   createdAt: string
   updatedAt: string
 }
@@ -13,6 +18,7 @@ interface JobCreateData {
   jobType: string
   cronExpression: string
   enabled?: boolean
+  throttle?: ThrottleConfig
 }
 
 interface JobUpdateData {
@@ -20,6 +26,7 @@ interface JobUpdateData {
   jobType?: string
   cronExpression?: string
   enabled?: boolean
+  throttle?: ThrottleConfig
 }
 
 const scheduledJobs = new Map<string, JobRecord>()
@@ -45,6 +52,7 @@ class ScheduledJobService {
       jobType: data.jobType,
       cronExpression: data.cronExpression,
       enabled: data.enabled ?? true,
+      throttle: data.throttle,
       createdAt,
       updatedAt: createdAt,
     }

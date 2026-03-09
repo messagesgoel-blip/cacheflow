@@ -170,7 +170,14 @@ export default function TransferQueuePanel() {
 
             <div className="mt-4 flex items-center justify-between gap-4">
               <div className="flex-1">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--cf-bg3)]">
+                <div
+                  className="h-2 w-full overflow-hidden rounded-full bg-[var(--cf-bg3)]"
+                  role="progressbar"
+                  aria-valuenow={Math.max(0, Math.min(Math.round(job.progress), 100))}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`${job.sourceFile.name} transfer progress`}
+                >
                   <div
                     className={`h-full transition-all duration-300 ${
                       job.status === 'failed'
@@ -179,7 +186,7 @@ export default function TransferQueuePanel() {
                           ? 'bg-[var(--cf-green)]'
                           : 'bg-[var(--cf-blue)]'
                     }`}
-                    style={{ width: `${job.progress}%` }}
+                    style={{ width: `${Math.max(0, Math.min(job.progress, 100))}%` }}
                   />
                 </div>
               </div>

@@ -33,11 +33,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate throttle if provided
+    if (data.throttle && data.throttle.maxBytesPerSecond !== null) {
+      const bps = data.throttle.maxBytesPerSecond;
+      if (!Number.isFinite(bps) || bps <= 0) {
+        return Response.json({ error: 'throttle.maxBytesPerSecond must be a positive finite number or null' }, { status: 400 });
+      }
+    }
+
     const job = await scheduledJobService.createJob({
       name: data.name,
       jobType: data.jobType,
       cronExpression: data.cronExpression,
       enabled: data.enabled ?? true,
+      throttle: data.throttle || undefined,
     });
 
     return Response.json(job, { status: 201 });
@@ -63,6 +72,18 @@ export async function PUT(request: NextRequest) {
     if (data.jobType !== undefined) updateData.jobType = data.jobType;
     if (data.cronExpression !== undefined) updateData.cronExpression = data.cronExpression;
     if (data.enabled !== undefined) updateData.enabled = data.enabled;
+    if (data.throttle !== undefined) {
+      if (data.throttle && data.throttle.maxBytesPerSecond !== null) {
+        const bps = data.throttle.maxBytesPerSecond;
+        if (!Number.isFinite(bps) || bps <= 0) {
+          return Response.json(
+            { error: 'throttle.maxBytesPerSecond must be a positive finite number or null' },
+            { status: 400 },
+          );
+        }
+      }
+      updateData.throttle = data.throttle;
+    }
 
     const job = await scheduledJobService.updateJob(id, updateData);
     if (!job) {
