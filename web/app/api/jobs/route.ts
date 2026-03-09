@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
     // Validate throttle if provided
     if (data.throttle && data.throttle.maxBytesPerSecond !== null) {
       const bps = data.throttle.maxBytesPerSecond;
-      if (!Number.isFinite(bps) || bps < 0) {
-        return Response.json({ error: 'throttle.maxBytesPerSecond must be a non-negative finite number or null' }, { status: 400 });
+      if (!Number.isFinite(bps) || bps <= 0) {
+        return Response.json({ error: 'throttle.maxBytesPerSecond must be a positive finite number or null' }, { status: 400 });
       }
     }
 

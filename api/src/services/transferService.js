@@ -50,8 +50,8 @@ async function addTransferJob(data) {
 
   console.log(
     `[TransferService] Enqueued job ${job.id}: ` +
-    `"${data.fileName}" (${data.fileSize || 0} bytes) ` +
-    `${data.sourceProvider} → ${data.destProvider}`,
+    `${data.sourceProvider} → ${data.destProvider} ` +
+    `(${data.fileSize || 0} bytes)`,
   );
 
   return job;
@@ -65,10 +65,18 @@ async function addTransferJob(data) {
 async function cancelTransferJob(jobId) {
   const queue = getQueue();
   const job = await queue.getJob(jobId);
-  if (job) {
-    await job.remove();
-    console.log(`[TransferService] Cancelled job ${jobId}`);
+  if (!job) return false;
+
+  if (await job.isActive()) {
+    // Active jobs are locked by the worker — job.remove() would throw.
+    // TODO: implement worker-side cancellation via AbortSignal.
+    console.warn(`[TransferService] Job ${jobId} is active; cannot cancel without worker support`);
+    return false;
   }
+
+  await job.remove();
+  console.log(`[TransferService] Cancelled job ${jobId}`);
+  return true;
 }
 
 module.exports = {
