@@ -3,22 +3,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
+import re
 import subprocess
 from collections import defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
 
 import yaml
-
-def resolve_base() -> Path:
-    explicit = os.environ.get("CACHEFLOW_BASE")
-    if explicit:
-        return Path(explicit).resolve()
-    canonical = Path("/home/sanjay/cacheflow_work")
-    if (canonical / ".git").exists():
-        return canonical.resolve()
-    return Path(__file__).resolve().parent.parent
+from cacheflow_paths import resolve_base
 
 
 BASE = resolve_base()
@@ -53,6 +44,8 @@ ROADMAP_STAGE_DEFS = {
     "V2-C": {"title": "Moderate", "roadmap_version": "2", "order": 6},
     "V2-D": {"title": "Advanced", "roadmap_version": "2", "order": 7},
 }
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -331,11 +324,29 @@ def load_done_history() -> tuple[dict[str, dict], dict[str, dict]]:
             task_id = key.split("@", 1)[0]
             if task_id:
                 by_id[task_id] = payload
-        for task_id in entry.get("done_tasks", []) or []:
-            task_id = str(task_id).strip()
-            if task_id:
-                by_id[task_id] = payload
+        for done_task_id in entry.get("done_tasks", []) or []:
+            done_task_id = str(done_task_id).strip()
+            if done_task_id:
+                by_id[done_task_id] = payload
     return out, by_id
+
+
+def parse_sprint_number(value: object) -> int | None:
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value) if value.is_integer() else None
+
+    text = str(value).strip()
+    if not text:
+        return None
+    if text.isdigit():
+        return int(text)
+
+    match = re.search(r"\d+", text)
+    return int(match.group(0)) if match else None
 
 
 def _lookup_previous(existing_state: dict, task: dict) -> dict:
@@ -379,7 +390,7 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict, roadmap_cat
     orchestrator_tasks = orchestrator_state.get("tasks", {})
     if not isinstance(orchestrator_tasks, dict):
         orchestrator_tasks = {}
-    orchestrator_sprint = int(orchestrator_state.get("current_sprint", 0) or 0)
+    orchestrator_sprint = parse_sprint_number(orchestrator_state.get("current_sprint")) or 0
 
     for item in roadmap_catalog:
         item_id = str(item.get("item_id", "")).strip()
@@ -424,7 +435,7 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict, roadmap_cat
             done_criteria = counts["done"]
         else:
             status = normalize_status(orchestrator_tasks.get(item_id, "pending"))
-            sprint_num = int(sprint_label or 0)
+            sprint_num = parse_sprint_number(sprint_label) or 0
             if status in {"planned", "pending"} and orchestrator_sprint == sprint_num:
                 status = "running"
             progress = 100.0 if status == "done" else 0.0

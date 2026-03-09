@@ -1,22 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import os
 import re
 from datetime import datetime, timezone
-from pathlib import Path
 
 import yaml
-
-
-def resolve_base() -> Path:
-    explicit = os.environ.get("CACHEFLOW_BASE")
-    if explicit:
-        return Path(explicit).resolve()
-    canonical = Path("/home/sanjay/cacheflow_work")
-    if (canonical / ".git").exists():
-        return canonical.resolve()
-    return Path(__file__).resolve().parent.parent
+from cacheflow_paths import resolve_base
 
 
 BASE = resolve_base()
@@ -27,14 +16,14 @@ ROADMAP_VERSION_TITLES = {
     "2": "Version 2",
 }
 ROADMAP_STAGE_DEFS = {
-    "V1-0": {"title": "Release Blocker", "roadmap_version": "1"},
-    "V1-1": {"title": "Core Platform", "roadmap_version": "1"},
-    "V1-2": {"title": "Power User Essentials", "roadmap_version": "1"},
-    "V1-3": {"title": "Power User Completion", "roadmap_version": "1"},
-    "V2-A": {"title": "Foundation", "roadmap_version": "2"},
-    "V2-B": {"title": "Easy Wins", "roadmap_version": "2"},
-    "V2-C": {"title": "Moderate", "roadmap_version": "2"},
-    "V2-D": {"title": "Advanced", "roadmap_version": "2"},
+    "V1-0": {"title": "Release Blocker", "roadmap_version": "1", "sprint": "gate"},
+    "V1-1": {"title": "Core Platform", "roadmap_version": "1", "sprint": "0-5"},
+    "V1-2": {"title": "Power User Essentials", "roadmap_version": "1", "sprint": "6"},
+    "V1-3": {"title": "Power User Completion", "roadmap_version": "1", "sprint": "6"},
+    "V2-A": {"title": "Foundation", "roadmap_version": "2", "sprint": "7-11"},
+    "V2-B": {"title": "Easy Wins", "roadmap_version": "2", "sprint": "12-14"},
+    "V2-C": {"title": "Moderate", "roadmap_version": "2", "sprint": "15-17"},
+    "V2-D": {"title": "Advanced", "roadmap_version": "2", "sprint": "18-20"},
 }
 
 
@@ -47,7 +36,7 @@ def stage_item(stage_key: str) -> dict:
     return {
         "item_id": stage_key,
         "title": stage["title"],
-        "sprint": "gate" if stage_key == "V1-0" else "0-5",
+        "sprint": stage["sprint"],
         "roadmap_version": stage["roadmap_version"],
         "roadmap_version_title": ROADMAP_VERSION_TITLES[stage["roadmap_version"]],
         "stage": stage_key,

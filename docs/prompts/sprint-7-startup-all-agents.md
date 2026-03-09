@@ -16,7 +16,7 @@ Before coding:
 3) Read docs/roadmap.md, docs/sprints/sprint-7.md, and docs/sprints-task-dashboard.md
 4) Read .context/decisions.md, .context/patterns.md, .context/mistakes.md, .context/dependencies.md when relevant to touched scope
 5) Confirm runtime state in logs/orchestrator-state.json
-6) Do not claim executable task keys until Sprint 7 is decomposed into manifest-backed tasks
+6) Confirm decomposition state in docs/orchestration/task-manifest.json before claiming any executable task key
 7) Update STATUS.md Active section with your current planning task + machine + agent + started time
 
 Planning rules:

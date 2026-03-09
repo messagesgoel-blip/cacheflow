@@ -4,29 +4,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from cacheflow_paths import resolve_base
 
-BASE = Path("/home/sanjay/cacheflow_work")
+
+BASE = resolve_base()
 MONITORING = BASE / "monitoring"
-STATE_FILE = BASE / "logs" / "orchestrator-state.json"
-
-
-def current_execution_line() -> str:
-    sprint = None
-
-    if STATE_FILE.exists():
-        try:
-            state = json.loads(STATE_FILE.read_text())
-            sprint = state.get("current_sprint")
-        except Exception:
-            sprint = None
-
-    if sprint is None:
-        return "- Current execution: see `logs/orchestrator-state.json`"
-
-    sprint_num = int(sprint)
-    version = "Version 1" if sprint_num <= 6 else "Version 2"
-    suffix = " planning" if sprint_num >= 7 else ""
-    return f"- Current execution: Sprint {sprint_num} / {version}{suffix}"
 
 
 def text_panel(panel_id: int, title: str, x: int, y: int, w: int, h: int, content: str) -> dict:
@@ -112,9 +94,9 @@ def build_manager_dashboard() -> dict:
             "\n".join(
                 [
                     "# CacheFlow Manager Overview",
-                    current_execution_line(),
+                    "- Current execution: see live Prometheus metrics and `logs/orchestrator-state.json`",
                     "- Audience: quick product and execution status at a glance",
-                    "- Source of truth: `docs/roadmap.md`, `logs/orchestrator-state.json`, and generated metrics",
+                    "- Source of truth: `docs/roadmap.md`, `docs/orchestration/task-manifest.json`, `logs/orchestrator-state.json`, and generated metrics",
                 ]
             ),
         ),
@@ -161,7 +143,7 @@ def build_execution_dashboard() -> dict:
             "\n".join(
                 [
                     "# CacheFlow Detailed Execution Board",
-                    current_execution_line(),
+                    "- Current execution: see live Prometheus metrics and `logs/orchestrator-state.json`",
                     "- Audience: operators and engineers",
                     "- Covers roadmap items, task detail, change history, and audit exceptions",
                 ]

@@ -3,20 +3,10 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import subprocess
-from pathlib import Path
 
-
-def resolve_base() -> Path:
-    explicit = os.environ.get("CACHEFLOW_BASE")
-    if explicit:
-        return Path(explicit).resolve()
-    canonical = Path("/home/sanjay/cacheflow_work")
-    if (canonical / ".git").exists():
-        return canonical.resolve()
-    return Path(__file__).resolve().parent.parent
+from cacheflow_paths import resolve_base
 
 
 BASE = resolve_base()
@@ -65,7 +55,7 @@ def extract_from_text(task_ids: set[str], text: str) -> set[str]:
 
 
 def extract_from_changed_files(task_ids: set[str], commit_ish: str) -> set[str]:
-    changed = run_git(["show", "--pretty=", "--name-only", commit_ish])
+    changed = run_git(["diff-tree", "-m", "--no-commit-id", "--name-only", "-r", commit_ish])
     found = set()
     for path in changed.splitlines():
         path = path.strip()
@@ -87,12 +77,13 @@ def extract_task_ids(task_ids: set[str], commit_ish: str) -> set[str]:
 
 def main() -> None:
     args = parse_args()
-    task_ids = sorted(set(args.selector) | extract_task_ids(known_task_ids(), args.commit))
+    commit_sha = run_git(["rev-parse", f"{args.commit}^{{commit}}"])
+    task_ids = sorted(set(args.selector) | extract_task_ids(known_task_ids(), commit_sha))
     if not task_ids:
-        print(f"no task ids inferred from {args.commit}; skipping task-state update")
+        print(f"no task ids inferred from {commit_sha}; skipping task-state update")
         return
 
-    message = run_git(["show", "-s", "--format=%s", args.commit])
+    message = run_git(["show", "-s", "--format=%s", commit_sha])
     status_flag = "--under-review" if args.event == "review" else "--complete"
     subprocess.run(
         [
@@ -101,7 +92,7 @@ def main() -> None:
             status_flag,
             *task_ids,
             "--source-commit",
-            args.commit,
+            commit_sha,
             "--source-message",
             message,
         ],

@@ -116,6 +116,12 @@ describe('/api/jobs/logs route', () => {
     expect(response.status).toBe(401);
   });
 
+  test('returns 500 when JWT_SECRET is missing', async () => {
+    delete process.env.JWT_SECRET;
+    const response = await GET(createRequest('http://localhost/api/jobs/logs?jobId=job-123'));
+    expect(response.status).toBe(500);
+  });
+
   test('streams connected, log, and done events on completion', async () => {
     const unsubscribeLogs = jest.fn();
     const unsubscribeProgress = jest.fn();

@@ -259,7 +259,9 @@ export default function JobLogPanel({
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={clearLogs}
+            data-testid="job-log-panel-clear"
             className="rounded px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
             title="Clear logs"
           >
@@ -267,11 +269,13 @@ export default function JobLogPanel({
           </button>
           {onClose && (
             <button
+              type="button"
               onClick={onClose}
+              data-testid="job-log-panel-close"
               className="rounded p-1 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
               title="Close panel"
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

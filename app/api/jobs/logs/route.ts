@@ -39,6 +39,13 @@ function badRequestStream(message: string): Response {
   });
 }
 
+function serverErrorStream(message: string): Response {
+  return new Response(message, {
+    status: 500,
+    headers: { 'Content-Type': 'text/plain' },
+  });
+}
+
 function sseEvent(eventName: string, data: unknown): string {
   return `event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`;
 }
@@ -68,9 +75,15 @@ export async function GET(
       return unauthorizedStream();
     }
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('[jobs/logs] JWT_SECRET is not set; refusing to verify access token.');
+      return serverErrorStream('Server configuration error');
+    }
+
     try {
       const { verify } = await import('jsonwebtoken');
-      const decoded = verify(accessToken, process.env.JWT_SECRET!) as JwtPayload;
+      const decoded = verify(accessToken, jwtSecret) as JwtPayload;
       userId = decoded.id;
     } catch {
       return unauthorizedStream();

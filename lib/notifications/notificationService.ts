@@ -8,9 +8,6 @@
  * Task: 6.1@QUOTA-1
  */
 
-import { AppError } from '../errors/AppError';
-import { ErrorCode } from '../errors/ErrorCode';
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -243,4 +240,6 @@ export function getNotificationService(): NotificationService {
   return notificationService;
 }
 
-export default NotificationService;
+const notificationServiceSingleton = getNotificationService();
+
+export default notificationServiceSingleton;

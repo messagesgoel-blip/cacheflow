@@ -27,6 +27,7 @@
 
 ## Invariants
 
+- `Version 1` remains fully green before `Version 2` implementation work begins.
 - Do not use retired roadmap files as live planning input.
 - Do not infer Version 2 implementation work as active until it is decomposed into executable manifest tasks.
 - Keep GTM / Commercial work separate from Version 1 product sequencing.

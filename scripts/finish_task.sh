@@ -171,10 +171,11 @@ fi
 if [ "$skip_push" -eq 0 ]; then
   git pull --rebase --autostash
   git push
-fi
-
-if [ "$commit_created" -eq 1 ]; then
-  python3 scripts/update_cacheflow_task_state_from_git.py --event review --commit HEAD --selector "$task_key" --refresh || true
+  if [ "$commit_created" -eq 1 ]; then
+    python3 scripts/update_cacheflow_task_state_from_git.py --event review --commit HEAD --selector "$task_key" --refresh
+  fi
+elif [ "$commit_created" -eq 1 ]; then
+  echo "finish-task: skipping task-state update because push was skipped"
 fi
 
 if [ "$skip_release" -eq 0 ]; then

@@ -335,6 +335,7 @@ class ProgressBridge {
     await this.publisher.quit();
     await this.subscriber.quit();
     this.subscriptions.clear();
+    this.logSubscriptions.clear();
     this.initialized = false;
     console.log('[ProgressBridge] Shutdown complete');
   }

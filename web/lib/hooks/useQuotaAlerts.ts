@@ -103,16 +103,20 @@ export function useQuotaAlerts(
 
   // Provide a way to check current status without triggering alerts
   const getQuotaStatus = useCallback(() => {
-    return quotas.map((quota) => ({
-      ...quota,
-      percent: calculatePercent(quota),
-      status: (() => {
-        const percent = calculatePercent(quota);
-        if (percent >= criticalThreshold) return 'critical';
-        if (percent >= warningThreshold) return 'warning';
-        return 'ok';
-      })(),
-    }));
+    return quotas.map((quota) => {
+      const percent = calculatePercent(quota);
+      const status = percent >= criticalThreshold
+        ? 'critical'
+        : percent >= warningThreshold
+          ? 'warning'
+          : 'ok';
+
+      return {
+        ...quota,
+        percent,
+        status,
+      };
+    });
   }, [quotas, calculatePercent, warningThreshold, criticalThreshold]);
 
   return {
