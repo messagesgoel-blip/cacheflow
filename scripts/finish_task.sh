@@ -177,6 +177,11 @@ if [ "$skip_push" -eq 0 ]; then
   else
     published_work=1
   fi
+  if [ "$published_work" -eq 1 ]; then
+    bash scripts/pre-push-review.sh
+  else
+    echo "finish-task: no unpublished commits; skipping CodeRabbit pre-push review"
+  fi
   git pull --rebase --autostash
   git push
   if [ "$published_work" -eq 1 ]; then

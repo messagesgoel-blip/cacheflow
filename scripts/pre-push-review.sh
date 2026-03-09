@@ -4,6 +4,14 @@
 
 set -uo pipefail
 
+# This execution environment can expose a mismatched HOME; prefer the account's
+# passwd home when that is where CodeRabbit auth is stored.
+current_user="$(id -un)"
+user_home="$(getent passwd "$current_user" 2>/dev/null | cut -d: -f6)"
+if [ -n "$user_home" ] && [ -f "$user_home/.coderabbit/auth.json" ] && [ ! -f "$HOME/.coderabbit/auth.json" ]; then
+  export HOME="$user_home"
+fi
+
 # Ensure ~/.local/bin is in PATH (in case it was just installed)
 export PATH="$HOME/.local/bin:$PATH"
 
