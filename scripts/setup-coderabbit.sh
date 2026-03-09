@@ -2,7 +2,6 @@
 set -euo pipefail
 
 # Install CodeRabbit CLI via official curl script
-# Since npm package @coderabbit/cli was not found in the registry
 curl -fsSL https://cli.coderabbit.ai/install.sh | sh
 
 # Ensure ~/.local/bin is in PATH for this session
@@ -11,10 +10,11 @@ export PATH="$HOME/.local/bin:$PATH"
 # Verify install
 coderabbit --version || { echo "coderabbit install failed"; exit 1; }
 
-# Authenticate if token present
+# Authentication Note: 
+# Non-interactive authentication is handled via the CODERABBIT_API_KEY environment variable 
+# passed directly to the 'review' command.
 if [ -n "${CODERABBIT_API_KEY:-}" ]; then
-  coderabbit auth login --api-key "$CODERABBIT_API_KEY"
-  echo "CodeRabbit: authenticated"
+  echo "CodeRabbit: API Key detected in environment."
 else
-  echo "WARNING: CODERABBIT_API_KEY not set — run: coderabbit auth login"
+  echo "WARNING: CODERABBIT_API_KEY not set — reviews will require manual login."
 fi
