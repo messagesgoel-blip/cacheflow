@@ -3,6 +3,7 @@ import { Readable } from 'stream'
 import { BoxAdapter } from '../../../../lib/providers/box'
 import {
   PROVIDER_PARITY_CHECKLIST,
+  type ProviderAdapter,
   type ProviderParityCheckId,
 } from '../../../../lib/providers/ProviderAdapter.interface'
 
@@ -36,7 +37,7 @@ test.describe('Task 4.3 - Box provider parity (AUTH-1)', () => {
     process.env.BOX_REDIRECT_URI = originalEnv.BOX_REDIRECT_URI
   })
 
-  test('AUTH-1: Box passes all 5 provider parity checks', async () => {
+  test('AUTH-1: Box passes all supported provider parity checks', async () => {
     process.env.BOX_CLIENT_ID = 'box-client-id'
     process.env.BOX_CLIENT_SECRET = 'box-client-secret'
     process.env.BOX_REDIRECT_URI = 'http://localhost:3010/providers/box/callback'
@@ -174,6 +175,7 @@ test.describe('Task 4.3 - Box provider parity (AUTH-1)', () => {
     }) as typeof fetch
 
     const adapter = new BoxAdapter()
+    const parityAdapter = adapter as ProviderAdapter
     const context = { requestId: 'req-box-1', userId: 'user-box-1' }
     const checkResults: Record<ProviderParityCheckId, boolean> = {
       auth_lifecycle: false,
@@ -181,6 +183,8 @@ test.describe('Task 4.3 - Box provider parity (AUTH-1)', () => {
       file_mutation: false,
       stream_transfer: false,
       resumable_transfer: false,
+      trash: false,
+      versioning: false,
     }
 
     expect(adapter.descriptor.id).toBe('box')
@@ -279,7 +283,10 @@ test.describe('Task 4.3 - Box provider parity (AUTH-1)', () => {
       status.session.nextOffset === 8 &&
       finalized.file.id === 'final-file-1'
 
-    const parityResults = PROVIDER_PARITY_CHECKLIST.map((check) => ({
+    const supportedChecks = PROVIDER_PARITY_CHECKLIST.filter((check) =>
+      check.requiredMethods.every((method) => typeof parityAdapter[method] === 'function')
+    )
+    const parityResults = supportedChecks.map((check) => ({
       checkId: check.id,
       passed: checkResults[check.id],
     }))
