@@ -97,6 +97,10 @@ export async function GET(
 
   const stream = new ReadableStream({
     start(controller) {
+      let keepaliveTimer: ReturnType<typeof setInterval> | null = null;
+      let unsubscribeLogs: (() => void) | null = null;
+      let unsubscribeProgress: (() => void) | null = null;
+
       const enqueue = (chunk: string): void => {
         if (isFinished) return;
         try {
@@ -108,7 +112,10 @@ export async function GET(
 
       const cleanup = (): void => {
         isFinished = true;
-        clearInterval(keepaliveTimer);
+        if (keepaliveTimer) {
+          clearInterval(keepaliveTimer);
+          keepaliveTimer = null;
+        }
         if (unsubscribeLogs) unsubscribeLogs();
         if (unsubscribeProgress) unsubscribeProgress();
       };
@@ -124,8 +131,14 @@ export async function GET(
         }
       };
 
+      enqueue(sseEvent('connected', { jobId, userId }));
+
+      keepaliveTimer = setInterval(() => {
+        enqueue(': keepalive\n\n');
+      }, SSE_KEEPALIVE_MS);
+
       // Subscribe to worker log events (LOGS-1)
-      const unsubscribeLogs = progressEmitter.onJobLogs(
+      const jobLogsUnsubscribe = progressEmitter.onJobLogs(
         userId,
         jobId,
         (entry: WorkerLogEntry) => {
@@ -133,9 +146,13 @@ export async function GET(
           enqueue(sseEvent('log', entry));
         }
       );
+      unsubscribeLogs = jobLogsUnsubscribe;
+      if (isFinished) {
+        unsubscribeLogs();
+      }
 
       // Subscribe to progress for authoritative completion status
-      const unsubscribeProgress = progressEmitter.onJobProgress(
+      const jobProgressUnsubscribe = progressEmitter.onJobProgress(
         userId,
         jobId,
         (update: ProgressUpdate) => {
@@ -150,12 +167,10 @@ export async function GET(
           }
         }
       );
-
-      enqueue(sseEvent('connected', { jobId, userId }));
-
-      const keepaliveTimer = setInterval(() => {
-        enqueue(': keepalive\n\n');
-      }, SSE_KEEPALIVE_MS);
+      unsubscribeProgress = jobProgressUnsubscribe;
+      if (isFinished) {
+        unsubscribeProgress();
+      }
 
       request.signal.addEventListener('abort', () => {
         cleanup();

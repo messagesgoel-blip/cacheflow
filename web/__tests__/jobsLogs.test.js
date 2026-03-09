@@ -195,4 +195,45 @@ describe('/api/jobs/logs route', () => {
     expect(output).toContain('"status":"failed"');
     expect(output).toContain('"error":"boom"');
   });
+
+  test('handles synchronous subscription callbacks without losing event ordering', async () => {
+    const unsubscribeLogs = jest.fn();
+    const unsubscribeProgress = jest.fn();
+    process.env.TEST_BYPASS_AUTH_USER_ID = 'user-123';
+
+    progressEmitterMock.onJobLogs.mockImplementation((_userId, _jobId, handler) => {
+      handler({
+        jobId: 'job-123',
+        jobType: 'transfer',
+        userId: 'user-123',
+        level: 'info',
+        message: 'Sync log',
+        timestamp: 123,
+      });
+      return unsubscribeLogs;
+    });
+
+    progressEmitterMock.onJobProgress.mockImplementation((_userId, _jobId, handler) => {
+      handler({
+        jobId: 'job-123',
+        jobType: 'transfer',
+        userId: 'user-123',
+        progress: 100,
+        status: 'completed',
+        timestamp: 456,
+      });
+      return unsubscribeProgress;
+    });
+
+    const response = await GET(createRequest('http://localhost/api/jobs/logs?jobId=job-123'));
+    const output = await readSse(response);
+
+    expect(output).toContain('event: connected');
+    expect(output).toContain('event: log');
+    expect(output).toContain('"message":"Sync log"');
+    expect(output).toContain('event: done');
+    expect(output).toContain('"status":"completed"');
+    expect(unsubscribeLogs).toHaveBeenCalledTimes(1);
+    expect(unsubscribeProgress).toHaveBeenCalledTimes(1);
+  });
 });

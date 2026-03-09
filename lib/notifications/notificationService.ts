@@ -33,6 +33,16 @@ export interface NotificationPayload {
   timestamp: Date;
 }
 
+export interface NotificationMetadata {
+  userId?: string;
+  providerName?: string;
+  percentUsed?: number;
+  freeSpace?: number;
+  isCritical?: boolean;
+  recipientEmail?: string;
+  [key: string]: unknown;
+}
+
 export interface EmailNotificationPayload extends NotificationPayload {
   /** Recipient email address */
   recipientEmail: string;
@@ -162,6 +172,18 @@ class NotificationService {
    * Stub: logs the notification if SMTP not configured.
    */
   private async sendEmail(payload: NotificationPayload): Promise<{ success: boolean; error?: string }> {
+    const metadata = payload.metadata as NotificationMetadata | undefined;
+    const recipientEmail = typeof metadata?.recipientEmail === 'string'
+      ? metadata.recipientEmail.trim()
+      : '';
+
+    if (!recipientEmail) {
+      return {
+        success: false,
+        error: 'Recipient email missing',
+      };
+    }
+
     // Check if email is configured
     if (!this.emailConfig) {
       console.log(`[NotificationService] Email not configured, skipping: ${payload.title}`);
@@ -175,7 +197,7 @@ class NotificationService {
     // For now, stub: log the email that would be sent
     console.log(`[NotificationService] [STUB] Would send email:`, {
       from: this.emailConfig.fromAddress,
-      to: payload.metadata?.email,
+      to: recipientEmail,
       subject: `[CacheFlow] ${payload.title}`,
       body: payload.message,
     });
@@ -194,20 +216,27 @@ class NotificationService {
     providerName: string,
     percentUsed: number,
     freeSpace: number,
-    isCritical: boolean
+    isCritical: boolean,
+    recipientEmail?: string
   ): Promise<NotificationResult> {
+    const channels: NotificationChannel[] = ['in-app'];
+    if (recipientEmail?.trim()) {
+      channels.push('email');
+    }
+
     const payload: NotificationPayload = {
       id: `quota-${providerName.toLowerCase()}-${Date.now()}`,
       title: isCritical ? 'Storage Critical' : 'Storage Low',
       message: `${providerName} storage at ${percentUsed}% capacity. ${formatBytes(freeSpace)} remaining.`,
       level: isCritical ? 'critical' : 'warning',
-      channels: ['in-app', 'email'],
+      channels,
       metadata: {
         userId,
         providerName,
         percentUsed,
         freeSpace,
         isCritical,
+        recipientEmail,
       },
       timestamp: new Date(),
     };

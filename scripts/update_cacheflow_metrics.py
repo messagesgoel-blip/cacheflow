@@ -4,12 +4,11 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
 from collections import defaultdict
 from datetime import datetime, timezone
 
 import yaml
-from cacheflow_paths import resolve_base
+from cacheflow_paths import resolve_base, run_git
 
 
 BASE = resolve_base()
@@ -48,20 +47,6 @@ ROADMAP_STAGE_DEFS = {
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-
-
-def run_git(args: list[str]) -> str:
-    return (
-        subprocess.run(
-            ["git", *args],
-            cwd=str(BASE),
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        .stdout.strip()
-    )
-
 
 def load_orchestrator_state_file() -> dict:
     if not ORCHESTRATOR_STATE_FILE.exists():

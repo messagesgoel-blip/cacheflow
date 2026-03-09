@@ -13,10 +13,10 @@ You are starting Sprint 7 planning for CacheFlow.
 Before coding:
 1) git pull --rebase
 2) Read AGENTS.md and STATUS.md fully
-3) Read docs/roadmap.md, docs/sprints/sprint-7.md, and docs/sprints-task-dashboard.md
+3) Read docs/roadmap.md, docs/sprints/sprint-7.md, docs/sprints-task-dashboard.md, and docs/orchestration/task-manifest.json
 4) Read .context/decisions.md, .context/patterns.md, .context/mistakes.md, .context/dependencies.md when relevant to touched scope
-5) Confirm runtime state in logs/orchestrator-state.json
-6) Confirm decomposition state in docs/orchestration/task-manifest.json before claiming any executable task key
+5) Confirm sprint state in logs/orchestrator-state.json and docs/orchestration/task-manifest.json
+6) Confirm decomposition is approved before claiming any executable task key
 7) Update STATUS.md Active section with your current planning task + machine + agent + started time
 
 Planning rules:

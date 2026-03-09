@@ -46,10 +46,10 @@ interface WorkerLogEvent {
 interface ProgressEvent {
   type: 'progress' | 'complete' | 'error' | 'heartbeat';
   jobId: string;
-  progress?: number;
+  progress?: number | Record<string, unknown>;
   status?: string;
   payload?: {
-    progress: number;
+    progress: number | Record<string, unknown>;
     total?: number;
     message?: string;
     timestamp: string;
@@ -93,6 +93,10 @@ function levelPrefix(level: LogEntry['level']): string {
   }
 }
 
+function resolveNumericProgress(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
 export default function JobLogPanel({
   jobId,
   jobType = 'transfer',
@@ -126,6 +130,17 @@ export default function JobLogPanel({
   }, [logs]);
 
   useEffect(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+
+    setLogs([]);
+    setIsConnected(false);
+    setIsComplete(false);
+    setProgress(0);
+    logIdCounter.current = 0;
+
     // Primary: Use the dedicated worker log endpoint (LOGS-1)
     const logsEndpoint = `/api/jobs/logs?jobId=${encodeURIComponent(jobId)}`;
     const es = new EventSource(logsEndpoint);
@@ -161,8 +176,9 @@ export default function JobLogPanel({
         addLog(level, data.message, data.data);
 
         // Update progress if available in data
-        if (data.data?.progress !== undefined) {
-          setProgress(data.data.progress as number);
+        const logProgress = resolveNumericProgress(data.data?.progress);
+        if (logProgress !== undefined) {
+          setProgress(logProgress);
         }
       } catch (err) {
         console.error('Failed to parse log event:', err);
@@ -173,10 +189,15 @@ export default function JobLogPanel({
     es.addEventListener('progress', (event) => {
       try {
         const data: ProgressEvent = JSON.parse(event.data);
-        const progressVal = data.payload?.progress ?? data.progress ?? 0;
-        setProgress(progressVal);
+        const progressVal = resolveNumericProgress(data.payload?.progress)
+          ?? resolveNumericProgress(data.progress);
 
-        const message = data.payload?.message || `Progress: ${Math.round(progressVal)}%`;
+        if (progressVal !== undefined) {
+          setProgress(progressVal);
+        }
+
+        const message = data.payload?.message
+          ?? (progressVal !== undefined ? `Progress: ${Math.round(progressVal)}%` : 'Progress updated');
         addLog('info', message, {
           progress: progressVal,
           total: data.payload?.total,

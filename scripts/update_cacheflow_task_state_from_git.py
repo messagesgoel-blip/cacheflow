@@ -6,27 +6,13 @@ import json
 import re
 import subprocess
 
-from cacheflow_paths import resolve_base
+from cacheflow_paths import resolve_base, run_git
 
 
 BASE = resolve_base()
 MANIFEST_FILE = BASE / "docs" / "orchestration" / "task-manifest.json"
 UPDATE_SCRIPT = BASE / "scripts" / "update_cacheflow_metrics.py"
 REFRESH_SCRIPT = BASE / "scripts" / "refresh_cacheflow_metrics.sh"
-
-
-def run_git(args: list[str]) -> str:
-    return (
-        subprocess.run(
-            ["git", *args],
-            cwd=str(BASE),
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        .stdout.strip()
-    )
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Update CacheFlow task state from a git commit or merge event.")

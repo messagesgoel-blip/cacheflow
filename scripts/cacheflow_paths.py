@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 from pathlib import Path
 
 
@@ -10,8 +11,18 @@ def resolve_base() -> Path:
         return Path(explicit).resolve()
 
     script_dir = Path(__file__).resolve().parent
-    repo_root = script_dir.parent
-    if (repo_root / ".git").exists():
-        return repo_root
+    return script_dir.parent
 
-    return repo_root
+
+def run_git(args: list[str], cwd: Path | None = None) -> str:
+    working_dir = cwd or resolve_base()
+    return (
+        subprocess.run(
+            ["git", *args],
+            cwd=str(working_dir),
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        .stdout.strip()
+    )
