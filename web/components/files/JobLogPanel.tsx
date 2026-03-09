@@ -48,6 +48,7 @@ interface ProgressEvent {
   jobId: string;
   progress?: number | Record<string, unknown>;
   status?: string;
+  terminalPayload?: Record<string, unknown>;
   payload?: {
     progress: number | Record<string, unknown>;
     total?: number;
@@ -212,33 +213,28 @@ export default function JobLogPanel({
     // Handle completion
     es.addEventListener('done', (event) => {
       try {
-        const data = JSON.parse(event.data);
+        const data: ProgressEvent = JSON.parse(event.data);
         if (data.status === 'completed') {
           addLog('success', 'Job completed successfully', { jobId });
+          setProgress(100);
           setIsComplete(true);
         } else if (data.status === 'failed') {
-          addLog('error', 'Job failed', { jobId });
+          const errorMessage = typeof data.error === 'string' && data.error.trim() !== ''
+            ? data.error
+            : 'Job failed';
+          addLog('error', errorMessage, {
+            jobId,
+            error: data.error,
+            terminalPayload: data.terminalPayload,
+          });
           setIsComplete(true);
         }
       } catch {
         addLog('success', 'Job stream ended');
         setIsComplete(true);
       }
+      setIsConnected(false);
       es.close();
-    });
-
-    // Handle explicit error events from SSE
-    es.addEventListener('error', (event: Event) => {
-      const messageEvent = event as MessageEvent;
-      try {
-        const data = JSON.parse(messageEvent.data);
-        addLog('error', data.message || 'Job error', { jobId });
-      } catch {
-        const fallbackMessage = typeof messageEvent.data === 'string' && messageEvent.data.trim() !== ''
-          ? messageEvent.data
-          : 'Job error';
-        addLog('error', fallbackMessage, { jobId });
-      }
     });
 
     es.onerror = (err) => {

@@ -24,6 +24,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def known_task_ids() -> set[str]:
+    if not MANIFEST_FILE.exists():
+        return set()
     manifest = json.loads(MANIFEST_FILE.read_text())
     return {
         str(task.get("id", "")).strip()

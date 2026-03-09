@@ -82,6 +82,10 @@ export interface EmailConfig {
  * Returns null if email is not configured.
  */
 export function getEmailConfig(): EmailConfig | null {
+  if (typeof process === 'undefined' || !process.env) {
+    return null;
+  }
+
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT;
   const user = process.env.SMTP_USER;

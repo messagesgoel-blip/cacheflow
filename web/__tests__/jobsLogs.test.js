@@ -233,6 +233,8 @@ describe('/api/jobs/logs route', () => {
     expect(output).toContain('event: connected');
     expect(output).toContain('event: log');
     expect(output).toContain('"message":"Sync log"');
+    expect(output).toContain('event: progress');
+    expect(output).toContain('"progress":100');
     expect(output).toContain('event: done');
     expect(output).toContain('"status":"completed"');
     expect(unsubscribeLogs).toHaveBeenCalledTimes(1);

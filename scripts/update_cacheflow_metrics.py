@@ -296,7 +296,11 @@ def _status_map(args: argparse.Namespace) -> dict:
 def load_done_history() -> tuple[dict[str, dict], dict[str, dict]]:
     if not HISTORY_FILE.exists():
         return {}, {}
-    raw = yaml.safe_load(HISTORY_FILE.read_text()) or []
+    try:
+        raw = yaml.safe_load(HISTORY_FILE.read_text()) or []
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        print(f"update_cacheflow_metrics: failed to load task history {HISTORY_FILE}: {exc}", file=sys.stderr)
+        return {}, {}
     if not isinstance(raw, list):
         return {}, {}
 
@@ -708,7 +712,7 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict, orchestrator_stat
     roadmap_items, roadmap_stages, roadmap_versions = build_roadmap_items(tasks, orchestrator_state, roadmap_catalog)
     current_state = str(orchestrator_state.get("current_state", "")).strip()
     roadmap_source = str(orchestrator_state.get("roadmap_source", "")).strip()
-    orchestrator_sprint = int(orchestrator_state.get("current_sprint", 0) or 0)
+    orchestrator_sprint = parse_sprint_number(orchestrator_state.get("current_sprint")) or 0
     if orchestrator_sprint > 0:
         current_sprint = orchestrator_sprint
         current_progress = 0.0
@@ -759,15 +763,28 @@ def record_history(changes: list[dict], tasks: list[dict]) -> None:
         return
     history = []
     if HISTORY_FILE.exists():
-        history = yaml.safe_load(HISTORY_FILE.read_text()) or []
-    commit_full = run_git(["rev-parse", "HEAD"])
-    message = run_git(["log", "-1", "--pretty=%s"])
+        try:
+            history = yaml.safe_load(HISTORY_FILE.read_text()) or []
+        except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+            print(f"update_cacheflow_metrics: failed to load existing task history {HISTORY_FILE}: {exc}", file=sys.stderr)
+            history = []
+    if not isinstance(history, list):
+        history = []
+
     done_keys = [c["task_key"] for c in changes if c["to"] == "done"]
+    done_key_set = set(done_keys)
+    done_records = [task for task in tasks if task["task_key"] in done_key_set]
+    commit_full = next((str(task.get("commit", "")).strip() for task in done_records if str(task.get("commit", "")).strip()), "")
+    message = next((str(task.get("changelog", "")).strip() for task in done_records if str(task.get("changelog", "")).strip()), "")
+    if not commit_full:
+        commit_full = run_git(["rev-parse", "HEAD"])
+    if not message:
+        message = run_git(["log", "-1", "--pretty=%s"])
     done_ids = sorted(
         {
             t["id"]
             for t in tasks
-            if t["task_key"] in set(done_keys)
+            if t["task_key"] in done_key_set
         }
     )
     history.append(

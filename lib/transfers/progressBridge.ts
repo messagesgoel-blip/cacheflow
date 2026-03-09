@@ -11,6 +11,7 @@
 import Redis from 'ioredis';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const JOB_TYPES = ['transfer', 'rate_limit', 'scheduled'] as const;
 
 const PROGRESS_CHANNEL_PREFIX = 'progress:';
 const LOG_CHANNEL_PREFIX = 'logs:';
@@ -79,20 +80,26 @@ class ProgressBridge {
   private initialized = false;
 
   constructor() {
-    this.publisher = new Redis(REDIS_URL, { db: 1 });
-    this.subscriber = new Redis(REDIS_URL, { db: 1 });
+    const redisOptions = {
+      db: 1,
+      retryStrategy: (attempt: number) => Math.min(attempt * 100, 2_000),
+      reconnectOnError: () => true,
+    };
+
+    this.publisher = new Redis(REDIS_URL, redisOptions);
+    this.subscriber = new Redis(REDIS_URL, redisOptions);
+
+    this.attachRedisListeners(this.publisher, 'publisher');
+    this.attachRedisListeners(this.subscriber, 'subscriber');
   }
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    await this.subscriber.subscribe(PROGRESS_CHANNEL_PREFIX + 'transfer');
-    await this.subscriber.subscribe(PROGRESS_CHANNEL_PREFIX + 'rate_limit');
-    await this.subscriber.subscribe(PROGRESS_CHANNEL_PREFIX + 'scheduled');
-    // Subscribe to log channels
-    await this.subscriber.subscribe(LOG_CHANNEL_PREFIX + 'transfer');
-    await this.subscriber.subscribe(LOG_CHANNEL_PREFIX + 'rate_limit');
-    await this.subscriber.subscribe(LOG_CHANNEL_PREFIX + 'scheduled');
+    for (const jobType of JOB_TYPES) {
+      await this.subscriber.subscribe(PROGRESS_CHANNEL_PREFIX + jobType);
+      await this.subscriber.subscribe(LOG_CHANNEL_PREFIX + jobType);
+    }
 
     this.subscriber.on('message', (channel, message) => {
       this.handleMessage(channel, message);
@@ -107,22 +114,43 @@ class ProgressBridge {
       // Check if this is a log message
       if (channel.startsWith(LOG_CHANNEL_PREFIX)) {
         const entry: WorkerLogEntry = JSON.parse(message);
-        const jobType = channel.replace(LOG_CHANNEL_PREFIX, '');
-        this.notifyLogSubscribers(jobType, entry);
+        this.notifyLogSubscribers(entry);
         return;
       }
 
       // Otherwise it's a progress message
       const update: ProgressUpdate = JSON.parse(message);
-      const jobType = channel.replace(PROGRESS_CHANNEL_PREFIX, '');
-
-      this.notifySubscribers(jobType, update);
+      this.notifySubscribers(update);
     } catch (error) {
       console.error('[ProgressBridge] Failed to parse message:', error);
     }
   }
 
-  private notifyLogSubscribers(jobType: string, entry: WorkerLogEntry): void {
+  private attachRedisListeners(client: Redis, label: 'publisher' | 'subscriber'): void {
+    client.on('connect', () => {
+      console.log(`[ProgressBridge] Redis ${label} connected`);
+    });
+
+    client.on('reconnecting', (delay: number) => {
+      console.warn(`[ProgressBridge] Redis ${label} reconnecting in ${delay}ms`);
+    });
+
+    client.on('end', () => {
+      console.warn(`[ProgressBridge] Redis ${label} connection ended`);
+    });
+
+    client.on('error', (error) => {
+      console.error(`[ProgressBridge] Redis ${label} error:`, error);
+    });
+  }
+
+  private ensureInitialized(methodName: string): void {
+    if (!this.initialized) {
+      throw new Error(`[ProgressBridge] ${methodName} called before initialize()`);
+    }
+  }
+
+  private notifyLogSubscribers(entry: WorkerLogEntry): void {
     const userKey = entry.userId;
     const jobKey = `${entry.userId}:${entry.jobId}`;
 
@@ -143,7 +171,7 @@ class ProgressBridge {
     }
   }
 
-  private notifySubscribers(jobType: string, update: ProgressUpdate): void {
+  private notifySubscribers(update: ProgressUpdate): void {
     const userKey = update.userId;
     const jobKey = `${update.userId}:${update.jobId}`;
 
@@ -165,6 +193,8 @@ class ProgressBridge {
   }
 
   async publishProgress(update: ProgressUpdate): Promise<void> {
+    this.ensureInitialized('publishProgress');
+
     const channel = PROGRESS_CHANNEL_PREFIX + (update.jobType || 'transfer');
     const message = JSON.stringify({
       ...update,
@@ -226,6 +256,8 @@ class ProgressBridge {
   // --- Log event publishing ---
 
   async publishWorkerLog(entry: WorkerLogEntry): Promise<void> {
+    this.ensureInitialized('publishWorkerLog');
+
     const channel = LOG_CHANNEL_PREFIX + (entry.jobType || 'transfer');
     const message = JSON.stringify({
       ...entry,
