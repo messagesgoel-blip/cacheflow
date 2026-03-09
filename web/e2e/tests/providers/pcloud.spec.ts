@@ -181,6 +181,8 @@ test.describe('Task 4.3 - pCloud provider parity (AUTH-1)', () => {
       file_mutation: false,
       stream_transfer: false,
       resumable_transfer: false,
+      trash: false,
+      versioning: false,
     }
 
     expect(adapter.descriptor.id).toBe('pcloud')
