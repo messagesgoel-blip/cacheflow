@@ -1,4 +1,4 @@
-import { appendFileSync, openSync, readFileSync, closeSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
+import { appendFileSync, closeSync, fsyncSync, openSync, readFileSync, renameSync, unlinkSync, writeSync } from "node:fs";
 import path from "node:path";
 import type { Task } from "./types";
 import { BLOCKED_TEMPLATE } from "../coderabbit/parseReview";
@@ -48,8 +48,14 @@ export function requeueTask(task: Task, feedback: string, reason: RequeueReason)
     };
 
     manifest.tasks[index] = updated;
-    const tempPath = `${MANIFEST_PATH}.tmp`;
-    writeFileSync(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+    const tempPath = `${MANIFEST_PATH}.tmp.${process.pid}.${Date.now()}`;
+    const tempFd = openSync(tempPath, "w");
+    try {
+      writeSync(tempFd, `${JSON.stringify(manifest, null, 2)}\n`, undefined, "utf8");
+      fsyncSync(tempFd);
+    } finally {
+      closeSync(tempFd);
+    }
     renameSync(tempPath, MANIFEST_PATH);
 
     appendAudit({ event: "requeue", taskId: task.id, reason, requeueCount, status: "pending" });
