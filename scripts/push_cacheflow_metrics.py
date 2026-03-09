@@ -11,6 +11,7 @@ STATUS_CODE = {
     "planned": 0,
     "pending": 1,
     "running": 2,
+    "under_review": 2,
     "done": 3,
     "complete": 3,
     "closed": 3,
@@ -53,6 +54,7 @@ def build_payload(data):
     lines.append(f"cacheflow_sprint_progress {float(data.get('sprint_progress', 0))}")
     lines.append(f"cacheflow_sprint_age_seconds {max(0, now - int(data.get('sprint_start', now)))}")
     lines.append(f"cacheflow_tasks_running_total {int(data.get('running_tasks', 0))}")
+    lines.append(f"cacheflow_tasks_under_review_total {int(data.get('under_review_tasks', 0))}")
     lines.append(f"cacheflow_tasks_completed_total {int(data.get('tasks_completed_total', 0))}")
     lines.append(f"cacheflow_total_tasks {int(data.get('total_tasks', 0))}")
     lines.append(f"cacheflow_total_sprints {int(data.get('total_sprints', 0))}")
@@ -75,6 +77,7 @@ def build_payload(data):
         lines.append(f'cacheflow_sprint_total_tasks{{{sprint_labels}}} {int(sprint.get("total_tasks", 0))}')
         lines.append(f'cacheflow_sprint_done_tasks{{{sprint_labels}}} {int(sprint.get("done_tasks", 0))}')
         lines.append(f'cacheflow_sprint_running_tasks{{{sprint_labels}}} {int(sprint.get("running_tasks", 0))}')
+        lines.append(f'cacheflow_sprint_under_review_tasks{{{sprint_labels}}} {int(sprint.get("under_review_tasks", 0))}')
         lines.append(f'cacheflow_sprint_pending_tasks{{{sprint_labels}}} {int(sprint.get("pending_tasks", 0))}')
         lines.append(f'cacheflow_sprint_planned_tasks{{{sprint_labels}}} {int(sprint.get("planned_tasks", 0))}')
         lines.append(f'cacheflow_sprint_progress_percent{{{sprint_labels}}} {float(sprint.get("progress", 0.0))}')
@@ -88,6 +91,7 @@ def build_payload(data):
         lines.append(f'cacheflow_roadmap_version_total_items{{{labels}}} {int(version.get("total_items", 0))}')
         lines.append(f'cacheflow_roadmap_version_done_items{{{labels}}} {int(version.get("done_items", 0))}')
         lines.append(f'cacheflow_roadmap_version_running_items{{{labels}}} {int(version.get("running_items", 0))}')
+        lines.append(f'cacheflow_roadmap_version_under_review_items{{{labels}}} {int(version.get("under_review_items", 0))}')
         lines.append(f'cacheflow_roadmap_version_pending_items{{{labels}}} {int(version.get("pending_items", 0))}')
         lines.append(f'cacheflow_roadmap_version_planned_items{{{labels}}} {int(version.get("planned_items", 0))}')
         lines.append(f'cacheflow_roadmap_version_progress_percent{{{labels}}} {float(version.get("progress", 0.0))}')
@@ -108,6 +112,7 @@ def build_payload(data):
         lines.append(f'cacheflow_roadmap_stage_total_items{{{labels}}} {int(stage.get("total_items", 0))}')
         lines.append(f'cacheflow_roadmap_stage_done_items{{{labels}}} {int(stage.get("done_items", 0))}')
         lines.append(f'cacheflow_roadmap_stage_running_items{{{labels}}} {int(stage.get("running_items", 0))}')
+        lines.append(f'cacheflow_roadmap_stage_under_review_items{{{labels}}} {int(stage.get("under_review_items", 0))}')
         lines.append(f'cacheflow_roadmap_stage_pending_items{{{labels}}} {int(stage.get("pending_items", 0))}')
         lines.append(f'cacheflow_roadmap_stage_planned_items{{{labels}}} {int(stage.get("planned_items", 0))}')
         lines.append(f'cacheflow_roadmap_stage_progress_percent{{{labels}}} {float(stage.get("progress", 0.0))}')

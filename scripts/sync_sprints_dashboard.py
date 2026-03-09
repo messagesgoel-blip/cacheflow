@@ -24,8 +24,9 @@ STATE_FILE = BASE / "monitoring" / "cacheflow_task_state.yaml"
 STATUS_LABEL = {
     "planned": "Planned",
     "pending": "Pending",
-    "running": "Running",
-    "done": "Done",
+    "running": "Active",
+    "under_review": "Under Review",
+    "done": "Complete",
 }
 
 

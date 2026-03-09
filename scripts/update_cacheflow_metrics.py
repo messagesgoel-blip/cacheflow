@@ -23,6 +23,7 @@ def resolve_base() -> Path:
 
 BASE = resolve_base()
 MANIFEST_FILE = BASE / "docs" / "orchestration" / "task-manifest.json"
+ROADMAP_CATALOG_FILE = BASE / "monitoring" / "cacheflow_roadmap_items.yaml"
 SPRINT_TASKS_FILE = BASE / "monitoring" / "cacheflow_sprint_tasks.yaml"
 METRICS_FILE = BASE / "monitoring" / "cacheflow_metrics.yaml"
 STATE_FILE = BASE / "monitoring" / "cacheflow_task_state.yaml"
@@ -31,7 +32,7 @@ HISTORY_FILE = BASE / "monitoring" / "task_history.yaml"
 LOCK_DIR = BASE / ".context" / "task_locks"
 
 DONE_STATES = {"done", "complete", "closed", "pass"}
-VALID_STATES = {"planned", "pending", "running", "done"}
+VALID_STATES = {"planned", "pending", "running", "active", "under_review", "done", "complete"}
 COMBINED_STAGE_MIN_SPRINT = 6
 AGENT_LABELS = {
     "opencode": "\u25C8 OpenCode",
@@ -52,24 +53,6 @@ ROADMAP_STAGE_DEFS = {
     "V2-C": {"title": "Moderate", "roadmap_version": "2", "order": 6},
     "V2-D": {"title": "Advanced", "roadmap_version": "2", "order": 7},
 }
-V2_BACKLOG_ITEMS = [
-    {"item_id": "7", "sprint": 7, "stage": "V2-A", "title": "Zero-Knowledge Vault"},
-    {"item_id": "8", "sprint": 8, "stage": "V2-A", "title": "NAS Bridge + Advanced PWA"},
-    {"item_id": "9", "sprint": 9, "stage": "V2-A", "title": "AI FinOps"},
-    {"item_id": "10", "sprint": 10, "stage": "V2-A", "title": "MCP + Team Workspaces"},
-    {"item_id": "11", "sprint": 11, "stage": "V2-A", "title": "Design Refresh + Observability"},
-    {"item_id": "12", "sprint": 12, "stage": "V2-B", "title": "Sync Engine + Rule Engine + Smart Dedup"},
-    {"item_id": "13", "sprint": 13, "stage": "V2-B", "title": "Conflict Resolution + CLI + Webhooks"},
-    {"item_id": "14", "sprint": 14, "stage": "V2-B", "title": "Provider Failover + Cost Scheduling + Bundle Shares"},
-    {"item_id": "15", "sprint": 15, "stage": "V2-C", "title": "Storage Heatmap + Lifecycle Automation"},
-    {"item_id": "16", "sprint": 16, "stage": "V2-C", "title": "Storage Mirroring + Uptime Dashboard"},
-    {"item_id": "17", "sprint": 17, "stage": "V2-C", "title": "Data Residency Enforcement"},
-    {"item_id": "18", "sprint": 18, "stage": "V2-D", "title": "AI-Powered File Organisation"},
-    {"item_id": "19", "sprint": 19, "stage": "V2-D", "title": "Embeddable File Picker SDK"},
-    {"item_id": "20", "sprint": 20, "stage": "V2-D", "title": "Carbon + Energy Tracking"},
-]
-
-
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -97,13 +80,12 @@ def load_orchestrator_state_file() -> dict:
     return payload if isinstance(payload, dict) else {}
 
 
-def load_orchestrator_overrides() -> dict:
-    data = load_orchestrator_state_file()
-    overrides = data.get("tasks", {})
-    if isinstance(overrides, dict) and overrides:
-        print(f"[sync] orchestrator-state override: {len(overrides)} tasks")
-        return overrides
-    return {}
+def load_roadmap_catalog() -> list[dict]:
+    if not ROADMAP_CATALOG_FILE.exists():
+        return []
+    raw = yaml.safe_load(ROADMAP_CATALOG_FILE.read_text()) or {}
+    items = raw.get("items", [])
+    return items if isinstance(items, list) else []
 
 
 def roadmap_stage_for_sprint(sprint: int) -> str:
@@ -144,6 +126,8 @@ def normalize_status(raw_status: str) -> str:
     status = str(raw_status or "").strip().lower()
     if status in DONE_STATES:
         return "done"
+    if status == "active":
+        return "running"
     if status in VALID_STATES:
         return status
     return "planned"
@@ -157,6 +141,8 @@ def reduce_status(statuses: list[str], default: str = "planned") -> str:
         return "done"
     if any(status == "running" for status in normalized):
         return "running"
+    if any(status == "under_review" for status in normalized):
+        return "under_review"
     if any(status == "pending" for status in normalized):
         return "pending"
     if any(status == "planned" for status in normalized):
@@ -165,7 +151,7 @@ def reduce_status(statuses: list[str], default: str = "planned") -> str:
 
 
 def count_statuses(statuses: list[str]) -> dict[str, int]:
-    counts = {"done": 0, "running": 0, "pending": 0, "planned": 0}
+    counts = {"done": 0, "running": 0, "under_review": 0, "pending": 0, "planned": 0}
     for status in statuses:
         counts[normalize_status(status)] += 1
     return counts
@@ -259,6 +245,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--running", nargs="*", default=[], help="Mark task(s) running.")
     parser.add_argument("--pending", nargs="*", default=[], help="Mark task(s) pending.")
     parser.add_argument("--planned", nargs="*", default=[], help="Mark task(s) planned.")
+    parser.add_argument("--under-review", nargs="*", default=[], help="Mark task(s) under review.")
+    parser.add_argument("--source-commit", default="", help="Override commit used for task provenance.")
+    parser.add_argument("--source-message", default="", help="Override changelog message used for state changes.")
     parser.add_argument("--note", default="", help="Optional changelog note override for status changes.")
     return parser.parse_args()
 
@@ -308,9 +297,45 @@ def _status_map(args: argparse.Namespace) -> dict:
     return {
         "done": set(args.complete),
         "running": set(args.running),
+        "under_review": set(args.under_review),
         "pending": set(args.pending),
         "planned": set(args.planned),
     }
+
+
+def load_done_history() -> tuple[dict[str, dict], dict[str, dict]]:
+    if not HISTORY_FILE.exists():
+        return {}, {}
+    raw = yaml.safe_load(HISTORY_FILE.read_text()) or []
+    if not isinstance(raw, list):
+        return {}, {}
+
+    out: dict[str, dict] = {}
+    by_id: dict[str, dict] = {}
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        timestamp = str(entry.get("timestamp", "")).strip()
+        commit = str(entry.get("commit", "")).strip()
+        message = str(entry.get("message", "")).strip()
+        payload = {
+            "commit": commit[:12],
+            "done_at": timestamp,
+            "changelog": message,
+        }
+        for task_key in entry.get("done_task_keys", []) or []:
+            key = str(task_key).strip()
+            if not key:
+                continue
+            out[key] = payload
+            task_id = key.split("@", 1)[0]
+            if task_id:
+                by_id[task_id] = payload
+        for task_id in entry.get("done_tasks", []) or []:
+            task_id = str(task_id).strip()
+            if task_id:
+                by_id[task_id] = payload
+    return out, by_id
 
 
 def _lookup_previous(existing_state: dict, task: dict) -> dict:
@@ -339,100 +364,86 @@ def _lookup_previous(existing_state: dict, task: dict) -> dict:
     return id_matches[0]
 
 
-def build_roadmap_items(tasks: list[dict], orchestrator_state: dict) -> tuple[list[dict], list[dict], list[dict]]:
+def build_roadmap_items(tasks: list[dict], orchestrator_state: dict, roadmap_catalog: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
     tasks_by_id: dict[str, list[dict]] = defaultdict(list)
     for task in tasks:
         tasks_by_id[str(task["id"])].append(task)
 
     items: list[dict] = []
     current_state = str(orchestrator_state.get("current_state", "")).strip()
-    gate_status = gate_item_status(current_state)
-    items.append(
-        {
-            "item_id": "V1-0",
-            "title": "Release Blocker",
-            "sprint": "gate",
-            "roadmap_version": "1",
-            "roadmap_version_title": ROADMAP_VERSION_TITLES["1"],
-            "stage": "V1-0",
-            "stage_title": ROADMAP_STAGE_DEFS["V1-0"]["title"],
-            "status": gate_status,
-            "progress": 100.0 if gate_status == "done" else 0.0,
-            "criteria_count": 1,
-            "done_criteria": 1 if gate_status == "done" else 0,
-            "item_type": "gate",
-        }
-    )
-
     core_rows = [task for task in tasks if int(task.get("sprint", 0) or 0) <= 5]
     core_statuses = [task["status"] for task in core_rows]
     core_counts = count_statuses(core_statuses)
     core_total = len(core_rows)
     core_done = core_counts["done"]
-    items.append(
-        {
-            "item_id": "V1-1",
-            "title": "Core Platform",
-            "sprint": "0-5",
-            "roadmap_version": "1",
-            "roadmap_version_title": ROADMAP_VERSION_TITLES["1"],
-            "stage": "V1-1",
-            "stage_title": ROADMAP_STAGE_DEFS["V1-1"]["title"],
-            "status": reduce_status(core_statuses, default="planned"),
-            "progress": round((core_done / core_total) * 100, 2) if core_total else 0.0,
-            "criteria_count": core_total,
-            "done_criteria": core_done,
-            "item_type": "stage",
-        }
-    )
-
-    for item_id in ("6.1", "6.2", "6.3", "6.4", "6.5", "6.6"):
-        rows = tasks_by_id.get(item_id, [])
-        if not rows:
-            continue
-        base = rows[0]
-        statuses = [row["status"] for row in rows]
-        counts = count_statuses(statuses)
-        total = len(rows)
-        done = counts["done"]
-        items.append(
-            {
-                "item_id": item_id,
-                "title": base["description"],
-                "sprint": str(base["sprint"]),
-                "roadmap_version": base["roadmap_version"],
-                "roadmap_version_title": base["roadmap_version_title"],
-                "stage": base["roadmap_stage"],
-                "stage_title": base["roadmap_stage_title"],
-                "status": reduce_status(statuses, default="planned"),
-                "progress": round((done / total) * 100, 2) if total else 0.0,
-                "criteria_count": total,
-                "done_criteria": done,
-                "item_type": "execution",
-            }
-        )
-
     orchestrator_tasks = orchestrator_state.get("tasks", {})
     if not isinstance(orchestrator_tasks, dict):
         orchestrator_tasks = {}
+    orchestrator_sprint = int(orchestrator_state.get("current_sprint", 0) or 0)
 
-    for item in V2_BACKLOG_ITEMS:
-        stage = item["stage"]
-        status = normalize_status(orchestrator_tasks.get(item["item_id"], "pending"))
+    for item in roadmap_catalog:
+        item_id = str(item.get("item_id", "")).strip()
+        if not item_id:
+            continue
+
+        stage = str(item.get("stage", "")).strip()
+        roadmap_version = str(item.get("roadmap_version", "")).strip()
+        stage_title = str(item.get("stage_title", "")).strip()
+        roadmap_version_title = str(item.get("roadmap_version_title", "")).strip()
+        item_type = str(item.get("item_type", "")).strip() or "execution"
+        sprint_label = str(item.get("sprint", "")).strip()
+
+        status = "planned"
+        progress = 0.0
+        criteria_count = 1
+        done_criteria = 0
+
+        if item_id == "V1-0":
+            gate_status = gate_item_status(current_state)
+            if gate_status != "done" and core_total and core_done == core_total and all(
+                all(t["status"] in DONE_STATES for t in tasks_by_id.get(key, []))
+                for key in ("6.1", "6.2", "6.3", "6.4", "6.5", "6.6")
+            ):
+                gate_status = "done"
+            status = gate_status
+            progress = 100.0 if status == "done" else 0.0
+            done_criteria = 1 if status == "done" else 0
+        elif item_id == "V1-1":
+            status = reduce_status(core_statuses, default="planned")
+            progress = round((core_done / core_total) * 100, 2) if core_total else 0.0
+            criteria_count = core_total
+            done_criteria = core_done
+        elif item_id in tasks_by_id:
+            rows = tasks_by_id[item_id]
+            statuses = [row["status"] for row in rows]
+            counts = count_statuses(statuses)
+            total = len(rows)
+            status = reduce_status(statuses, default="planned")
+            progress = round((counts["done"] / total) * 100, 2) if total else 0.0
+            criteria_count = total
+            done_criteria = counts["done"]
+        else:
+            status = normalize_status(orchestrator_tasks.get(item_id, "pending"))
+            sprint_num = int(sprint_label or 0)
+            if status in {"planned", "pending"} and orchestrator_sprint == sprint_num:
+                status = "running"
+            progress = 100.0 if status == "done" else 0.0
+            done_criteria = 1 if status == "done" else 0
+
         items.append(
             {
-                "item_id": item["item_id"],
-                "title": item["title"],
-                "sprint": str(item["sprint"]),
-                "roadmap_version": ROADMAP_STAGE_DEFS[stage]["roadmap_version"],
-                "roadmap_version_title": ROADMAP_VERSION_TITLES[ROADMAP_STAGE_DEFS[stage]["roadmap_version"]],
+                "item_id": item_id,
+                "title": str(item.get("title", "")).strip(),
+                "sprint": sprint_label,
+                "roadmap_version": roadmap_version,
+                "roadmap_version_title": roadmap_version_title,
                 "stage": stage,
-                "stage_title": ROADMAP_STAGE_DEFS[stage]["title"],
+                "stage_title": stage_title,
                 "status": status,
-                "progress": 100.0 if status == "done" else 0.0,
-                "criteria_count": 1,
-                "done_criteria": 1 if status == "done" else 0,
-                "item_type": "backlog",
+                "progress": progress,
+                "criteria_count": criteria_count,
+                "done_criteria": done_criteria,
+                "item_type": item_type,
             }
         )
 
@@ -452,6 +463,7 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict) -> tuple[li
                 "total_items": total,
                 "done_items": done,
                 "running_items": counts["running"],
+                "under_review_items": counts["under_review"],
                 "pending_items": counts["pending"],
                 "planned_items": counts["planned"],
                 "progress": round((done / total) * 100, 2) if total else 0.0,
@@ -473,6 +485,7 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict) -> tuple[li
                 "total_items": total,
                 "done_items": done,
                 "running_items": counts["running"],
+                "under_review_items": counts["under_review"],
                 "pending_items": counts["pending"],
                 "planned_items": counts["planned"],
                 "progress": round((done / total) * 100, 2) if total else 0.0,
@@ -485,12 +498,12 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict) -> tuple[li
 
 def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict], dict, list[dict]]:
     existing_state = load_state()
-    orchestrator_overrides = load_orchestrator_overrides()
+    done_history, done_history_by_id = load_done_history()
     state_out = {}
     changes = []
-    commit_full = run_git(["rev-parse", "HEAD"])
+    commit_full = args.source_commit.strip() or run_git(["rev-parse", "HEAD"])
     commit_short = commit_full[:12]
-    message = run_git(["log", "-1", "--pretty=%s"])
+    message = args.source_message.strip() or run_git(["log", "-1", "--pretty=%s"])
     timestamp = now_iso()
     selectors = _status_map(args)
     active_locks = load_active_locks()
@@ -506,9 +519,15 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
             "changelog": previous.get("changelog", ""),
         }
 
+        history_rec = done_history.get(key) or done_history_by_id.get(task["id"])
+        if history_rec and normalize_status(record.get("status", "")) == "done":
+            record["commit"] = history_rec.get("commit", "")
+            record["done_at"] = history_rec.get("done_at", "")
+            record["changelog"] = history_rec.get("changelog", "")
+
         target_status = None
         # Priority 1: Command line arguments
-        for candidate_status in ("done", "running", "pending", "planned"):
+        for candidate_status in ("done", "running", "under_review", "pending", "planned"):
             for selector in selectors[candidate_status]:
                 if _selector_matches(task, selector):
                     target_status = candidate_status
@@ -516,12 +535,7 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
             if target_status:
                 break
 
-        # Priority 2: Orchestrator state override
-        orchestrator_status = orchestrator_overrides.get(key) or orchestrator_overrides.get(task["id"])
-        if orchestrator_status in VALID_STATES:
-            target_status = orchestrator_status
-
-        # Priority 3: Active locks (implies running)
+        # Priority 2: Active locks (implies running)
         if not target_status and key in active_locks and str(record.get("status", "")).lower() not in DONE_STATES:
             target_status = "running"
 
@@ -542,14 +556,14 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
                 record["changelog"] = args.note.strip() or message
             else:
                 record["status"] = target_status
-                if target_status in ("planned", "pending", "running"):
+                if target_status in ("planned", "pending", "running", "under_review"):
                     # Non-done states should never carry completion metadata.
                     record["commit"] = ""
                     record["done_at"] = ""
                     record["changelog"] = ""
 
-        status = str(record.get("status", "planned")).lower()
-        if status not in VALID_STATES:
+        status = normalize_status(record.get("status", "planned"))
+        if status not in {normalize_status(s) for s in VALID_STATES}:
             status = "planned"
             record["status"] = status
 
@@ -578,8 +592,8 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
             "changelog": task["changelog"],
         }
 
-        before_status = str(previous.get("status", "planned")).lower()
-        if before_status not in VALID_STATES:
+        before_status = normalize_status(previous.get("status", "planned"))
+        if before_status not in {normalize_status(s) for s in VALID_STATES}:
             before_status = "planned"
         if before_status != task["status"]:
             changes.append(
@@ -612,14 +626,16 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict, orchestrator_stat
     running_sprints = []
     total_done = 0
     total_running = 0
+    total_under_review = 0
 
     for sprint in sorted(sprints):
         sprint_tasks = sprints[sprint]
         total = len(sprint_tasks)
-        done = sum(1 for t in sprint_tasks if t["status"] in DONE_STATES)
-        running = sum(1 for t in sprint_tasks if t["status"] == "running")
-        pending = sum(1 for t in sprint_tasks if t["status"] == "pending")
-        planned = sum(1 for t in sprint_tasks if t["status"] == "planned")
+        done = sum(1 for t in sprint_tasks if normalize_status(t["status"]) == "done")
+        running = sum(1 for t in sprint_tasks if normalize_status(t["status"]) == "running")
+        under_review = sum(1 for t in sprint_tasks if normalize_status(t["status"]) == "under_review")
+        pending = sum(1 for t in sprint_tasks if normalize_status(t["status"]) == "pending")
+        planned = sum(1 for t in sprint_tasks if normalize_status(t["status"]) == "planned")
         commits = {t["commit"] for t in sprint_tasks if t.get("commit")}
         versions = sorted({t["roadmap_version"] for t in sprint_tasks if t.get("roadmap_version")})
         progress = round((done / total) * 100, 2) if total else 0.0
@@ -630,6 +646,7 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict, orchestrator_stat
                 "total_tasks": total,
                 "done_tasks": done,
                 "running_tasks": running,
+                "under_review_tasks": under_review,
                 "pending_tasks": pending,
                 "planned_tasks": planned,
                 "progress": progress,
@@ -638,6 +655,7 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict, orchestrator_stat
         )
         total_done += done
         total_running += running
+        total_under_review += under_review
         if done < total and first_open_sprint is None:
             first_open_sprint = sprint
         if running > 0:
@@ -658,13 +676,16 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict, orchestrator_stat
 
     gate_status = {}
     for gate, gate_tasks in gates.items():
-        done = all(t["status"] in DONE_STATES for t in gate_tasks)
-        running = any(t["status"] == "running" for t in gate_tasks)
-        pending = any(t["status"] == "pending" for t in gate_tasks)
+        done = all(normalize_status(t["status"]) == "done" for t in gate_tasks)
+        running = any(normalize_status(t["status"]) == "running" for t in gate_tasks)
+        under_review = any(normalize_status(t["status"]) == "under_review" for t in gate_tasks)
+        pending = any(normalize_status(t["status"]) == "pending" for t in gate_tasks)
         if done:
             gate_status[gate] = "done"
         elif running:
             gate_status[gate] = "running"
+        elif under_review:
+            gate_status[gate] = "under_review"
         elif pending:
             gate_status[gate] = "pending"
         else:
@@ -673,9 +694,18 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict, orchestrator_stat
     previous_start = int(previous_metrics.get("sprint_start", 0)) if isinstance(previous_metrics, dict) else 0
     if previous_start <= 0:
         previous_start = int(datetime.now(timezone.utc).timestamp())
-    roadmap_items, roadmap_stages, roadmap_versions = build_roadmap_items(tasks, orchestrator_state)
+    roadmap_catalog = load_roadmap_catalog()
+    roadmap_items, roadmap_stages, roadmap_versions = build_roadmap_items(tasks, orchestrator_state, roadmap_catalog)
     current_state = str(orchestrator_state.get("current_state", "")).strip()
     roadmap_source = str(orchestrator_state.get("roadmap_source", "")).strip()
+    orchestrator_sprint = int(orchestrator_state.get("current_sprint", 0) or 0)
+    if orchestrator_sprint > 0:
+        current_sprint = orchestrator_sprint
+        current_progress = 0.0
+        for row in sprint_rows:
+            if row["sprint"] == current_sprint:
+                current_progress = row["progress"]
+                break
     active_version = "1" if current_sprint <= 6 else "2"
 
     return {
@@ -687,6 +717,7 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict, orchestrator_stat
         "sprint_progress": current_progress,
         "sprint_start": previous_start,
         "running_tasks": total_running,
+        "under_review_tasks": total_under_review,
         "tasks_completed_total": total_done,
         "total_tasks": len(tasks),
         "total_sprints": len(sprint_rows),

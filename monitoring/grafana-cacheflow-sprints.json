@@ -29,7 +29,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# CacheFlow Canonical Roadmap\n- Primary product sequence: Version 1, then Version 2\n- Current execution: Sprint 6 / Version 1\n- Legacy Sprint 0-5 details are no longer the primary dashboard surface\n- Source of truth: `docs/roadmap.md` and `logs/orchestrator-state.json`"
+        "content": "# CacheFlow Canonical Roadmap\n- Primary product sequence: Version 1, then Version 2\n- Current execution: Sprint 7 / Version 2 planning\n- Legacy Sprint 0-5 details are no longer the primary dashboard surface\n- Source of truth: `docs/roadmap.md` and `logs/orchestrator-state.json`"
       }
     },
     {
@@ -128,7 +128,7 @@
       },
       "targets": [
         {
-          "expr": "count(cacheflow_roadmap_item_status{sprint=\"6\",status=~\"pending|running\"})",
+          "expr": "count(cacheflow_roadmap_item_status{sprint=\"6\",status=~\"pending|running|under_review\"})",
           "refId": "A"
         }
       ],
@@ -152,7 +152,7 @@
       },
       "targets": [
         {
-          "expr": "count(cacheflow_roadmap_item_status{roadmap_version=\"2\",status=~\"planned|pending|running\"})",
+          "expr": "count(cacheflow_roadmap_item_status{roadmap_version=\"2\",status=~\"planned|pending|running|under_review\"})",
           "refId": "A"
         }
       ],

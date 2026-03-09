@@ -91,7 +91,7 @@
       },
       "targets": [
         {
-          "expr": "count(cacheflow_task_status{sprint=\"6\",status=~\"planned|pending|running\"})",
+          "expr": "count(cacheflow_task_status{sprint=\"6\",status=~\"planned|pending|running|under_review\"})",
           "refId": "A"
         }
       ],

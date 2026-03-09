@@ -7,6 +7,26 @@ from pathlib import Path
 
 BASE = Path("/home/sanjay/cacheflow_work")
 MONITORING = BASE / "monitoring"
+STATE_FILE = BASE / "logs" / "orchestrator-state.json"
+
+
+def current_execution_line() -> str:
+    sprint = None
+
+    if STATE_FILE.exists():
+        try:
+            state = json.loads(STATE_FILE.read_text())
+            sprint = state.get("current_sprint")
+        except Exception:
+            sprint = None
+
+    if sprint is None:
+        return "- Current execution: see `logs/orchestrator-state.json`"
+
+    sprint_num = int(sprint)
+    version = "Version 1" if sprint_num <= 6 else "Version 2"
+    suffix = " planning" if sprint_num >= 7 else ""
+    return f"- Current execution: Sprint {sprint_num} / {version}{suffix}"
 
 
 def text_panel(panel_id: int, title: str, x: int, y: int, w: int, h: int, content: str) -> dict:
@@ -123,7 +143,7 @@ def build_sprints_dashboard() -> dict:
                 [
                     "# CacheFlow Canonical Roadmap",
                     "- Primary product sequence: Version 1, then Version 2",
-                    "- Current execution: Sprint 6 / Version 1",
+                    current_execution_line(),
                     "- Legacy Sprint 0-5 details are no longer the primary dashboard surface",
                     "- Source of truth: `docs/roadmap.md` and `logs/orchestrator-state.json`",
                 ]
@@ -132,8 +152,8 @@ def build_sprints_dashboard() -> dict:
         stat_panel(2, "Active Sprint", 0, 4, 4, 4, "cacheflow_current_sprint"),
         gauge_panel(3, "Version 1 Progress %", 4, 4, 5, 4, 'cacheflow_roadmap_version_progress_percent{roadmap_version="1"}'),
         gauge_panel(4, "Version 2 Progress %", 9, 4, 5, 4, 'cacheflow_roadmap_version_progress_percent{roadmap_version="2"}'),
-        stat_panel(5, "Sprint 6 Active Items", 14, 4, 5, 4, 'count(cacheflow_roadmap_item_status{sprint="6",status=~"pending|running"})'),
-        stat_panel(6, "Version 2 Planned Sprints", 19, 4, 5, 4, 'count(cacheflow_roadmap_item_status{roadmap_version="2",status=~"planned|pending|running"})'),
+        stat_panel(5, "Sprint 6 Active Items", 14, 4, 5, 4, 'count(cacheflow_roadmap_item_status{sprint="6",status=~"pending|running|under_review"})'),
+        stat_panel(6, "Version 2 Planned Sprints", 19, 4, 5, 4, 'count(cacheflow_roadmap_item_status{roadmap_version="2",status=~"planned|pending|running|under_review"})'),
         gauge_panel(10, "V1-0 Release Blocker", 0, 8, 6, 4, 'cacheflow_roadmap_stage_progress_percent{stage="V1-0"}'),
         gauge_panel(11, "V1-1 Core Platform", 6, 8, 6, 4, 'cacheflow_roadmap_stage_progress_percent{stage="V1-1"}'),
         gauge_panel(12, "V1-2 Essentials", 12, 8, 6, 4, 'cacheflow_roadmap_stage_progress_percent{stage="V1-2"}'),
@@ -184,7 +204,7 @@ def build_history_dashboard() -> dict:
         ),
         stat_panel(2, "Core Platform Tasks Done (V1-1)", 0, 4, 6, 4, 'count(cacheflow_task_status{roadmap_stage="V1-1",status="done"})'),
         stat_panel(3, "Sprint 6 Gate Rows Total", 6, 4, 6, 4, 'count(cacheflow_task_status{sprint="6"})'),
-        stat_panel(4, "Sprint 6 Outstanding Rows", 12, 4, 6, 4, 'count(cacheflow_task_status{sprint="6",status=~"planned|pending|running"})'),
+        stat_panel(4, "Sprint 6 Outstanding Rows", 12, 4, 6, 4, 'count(cacheflow_task_status{sprint="6",status=~"planned|pending|running|under_review"})'),
         stat_panel(5, "Total History Entries", 18, 4, 6, 4, "count(cacheflow_history_entry)"),
         table_panel(10, "Recent State Changes", 0, 8, 24, 12, "cacheflow_history_entry"),
         table_panel(11, "Sprint 6 Raw Gate Detail", 0, 20, 24, 10, 'cacheflow_task_status{sprint="6"}'),

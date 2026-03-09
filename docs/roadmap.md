@@ -18,9 +18,10 @@ Canonical roadmap for product planning and orchestration.
 
 ## Current Status
 
-- Version 1 release blocker is cleared for Sprint 6 feature execution.
-- Orchestration state is `gate_passed`.
-- Baseline under patching: `f7f14d3`
+- Version 1 is complete and green.
+- Active roadmap state is Sprint 7 planning for Version 2.
+- Orchestration runtime state is `idle` with `current_sprint: 7`.
+- Version 1 completion baseline: `f7f14d3`
 - Last full-suite artifact: `/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737`
 - Latest deterministic gate validation (`2026-03-07T06:54:42Z`):
   - `test-all`: pass
@@ -46,7 +47,7 @@ Goal: make the existing platform green and trustworthy before starting new featu
   - dashboard and orchestrator state aligned to this roadmap
 - Status:
   - cleared on `2026-03-07`
-  - Sprint 6 entry gate is open
+  - superseded by full Version 1 completion on `2026-03-09`
 
 ### V1-1 Core Platform
 
@@ -66,6 +67,9 @@ Goal: ship the base multi-cloud file platform already built across Sprints 0-5.
 
 Goal: deliver the first post-core features with the highest user value and strongest implementation leverage from existing foundations.
 
+Status:
+- complete in roadmap/task-state tracking as of `2026-03-09`
+
 #### 6.1 Quota Alerts + Remote URL Import
 
 Acceptance criteria:
@@ -73,11 +77,10 @@ Acceptance criteria:
 - `QUOTA-1`: provider quota surfaces emit configurable `80%` and `95%` threshold alerts through in-app and email notifications
 - `RIMPORT-1`: remote URL imports stream directly into the selected provider without buffering the full file on the CacheFlow server
 
-Current assessment:
+Status note:
 
-- quota gauges already exist in dashboard and sidebar
-- threshold alerting does not exist yet
-- remote upload UI exists, but backend implementation is still placeholder and buffers data in memory
+- implemented during the Sprint 6 Version 1 completion pass
+- tracked complete in `logs/orchestrator-state.json`
 
 #### 6.2 Real-Time Terminal & Log View
 
@@ -85,10 +88,10 @@ Acceptance criteria:
 
 - `LOGS-1`: persistent terminal view shows BullMQ and worker events over SSE with zero polling
 
-Current assessment:
+Status note:
 
-- transfer SSE foundation exists
-- no terminal/log product surface exists yet
+- implemented during the Sprint 6 Version 1 completion pass
+- tracked complete in `logs/orchestrator-state.json`
 
 #### 6.3 Scheduled Backups + Bandwidth Throttle
 
@@ -97,14 +100,17 @@ Acceptance criteria:
 - `SCHED-2`: recurring user-scoped backup jobs run with browser closed and expose history
 - `THROTTLE-1`: user-controlled bandwidth caps persist per session and affect future transfers
 
-Current assessment:
+Status note:
 
-- schedule UI and worker foundations exist but are split between prototype and real services
-- throttle controls do not exist yet
+- implemented during the Sprint 6 Version 1 completion pass
+- tracked complete in `logs/orchestrator-state.json`
 
 ### V1-3 Power User Completion
 
 Goal: finish the Version 1 differentiators after the essentials are stable.
+
+Status:
+- complete in roadmap/task-state tracking as of `2026-03-09`
 
 #### 6.4 Media Streaming Polish
 
@@ -131,14 +137,19 @@ Acceptance criteria:
 - `KEYS-1`: dedicated key manager for create, rotate, and test flows with encrypted-at-rest keys
 - `NODE-1`: VPS bridge supports custom ports and configurable keep-alive behavior
 
-Current assessment:
+Status note:
 
-- encryption and dry-run connection foundations already exist
-- key manager and lifecycle UI do not exist yet
+- implemented during the Sprint 6 Version 1 completion pass
+- tracked complete in `logs/orchestrator-state.json`
 
 ## Version 2
 
-Version 2 starts only after Version 1 is green and complete.
+Version 2 starts after Version 1 is green and complete.
+
+Current status:
+- entry gate satisfied
+- Sprint 7 is the active planning sprint
+- executable task decomposition for Sprint 7 is still pending
 
 ### V2-A Foundation
 

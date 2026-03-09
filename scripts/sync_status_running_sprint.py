@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 from pathlib import Path
@@ -22,6 +23,7 @@ def resolve_base() -> Path:
 BASE = resolve_base()
 STATUS_FILE = BASE / "STATUS.md"
 STATE_FILE = BASE / "monitoring" / "cacheflow_task_state.yaml"
+ORCHESTRATOR_STATE_FILE = BASE / "logs" / "orchestrator-state.json"
 LOCK_DIR = BASE / ".context" / "task_locks"
 START_MARKER = "<!-- RUNNING_SPRINT_QUEUE:START -->"
 END_MARKER = "<!-- RUNNING_SPRINT_QUEUE:END -->"
@@ -63,6 +65,17 @@ def load_active_locks() -> set[str]:
     return active
 
 
+def load_orchestrator_sprint() -> int | None:
+    if not ORCHESTRATOR_STATE_FILE.exists():
+        return None
+    try:
+        raw = json.loads(ORCHESTRATOR_STATE_FILE.read_text())
+    except Exception:
+        return None
+    sprint = raw.get("current_sprint")
+    return int(sprint) if sprint is not None else None
+
+
 def find_running_sprint(status_text: str, state: dict, explicit: int | None) -> int:
     if explicit is not None:
         return explicit
@@ -76,6 +89,10 @@ def find_running_sprint(status_text: str, state: dict, explicit: int | None) -> 
     env_sprint = os.environ.get("CACHEFLOW_RUNNING_SPRINT", "").strip()
     if env_sprint.isdigit():
         return int(env_sprint)
+
+    orchestrator_sprint = load_orchestrator_sprint()
+    if orchestrator_sprint is not None:
+        return orchestrator_sprint
 
     m = re.search(r"^- running_sprint:\s*(\d+)\s*$", status_text, flags=re.MULTILINE)
     if m:

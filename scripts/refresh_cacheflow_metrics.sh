@@ -11,6 +11,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PY_SCRIPT="$SCRIPT_DIR/update_cacheflow_metrics.py"
+ROADMAP_CATALOG_SCRIPT="$SCRIPT_DIR/generate_cacheflow_roadmap_catalog.py"
 DASHBOARD_SYNC_SCRIPT="$SCRIPT_DIR/sync_sprints_dashboard.py"
 STATUS_SYNC_SCRIPT="$SCRIPT_DIR/sync_status_running_sprint.py"
 PUSH_SCRIPT="$SCRIPT_DIR/push_cacheflow_metrics.py"
@@ -21,6 +22,10 @@ export CACHEFLOW_BASE="${CACHEFLOW_BASE:-$BASE_DIR}"
 if [ ! -f "$PY_SCRIPT" ]; then
   echo "missing $PY_SCRIPT"
   exit 1
+fi
+
+if [ -f "$ROADMAP_CATALOG_SCRIPT" ]; then
+  python3 "$ROADMAP_CATALOG_SCRIPT"
 fi
 
 python3 "$PY_SCRIPT"

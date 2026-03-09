@@ -3,7 +3,7 @@
 - Status: Planned
 - Version: 2
 - Theme: Zero-Knowledge Vault
-- Entry gate: Version 1 must be fully green and complete
+- Entry gate: Version 1 fully green and complete (satisfied)
 
 ## Focus
 
@@ -14,5 +14,6 @@
 
 ## Notes
 
-- Task decomposition is deferred until Version 1 is green.
-- This sprint is defined for sequencing only and is not yet in the executable manifest.
+- Sprint 7 is now the active planning sprint in runtime state.
+- Executable task decomposition is still pending.
+- This sprint is not yet in the executable manifest.

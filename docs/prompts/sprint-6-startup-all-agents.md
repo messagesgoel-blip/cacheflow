@@ -1,6 +1,10 @@
-# Sprint 6 Startup Prompts (All Agents)
+# Sprint 6 Startup Prompts (Archived)
 
-Use these prompts when bootstrapping the active Sprint 6 execution window.
+Sprint 6 is complete.
+
+This prompt pack is retained as historical reference for the completed Version 1 execution window and should not be used as the active startup pack for new work.
+
+Use these prompts only when reconstructing Sprint 6 history or comparing prior execution assumptions.
 Roadmap source: `docs/roadmap.md`
 Sprint spec: `docs/sprints/sprint-6.md`
 Task board source: `docs/sprints-task-dashboard.md`

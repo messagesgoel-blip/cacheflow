@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$repo_root"
+
+if [ ! -f "scripts/update_cacheflow_task_state_from_git.py" ]; then
+  exit 0
+fi
+
+python3 scripts/update_cacheflow_task_state_from_git.py --event merge --commit HEAD --refresh || true

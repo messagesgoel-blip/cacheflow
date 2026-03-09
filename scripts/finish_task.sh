@@ -129,6 +129,7 @@ fi
 # Ensure hook enforcement is active for all sessions.
 git config core.hooksPath .githooks >/dev/null
 [ ! -f .githooks/pre-commit ] || chmod +x .githooks/pre-commit
+[ ! -f .githooks/post-merge ] || chmod +x .githooks/post-merge
 
 agent="${CACHEFLOW_AGENT:-}"
 if [ -z "$agent" ]; then
@@ -170,6 +171,10 @@ fi
 if [ "$skip_push" -eq 0 ]; then
   git pull --rebase --autostash
   git push
+fi
+
+if [ "$commit_created" -eq 1 ]; then
+  python3 scripts/update_cacheflow_task_state_from_git.py --event review --commit HEAD --selector "$task_key" --refresh || true
 fi
 
 if [ "$skip_release" -eq 0 ]; then
