@@ -1,19 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { Pool } = require('pg');
-
-// SECURITY (1.18@SEC-1): Require DB_PASSWORD - no default fallback
-const dbPassword = process.env.DB_PASSWORD;
-if (!dbPassword) {
-  throw new Error('[FATAL] DB_PASSWORD environment variable is required. Set DB_PASSWORD or DATABASE_URL with credentials.');
-}
-
-const pool = new Pool({
-  host: process.env.DB_HOST || 'postgres',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'cacheflow',
-  user: process.env.DB_USER || 'cacheflow',
-  password: dbPassword
-});
+const pool = require('../db/client');
 
 module.exports = async (req, res, next) => {
   const header = req.headers.authorization;

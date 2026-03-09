@@ -195,11 +195,6 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
     setLoading(true)
 
     try {
-      const token = localStorage.getItem('cf_token')
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-
       const requestBody = {
         url: url.trim(),
         provider: targetProvider,
@@ -214,8 +209,8 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(requestBody),
       })
 
