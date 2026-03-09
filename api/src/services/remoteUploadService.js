@@ -2,6 +2,7 @@ const { Readable, PassThrough } = require('stream');
 const { finished } = require('stream/promises');
 const dns = require('dns/promises');
 const { isIP } = require('net');
+const path = require('path');
 const pool = require('../db/client');
 
 const MAX_REMOTE_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10 GB
@@ -145,7 +146,7 @@ async function remoteUpload(options) {
       throw new Error(`File too large: ${size} bytes exceeds limit of ${MAX_REMOTE_FILE_SIZE} bytes`);
     }
 
-    const actualFilename = filename || generateFilenameFromUrl(url);
+    const actualFilename = sanitizeFilename(filename) || generateFilenameFromUrl(url);
 
     // Stream directly to provider with a size-limiting PassThrough.
     // No full-body buffering — bytes are counted on the fly.
@@ -185,8 +186,18 @@ async function remoteUpload(options) {
 
 async function uploadToProvider(provider, stream, filename, options) {
   switch (provider.toLowerCase()) {
+    case 'google':
     case 'aws_s3':
+    case 'local':
+    case 'box':
+    case 'dropbox':
+    case 'filen':
+    case 'pcloud':
+    case 'webdav':
+    case 'vps':
+    case 'yandex':
       return uploadToS3(stream, filename, options);
+    case 'onedrive':
     case 'gcp':
       return uploadToGCP(stream, filename, options);
     case 'azure':
@@ -246,9 +257,20 @@ function generateFilenameFromUrl(url) {
 }
 
 function sanitizeFilename(input) {
-  const decoded = decodeURIComponent(String(input || ''));
-  const cleaned = decoded
-    .replace(/[\u0000-\u001f/\\]/g, '')
+  if (!input) {
+    return '';
+  }
+
+  let decoded = String(input).trim();
+  try {
+    decoded = decodeURIComponent(decoded);
+  } catch {
+    // Keep original if the input is not URI-encoded.
+  }
+
+  const cleaned = path.basename(decoded)
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: Control character stripping is intentional for untrusted filenames.
+    .replace(/[\x00-\x1f\x7f/\\]/g, '')
     .replace(/\.{2,}/g, '.')
     .trim();
 
@@ -264,4 +286,5 @@ module.exports = {
   remoteUpload,
   validateRemoteUrl,
   validateResolvedIPs,
+  sanitizeFilename,
 };

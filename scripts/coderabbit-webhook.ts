@@ -24,6 +24,9 @@ async function main() {
   try {
     const payload = JSON.parse(payloadStr);
     const prNumber = parseInt(prNumberStr, 10);
+    if (!Number.isInteger(prNumber) || prNumber <= 0) {
+      throw new Error(`Invalid PR_NUMBER: ${prNumberStr}`);
+    }
     const signal = parseReview(payload);
     
     await writeReviewState(prNumber, signal);

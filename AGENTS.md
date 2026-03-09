@@ -22,6 +22,7 @@ Example: `feat/URM-42-oauth-token-fix`
 This enables issue auto-tracking of commits against issues.
 
 ## Pull Requests
+
 ## PR Policy
 - All work must be on a branch following `feat/URM-{id}-{description}`.
 - A PR must be opened before any task is marked complete.

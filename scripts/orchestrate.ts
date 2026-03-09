@@ -3,12 +3,13 @@ import { createWriteStream, existsSync } from "node:fs";
 import { mkdir, readFile, rm, stat, writeFile, appendFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import yaml from "js-yaml";
 import type { Agent, OrchestratorState, Task, TaskManifest } from "./lib/types";
 import { buildAgentPrompt } from "./lib/buildAgentPrompt";
 import { createRegressionIssue, markTaskBlocked, markTaskDone, markTaskStarted } from "../lib/orchestration/linearLifecycle";
 import { requeueTask } from "../lib/orchestration/requeueTask";
 
-const ROOT = path.resolve(process.cwd());
+const ROOT = path.resolve(__dirname, "..");
 const LOG_DIR = path.join(ROOT, "logs");
 const MANIFEST_PATH = path.join(ROOT, "docs", "orchestration", "task-manifest.json");
 const STATE_PATH = path.join(LOG_DIR, "orchestrator-state.json");
@@ -192,6 +193,18 @@ function normalizeRepoPath(input: string): string {
   return noLeading.replace(/\\/g, "/");
 }
 
+function composeTaskPrompt(basePrompt: string, prefix: string | null): string {
+  if (!prefix) {
+    return basePrompt;
+  }
+
+  if (basePrompt.startsWith(prefix) || basePrompt.startsWith("## CodeRabbit Review:")) {
+    return basePrompt;
+  }
+
+  return `${prefix}\n\n${basePrompt}`;
+}
+
 function looksLikePathPattern(input: string): boolean {
   const value = input.trim();
   return value.startsWith("/") || value.includes("/") || value.includes("*") || value.endsWith("/");
@@ -358,6 +371,7 @@ async function ensureLinearIssueForRegression(task: Task, reason: string): Promi
   if (!created) {
     return null;
   }
+  (task as MutableTask).linearIssueId = created;
   await attachIssueIdToManifest(task.id, created);
   await appendRegressionToDashboard(task, created, reason);
   return created;
@@ -787,7 +801,7 @@ function taskLogPath(sprint: number, taskId: string): string {
 async function runTaskWithRetry(task: Task, sprint: number, wave: "wave1" | "wave2"): Promise<TaskRunResult> {
   const injectedPrefix = taskPromptPrefix.get(task.id) ?? nextGlobalPromptPrefix;
   const basePrompt = buildAgentPrompt(task);
-  const prompt = injectedPrefix ? `${injectedPrefix}\n\n${basePrompt}` : basePrompt;
+  const prompt = composeTaskPrompt(basePrompt, injectedPrefix);
   taskPromptPrefix.delete(task.id);
   nextGlobalPromptPrefix = null;
   const { command, args } = commandForTask(task, prompt);
@@ -899,42 +913,21 @@ function buildBlockedPrompt(feedback: string): string {
   ].join("\n");
 }
 
+function normalizeBlockedPrompt(feedback: string): string {
+  return feedback.startsWith("## CodeRabbit Review: BLOCKED") ? feedback : buildBlockedPrompt(feedback);
+}
+
 function parseCodeRabbitYaml(raw: string): { hasBlockers: boolean; summary: string; suggestions: string[]; agentNotified: boolean } {
-  const lines = raw.split(/\r?\n/);
-  const suggestions: string[] = [];
-  let hasBlockers = false;
-  let summary = "";
-  let inSuggestions = false;
-  let agentNotified = false;
+  const loaded = yaml.load(raw);
+  const record = loaded && typeof loaded === "object" ? (loaded as Record<string, unknown>) : {};
+  const suggestions = Array.isArray(record.suggestions) ? record.suggestions.map((item) => String(item)) : [];
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith("hasBlockers:")) {
-      hasBlockers = /true$/i.test(trimmed);
-      continue;
-    }
-    if (trimmed.startsWith("summary:")) {
-      summary = trimmed.replace(/^summary:\s*/, "").replace(/^["']|["']$/g, "");
-      continue;
-    }
-    if (trimmed.startsWith("agentNotified:")) {
-      agentNotified = /true$/i.test(trimmed);
-      continue;
-    }
-    if (/^suggestions:\s*$/.test(trimmed)) {
-      inSuggestions = true;
-      continue;
-    }
-    if (inSuggestions && trimmed.startsWith("- ")) {
-      suggestions.push(trimmed.slice(2).replace(/^["']|["']$/g, ""));
-      continue;
-    }
-    if (inSuggestions && trimmed && !trimmed.startsWith("- ")) {
-      inSuggestions = false;
-    }
-  }
-
-  return { hasBlockers, summary, suggestions, agentNotified };
+  return {
+    hasBlockers: record.hasBlockers === true,
+    summary: typeof record.summary === "string" ? record.summary : "",
+    suggestions,
+    agentNotified: record.agentNotified === true,
+  };
 }
 
 async function checkCodeRabbitGate(pr: number): Promise<CodeRabbitGateResult> {
@@ -950,10 +943,52 @@ async function checkCodeRabbitGate(pr: number): Promise<CodeRabbitGateResult> {
   }
 
   if (!parsed.agentNotified) {
-    const next = raw.replace(/^agentNotified:\s*false\s*$/m, "agentNotified: true");
+    const next = yaml.dump(
+      {
+        ...(yaml.load(raw) as Record<string, unknown> | null),
+        agentNotified: true,
+      },
+      { lineWidth: -1, noRefs: true, quotingType: '"' },
+    );
     await writeFile(filePath, next, "utf8");
   }
   return { status: "clear", summary: parsed.summary };
+}
+
+async function currentBranchName(): Promise<string | null> {
+  const result = await runProcess("git", ["rev-parse", "--abbrev-ref", "HEAD"], 60_000);
+  if (result.code !== 0) {
+    return null;
+  }
+  const branch = result.stdout.trim();
+  return branch && branch !== "HEAD" ? branch : null;
+}
+
+async function resolveActivePrNumber(): Promise<number | null> {
+  const direct = await runProcess("gh", ["pr", "view", "--json", "number", "--jq", ".number"], 60_000);
+  if (direct.code === 0) {
+    const parsed = Number.parseInt(direct.stdout.trim(), 10);
+    if (Number.isInteger(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  const branch = await currentBranchName();
+  if (!branch) {
+    return null;
+  }
+
+  const byBranch = await runProcess(
+    "gh",
+    ["pr", "list", "--head", branch, "--state", "open", "--json", "number", "--jq", ".[0].number"],
+    60_000,
+  );
+  if (byBranch.code !== 0) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(byBranch.stdout.trim(), 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
 async function waitForCodeRabbitGate(
@@ -996,39 +1031,9 @@ async function waitForCodeRabbitGate(
 }
 
 async function runPrePushGate(sprint: number, task: Task): Promise<PrePushGateResult> {
-  try {
-    const output = execSync("bash scripts/pre-push-review.sh", {
-      cwd: ROOT,
-      env: process.env,
-      stdio: ["ignore", "pipe", "pipe"],
-      encoding: "utf8",
-    });
-
-    await appendAudit({
-      ts: nowIso(),
-      event: "pre-push-gate",
-      sprint,
-      task: task.id,
-      agent: "codex",
-      detail: "status=clear",
-    });
-
-    const push = runShell("git push origin HEAD");
-    if (!push.ok) {
-      return { status: "blocked", output: `git push failed: ${push.output}` };
-    }
-    const prCreate = runShell("gh pr create --fill");
-    if (!prCreate.ok) {
-      return { status: "blocked", output: `gh pr create failed: ${prCreate.output}` };
-    }
-    const prOut = runShell("gh pr view --json number -q .number");
-    const prNumber = Number.parseInt(prOut.output, 10);
-    if (!Number.isInteger(prNumber) || prNumber <= 0) {
-      return { status: "blocked", output: `Unable to resolve PR number after open: ${prOut.output}` };
-    }
-    return { status: "clear", prNumber };
-  } catch (error) {
-    const output = error instanceof Error ? error.message : String(error);
+  const review = await runProcess("bash", ["scripts/pre-push-review.sh"], 60_000);
+  if (review.code !== 0) {
+    const output = (review.stdout || review.stderr || "pre-push review failed").trim();
     await appendAudit({
       ts: nowIso(),
       event: "pre-push-gate",
@@ -1039,6 +1044,34 @@ async function runPrePushGate(sprint: number, task: Task): Promise<PrePushGateRe
     });
     return { status: "blocked", output };
   }
+
+  const push = await runProcess("git", ["push", "origin", "HEAD"], 60_000, { killProcessGroup: true });
+  if (push.code !== 0) {
+    return { status: "blocked", output: `git push failed: ${(push.stderr || push.stdout).trim()}` };
+  }
+
+  let prNumber = await resolveActivePrNumber();
+  if (!prNumber) {
+    const prCreate = await runProcess("gh", ["pr", "create", "--fill"], 60_000, { killProcessGroup: true });
+    if (prCreate.code !== 0) {
+      return { status: "blocked", output: `gh pr create failed: ${(prCreate.stderr || prCreate.stdout).trim()}` };
+    }
+    prNumber = await resolveActivePrNumber();
+  }
+
+  if (!prNumber) {
+    return { status: "blocked", output: "Unable to resolve PR number after push/PR creation" };
+  }
+
+  await appendAudit({
+    ts: nowIso(),
+    event: "pre-push-gate",
+    sprint,
+    task: task.id,
+    agent: "codex",
+    detail: `status=clear; pr=${prNumber}`,
+  });
+  return { status: "clear", prNumber };
 }
 
 async function executePostTaskQualityGates(sprint: number, task: Task): Promise<"advance" | "requeue"> {
@@ -1050,7 +1083,7 @@ async function executePostTaskQualityGates(sprint: number, task: Task): Promise<
       markTaskBlocked(ensuredIssue, prePush.output);
     }
     const updated = requeueTask(task, prePush.output, "pre-push-blocked");
-    taskPromptPrefix.set(task.id, buildBlockedPrompt(updated.promptFeedback ?? prePush.output));
+    taskPromptPrefix.set(task.id, normalizeBlockedPrompt(updated.promptFeedback ?? prePush.output));
     return "requeue";
   }
 
@@ -1061,7 +1094,7 @@ async function executePostTaskQualityGates(sprint: number, task: Task): Promise<
       markTaskBlocked(ensuredIssue, codeRabbit.feedback);
     }
     const updated = requeueTask(task, codeRabbit.feedback, "coderabbit-blocked");
-    taskPromptPrefix.set(task.id, buildBlockedPrompt(updated.promptFeedback ?? codeRabbit.feedback));
+    taskPromptPrefix.set(task.id, normalizeBlockedPrompt(updated.promptFeedback ?? codeRabbit.feedback));
     return "requeue";
   }
 

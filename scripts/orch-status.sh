@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 echo "=== Orchestration Status ==="
 
 check_pid() {
@@ -20,10 +23,16 @@ check_pid "coderabbit-webhook"     /tmp/coderabbit-webhook.pid
 
 echo ""
 echo "=== Recent audit log (last 10 entries) ==="
-tail -n 10 logs/codex-audit.jsonl 2>/dev/null | jq -r '[.ts,.event,.status] | @tsv' 2>/dev/null || echo "(no entries yet)"
+tail -n 10 "$ROOT/logs/codex-audit.jsonl" 2>/dev/null | jq -r '[.ts,.event,.status] | @tsv' 2>/dev/null || echo "(no entries yet)"
 
 echo ""
 echo "=== Pending CodeRabbit reviews ==="
-ls monitoring/coderabbit-*.yaml 2>/dev/null \
+shopt -s nullglob
+files=("$ROOT"/monitoring/coderabbit-*.yaml)
+if [ ${#files[@]} -eq 0 ]; then
+  echo "  (none)"
+else
+  printf '%s\n' "${files[@]}" \
   | xargs -I{} sh -c 'echo "  PR $(grep "^pr:" {} | cut -d" " -f2): $(grep "^status:" {} | cut -d" " -f2) | blockers=$(grep "^hasBlockers:" {} | cut -d" " -f2) | notified=$(grep "^agentNotified:" {} | cut -d" " -f2)"' \
-  || echo "  (none)"
+  || true
+fi

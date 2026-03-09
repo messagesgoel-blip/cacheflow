@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     # Only run on PRs opened by agent bot accounts, not humans
     if: |
-      contains(fromJSON('["codex-bot", "opencode-bot", "github-actions[bot]"]'), github.actor)
+      contains(fromJSON('["codex-bot", "opencode-bot", "github-actions[bot]"]'), github.event.pull_request.user.login)
     steps:
       - uses: actions/checkout@v4
         with:

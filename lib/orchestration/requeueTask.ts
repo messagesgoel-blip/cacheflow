@@ -1,11 +1,12 @@
-import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, openSync, readFileSync, closeSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import type { Task } from "../../scripts/lib/types";
 import * as CodeRabbitParser from "../coderabbit/parseReview";
 
-const ROOT = path.resolve(process.cwd());
+const ROOT = path.resolve(__dirname, "..", "..");
 const MANIFEST_PATH = path.join(ROOT, "docs", "orchestration", "task-manifest.json");
 const AUDIT_PATH = path.join(ROOT, "logs", "codex-audit.jsonl");
+const LOCK_PATH = `${MANIFEST_PATH}.lock`;
 
 export type RequeueReason = "pre-push-blocked" | "coderabbit-blocked" | "gate-failed";
 
@@ -35,35 +36,50 @@ function blockedTemplate(reason: RequeueReason, feedback: string): string {
 }
 
 export function requeueTask(task: Task, feedback: string, reason: RequeueReason): MutableTask {
-  const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8")) as { tasks: MutableTask[] };
-  const index = manifest.tasks.findIndex((item) => item.id === task.id);
-  if (index === -1) {
-    throw new Error(`Cannot requeue unknown task ${task.id}`);
-  }
+  let lockFd = -1;
+  try {
+    lockFd = openSync(LOCK_PATH, "wx");
+    const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8")) as { tasks: MutableTask[] };
+    const index = manifest.tasks.findIndex((item) => item.id === task.id);
+    if (index === -1) {
+      throw new Error(`Cannot requeue unknown task ${task.id}`);
+    }
 
-  const existing = manifest.tasks[index];
-  const requeueCount = (existing.requeueCount ?? 0) + 1;
-  const updated: MutableTask = {
-    ...existing,
-    requeueCount,
-    promptFeedback: blockedTemplate(reason, feedback),
-  };
-
-  manifest.tasks[index] = updated;
-  writeFileSync(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
-
-  appendAudit({ event: "requeue", taskId: task.id, reason, requeueCount, status: "pending" });
-
-  if (requeueCount > 3) {
-    appendAudit({
-      event: "MANUAL_INTERVENTION_REQUIRED",
-      taskId: task.id,
-      reason,
+    const existing = manifest.tasks[index];
+    const requeueCount = (existing.requeueCount ?? 0) + 1;
+    const updated: MutableTask = {
+      ...existing,
       requeueCount,
-      status: "blocked",
-    });
-    throw new Error(`MANUAL_INTERVENTION_REQUIRED: task ${task.id} exceeded requeue limit`);
-  }
+      promptFeedback: blockedTemplate(reason, feedback),
+    };
 
-  return updated;
+    manifest.tasks[index] = updated;
+    const tempPath = `${MANIFEST_PATH}.tmp`;
+    writeFileSync(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+    renameSync(tempPath, MANIFEST_PATH);
+
+    appendAudit({ event: "requeue", taskId: task.id, reason, requeueCount, status: "pending" });
+
+    if (requeueCount >= 3) {
+      appendAudit({
+        event: "MANUAL_INTERVENTION_REQUIRED",
+        taskId: task.id,
+        reason,
+        requeueCount,
+        status: "blocked",
+      });
+      throw new Error(`MANUAL_INTERVENTION_REQUIRED: task ${task.id} exceeded requeue limit`);
+    }
+
+    return updated;
+  } finally {
+    if (lockFd >= 0) {
+      closeSync(lockFd);
+      try {
+        unlinkSync(LOCK_PATH);
+      } catch {
+        // Best-effort cleanup in sync flow.
+      }
+    }
+  }
 }

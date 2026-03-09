@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if command -v coderabbit >/dev/null 2>&1; then
+  echo "CodeRabbit CLI already installed: $(coderabbit --version)"
+else
 # Install CodeRabbit CLI via official curl script
-curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+  curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+fi
 
 # Ensure ~/.local/bin is in PATH for this session
 export PATH="$HOME/.local/bin:$PATH"

@@ -16,15 +16,29 @@ const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 const WORKERS_DB = 4;
 
 let _queue;
+let _connection;
+
+function registerConnectionHandlers(connection) {
+  connection.on('error', (err) => {
+    console.error('[TransferService] Redis connection error:', err.message);
+  });
+  connection.on('ready', () => {
+    console.log('[TransferService] Redis connection ready');
+  });
+  connection.on('reconnecting', () => {
+    console.warn('[TransferService] Redis connection reconnecting');
+  });
+}
 
 function getQueue() {
   if (!_queue) {
-    const connection = new Redis(REDIS_URL, {
+    _connection = new Redis(REDIS_URL, {
       db: WORKERS_DB,
       maxRetriesPerRequest: null, // required by BullMQ
     });
+    registerConnectionHandlers(_connection);
     _queue = new Queue(TRANSFER_QUEUE_NAME, {
-      connection,
+      connection: _connection,
       defaultJobOptions: {
         attempts: 3,
         backoff: { type: 'exponential', delay: 1000 },
@@ -57,6 +71,11 @@ async function addTransferJob(data) {
   return job;
 }
 
+async function getTransferJob(jobId) {
+  const queue = getQueue();
+  return queue.getJob(jobId);
+}
+
 /**
  * Cancel a transfer job by its BullMQ job ID.
  * Silently succeeds if the job no longer exists.
@@ -79,7 +98,36 @@ async function cancelTransferJob(jobId) {
   return true;
 }
 
+async function closeQueue() {
+  if (_queue) {
+    await _queue.close();
+    _queue = null;
+  }
+  if (_connection) {
+    _connection.disconnect();
+    _connection = null;
+  }
+}
+
+async function handleShutdown(signal) {
+  try {
+    await closeQueue();
+  } catch (err) {
+    console.error(`[TransferService] Failed during ${signal} shutdown:`, err.message);
+  }
+}
+
+process.once('SIGINT', () => {
+  void handleShutdown('SIGINT');
+});
+
+process.once('SIGTERM', () => {
+  void handleShutdown('SIGTERM');
+});
+
 module.exports = {
   addTransferJob,
+  getTransferJob,
   cancelTransferJob,
+  closeQueue,
 };

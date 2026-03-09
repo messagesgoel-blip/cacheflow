@@ -1,11 +1,12 @@
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 import path from "node:path";
 
-const ROOT = path.resolve(process.cwd());
+const ROOT = path.resolve(__dirname, "..", "..");
 const AUDIT_PATH = path.join(ROOT, "logs", "codex-audit.jsonl");
 const LINEAR_SYNC_SCRIPT = path.join(ROOT, "scripts", "linear-sprint-sync.sh");
 const LINEAR_CREATE_SCRIPT = path.join(ROOT, "scripts", "linear-create-issue.sh");
+const LINEAR_COMMAND_TIMEOUT_MS = 60_000;
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -21,14 +22,20 @@ function quoteArg(value: string): string {
 
 function runLinearCommand(cmd: string, context: string): string {
   try {
-    const output = execSync(cmd, {
+    const result = spawnSync("bash", ["-lc", cmd], {
       cwd: ROOT,
       env: process.env,
       stdio: ["ignore", "pipe", "pipe"],
       encoding: "utf8",
+      timeout: LINEAR_COMMAND_TIMEOUT_MS,
     });
-    appendAudit({ event: "linear", status: "ok", detail: `${context}; cmd=${cmd}` });
-    return output.trim();
+    if (result.status !== 0) {
+      const stderr = (result.stderr || result.stdout || "").trim();
+      appendAudit({ event: "linear", status: "warn", severity: "warn", detail: `${context}; ${stderr}` });
+      return "";
+    }
+    appendAudit({ event: "linear", status: "ok", detail: context });
+    return (result.stdout || "").trim();
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     appendAudit({ event: "linear", status: "warn", severity: "warn", detail: `${context}; ${detail}` });
