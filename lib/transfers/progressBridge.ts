@@ -30,11 +30,11 @@ export interface ProgressUpdate {
 /** Log entry for worker events */
 export interface WorkerLogEntry {
   jobId: string;
-  jobType: 'transfer' | 'scheduled';
+  jobType: 'transfer' | 'rate_limit' | 'scheduled';
   userId: string;
   level: 'info' | 'warn' | 'error' | 'debug';
   message: string;
-  timestamp: number;
+  timestamp?: number;
   data?: Record<string, unknown>;
 }
 
@@ -91,6 +91,7 @@ class ProgressBridge {
     await this.subscriber.subscribe(PROGRESS_CHANNEL_PREFIX + 'scheduled');
     // Subscribe to log channels
     await this.subscriber.subscribe(LOG_CHANNEL_PREFIX + 'transfer');
+    await this.subscriber.subscribe(LOG_CHANNEL_PREFIX + 'rate_limit');
     await this.subscriber.subscribe(LOG_CHANNEL_PREFIX + 'scheduled');
 
     this.subscriber.on('message', (channel, message) => {
@@ -128,7 +129,7 @@ class ProgressBridge {
     const userSubs = this.logSubscriptions.get(userKey);
     const jobSubs = this.logSubscriptions.get(jobKey);
 
-    const allSubs = [...(userSubs || []), ...(jobSubs || [])];
+    const allSubs = new Set([...(userSubs || []), ...(jobSubs || [])]);
 
     for (const sub of allSubs) {
       if (!sub.jobId || sub.jobId === entry.jobId) {
@@ -149,7 +150,7 @@ class ProgressBridge {
     const userSubs = this.subscriptions.get(userKey);
     const jobSubs = this.subscriptions.get(jobKey);
 
-    const allSubs = [...(userSubs || []), ...(jobSubs || [])];
+    const allSubs = new Set([...(userSubs || []), ...(jobSubs || [])]);
 
     for (const sub of allSubs) {
       if (!sub.jobId || sub.jobId === update.jobId) {
@@ -246,7 +247,6 @@ class ProgressBridge {
       userId,
       level,
       message,
-      timestamp: Date.now(),
       data,
     });
   }

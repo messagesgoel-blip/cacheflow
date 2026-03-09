@@ -133,8 +133,9 @@ class NotificationService {
     // Always try in-app
     if (payload.channels.includes('in-app')) {
       try {
-        this.sendInApp(payload);
-        deliveredTo.push('in-app');
+        if (this.sendInApp(payload)) {
+          deliveredTo.push('in-app');
+        }
       } catch (err) {
         console.error('[NotificationService] In-app delivery failed:', err);
       }
@@ -157,14 +158,15 @@ class NotificationService {
   /**
    * Send in-app notification via custom event.
    */
-  private sendInApp(payload: NotificationPayload): void {
+  private sendInApp(payload: NotificationPayload): boolean {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('cacheflow:notification', {
         detail: payload,
       }));
+      return true;
     }
-    // Also log for server-side visibility
-    console.log(`[NotificationService] In-app: [${payload.level}] ${payload.title}: ${payload.message}`);
+    console.log(`[NotificationService] In-app delivery unavailable outside browser for ${payload.id}`);
+    return false;
   }
 
   /**
@@ -194,12 +196,10 @@ class NotificationService {
     }
 
     // TODO: Implement actual SMTP sending using nodemailer or similar
-    // For now, stub: log the email that would be sent
+    // For now, stub: log non-PII metadata only.
     console.log(`[NotificationService] [STUB] Would send email:`, {
-      from: this.emailConfig.fromAddress,
-      to: recipientEmail,
       subject: `[CacheFlow] ${payload.title}`,
-      body: payload.message,
+      recipient: 'redacted',
     });
 
     return {

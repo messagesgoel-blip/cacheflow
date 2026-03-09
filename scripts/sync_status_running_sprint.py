@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 
 import yaml
@@ -59,7 +60,7 @@ def load_orchestrator_sprint() -> int | None:
         return None
     try:
         raw = json.loads(ORCHESTRATOR_STATE_FILE.read_text())
-    except Exception:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return None
     if not isinstance(raw, dict):
         return None

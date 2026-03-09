@@ -19,7 +19,7 @@ import { progressEmitter } from '../../../../lib/transfers/progressEmitter';
 import { WorkerLogEntry, ProgressUpdate } from '../../../../lib/transfers/progressBridge';
 
 interface JwtPayload {
-  id: string;
+  id: string | number;
   email?: string;
 }
 
@@ -83,8 +83,17 @@ export async function GET(
 
     try {
       const { verify } = await import('jsonwebtoken');
-      const decoded = verify(accessToken, jwtSecret) as JwtPayload;
-      userId = decoded.id;
+      const decoded = verify(accessToken, jwtSecret);
+      if (!decoded || typeof decoded !== 'object') {
+        return unauthorizedStream();
+      }
+
+      const { id } = decoded as JwtPayload;
+      if (typeof id !== 'string' && typeof id !== 'number') {
+        return unauthorizedStream();
+      }
+
+      userId = String(id);
     } catch {
       return unauthorizedStream();
     }

@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 
@@ -61,9 +62,20 @@ def load_orchestrator_state_file() -> dict:
 def load_roadmap_catalog() -> list[dict]:
     if not ROADMAP_CATALOG_FILE.exists():
         return []
-    raw = yaml.safe_load(ROADMAP_CATALOG_FILE.read_text()) or {}
+    try:
+        raw = yaml.safe_load(ROADMAP_CATALOG_FILE.read_text()) or {}
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        print(f"update_cacheflow_metrics: failed to load roadmap catalog {ROADMAP_CATALOG_FILE}: {exc}", file=sys.stderr)
+        return []
+
+    if not isinstance(raw, dict):
+        print(f"update_cacheflow_metrics: expected dict in {ROADMAP_CATALOG_FILE}, got {type(raw).__name__}", file=sys.stderr)
+        return []
     items = raw.get("items", [])
-    return items if isinstance(items, list) else []
+    if not isinstance(items, list):
+        print(f"update_cacheflow_metrics: expected list at {ROADMAP_CATALOG_FILE}:items", file=sys.stderr)
+        return []
+    return items
 
 
 def roadmap_stage_for_sprint(sprint: int) -> str:
@@ -397,7 +409,9 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict, roadmap_cat
         if item_id == "V1-0":
             gate_status = gate_item_status(current_state)
             if gate_status != "done" and core_total and core_done == core_total and all(
-                all(t["status"] in DONE_STATES for t in tasks_by_id.get(key, []))
+                key in tasks_by_id
+                and tasks_by_id[key]
+                and all(t["status"] in DONE_STATES for t in tasks_by_id[key])
                 for key in ("6.1", "6.2", "6.3", "6.4", "6.5", "6.6")
             ):
                 gate_status = "done"

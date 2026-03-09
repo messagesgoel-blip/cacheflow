@@ -229,12 +229,15 @@ export default function JobLogPanel({
 
     // Handle explicit error events from SSE
     es.addEventListener('error', (event: Event) => {
+      const messageEvent = event as MessageEvent;
       try {
-        const messageEvent = event as MessageEvent;
         const data = JSON.parse(messageEvent.data);
         addLog('error', data.message || 'Job error', { jobId });
       } catch {
-        // Non-JSON error or no data, ignore
+        const fallbackMessage = typeof messageEvent.data === 'string' && messageEvent.data.trim() !== ''
+          ? messageEvent.data
+          : 'Job error';
+        addLog('error', fallbackMessage, { jobId });
       }
     });
 
@@ -248,7 +251,7 @@ export default function JobLogPanel({
       es.close();
       eventSourceRef.current = null;
     };
-  }, [jobId, jobType, addLog]);
+  }, [jobId, addLog]);
 
   const clearLogs = useCallback(() => {
     setLogs([]);
