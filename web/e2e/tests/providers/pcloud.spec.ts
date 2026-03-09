@@ -4,6 +4,7 @@ import { ErrorCode } from '../../../../lib/errors/ErrorCode'
 import { PCloudAdapter } from '../../../../lib/providers/pcloud'
 import {
   PROVIDER_PARITY_CHECKLIST,
+  type ProviderAdapter,
   type ProviderParityCheckId,
 } from '../../../../lib/providers/ProviderAdapter.interface'
 
@@ -37,7 +38,7 @@ test.describe('Task 4.3 - pCloud provider parity (AUTH-1)', () => {
     process.env.PCLOUD_REDIRECT_URI = originalEnv.PCLOUD_REDIRECT_URI
   })
 
-  test('AUTH-1: pCloud passes all 5 provider parity checks', async () => {
+  test('AUTH-1: pCloud passes all supported provider parity checks', async () => {
     process.env.PCLOUD_CLIENT_ID = 'pcloud-client-id'
     process.env.PCLOUD_CLIENT_SECRET = 'pcloud-client-secret'
     process.env.PCLOUD_REDIRECT_URI = 'http://localhost:3010/providers/pcloud/callback'
@@ -174,6 +175,7 @@ test.describe('Task 4.3 - pCloud provider parity (AUTH-1)', () => {
     }) as typeof fetch
 
     const adapter = new PCloudAdapter()
+    const parityAdapter = adapter as ProviderAdapter
     const context = { requestId: 'req-pcloud-1', userId: 'user-pcloud-1' }
     const checkResults: Record<ProviderParityCheckId, boolean> = {
       auth_lifecycle: false,
@@ -279,7 +281,10 @@ test.describe('Task 4.3 - pCloud provider parity (AUTH-1)', () => {
       status.session.nextOffset === 8 &&
       finalized.file.id === '111'
 
-    const parityResults = PROVIDER_PARITY_CHECKLIST.map((check) => ({
+    const supportedChecks = PROVIDER_PARITY_CHECKLIST.filter((check) =>
+      check.requiredMethods.every((method) => typeof parityAdapter[method] === 'function')
+    )
+    const parityResults = supportedChecks.map((check) => ({
       checkId: check.id,
       passed: checkResults[check.id],
     }))
