@@ -4,10 +4,11 @@ import { mkdir, readFile, rm, stat, writeFile, appendFile } from "node:fs/promis
 import os from "node:os";
 import path from "node:path";
 import yaml from "js-yaml";
-import type { Agent, OrchestratorState, Task, TaskManifest } from "./lib/types";
+import type { Agent, OrchestratorState, Task, TaskManifest } from "../lib/orchestration/types";
 import { buildAgentPrompt } from "./lib/buildAgentPrompt";
 import { createRegressionIssue, markTaskBlocked, markTaskDone, markTaskStarted } from "../lib/orchestration/linearLifecycle";
 import { requeueTask } from "../lib/orchestration/requeueTask";
+import { quoteArg } from "../lib/orchestration/shell";
 
 const ROOT = path.resolve(__dirname, "..");
 const LOG_DIR = path.join(ROOT, "logs");
@@ -329,10 +330,6 @@ function runShell(command: string): { ok: boolean; output: string } {
   }
 }
 
-function quoteArg(value: string): string {
-  return `'${value.replace(/'/g, `'\"'\"'`)}'`;
-}
-
 function getLinearIssueId(task: Task): string | null {
   const mutable = task as MutableTask;
   if (mutable.linearIssueId?.trim()) {
@@ -367,7 +364,7 @@ async function ensureLinearIssueForRegression(task: Task, reason: string): Promi
     return existing;
   }
   const teamKey = (process.env.LINEAR_TEAM_KEY ?? "CF").trim() || "CF";
-  const created = createRegressionIssue(`Regression: ${task.id} ${task.title}`, reason, teamKey);
+  const created = await Promise.resolve(createRegressionIssue(`Regression: ${task.id} ${task.title}`, reason, teamKey));
   if (!created) {
     return null;
   }

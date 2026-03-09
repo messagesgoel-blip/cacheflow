@@ -1,7 +1,7 @@
 import { appendFileSync, openSync, readFileSync, closeSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import path from "node:path";
-import type { Task } from "../../scripts/lib/types";
-import * as CodeRabbitParser from "../coderabbit/parseReview";
+import type { Task } from "./types";
+import { BLOCKED_TEMPLATE } from "../coderabbit/parseReview";
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const MANIFEST_PATH = path.join(ROOT, "docs", "orchestration", "task-manifest.json");
@@ -25,14 +25,8 @@ function appendAudit(entry: Record<string, unknown>): void {
 }
 
 function blockedTemplate(reason: RequeueReason, feedback: string): string {
-  const parserRecord = CodeRabbitParser as Record<string, unknown>;
-  const fromParser =
-    (typeof parserRecord.BLOCKED_TEMPLATE === "string" && parserRecord.BLOCKED_TEMPLATE) ||
-    (typeof parserRecord.CODE_RABBIT_BLOCKED_TEMPLATE === "string" && parserRecord.CODE_RABBIT_BLOCKED_TEMPLATE) ||
-    "## CodeRabbit Review: BLOCKED\nThe following issues must be resolved before the gate can pass:\n{{feedback}}\nFix all items above. Re-push. Do not advance to the next task until coderabbit-{pr}.yaml shows hasBlockers: false.";
-
   const reasonLine = reason === "pre-push-blocked" ? "Source: pre-push review" : reason === "gate-failed" ? "Source: sprint gate failure" : "Source: CodeRabbit review";
-  return `${fromParser.replace("{{feedback}}", feedback)}\n${reasonLine}`;
+  return `${BLOCKED_TEMPLATE.replace("{{feedback}}", feedback)}\n${reasonLine}`;
 }
 
 export function requeueTask(task: Task, feedback: string, reason: RequeueReason): MutableTask {

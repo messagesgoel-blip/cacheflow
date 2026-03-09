@@ -1,10 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import type { ThrottleConfig } from './types';
 
 const prisma = new PrismaClient();
-
-interface ThrottleConfig {
-  maxBytesPerSecond: number | null; // null means unlimited
-}
 
 interface JobCreateData {
   name: string;
@@ -64,9 +61,16 @@ export class ScheduledJobService {
 
     if (throttle !== undefined) {
       // Merge throttle into existing metadata JSON
-      const existing = typeof existingJob.metadata === 'string'
-        ? JSON.parse(existingJob.metadata)
-        : (existingJob.metadata ?? {});
+      let existing: Record<string, unknown> = {};
+      if (typeof existingJob.metadata === 'string') {
+        try {
+          existing = JSON.parse(existingJob.metadata) as Record<string, unknown>;
+        } catch {
+          existing = {};
+        }
+      } else if (existingJob.metadata && typeof existingJob.metadata === 'object') {
+        existing = existingJob.metadata as Record<string, unknown>;
+      }
       updateData.metadata = JSON.stringify({ ...existing, throttle });
     }
 

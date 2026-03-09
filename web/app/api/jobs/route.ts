@@ -1,5 +1,19 @@
 import { NextRequest } from 'next/server';
 import { scheduledJobService } from '@/lib/jobs/scheduledJobService';
+import type { ThrottleConfig } from '@/lib/jobs/types';
+
+function validateThrottle(throttle: ThrottleConfig | undefined): string | null {
+  if (!throttle || throttle.maxBytesPerSecond === null) {
+    return null;
+  }
+
+  const bps = throttle.maxBytesPerSecond;
+  if (!Number.isFinite(bps) || bps <= 0) {
+    return 'throttle.maxBytesPerSecond must be a positive finite number or null';
+  }
+
+  return null;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,11 +48,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate throttle if provided
-    if (data.throttle && data.throttle.maxBytesPerSecond !== null) {
-      const bps = data.throttle.maxBytesPerSecond;
-      if (!Number.isFinite(bps) || bps <= 0) {
-        return Response.json({ error: 'throttle.maxBytesPerSecond must be a positive finite number or null' }, { status: 400 });
-      }
+    const throttleError = validateThrottle(data.throttle);
+    if (throttleError) {
+      return Response.json({ error: throttleError }, { status: 400 });
     }
 
     const job = await scheduledJobService.createJob({
@@ -73,14 +85,12 @@ export async function PUT(request: NextRequest) {
     if (data.cronExpression !== undefined) updateData.cronExpression = data.cronExpression;
     if (data.enabled !== undefined) updateData.enabled = data.enabled;
     if (data.throttle !== undefined) {
-      if (data.throttle && data.throttle.maxBytesPerSecond !== null) {
-        const bps = data.throttle.maxBytesPerSecond;
-        if (!Number.isFinite(bps) || bps <= 0) {
-          return Response.json(
-            { error: 'throttle.maxBytesPerSecond must be a positive finite number or null' },
-            { status: 400 },
-          );
-        }
+      const throttleError = validateThrottle(data.throttle);
+      if (throttleError) {
+        return Response.json(
+          { error: throttleError },
+          { status: 400 },
+        );
       }
       updateData.throttle = data.throttle;
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import { ScheduledJob } from '@/app/schedules/page'
+import type { ScheduledJob } from '@/lib/jobs/types'
 
 interface JobCardProps {
   job: ScheduledJob
@@ -127,7 +127,7 @@ export default function JobCard({
                 <svg className="h-3.5 w-3.5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                {formatThrottle((job as any).throttle?.maxBytesPerSecond)}
+                {formatThrottle(job.throttle?.maxBytesPerSecond)}
               </span>
             </div>
           </div>

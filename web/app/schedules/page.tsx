@@ -7,18 +7,7 @@ import MissionControl from '@/components/MissionControl'
 import JobCard from '@/components/schedules/JobCard'
 import CreateJobModal from '@/components/schedules/CreateJobModal'
 import ScheduleTransferSnapshot from '@/components/schedules/ScheduleTransferSnapshot'
-
-export interface ScheduledJob {
-  id: string
-  name: string
-  jobType: string
-  cronExpression: string
-  enabled: boolean
-  lastRunAt: string | null
-  nextRunAt: string | null
-  createdAt: string
-  updatedAt: string
-}
+import type { ScheduledJob } from '@/lib/jobs/types'
 
 const JOB_TYPE_LABELS: Record<string, string> = {
   'sync-file': 'File Sync',

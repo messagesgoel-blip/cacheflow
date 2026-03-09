@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ScheduledJob } from '@/app/schedules/page'
+import type { ScheduledJob, ThrottleConfig } from '@/lib/jobs/types'
 
 const THROTTLE_PRESETS = [
   { value: null, label: 'Unlimited', description: 'No bandwidth limit' },
@@ -18,7 +18,7 @@ interface CreateJobModalProps {
     jobType: string
     cronExpression: string
     enabled: boolean
-    throttle?: { maxBytesPerSecond: number | null }
+    throttle?: ThrottleConfig
   }) => void
   onClose: () => void
 }
@@ -55,7 +55,7 @@ export default function CreateJobModal({ job, onSave, onClose }: CreateJobModalP
       setCronExpression(job.cronExpression)
       setEnabled(job.enabled)
       // Restore throttle from job metadata
-      const jobThrottle = (job as any).throttle?.maxBytesPerSecond ?? null
+      const jobThrottle = job.throttle?.maxBytesPerSecond ?? null
       setThrottle(jobThrottle)
       // Check if it's a custom cron
       const isPreset = CRON_PRESETS.some(p => p.value === job.cronExpression)

@@ -214,8 +214,8 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
       })
 
       onClose()
-    } catch (err: any) {
-      setError(err.message || 'Failed to start remote upload')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to start remote upload')
     } finally {
       setLoading(false)
     }

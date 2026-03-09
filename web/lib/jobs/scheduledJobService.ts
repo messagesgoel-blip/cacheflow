@@ -1,17 +1,6 @@
-interface ThrottleConfig {
-  maxBytesPerSecond: number | null
-}
+import type { ScheduledJob, ThrottleConfig } from './types'
 
-interface JobRecord {
-  id: string
-  name: string
-  jobType: string
-  cronExpression: string
-  enabled: boolean
-  throttle?: ThrottleConfig
-  createdAt: string
-  updatedAt: string
-}
+type JobRecord = ScheduledJob
 
 interface JobCreateData {
   name: string
@@ -53,6 +42,8 @@ class ScheduledJobService {
       cronExpression: data.cronExpression,
       enabled: data.enabled ?? true,
       throttle: data.throttle,
+      lastRunAt: null,
+      nextRunAt: null,
       createdAt,
       updatedAt: createdAt,
     }

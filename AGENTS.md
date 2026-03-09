@@ -45,6 +45,7 @@ This enables issue auto-tracking of commits against issues.
 Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.
 
 ## Orchestration Automation Compliance
+
 - Canonical repo for live orchestration: `/opt/docker/apps/cacheflow` (do not run from stale copies).
 - Start/stop/status commands:
   - `npm run orch:start`

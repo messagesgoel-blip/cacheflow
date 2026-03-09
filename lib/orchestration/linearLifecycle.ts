@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 import path from "node:path";
+import { quoteArg } from "./shell";
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const AUDIT_PATH = path.join(ROOT, "logs", "codex-audit.jsonl");
@@ -14,10 +15,6 @@ function nowIso(): string {
 
 function appendAudit(entry: Record<string, unknown>): void {
   appendFileSync(AUDIT_PATH, `${JSON.stringify({ ts: nowIso(), ...entry })}\n`, "utf8");
-}
-
-function quoteArg(value: string): string {
-  return `'${value.replace(/'/g, `'"'"'`)}'`;
 }
 
 function runLinearCommand(cmd: string, context: string): string {
