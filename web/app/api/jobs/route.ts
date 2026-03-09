@@ -72,7 +72,18 @@ export async function PUT(request: NextRequest) {
     if (data.jobType !== undefined) updateData.jobType = data.jobType;
     if (data.cronExpression !== undefined) updateData.cronExpression = data.cronExpression;
     if (data.enabled !== undefined) updateData.enabled = data.enabled;
-    if (data.throttle !== undefined) updateData.throttle = data.throttle;
+    if (data.throttle !== undefined) {
+      if (data.throttle && data.throttle.maxBytesPerSecond !== null) {
+        const bps = data.throttle.maxBytesPerSecond;
+        if (!Number.isFinite(bps) || bps <= 0) {
+          return Response.json(
+            { error: 'throttle.maxBytesPerSecond must be a positive finite number or null' },
+            { status: 400 },
+          );
+        }
+      }
+      updateData.throttle = data.throttle;
+    }
 
     const job = await scheduledJobService.updateJob(id, updateData);
     if (!job) {
