@@ -29,6 +29,7 @@ function buildConnectionSignature(input: {
   port: string
   username: string
   pemFile: File | null
+  pemText?: string | null
   existingConnectionId?: string
 }) {
   return JSON.stringify({
@@ -37,7 +38,9 @@ function buildConnectionSignature(input: {
     username: input.username.trim(),
     keyRef: input.pemFile
       ? `${input.pemFile.name}:${input.pemFile.size}:${input.pemFile.lastModified}`
-      : input.existingConnectionId || '',
+      : input.pemText
+        ? `generated:${input.pemText.length}`
+        : input.existingConnectionId || '',
   })
 }
 
@@ -52,11 +55,14 @@ export default function VPSModal() {
   const actions = useActionCenter()
   const [submitting, setSubmitting] = useState(false)
   const [testing, setTesting] = useState(false)
+  const [generating, setGenerating] = useState(false)
   const [label, setLabel] = useState('')
   const [host, setHost] = useState('')
   const [port, setPort] = useState('22')
   const [username, setUsername] = useState('')
   const [pemFile, setPemFile] = useState<File | null>(null)
+  const [pemText, setPemText] = useState<string | null>(null)
+  const [generatedPublicKey, setGeneratedPublicKey] = useState<string | null>(null)
   const [inlineError, setInlineError] = useState<string | null>(null)
   const [testStatus, setTestStatus] = useState<TestStatus>(null)
   const [lastSuccessfulTestSignature, setLastSuccessfulTestSignature] = useState<string | null>(null)
@@ -78,10 +84,13 @@ export default function VPSModal() {
     setPort(nextPort)
     setUsername(nextUsername)
     setPemFile(null)
+    setPemText(null)
+    setGeneratedPublicKey(null)
     setInlineError(null)
     setTestStatus(null)
     setSubmitting(false)
     setTesting(false)
+    setGenerating(false)
 
     const signature = isEditMode
       ? buildConnectionSignature({
@@ -89,6 +98,7 @@ export default function VPSModal() {
           port: nextPort,
           username: nextUsername,
           pemFile: null,
+          pemText: null,
           existingConnectionId: editingConnection?.id,
         })
       : null
@@ -104,9 +114,10 @@ export default function VPSModal() {
         port,
         username,
         pemFile,
+        pemText,
         existingConnectionId: editingConnection?.id,
       }),
-    [editingConnection?.id, host, pemFile, port, username],
+    [editingConnection?.id, host, pemFile, pemText, port, username],
   )
 
   const hasValidatedConnection =
@@ -125,8 +136,8 @@ export default function VPSModal() {
       setInlineError('Host and username are required.')
       return false
     }
-    if (!isEditMode && !pemFile) {
-      setInlineError('PEM key file is required.')
+    if (!isEditMode && !pemFile && !pemText) {
+      setInlineError('PEM key file or generated key is required.')
       return false
     }
     if (pemFile) {
@@ -146,8 +157,35 @@ export default function VPSModal() {
     formData.append('host', host.trim())
     formData.append('port', String(Number.parseInt(port, 10) || 22))
     formData.append('username', username.trim())
-    if (pemFile) formData.append('pemFile', pemFile)
+    if (pemFile) {
+      formData.append('pemFile', pemFile)
+    } else if (pemText) {
+      formData.append('pemText', pemText)
+    }
     return formData
+  }
+
+  const handleGenerateKey = async () => {
+    setGenerating(true)
+    setInlineError(null)
+    try {
+      const response = await fetch('/api/providers/vps/generate-key', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      const result = await response.json()
+      if (!response.ok) {
+        throw new Error(result?.error || 'Failed to generate key pair')
+      }
+      setPemText(result.privateKey)
+      setGeneratedPublicKey(result.publicKey)
+      setPemFile(null)
+      actions.notify({ kind: 'success', title: 'Key pair generated', message: 'Add the public key to your VPS.' })
+    } catch (err: any) {
+      setInlineError(err?.message || 'Failed to generate key pair')
+    } finally {
+      setGenerating(false)
+    }
   }
 
   const handleTestConnection = async () => {
@@ -329,20 +367,57 @@ export default function VPSModal() {
 
           <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
             <div className="cf-kicker mb-2">Credential</div>
-            <label className="mb-1.5 block text-sm font-medium text-[var(--cf-text-1)]">
-              {isEditMode ? 'Replace PEM Key' : 'PEM Key'} {!isEditMode && <span className="text-[var(--cf-red)]">*</span>}
-            </label>
+            <div className="mb-3 flex items-center justify-between">
+              <label className="block text-sm font-medium text-[var(--cf-text-1)]">
+                {isEditMode ? 'Replace PEM Key' : 'PEM Key'} {!isEditMode && <span className="text-[var(--cf-red)]">*</span>}
+              </label>
+              {!isEditMode && (
+                <button
+                  type="button"
+                  onClick={handleGenerateKey}
+                  disabled={generating}
+                  className="text-xs font-semibold text-[var(--cf-blue)] hover:underline disabled:opacity-50"
+                >
+                  {generating ? 'Generating…' : 'Generate New Key Pair'}
+                </button>
+              )}
+            </div>
             <input
               type="file"
               accept=".pem,.key"
-              onChange={(e) => setPemFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                setPemFile(e.target.files?.[0] || null)
+                setPemText(null)
+                setGeneratedPublicKey(null)
+              }}
               className="w-full rounded-xl border border-[var(--cf-border)] bg-[var(--cf-shell-card)] px-3 py-2.5 text-sm text-[var(--cf-text-1)] file:mr-3 file:rounded-lg file:border-0 file:bg-[rgba(74,158,255,0.14)] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-[var(--cf-blue)]"
             />
+            {generatedPublicKey && (
+              <div className="mt-4 rounded-2xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.06)] p-3">
+                <div className="flex items-center justify-between">
+                  <div className="cf-kicker text-[10px] text-[var(--cf-blue)] uppercase">Generated Public Key</div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedPublicKey)
+                      actions.notify({ kind: 'success', title: 'Copied', message: 'Public key copied to clipboard' })
+                    }}
+                    className="text-[10px] font-bold text-[var(--cf-blue)] uppercase hover:underline"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <div className="mt-2 break-all font-mono text-[11px] leading-relaxed text-[var(--cf-text-0)]">
+                  {generatedPublicKey}
+                </div>
+                <p className="mt-2 text-[10px] text-[var(--cf-text-2)]">
+                  Add this to <code>~/.ssh/authorized_keys</code> on your server.
+                </p>
+              </div>
+            )}
             <div className="mt-3 space-y-1.5 text-[12px] leading-5 text-[var(--cf-text-2)]">
-              {isEditMode && !pemFile ? <p>Leave empty to keep the currently saved private key.</p> : null}
-              <p>Upload the private key file only. Do not upload the matching <code>.pub</code> file.</p>
-              <p>Your private key is encrypted before storage and never returned after saving.</p>
-              <p>For manual QA, use <code>/srv/storage/local/mock run</code> instead of operating in <code>/</code>.</p>
+              {isEditMode && !pemFile && !pemText ? <p>Leave empty to keep the currently saved private key.</p> : null}
+              {pemText && !pemFile ? <p className="text-[var(--cf-blue)] font-medium">Using generated key pair.</p> : null}
+              <p>Upload your private key or generate a new one. Your private key is encrypted before storage.</p>
               {pemFile ? <p className="text-[var(--cf-text-1)]">Selected: {pemFile.name}</p> : null}
             </div>
           </div>

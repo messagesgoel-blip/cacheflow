@@ -23,6 +23,8 @@ export interface ProviderCapabilities {
   supportsChunkResume: boolean
   supportsStreamingTransfer: boolean
   supportsServerSideCopy: boolean
+  supportsTrash?: boolean
+  supportsVersioning?: boolean
 }
 
 export interface ProviderDescriptor {
@@ -105,6 +107,9 @@ export interface ProviderFile {
   createdAt?: string
   modifiedAt?: string
   webUrl?: string
+  isTrashed?: boolean
+  trashedAt?: string
+  originalPath?: string
 }
 
 export interface ProviderShareLink {
@@ -135,6 +140,7 @@ export interface ListFilesRequest {
   folderId?: string
   cursor?: string
   pageSize?: number
+  includeTrashed?: boolean
 }
 
 export interface ListFilesResponse {
@@ -150,6 +156,7 @@ export interface SearchFilesRequest {
   folderId?: string
   cursor?: string
   pageSize?: number
+  includeTrashed?: boolean
 }
 
 export interface SearchFilesResponse {
@@ -218,6 +225,56 @@ export interface DeleteFileRequest {
   context: ProviderOperationContext
   auth: ProviderAuthState
   fileId: string
+  permanent?: boolean
+}
+
+export interface ListTrashRequest {
+  context: ProviderOperationContext
+  auth: ProviderAuthState
+  cursor?: string
+  pageSize?: number
+}
+
+export interface ListTrashResponse {
+  files: ProviderFile[]
+  nextCursor?: string
+  hasMore: boolean
+}
+
+export interface RestoreFileRequest {
+  context: ProviderOperationContext
+  auth: ProviderAuthState
+  fileId: string
+}
+
+export interface EmptyTrashRequest {
+  context: ProviderOperationContext
+  auth: ProviderAuthState
+}
+
+export interface ProviderFileVersion {
+  id: string
+  modifiedAt: string
+  size?: number
+  etag?: string
+  author?: string
+}
+
+export interface ListFileVersionsRequest {
+  context: ProviderOperationContext
+  auth: ProviderAuthState
+  fileId: string
+}
+
+export interface ListFileVersionsResponse {
+  versions: ProviderFileVersion[]
+}
+
+export interface RestoreFileVersionRequest {
+  context: ProviderOperationContext
+  auth: ProviderAuthState
+  fileId: string
+  versionId: string
 }
 
 export interface ByteRange {

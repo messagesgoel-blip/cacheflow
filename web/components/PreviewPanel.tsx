@@ -19,6 +19,26 @@ interface PreviewPanelProps {
   onDelete: (file: FileMetadata) => void
 }
 
+function buildMediaStreamUrl(file: FileMetadata): string | null {
+  const accountKey = String((file as any).accountKey || '')
+  const fileId = file.id
+  const provider = file.provider
+
+  if (provider === 'vps' && accountKey) {
+    return `/api/providers/vps/${encodeURIComponent(accountKey)}/files/download?path=${encodeURIComponent(fileId)}`
+  }
+
+  if (provider === 'local') {
+    return `/api/files/download?id=${encodeURIComponent(fileId)}`
+  }
+
+  if (accountKey) {
+    return `/api/remotes/${encodeURIComponent(accountKey)}/upload?fileId=${encodeURIComponent(fileId)}&provider=${encodeURIComponent(provider)}`
+  }
+
+  return null
+}
+
 export default function PreviewPanel({
   file,
   url,
@@ -36,6 +56,10 @@ export default function PreviewPanel({
   const provider = PROVIDERS.find(p => p.id === file.provider)
   const canActOnFile = Boolean(file?.id && file?.name)
   const actionDisabledClass = 'opacity-50 cursor-not-allowed'
+
+  const mediaStreamUrl = type === 'video' || type === 'audio' 
+    ? buildMediaStreamUrl(file) || url 
+    : null
 
   return (
     <div 
@@ -71,6 +95,26 @@ export default function PreviewPanel({
           </div>
         ) : type === 'image' ? (
           <img src={url || undefined} alt={file.name} className="max-w-full max-h-full object-contain" />
+        ) : type === 'video' ? (
+          <video 
+            src={mediaStreamUrl || undefined} 
+            controls 
+            className="max-w-full max-h-full"
+            preload="metadata"
+          >
+            Your browser does not support video playback.
+          </video>
+        ) : type === 'audio' ? (
+          <div className="flex flex-col items-center gap-4 p-8 w-full">
+            <audio 
+              src={mediaStreamUrl || undefined} 
+              controls 
+              className="w-full max-w-xs"
+            >
+              Your browser does not support audio playback.
+            </audio>
+            <span className="text-xs text-gray-500 uppercase font-bold tracking-widest">Audio File</span>
+          </div>
         ) : type === 'pdf' ? (
           <div className="flex flex-col items-center gap-2">
             <span className="text-6xl">📄</span>

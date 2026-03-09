@@ -72,6 +72,8 @@ export default function VpsBrowserPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [mkdirName, setMkdirName] = useState('')
+  const [publicKey, setPublicKey] = useState<string | null>(null)
+  const [showingPublicKey, setShowingPublicKey] = useState(false)
   const latestLoadId = useRef(0)
 
   const canGoUp = useMemo(() => path !== '/', [path])
@@ -171,6 +173,25 @@ export default function VpsBrowserPage() {
     }
   }
 
+  const loadPublicKey = async () => {
+    if (publicKey) {
+      setShowingPublicKey(!showingPublicKey)
+      return
+    }
+    try {
+      const response = await fetch(`/api/providers/vps/${id}/public-key`, { credentials: 'include' })
+      const result = await response.json()
+      if (response.ok) {
+        setPublicKey(result.publicKey)
+        setShowingPublicKey(true)
+      } else {
+        actions.notify({ kind: 'error', title: 'Failed to load public key', message: result.error || 'Unknown error' })
+      }
+    } catch (err: any) {
+      actions.notify({ kind: 'error', title: 'Failed to load public key', message: err.message })
+    }
+  }
+
   return (
     <div className="cf-shell-page min-h-screen">
       <Navbar email="Account" onLogout={() => router.push('/login')} />
@@ -184,8 +205,16 @@ export default function VpsBrowserPage() {
                 Focused shell for safe QA work inside the saved VPS connection. Keep browser operations inside the mock run tree.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
-                <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
-                  <div className="cf-kicker">Connection ID</div>
+                <div className="min-w-[200px] rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="cf-kicker">Connection ID</div>
+                    <button
+                      onClick={loadPublicKey}
+                      className="text-[10px] font-bold text-[var(--cf-blue)] uppercase hover:underline"
+                    >
+                      {showingPublicKey ? 'Hide Public Key' : 'Show Public Key'}
+                    </button>
+                  </div>
                   <div className="mt-2 font-mono text-sm text-[var(--cf-text-1)]">{id}</div>
                 </div>
                 <div className="rounded-[20px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3">
@@ -193,6 +222,26 @@ export default function VpsBrowserPage() {
                   <div className="mt-2 font-mono text-sm text-[var(--cf-text-1)]">{path}</div>
                 </div>
               </div>
+
+              {showingPublicKey && publicKey && (
+                <div className="mt-4 max-w-2xl rounded-2xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.06)] p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="cf-kicker text-[10px] text-[var(--cf-blue)] uppercase">Public Key (authorized_keys)</div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(publicKey)
+                        actions.notify({ kind: 'success', title: 'Copied', message: 'Public key copied to clipboard' })
+                      }}
+                      className="text-[10px] font-bold text-[var(--cf-blue)] uppercase hover:underline"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <div className="mt-2 break-all font-mono text-[11px] leading-relaxed text-[var(--cf-text-0)]">
+                    {publicKey}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="cf-subpanel rounded-[28px] p-4 sm:p-5">
               <div className="cf-kicker">Guardrails</div>

@@ -1,4 +1,4 @@
-generated_at: '2026-03-05T14:30:27+00:00'
+generated_at: '2026-03-09T12:39:00+00:00'
 scope: sprints_0_to_5
 summary:
   total_modules: 96
@@ -24,7 +24,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T01:14:43+00:00'
-  timestamp_last_changed: '2026-03-04T16:26:55-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-03T20:12:09-05:00'
   commit_hash: 2ebfec6b47bd85684fa075406031019e4f0246b1
   commit_message: 'fix: remove BLOCKED echo trap, use TASK_COMPLETE-only detection'
@@ -114,7 +114,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T03:46:36+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-03T22:31:55-05:00'
   commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
   commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
@@ -158,7 +158,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T03:46:36+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-03T22:31:55-05:00'
   commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
   commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
@@ -202,12 +202,11 @@ modules:
   contract_exists: true
   contract_ok: true
   done_logged: true
-  timestamp_done: '2026-03-05T14:30:25+00:00'
+  timestamp_done: '2026-03-09T12:38:57+00:00'
   timestamp_last_changed: '2026-03-03T16:19:23-05:00'
-  timestamp_committed: '2026-03-05T09:20:39-05:00'
-  commit_hash: f23ba7e35868
-  commit_message: 'feat(audit): add sprint 0-5 module completeness dataset and Grafana
-    dashboard'
+  timestamp_committed: '2026-03-09T08:38:38-04:00'
+  commit_hash: 1b3542173862
+  commit_message: 'docs: add contracts for 6.2 and 6.3'
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
@@ -335,7 +334,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T03:46:36+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-08T18:45:08-04:00'
   timestamp_committed: '2026-03-03T22:31:55-05:00'
   commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
   commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
@@ -430,7 +429,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-02T21:27:53+00:00'
-  timestamp_last_changed: '2026-03-04T16:26:55-05:00'
+  timestamp_last_changed: '2026-03-07T22:46:32-05:00'
   timestamp_committed: '2026-03-02T16:17:26-05:00'
   commit_hash: 9fe35b97ff937479a1f5a6dd2e4113bd79feabe9
   commit_message: 'chore: compliance closeout and per-agent sprint prompts'
@@ -478,7 +477,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-02T21:20:31+00:00'
-  timestamp_last_changed: '2026-03-02T20:34:53-05:00'
+  timestamp_last_changed: '2026-03-05T11:50:33-05:00'
   timestamp_committed: '2026-03-02T16:17:26-05:00'
   commit_hash: 9fe35b97ff937479a1f5a6dd2e4113bd79feabe9
   commit_message: 'chore: compliance closeout and per-agent sprint prompts'
@@ -554,7 +553,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-02T20:59:03+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-02T15:58:58-05:00'
   commit_hash: b1142283731bcff90df9612eb830148d8d811a5c
   commit_message: 'feat(1.6@AUTH-3): remove client-side token sync pattern entirely'
@@ -599,7 +598,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-02T21:27:53+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-02T16:17:26-05:00'
   commit_hash: 9fe35b97ff937479a1f5a6dd2e4113bd79feabe9
   commit_message: 'chore: compliance closeout and per-agent sprint prompts'
@@ -644,7 +643,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T04:25:16+00:00'
-  timestamp_last_changed: '2026-03-04T05:44:04-05:00'
+  timestamp_last_changed: '2026-03-08T18:29:43-04:00'
   timestamp_committed: '2026-03-03T22:59:12-05:00'
   commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
   commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
@@ -729,7 +728,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T04:25:16+00:00'
-  timestamp_last_changed: '2026-03-02T16:02:02-05:00'
+  timestamp_last_changed: '2026-03-08T10:35:19-04:00'
   timestamp_committed: '2026-03-03T22:59:12-05:00'
   commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
   commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
@@ -772,7 +771,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T04:25:16+00:00'
-  timestamp_last_changed: '2026-03-04T05:44:04-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-03T22:59:12-05:00'
   commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
   commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
@@ -815,7 +814,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T04:25:16+00:00'
-  timestamp_last_changed: '2026-03-02T16:02:02-05:00'
+  timestamp_last_changed: '2026-03-08T10:35:19-04:00'
   timestamp_committed: '2026-03-03T22:59:12-05:00'
   commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
   commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
@@ -894,7 +893,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T03:48:37+00:00'
-  timestamp_last_changed: '2026-03-04T18:26:37-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-03T22:31:55-05:00'
   commit_hash: 1d01014e881ea8e5ce953564a7357d01c7966576
   commit_message: 'fix: remove --model flag from opencode, let oh-my-opencode route
@@ -963,7 +962,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T03:59:37+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-03T22:59:12-05:00'
   commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
   commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
@@ -1098,7 +1097,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T04:04:50+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-08T18:29:43-04:00'
   timestamp_committed: '2026-03-03T22:59:12-05:00'
   commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
   commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
@@ -1191,7 +1190,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T04:08:03+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-03T22:59:12-05:00'
   commit_hash: 6e8a668b8ac8c5ba22493ac8e91128dfadb7c236
   commit_message: 'feat(orchestrator): auto-sync engineering health metrics on state
@@ -1207,27 +1206,38 @@ modules:
     /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download/route.ts;
     /home/sanjay/cacheflow_work/app/api/share/[id]/revoke/route.ts; /home/sanjay/cacheflow_work/app/api/transfers/[id]/chunks/route.ts;
     /home/sanjay/cacheflow_work/app/api/transfers/[id]/progress/route.ts; /home/sanjay/cacheflow_work/app/api/connections/vps/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/remote-upload/route.ts; /home/sanjay/cacheflow_work/web/app/api/rate-limits/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/remotes/route.ts; /home/sanjay/cacheflow_work/web/app/api/remote-upload/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/rate-limits/route.ts; /home/sanjay/cacheflow_work/web/app/api/favorites/route.ts;
     /home/sanjay/cacheflow_work/web/app/api/transfers/route.ts; /home/sanjay/cacheflow_work/web/app/api/connections/route.ts;
     /home/sanjay/cacheflow_work/web/app/api/jobs/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts; /home/sanjay/cacheflow_work/web/app/api/cleanup/duplicates/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/health/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/providers/[id]/route.ts; /home/sanjay/cacheflow_work/web/app/api/providers/vps/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/providers/vps/[id]/route.ts; /home/sanjay/cacheflow_work/web/app/api/providers/vps/test/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/providers/vps/[id]/[...segments]/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/favorites/[id]/route.ts; /home/sanjay/cacheflow_work/web/app/api/cleanup/duplicates/route.ts;
     /home/sanjay/cacheflow_work/web/app/api/transfers/chunk/route.ts; /home/sanjay/cacheflow_work/web/app/api/connections/health/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/vault/[id]/unlock/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/refresh/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/status/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/disable/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/verify/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/setup/route.ts;
-    /home/sanjay/cacheflow_work/web/middleware.ts
+    /home/sanjay/cacheflow_work/web/app/api/vault/[id]/unlock/route.ts; /home/sanjay/cacheflow_work/web/app/api/files/download/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/auth/login/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/refresh/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/auth/session/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/status/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/disable/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/verify/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/setup/route.ts; /home/sanjay/cacheflow_work/web/middleware.ts
   git_file_locations: lib/auth; web/lib/auth; web/lib/auth/__tests__; app/api/search/route.ts;
     app/api/share/route.ts; app/api/jobs/route.ts; app/api/vault/route.ts; app/api/remotes/[uuid]/proxy/route.ts;
     app/api/remotes/[uuid]/actions/delete/route.ts; app/api/remotes/[uuid]/actions/move/route.ts;
     app/api/remotes/[uuid]/actions/rename/route.ts; app/api/remotes/[uuid]/actions/download/route.ts;
     app/api/share/[id]/revoke/route.ts; app/api/transfers/[id]/chunks/route.ts; app/api/transfers/[id]/progress/route.ts;
-    app/api/connections/vps/route.ts; web/app/api/remote-upload/route.ts; web/app/api/rate-limits/route.ts;
-    web/app/api/transfers/route.ts; web/app/api/connections/route.ts; web/app/api/jobs/route.ts;
-    web/app/api/remotes/[uuid]/upload/route.ts; web/app/api/remotes/[uuid]/proxy/route.ts;
-    web/app/api/cleanup/duplicates/route.ts; web/app/api/transfers/chunk/route.ts;
-    web/app/api/connections/health/route.ts; web/app/api/vault/[id]/unlock/route.ts;
-    web/app/api/auth/refresh/route.ts; web/app/api/auth/2fa/status/route.ts; web/app/api/auth/2fa/disable/route.ts;
-    web/app/api/auth/2fa/verify/route.ts; web/app/api/auth/2fa/setup/route.ts; web/middleware.ts
+    app/api/connections/vps/route.ts; web/app/api/remotes/route.ts; web/app/api/remote-upload/route.ts;
+    web/app/api/rate-limits/route.ts; web/app/api/favorites/route.ts; web/app/api/transfers/route.ts;
+    web/app/api/connections/route.ts; web/app/api/jobs/route.ts; web/app/api/remotes/[uuid]/upload/route.ts;
+    web/app/api/remotes/[uuid]/health/route.ts; web/app/api/remotes/[uuid]/proxy/route.ts;
+    web/app/api/providers/[id]/route.ts; web/app/api/providers/vps/route.ts; web/app/api/providers/vps/[id]/route.ts;
+    web/app/api/providers/vps/test/route.ts; web/app/api/providers/vps/[id]/[...segments]/route.ts;
+    web/app/api/favorites/[id]/route.ts; web/app/api/cleanup/duplicates/route.ts;
+    web/app/api/transfers/chunk/route.ts; web/app/api/connections/health/route.ts;
+    web/app/api/vault/[id]/unlock/route.ts; web/app/api/files/download/route.ts; web/app/api/auth/login/route.ts;
+    web/app/api/auth/refresh/route.ts; web/app/api/auth/session/route.ts; web/app/api/auth/2fa/status/route.ts;
+    web/app/api/auth/2fa/disable/route.ts; web/app/api/auth/2fa/verify/route.ts; web/app/api/auth/2fa/setup/route.ts;
+    web/middleware.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/auth; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/auth;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/auth/__tests__;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/search/route.ts;
@@ -1243,18 +1253,30 @@ modules:
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/transfers/[id]/chunks/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/transfers/[id]/progress/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/connections/vps/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remote-upload/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/rate-limits/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/favorites/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/transfers/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/jobs/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/upload/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/health/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/proxy/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/providers/[id]/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/providers/vps/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/providers/vps/[id]/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/providers/vps/test/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/providers/vps/[id]/[...segments]/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/favorites/[id]/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/cleanup/duplicates/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/transfers/chunk/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/health/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/vault/[id]/unlock/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/files/download/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/login/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/refresh/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/session/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/status/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/disable/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/2fa/verify/route.ts;
@@ -1285,18 +1307,30 @@ modules:
     - app/api/transfers/[id]/chunks/route.ts
     - app/api/transfers/[id]/progress/route.ts
     - app/api/connections/vps/route.ts
+    - web/app/api/remotes/route.ts
     - web/app/api/remote-upload/route.ts
     - web/app/api/rate-limits/route.ts
+    - web/app/api/favorites/route.ts
     - web/app/api/transfers/route.ts
     - web/app/api/connections/route.ts
     - web/app/api/jobs/route.ts
     - web/app/api/remotes/[uuid]/upload/route.ts
+    - web/app/api/remotes/[uuid]/health/route.ts
     - web/app/api/remotes/[uuid]/proxy/route.ts
+    - web/app/api/providers/[id]/route.ts
+    - web/app/api/providers/vps/route.ts
+    - web/app/api/providers/vps/[id]/route.ts
+    - web/app/api/providers/vps/test/route.ts
+    - web/app/api/providers/vps/[id]/[...segments]/route.ts
+    - web/app/api/favorites/[id]/route.ts
     - web/app/api/cleanup/duplicates/route.ts
     - web/app/api/transfers/chunk/route.ts
     - web/app/api/connections/health/route.ts
     - web/app/api/vault/[id]/unlock/route.ts
+    - web/app/api/files/download/route.ts
+    - web/app/api/auth/login/route.ts
     - web/app/api/auth/refresh/route.ts
+    - web/app/api/auth/session/route.ts
     - web/app/api/auth/2fa/status/route.ts
     - web/app/api/auth/2fa/disable/route.ts
     - web/app/api/auth/2fa/verify/route.ts
@@ -1362,7 +1396,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-08T11:47:20-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1404,7 +1438,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T11:15:36+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1571,7 +1605,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1615,7 +1649,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1694,7 +1728,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-08T18:29:43-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1829,7 +1863,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:24:41+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-08T11:47:20-04:00'
   timestamp_committed: '2026-03-04T07:16:16-05:00'
   commit_hash: bc256cd43c5f78cd9494ab12e7be440855b218d7
   commit_message: 'fix(orchestrator): use wrapper CLIs and resolve frontend paths
@@ -1885,7 +1919,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T11:26:38+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -1993,7 +2027,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: '2026-03-03T10:56:05-05:00'
+  timestamp_last_changed: '2026-03-08T10:54:40-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2072,7 +2106,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T11:27:09+00:00'
-  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_last_changed: '2026-03-07T01:56:50-05:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2129,7 +2163,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2138,13 +2172,14 @@ modules:
   worked_by: Gemini
   assigned_agent: Gemini
   local_file_locations: /home/sanjay/cacheflow_work/web/e2e; /home/sanjay/cacheflow_work/web/e2e/tests;
-    /home/sanjay/cacheflow_work/web/e2e/fixtures; /home/sanjay/cacheflow_work/web/e2e/tests/providers;
-    /home/sanjay/cacheflow_work/monitoring/task_history.yaml; /home/sanjay/cacheflow_work/docs/prompts;
-    /home/sanjay/cacheflow_work/BLOCKER_QA_SEED.md
-  git_file_locations: web/e2e; web/e2e/tests; web/e2e/fixtures; web/e2e/tests/providers;
+    /home/sanjay/cacheflow_work/web/e2e/helpers; /home/sanjay/cacheflow_work/web/e2e/fixtures;
+    /home/sanjay/cacheflow_work/web/e2e/tests/providers; /home/sanjay/cacheflow_work/monitoring/task_history.yaml;
+    /home/sanjay/cacheflow_work/docs/prompts; /home/sanjay/cacheflow_work/BLOCKER_QA_SEED.md
+  git_file_locations: web/e2e; web/e2e/tests; web/e2e/helpers; web/e2e/fixtures; web/e2e/tests/providers;
     monitoring/task_history.yaml; docs/prompts; BLOCKER_QA_SEED.md
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests;
-    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/fixtures; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/helpers; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/fixtures;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/monitoring/task_history.yaml;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/prompts; https://github.com/messagesgoel-blip/cacheflow/blob/main/BLOCKER_QA_SEED.md
   file_checks:
@@ -2154,6 +2189,7 @@ modules:
     resolved:
     - web/e2e
     - web/e2e/tests
+    - web/e2e/helpers
     - web/e2e/fixtures
     - web/e2e/tests/providers
   - declared: /monitoring/task_history.yaml
@@ -2190,7 +2226,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_last_changed: '2026-03-08T18:29:43-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2240,7 +2276,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T11:30:41+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-07T22:46:32-05:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2297,7 +2333,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:24:41+00:00'
-  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T07:16:16-05:00'
   commit_hash: bc256cd43c5f78cd9494ab12e7be440855b218d7
   commit_message: 'fix(orchestrator): use wrapper CLIs and resolve frontend paths
@@ -2341,7 +2377,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T11:34:51+00:00'
-  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2354,11 +2390,13 @@ modules:
     /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/delete;
     /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/move; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename;
     /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid];
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/health;
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy
   git_file_locations: web/components/UnifiedFileBrowser.tsx; app/api/remotes/[uuid];
     app/api/remotes/[uuid]/actions; app/api/remotes/[uuid]/proxy; app/api/remotes/[uuid]/actions/delete;
     app/api/remotes/[uuid]/actions/move; app/api/remotes/[uuid]/actions/rename; app/api/remotes/[uuid]/actions/download;
-    web/app/api/remotes/[uuid]; web/app/api/remotes/[uuid]/upload; web/app/api/remotes/[uuid]/proxy
+    web/app/api/remotes/[uuid]; web/app/api/remotes/[uuid]/upload; web/app/api/remotes/[uuid]/health;
+    web/app/api/remotes/[uuid]/proxy
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid];
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions;
@@ -2369,6 +2407,7 @@ modules:
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/download;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid];
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/upload;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/health;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/proxy
   file_checks:
   - declared: /components/UnifiedFileBrowser.tsx
@@ -2389,6 +2428,7 @@ modules:
     - app/api/remotes/[uuid]/actions/download
     - web/app/api/remotes/[uuid]
     - web/app/api/remotes/[uuid]/upload
+    - web/app/api/remotes/[uuid]/health
     - web/app/api/remotes/[uuid]/proxy
   acceptance_criteria:
   - HOLD-UI-2026-03-02
@@ -2409,7 +2449,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T11:37:41+00:00'
-  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_last_changed: '2026-03-08T11:15:24-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2459,7 +2499,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:16:04+00:00'
-  timestamp_last_changed: '2026-03-04T17:01:00-05:00'
+  timestamp_last_changed: '2026-03-08T18:29:43-04:00'
   timestamp_committed: '2026-03-04T05:51:46-05:00'
   commit_hash: 901d0586f6132e1f4e42939c8f970986f09d6ae2
   commit_message: 'fix: gate-only requires explicit sprint arg, guards against ungated
@@ -2502,7 +2542,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T14:08:23+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-08T10:42:49-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2593,7 +2633,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T12:52:36+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2604,11 +2644,13 @@ modules:
     /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/delete/route.ts;
     /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/move/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename/route.ts;
     /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/health/route.ts;
+    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts
   git_file_locations: lib/transfers/transferRegistry.ts; app/api/remotes/[uuid]/proxy/route.ts;
     app/api/remotes/[uuid]/actions/delete/route.ts; app/api/remotes/[uuid]/actions/move/route.ts;
     app/api/remotes/[uuid]/actions/rename/route.ts; app/api/remotes/[uuid]/actions/download/route.ts;
-    web/app/api/remotes/[uuid]/upload/route.ts; web/app/api/remotes/[uuid]/proxy/route.ts
+    web/app/api/remotes/[uuid]/upload/route.ts; web/app/api/remotes/[uuid]/health/route.ts;
+    web/app/api/remotes/[uuid]/proxy/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/transferRegistry.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/proxy/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/delete/route.ts;
@@ -2616,6 +2658,7 @@ modules:
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/rename/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/actions/download/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/upload/route.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/health/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/proxy/route.ts
   file_checks:
   - declared: /lib/transfers/transferRegistry.ts
@@ -2633,6 +2676,7 @@ modules:
     - app/api/remotes/[uuid]/actions/rename/route.ts
     - app/api/remotes/[uuid]/actions/download/route.ts
     - web/app/api/remotes/[uuid]/upload/route.ts
+    - web/app/api/remotes/[uuid]/health/route.ts
     - web/app/api/remotes/[uuid]/proxy/route.ts
   acceptance_criteria:
   - TRANSFER-1
@@ -2653,7 +2697,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T14:08:27+00:00'
-  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_last_changed: '2026-03-06T07:55:21-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2737,7 +2781,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T13:00:42+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2779,7 +2823,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T14:08:27+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-08T10:42:49-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2814,7 +2858,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T14:27:22+00:00'
-  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_last_changed: '2026-03-06T17:33:41-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2849,7 +2893,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T13:03:28+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2884,7 +2928,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T13:08:09+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2961,7 +3005,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T14:23:24+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T17:33:41-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -2996,7 +3040,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T14:23:24+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-08T18:34:09-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3045,7 +3089,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T13:16:21+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-05T20:15:11-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3053,9 +3097,11 @@ modules:
   worked_by: OpenCode
   assigned_agent: OpenCode
   local_file_locations: /home/sanjay/cacheflow_work/lib/providers/healthCheck.ts;
-    /home/sanjay/cacheflow_work/web/app/api/connections/health/route.ts
-  git_file_locations: lib/providers/healthCheck.ts; web/app/api/connections/health/route.ts
+    /home/sanjay/cacheflow_work/web/lib/providers/healthCheck.ts; /home/sanjay/cacheflow_work/web/app/api/connections/health/route.ts
+  git_file_locations: lib/providers/healthCheck.ts; web/lib/providers/healthCheck.ts;
+    web/app/api/connections/health/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/healthCheck.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/providers/healthCheck.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/health/route.ts
   file_checks:
   - declared: /lib/providers/healthCheck.ts
@@ -3063,6 +3109,7 @@ modules:
     exists: true
     resolved:
     - lib/providers/healthCheck.ts
+    - web/lib/providers/healthCheck.ts
   - declared: /app/api/connections/health/route.ts
     normalized: app/api/connections/health/route.ts
     exists: true
@@ -3087,7 +3134,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T13:20:01+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-07T22:46:32-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3130,7 +3177,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T14:23:24+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T17:33:41-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3165,7 +3212,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T15:08:40+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3206,7 +3253,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T15:16:00+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3296,7 +3343,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T15:21:49+00:00'
-  timestamp_last_changed: '2026-03-04T13:30:39-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3338,7 +3385,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T15:28:56+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3380,7 +3427,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T16:04:10+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-07T22:46:32-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3535,7 +3582,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T16:04:10+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3613,7 +3660,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T15:43:30+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-08T19:24:19-04:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3658,7 +3705,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T15:46:34+00:00'
-  timestamp_last_changed: '2026-03-04T16:27:42-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3735,7 +3782,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-04T16:04:10+00:00'
-  timestamp_last_changed: '2026-03-04T23:14:30-05:00'
+  timestamp_last_changed: '2026-03-06T17:33:41-05:00'
   timestamp_committed: '2026-03-04T07:38:26-05:00'
   commit_hash: 235284f4a903082904452ff62fd96b04636cbe01
   commit_message: 'fix: gate fails on actual test failures not playwright exit code'
@@ -3770,7 +3817,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-05T04:22:00+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-08T20:22:47-04:00'
   timestamp_committed: '2026-03-04T23:14:40-05:00'
   commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
   commit_message: 'chore: update task history after sprint 4 gate pass'
@@ -3779,13 +3826,14 @@ modules:
   assigned_agent: OpenCode
   local_file_locations: /home/sanjay/cacheflow_work/prisma/migrations/004_scheduled_jobs;
     /home/sanjay/cacheflow_work/app/api/jobs/route.ts; /home/sanjay/cacheflow_work/web/app/api/jobs/route.ts;
-    /home/sanjay/cacheflow_work/lib/jobs/scheduledJobService.ts
+    /home/sanjay/cacheflow_work/lib/jobs/scheduledJobService.ts; /home/sanjay/cacheflow_work/web/lib/jobs/scheduledJobService.ts
   git_file_locations: prisma/migrations/004_scheduled_jobs; app/api/jobs/route.ts;
-    web/app/api/jobs/route.ts; lib/jobs/scheduledJobService.ts
+    web/app/api/jobs/route.ts; lib/jobs/scheduledJobService.ts; web/lib/jobs/scheduledJobService.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/004_scheduled_jobs;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/jobs/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/jobs/route.ts;
-    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/jobs/scheduledJobService.ts
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/jobs/scheduledJobService.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/jobs/scheduledJobService.ts
   file_checks:
   - declared: /prisma/migrations/004_scheduled_jobs/
     normalized: prisma/migrations/004_scheduled_jobs/
@@ -3803,6 +3851,7 @@ modules:
     exists: true
     resolved:
     - lib/jobs/scheduledJobService.ts
+    - web/lib/jobs/scheduledJobService.ts
   acceptance_criteria:
   - SCHED-1
 - seq: 85
@@ -3822,7 +3871,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-05T04:28:00+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-08T19:02:25-04:00'
   timestamp_committed: '2026-03-04T23:14:40-05:00'
   commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
   commit_message: 'chore: update task history after sprint 4 gate pass'
@@ -3864,7 +3913,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-05T05:04:26+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-08T19:02:25-04:00'
   timestamp_committed: '2026-03-04T23:14:40-05:00'
   commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
   commit_message: 'chore: update task history after sprint 4 gate pass'
@@ -3913,7 +3962,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-05T05:11:55+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-06T12:46:14-05:00'
   timestamp_committed: '2026-03-04T23:14:40-05:00'
   commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
   commit_message: 'chore: update task history after sprint 4 gate pass'
@@ -3989,7 +4038,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-05T04:33:40+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-08T18:28:35-04:00'
   timestamp_committed: '2026-03-04T23:14:40-05:00'
   commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
   commit_message: 'chore: update task history after sprint 4 gate pass'
@@ -3997,10 +4046,12 @@ modules:
   worked_by: OpenCode
   assigned_agent: OpenCode
   local_file_locations: /home/sanjay/cacheflow_work/web/app/api/vault/[id]/unlock/route.ts;
-    /home/sanjay/cacheflow_work/lib/vault/vaultSession.ts
-  git_file_locations: web/app/api/vault/[id]/unlock/route.ts; lib/vault/vaultSession.ts
+    /home/sanjay/cacheflow_work/lib/vault/vaultSession.ts; /home/sanjay/cacheflow_work/web/lib/vault/vaultSession.ts
+  git_file_locations: web/app/api/vault/[id]/unlock/route.ts; lib/vault/vaultSession.ts;
+    web/lib/vault/vaultSession.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/vault/[id]/unlock/route.ts;
-    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/vaultSession.ts
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/vaultSession.ts;
+    https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/vault/vaultSession.ts
   file_checks:
   - declared: /app/api/vault/[id]/unlock/route.ts
     normalized: app/api/vault/[id]/unlock/route.ts
@@ -4012,6 +4063,7 @@ modules:
     exists: true
     resolved:
     - lib/vault/vaultSession.ts
+    - web/lib/vault/vaultSession.ts
   acceptance_criteria:
   - VAULT-1
 - seq: 90
@@ -4033,7 +4085,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-05T05:11:55+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-08T11:47:20-04:00'
   timestamp_committed: '2026-03-04T23:14:40-05:00'
   commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
   commit_message: 'chore: update task history after sprint 4 gate pass'
@@ -4082,7 +4134,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-05T05:11:55+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-06T17:33:41-05:00'
   timestamp_committed: '2026-03-04T23:14:40-05:00'
   commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
   commit_message: 'chore: update task history after sprint 4 gate pass'
@@ -4159,7 +4211,7 @@ modules:
   contract_ok: true
   done_logged: true
   timestamp_done: '2026-03-05T05:11:55+00:00'
-  timestamp_last_changed: '2026-03-05T09:02:34-05:00'
+  timestamp_last_changed: '2026-03-09T08:29:18-04:00'
   timestamp_committed: '2026-03-04T23:14:40-05:00'
   commit_hash: 44328c374b6b62f4a0f3ad291546b4a0a91a71ff
   commit_message: 'chore: update task history after sprint 4 gate pass'

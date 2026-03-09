@@ -21,6 +21,7 @@
  */
 
 import crypto from 'crypto';
+import { utils } from 'ssh2';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -192,6 +193,41 @@ export class CredentialVault {
    */
   rotate(payload: CredentialPayload): EncryptedCredential {
     return encryptCredential(payload);
+  }
+
+  /**
+   * Generates a new SSH key pair (Ed25519).
+   * Returns { publicKey, privateKey }.
+   * publicKey is in OpenSSH authorized_keys format.
+   * privateKey is in PEM format.
+   */
+  generateSSHKey(comment: string = 'cacheflow-vps'): { publicKey: string; privateKey: string } {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519', {
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+
+    const parsed = utils.parseKey(publicKey);
+    if (parsed instanceof Error) {
+      throw new Error(`Failed to parse public key: ${parsed.message}`);
+    }
+    const publicSSH = `ssh-ed25519 ${parsed.getPublicSSH().toString('base64')} ${comment}`;
+
+    return {
+      publicKey: publicSSH,
+      privateKey,
+    };
+  }
+
+  /**
+   * Extract OpenSSH public key from a PEM private key.
+   */
+  getPublicKeyFromPrivate(privateKey: string, comment: string = 'cacheflow-vps'): string {
+    const parsed = utils.parseKey(privateKey);
+    if (parsed instanceof Error) {
+      throw new Error(`Failed to parse private key: ${parsed.message}`);
+    }
+    return `${parsed.type} ${parsed.getPublicSSH().toString('base64')} ${comment}`;
   }
 
   /**

@@ -3154,7 +3154,7 @@
       "id": "6.4",
       "sprint": 6,
       "wave": 2,
-      "agent": "codex",
+      "agent": "opencode",
       "title": "Version 1 completion — media streaming polish",
       "files": [
         "/lib/transfers/streamTransfer.ts",
@@ -3179,7 +3179,7 @@
       "id": "6.5",
       "sprint": 6,
       "wave": 2,
-      "agent": "codex",
+      "agent": "gemini",
       "title": "Version 1 completion — file versioning + trash bin",
       "files": [
         "/lib/providers/*/trash.ts",
@@ -3205,7 +3205,7 @@
       "id": "6.6",
       "sprint": 6,
       "wave": 2,
-      "agent": "codex",
+      "agent": "gemini",
       "title": "Version 1 completion — VPS/SFTP key lifecycle",
       "files": [
         "/api/src/routes/providers.js",

@@ -1,16 +1,12 @@
 export type CodeRabbitSeverity = "none" | "low" | "medium" | "high" | "critical";
 
-export interface CodeRabbitReviewSignal {
-  hasBlockers: boolean;
-  actionableCount: number;
-  summary: string;
-  severity: CodeRabbitSeverity;
-  suggestions: string[];
-  raw: string;
-}
-
-export const BLOCKED_TEMPLATE =
-  "## CodeRabbit Review: BLOCKED\nThe following issues must be resolved before the gate can pass:\n{{feedback}}\nFix all items above. Re-push. Do not advance to the next task until coderabbit-{pr}.yaml shows hasBlockers: false.";
+export const BLOCKED_TEMPLATE = [
+  "The latest CodeRabbit review for PR #{{pr}} found blocking issues.",
+  "",
+  "{{feedback}}",
+  "",
+  "Review state is saved in `monitoring/coderabbit-{{pr}}.yaml`.",
+].join("\n");
 
 function stripMarkdown(input: string): string {
   return input
@@ -70,36 +66,44 @@ function detectHighestSeverity(body: string): CodeRabbitSeverity {
   if (/\bseverity\s*:\s*critical\b/i.test(body) || /\bcritical\b/i.test(body)) {
     return "critical";
   }
-  if (/\bseverity\s*:\s*high\b/i.test(body) || body.includes("🚨")) {
+
+  if (/\bseverity\s*:\s*high\b/i.test(body) || /\bhigh\b/i.test(body)) {
     return "high";
   }
-  if (/\bseverity\s*:\s*medium\b/i.test(body)) {
+
+  if (/\bseverity\s*:\s*medium\b/i.test(body) || /\bmedium\b/i.test(body)) {
     return "medium";
   }
-  if (/\bseverity\s*:\s*low\b/i.test(body)) {
+
+  if (/\bseverity\s*:\s*low\b/i.test(body) || /\blow\b/i.test(body)) {
     return "low";
   }
+
   return "none";
 }
 
-export function parseReview(payload: unknown): CodeRabbitReviewSignal {
-  const record = payload && typeof payload === "object" ? (payload as Record<string, unknown>) : {};
-  const comment = record.comment && typeof record.comment === "object" ? (record.comment as Record<string, unknown>) : {};
-  const review = record.review && typeof record.review === "object" ? (record.review as Record<string, unknown>) : {};
-  const bodyCandidate = comment.body ?? review.body;
-  const raw = typeof bodyCandidate === "string" ? bodyCandidate : "";
-  const actionableMatch = raw.match(/actionable comments posted: (\d+)/i);
-  const actionableCount = actionableMatch ? Number.parseInt(actionableMatch[1] ?? "0", 10) : 0;
-  const severity = detectHighestSeverity(raw);
+export function parseCodeRabbitReview(body: string): {
+  hasBlockers: boolean;
+  severity: CodeRabbitSeverity;
+  suggestions: string[];
+  summary: string;
+  raw: string;
+} {
+  const raw = typeof body === "string" ? body : "";
   const suggestions = extractSuggestions(raw);
-  const hasBlockers = severity === "critical" || severity === "high" || actionableCount > 0 || hasIssuesSectionActions(raw);
+  const severity = detectHighestSeverity(raw);
+  const hasEmergency = raw.includes("🚨");
+  const hasIssuesActions = hasIssuesSectionActions(raw);
 
   return {
-    hasBlockers,
-    actionableCount,
-    summary: firstParagraph(raw),
+    hasBlockers:
+      hasEmergency ||
+      hasIssuesActions ||
+      severity === "critical" ||
+      severity === "high",
     severity,
     suggestions,
+    summary: firstParagraph(raw),
     raw,
   };
 }

@@ -347,6 +347,7 @@ model ScheduledJob {
   enabled         Boolean   @default(true)
   lastRunAt       DateTime? @map("last_run_at")
   nextRunAt       DateTime? @map("next_run_at")
+  metadata        Json?     @map("metadata")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
