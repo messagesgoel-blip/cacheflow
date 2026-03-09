@@ -77,6 +77,8 @@ class ProgressBridge {
   private subscriber: Redis;
   private subscriptions: Map<string, Set<ProgressSubscriber>> = new Map();
   private logSubscriptions: Map<string, Set<LogSubscriber>> = new Map();
+  private callbackIds: WeakMap<Function, number> = new WeakMap();
+  private nextCallbackId = 1;
   private initialized = false;
 
   constructor() {
@@ -150,22 +152,46 @@ class ProgressBridge {
     }
   }
 
+  private callbackId(callback: Function): number {
+    const existingId = this.callbackIds.get(callback);
+    if (existingId) {
+      return existingId;
+    }
+
+    const id = this.nextCallbackId++;
+    this.callbackIds.set(callback, id);
+    return id;
+  }
+
+  private progressSubscriberKey(subscriber: ProgressSubscriber): string {
+    return `${subscriber.userId}:${this.callbackId(subscriber.onProgress)}:${this.callbackId(subscriber.onError)}`;
+  }
+
+  private logSubscriberKey(subscriber: LogSubscriber): string {
+    return `${subscriber.userId}:${this.callbackId(subscriber.onLog)}:${this.callbackId(subscriber.onError)}`;
+  }
+
   private notifyLogSubscribers(entry: WorkerLogEntry): void {
     const userKey = entry.userId;
     const jobKey = `${entry.userId}:${entry.jobId}`;
 
     const userSubs = this.logSubscriptions.get(userKey);
     const jobSubs = this.logSubscriptions.get(jobKey);
+    const allSubs = new Map<string, LogSubscriber>();
+    for (const sub of userSubs || []) {
+      allSubs.set(this.logSubscriberKey(sub), sub);
+    }
+    for (const sub of jobSubs || []) {
+      allSubs.set(this.logSubscriberKey(sub), sub);
+    }
 
-    const allSubs = new Set([...(userSubs || []), ...(jobSubs || [])]);
-
-    for (const sub of allSubs) {
-      if (!sub.jobId || sub.jobId === entry.jobId) {
+    for (const subscriber of allSubs.values()) {
+      if (!subscriber.jobId || subscriber.jobId === entry.jobId) {
         try {
-          sub.onLog(entry);
+          subscriber.onLog(entry);
         } catch (error) {
           const err = error instanceof Error ? error : new Error(String(error));
-          sub.onError(err);
+          subscriber.onError(err);
         }
       }
     }
@@ -177,16 +203,21 @@ class ProgressBridge {
 
     const userSubs = this.subscriptions.get(userKey);
     const jobSubs = this.subscriptions.get(jobKey);
+    const allSubs = new Map<string, ProgressSubscriber>();
+    for (const sub of userSubs || []) {
+      allSubs.set(this.progressSubscriberKey(sub), sub);
+    }
+    for (const sub of jobSubs || []) {
+      allSubs.set(this.progressSubscriberKey(sub), sub);
+    }
 
-    const allSubs = new Set([...(userSubs || []), ...(jobSubs || [])]);
-
-    for (const sub of allSubs) {
-      if (!sub.jobId || sub.jobId === update.jobId) {
+    for (const subscriber of allSubs.values()) {
+      if (!subscriber.jobId || subscriber.jobId === update.jobId) {
         try {
-          sub.onProgress(update);
+          subscriber.onProgress(update);
         } catch (error) {
           const err = error instanceof Error ? error : new Error(String(error));
-          sub.onError(err);
+          subscriber.onError(err);
         }
       }
     }

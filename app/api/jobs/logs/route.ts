@@ -120,13 +120,23 @@ export async function GET(
       };
 
       const cleanup = (): void => {
+        if (isFinished) {
+          return;
+        }
+
         isFinished = true;
         if (keepaliveTimer) {
           clearInterval(keepaliveTimer);
           keepaliveTimer = null;
         }
-        if (unsubscribeLogs) unsubscribeLogs();
-        if (unsubscribeProgress) unsubscribeProgress();
+        if (unsubscribeLogs) {
+          unsubscribeLogs();
+          unsubscribeLogs = null;
+        }
+        if (unsubscribeProgress) {
+          unsubscribeProgress();
+          unsubscribeProgress = null;
+        }
       };
 
       const sendDone = (status: 'completed' | 'failed', error?: string): void => {
