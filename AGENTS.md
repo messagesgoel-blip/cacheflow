@@ -42,3 +42,27 @@ This enables issue auto-tracking of commits against issues.
 - Do not treat a branch as done at PR open time; it is only done after tests pass, the change is committed, and it is deployed from a clean git worktree in `/opt/docker/apps/cacheflow`.
 
 Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.
+
+## Orchestration Automation Compliance
+- Canonical repo for live orchestration: `/opt/docker/apps/cacheflow` (do not run from stale copies).
+- Start/stop/status commands:
+  - `npm run orch:start`
+  - `npm run orch:stop`
+  - `npm run orch:status`
+- `scripts/start-orchestration.sh` must run only on OCI primary. It exits when `DATACENTER=india`.
+- Full enforced task sequence in `scripts/orchestrate.ts`:
+  - dispatch task
+  - agent completes and commits
+  - run pre-push gate (`bash scripts/pre-push-review.sh`)
+  - if clear: push + open PR
+  - poll CodeRabbit webhook state (`monitoring/coderabbit-<pr>.yaml`)
+  - blocked: requeue (max 3), do not advance
+  - clear: mark done and advance to next task
+- Linear lifecycle is best-effort and non-blocking:
+  - `markTaskStarted`, `markTaskBlocked`, `markTaskDone`
+  - regression issues can be created when blocked tasks have no `linearIssueId`
+- Required env for automation (see `.env.example`):
+  - `DATACENTER`
+  - `GITHUB_WEBHOOK_SECRET`
+  - `LINEAR_TEAM_KEY`
+  - `GH_TOKEN`
