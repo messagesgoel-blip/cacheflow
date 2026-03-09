@@ -2,6 +2,7 @@ const { Readable, PassThrough } = require('stream');
 const { finished } = require('stream/promises');
 const dns = require('dns/promises');
 const { isIP } = require('net');
+const pool = require('../db/client');
 
 const MAX_REMOTE_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10 GB
 const DOWNLOAD_TIMEOUT_MS = 300000; // 5 minutes
@@ -76,7 +77,28 @@ async function validateResolvedIPs(hostname) {
 }
 
 async function remoteUpload(options) {
-  const { url, provider, filename, metadata = {} } = options;
+  const { url, provider, filename, metadata = {}, user } = options;
+
+  if (!metadata.accountKey) {
+    throw new Error('accountKey is required in metadata');
+  }
+
+  if (!user?.id) {
+    throw new Error('Authenticated user is required');
+  }
+
+  const remoteLookup = await pool.query(
+    `SELECT provider FROM user_remotes WHERE user_id = $1 AND account_key = $2 AND disabled = FALSE LIMIT 1`,
+    [user.id, metadata.accountKey],
+  );
+  if (!remoteLookup.rows.length) {
+    throw new Error('Remote account not found for user/accountKey');
+  }
+
+  const resolvedProvider = String(remoteLookup.rows[0].provider || '').toLowerCase();
+  if (provider && provider.toLowerCase() !== resolvedProvider) {
+    throw new Error('Provider/accountKey mismatch');
+  }
 
   validateRemoteUrl(url);
 
@@ -141,7 +163,7 @@ async function remoteUpload(options) {
     const nodeStream = Readable.fromWeb(response.body);
     const stream = nodeStream.pipe(sizeGuard);
 
-    const uploadResult = await uploadToProvider(provider, stream, actualFilename, {
+    const uploadResult = await uploadToProvider(resolvedProvider, stream, actualFilename, {
       contentType,
       metadata
     });
@@ -149,7 +171,7 @@ async function remoteUpload(options) {
     return {
       success: true,
       fileId: uploadResult.fileId,
-      provider,
+      provider: resolvedProvider,
       size: receivedBytes,
       contentType,
       uploadedAt: new Date().toISOString(),
@@ -210,13 +232,31 @@ function generateFilenameFromUrl(url) {
     const filename = pathname.split('/').pop();
     
     if (filename && filename !== '') {
-      return filename;
+      const cleaned = sanitizeFilename(filename);
+      if (cleaned) {
+        return cleaned;
+      }
     }
     
     return `remote-file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.tmp`;
   } catch (error) {
     return `remote-file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.tmp`;
   }
+}
+
+function sanitizeFilename(input) {
+  const decoded = decodeURIComponent(String(input || ''));
+  const cleaned = decoded
+    .replace(/[\u0000-\u001f/\\]/g, '')
+    .replace(/\.{2,}/g, '.')
+    .trim();
+
+  if (!cleaned) {
+    return '';
+  }
+
+  const safe = cleaned.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 255);
+  return safe;
 }
 
 module.exports = {

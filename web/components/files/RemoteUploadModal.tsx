@@ -5,19 +5,6 @@ import { ProviderId, PROVIDERS, ConnectedProvider } from '@/lib/providers/types'
 import { tokenManager } from '@/lib/tokenManager'
 import { useActionCenter } from '@/components/ActionCenterProvider'
 
-// Central map: UI provider IDs to rclone remote names
-const rcloneRemoteNameMap: Record<string, string> = {
-  google: 'gdrive',
-  onedrive: 'onedrive',
-  dropbox: 'dropbox',
-  box: 'box',
-  pcloud: 'pcloud',
-  filen: 'filen',
-  yandex: 'yandex',
-  webdav: 'webdav',
-  vps: 'sftp',
-}
-
 interface RemoteUploadModalProps {
   isOpen: boolean
   onClose: () => void
@@ -201,7 +188,6 @@ export default function RemoteUploadModal({ isOpen, onClose }: RemoteUploadModal
         filename: filename.trim() || undefined,
         metadata: {
           accountKey: targetAccountKey,
-          remoteName: rcloneRemoteNameMap[targetProvider] ?? targetProvider,
         },
       }
 
