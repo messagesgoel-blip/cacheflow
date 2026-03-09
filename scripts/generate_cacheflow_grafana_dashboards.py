@@ -82,6 +82,14 @@ def table_panel(panel_id: int, title: str, x: int, y: int, w: int, h: int, expr:
                         {"id": "custom.align", "value": "auto"},
                     ],
                 },
+                {
+                    "matcher": {"id": "byName", "options": "__name__"},
+                    "properties": [{"id": "custom.hidden", "value": True}],
+                },
+                {
+                    "matcher": {"id": "byName", "options": "Metric"},
+                    "properties": [{"id": "custom.hidden", "value": True}],
+                },
             ],
         },
     }
