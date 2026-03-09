@@ -2,7 +2,8 @@
   "scripts": {
     "orchestrate": "ts-node scripts/orchestrate.ts",
     "recover": "ts-node scripts/recover.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "tools:setup": "bash scripts/setup-dev-tools.sh"
   },
   "dependencies": {
     "@prisma/client": "^7.4.2",
