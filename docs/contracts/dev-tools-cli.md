@@ -26,13 +26,15 @@
 ## PR Feedback Watch
 
 - `python3 scripts/watch_pr_feedback.py start --agent <Agent> --task <TASK>` records the current latest CodeRabbit review as the baseline for the current branch PR.
+  When started from a TTY, the watcher binds that PR to the current terminal for direct notifications.
 - `python3 scripts/watch_pr_feedback.py check` checks GitHub for a newer CodeRabbit review than the stored baseline.
 - Suggested manual heartbeat is `600` seconds between `check` runs.
 - On new CodeRabbit review feedback, the check command:
   - writes `monitoring/coderabbit-<pr>.yaml`
   - appends a message to `logs/notifications.txt`
   - appends a message to `.context/cache_state/agent_notifications/<Agent>.log`
-  - attempts to write a direct terminal notification to any TTYs mapped to that agent in `/tmp/cacheflow_agent_tty_map`
+  - attempts to write a direct terminal notification to the PR's bound TTY
+  - if no bound TTY exists, falls back to the agent's last active TTY, then to the most recently mapped agent TTY in `/tmp/cacheflow_agent_tty_map`
 - The monitoring YAML includes a `comments` section with unresolved CodeRabbit thread comments.
 - Watcher state is stored under `.context/cache_state/pr_feedback_watch/pr-<pr>.json`.
 

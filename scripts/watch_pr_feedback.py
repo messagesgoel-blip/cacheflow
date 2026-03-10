@@ -23,6 +23,7 @@ LOG_DIR = ROOT / "logs"
 NOTIFICATIONS_FILE = LOG_DIR / "notifications.txt"
 WATCH_DIR = ROOT / ".context" / "cache_state" / "pr_feedback_watch"
 AGENT_INBOX_DIR = ROOT / ".context" / "cache_state" / "agent_notifications"
+ACTIVE_TTY_DIR = ROOT / ".context" / "cache_state" / "active_agent_tty"
 MONITORING_DIR = ROOT / "monitoring"
 TTY_MAP_DIR = Path(os.environ.get("CACHEFLOW_AGENT_TTY_MAP_DIR", "/tmp/cacheflow_agent_tty_map"))
 
@@ -242,11 +243,63 @@ def write_state(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+def normalize_agent_key(agent: str) -> str:
+    return re.sub(r"[^a-z0-9._-]+", "-", agent.strip().lower()) or "unknown"
+
+
+def validate_tty_path(path: Path | None) -> Path | None:
+    if path is None:
+        return None
+    try:
+        st = path.stat()
+    except OSError:
+        return None
+    if path.is_symlink() or not stat.S_ISCHR(st.st_mode):
+        return None
+    return path
+
+
+def current_tty_path() -> Path | None:
+    for fd in (0, 1, 2):
+        try:
+            if not os.isatty(fd):
+                continue
+            tty_name = os.ttyname(fd)
+        except OSError:
+            continue
+        tty_path = validate_tty_path(Path(tty_name))
+        if tty_path is not None:
+            return tty_path
+    return None
+
+
+def active_tty_state_path(agent: str) -> Path:
+    return ACTIVE_TTY_DIR / f"{normalize_agent_key(agent)}.json"
+
+
+def write_active_tty(agent: str, tty_path: Path, *, source: str) -> None:
+    payload = {
+        "agent": agent,
+        "ttyPath": str(tty_path),
+        "source": source,
+        "updatedAt": now_iso(),
+    }
+    write_state(active_tty_state_path(agent), payload)
+
+
+def active_tty_for_agent(agent: str) -> Path | None:
+    state = read_state(active_tty_state_path(agent))
+    tty_raw = str(state.get("ttyPath") or "").strip()
+    if not tty_raw:
+        return None
+    return validate_tty_path(Path(tty_raw))
+
+
 def tty_paths_for_agent(agent: str) -> list[Path]:
     if not TTY_MAP_DIR.exists():
         return []
 
-    paths: list[Path] = []
+    paths: list[tuple[float, Path]] = []
     normalized = agent.strip().lower()
     for entry in TTY_MAP_DIR.iterdir():
         if not entry.is_file():
@@ -260,27 +313,48 @@ def tty_paths_for_agent(agent: str) -> list[Path]:
         match = re.fullmatch(r"_dev_pts_(\d+)", entry.name)
         if not match:
             continue
-        tty_path = Path("/dev/pts") / match.group(1)
+        tty_path = validate_tty_path(Path("/dev/pts") / match.group(1))
+        if tty_path is None:
+            continue
         try:
-            st = tty_path.stat()
+            mtime = entry.stat().st_mtime
         except OSError:
-            continue
-        if tty_path.is_symlink() or not stat.S_ISCHR(st.st_mode):
-            continue
-        paths.append(tty_path)
-    return paths
+            mtime = 0.0
+        paths.append((mtime, tty_path))
+    paths.sort(key=lambda item: item[0], reverse=True)
+    return [path for _, path in paths]
 
 
-def notify_agent(agent: str, message: str) -> None:
+def preferred_tty_for_watch(agent: str, watch_state: dict[str, Any]) -> Path | None:
+    watch_tty = str(watch_state.get("notifyTty") or "").strip()
+    if watch_tty:
+        tty_path = validate_tty_path(Path(watch_tty))
+        if tty_path is not None:
+            return tty_path
+
+    active_tty = active_tty_for_agent(agent)
+    if active_tty is not None:
+        return active_tty
+
+    mapped_ttys = tty_paths_for_agent(agent)
+    return mapped_ttys[0] if mapped_ttys else None
+
+
+def notify_agent(agent: str, message: str, tty_path: Path | None = None) -> None:
     ts_line = f"[{now_iso()}] {message}"
     append_line(NOTIFICATIONS_FILE, ts_line)
     append_line(AGENT_INBOX_DIR / f"{agent}.log", ts_line)
-    for tty_path in tty_paths_for_agent(agent):
-        try:
-            with tty_path.open("w", encoding="utf-8") as handle:
-                handle.write(f"\n{message}\n")
-        except OSError:
-            continue
+    target_tty = validate_tty_path(tty_path) if tty_path is not None else active_tty_for_agent(agent)
+    if target_tty is None:
+        mapped_ttys = tty_paths_for_agent(agent)
+        target_tty = mapped_ttys[0] if mapped_ttys else None
+    if target_tty is None:
+        return
+    try:
+        with target_tty.open("w", encoding="utf-8") as handle:
+            handle.write(f"\n{message}\n")
+    except OSError:
+        return
 
 
 def watcher_state_path(pr: int) -> Path:
@@ -301,6 +375,9 @@ def summarize_comments(comments: list[dict[str, str]], limit: int = 3) -> str:
 def init_watch(args: argparse.Namespace) -> int:
     pr = resolve_pr_number(args.pr)
     snapshot = fetch_snapshot(pr)
+    notify_tty = current_tty_path()
+    if notify_tty is not None:
+        write_active_tty(args.agent, notify_tty, source="watch_pr_feedback:start")
     state = {
         "status": "initialized",
         "pr": pr,
@@ -317,6 +394,8 @@ def init_watch(args: argparse.Namespace) -> int:
         "notifiedAt": None,
         "url": snapshot.url,
     }
+    if notify_tty is not None:
+        state["notifyTty"] = str(notify_tty)
     state_path = watcher_state_path(pr)
     write_state(state_path, state)
     print(f"Initialized PR feedback tracking for PR #{pr}")
@@ -353,6 +432,9 @@ def check_watch(args: argparse.Namespace) -> int:
         "notifiedAt": state.get("notifiedAt"),
         "url": snapshot.url,
     }
+    notify_tty = preferred_tty_for_watch(agent, state)
+    if notify_tty is not None:
+        next_state["notifyTty"] = str(notify_tty)
 
     append_line(
         LOG_DIR / f"pr-feedback-watch-{pr}.log",
@@ -371,7 +453,7 @@ def check_watch(args: argparse.Namespace) -> int:
             f"decision={snapshot.review_decision or snapshot.latest_review_state or 'UNKNOWN'}; "
             f"summary={summary}; comments={detail}; file={review_file}"
         )
-        notify_agent(agent, message)
+        notify_agent(agent, message, tty_path=notify_tty)
         next_state["status"] = "notified"
         next_state["notifiedAt"] = now_iso()
         next_state["monitoringFile"] = str(review_file)
