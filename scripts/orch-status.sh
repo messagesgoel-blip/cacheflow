@@ -39,8 +39,4 @@ fi
 
 echo ""
 echo "=== Local CodeRabbit reviews ==="
-if command -v coderabbit-local-review >/dev/null 2>&1; then
-  coderabbit-local-review status 2>/dev/null | sed 's/^/  /' || echo "  (none for current branch)"
-else
-  echo "  coderabbit-local-review not installed"
-fi
+echo "  disabled"

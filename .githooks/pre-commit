@@ -42,10 +42,6 @@ if [ -z "$agent" ]; then
 fi
 agent="$(normalize_agent "${agent:-unknown}")"
 
-if command -v coderabbit-local-review >/dev/null 2>&1; then
-  coderabbit-local-review start --type uncommitted >/dev/null 2>&1 || true
-fi
-
 if [ "$agent" = "Codex" ]; then
   exit 0
 fi
