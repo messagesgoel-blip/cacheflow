@@ -38,10 +38,6 @@ else
 fi
 
 echo ""
-echo "=== Local CodeRabbit reviews ==="
-echo "  disabled"
-
-echo ""
 echo "=== PR Feedback Watchers ==="
 watch_dir="$ROOT/.context/cache_state/pr_feedback_watch"
 if [ ! -d "$watch_dir" ]; then

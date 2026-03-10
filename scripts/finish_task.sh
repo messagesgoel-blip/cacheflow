@@ -186,15 +186,16 @@ if [ "$skip_commit" -eq 0 ]; then
 fi
 
 if [ "$skip_push" -eq 0 ]; then
-  git pull --rebase --autostash
   if git rev-parse --verify '@{upstream}' >/dev/null 2>&1; then
+    git pull --rebase --autostash
     if [ "$(git rev-list --count '@{upstream}..HEAD')" -gt 0 ]; then
       published_work=1
     fi
+    git push
   else
     published_work=1
+    git push --set-upstream origin HEAD
   fi
-  git push
   if [ "$published_work" -eq 1 ]; then
     if command -v gh >/dev/null 2>&1; then
       watch_out="$(mktemp)"
