@@ -9,6 +9,8 @@
  */
 
 import { formatBytes } from '../utils/formatBytes';
+import { AppError } from '../errors/AppError';
+import { ErrorCode } from '../errors/ErrorCode';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,6 +37,10 @@ export interface NotificationPayload {
   timestamp: Date;
 }
 
+export interface InAppNotificationPayload extends NotificationPayload {
+  metadata?: Omit<NotificationMetadata, 'recipientEmail'>;
+}
+
 export interface NotificationMetadata {
   userId?: string;
   providerName?: string;
@@ -57,7 +63,7 @@ export interface EmailNotificationPayload extends NotificationPayload {
 export interface NotificationResult {
   success: boolean;
   deliveredTo?: NotificationChannel[];
-  error?: string;
+  error?: AppError;
 }
 
 // ---------------------------------------------------------------------------
@@ -135,6 +141,7 @@ class NotificationService {
    */
   async send(payload: NotificationPayload): Promise<NotificationResult> {
     const deliveredTo: NotificationChannel[] = [];
+    let lastError: AppError | undefined;
 
     // Always try in-app
     if (payload.channels.includes('in-app')) {
@@ -144,6 +151,7 @@ class NotificationService {
         }
       } catch (err) {
         console.error('[NotificationService] In-app delivery failed:', err);
+        lastError = AppError.fromUnknown(err, ErrorCode.INTERNAL_ERROR);
       }
     }
 
@@ -152,12 +160,15 @@ class NotificationService {
       const emailResult = await this.sendEmail(payload);
       if (emailResult.success) {
         deliveredTo.push('email');
+      } else if (emailResult.error) {
+        lastError = emailResult.error;
       }
     }
 
     return {
       success: deliveredTo.length > 0,
       deliveredTo,
+      error: deliveredTo.length > 0 ? undefined : lastError,
     };
   }
 
@@ -166,8 +177,13 @@ class NotificationService {
    */
   private sendInApp(payload: NotificationPayload): boolean {
     if (typeof window !== 'undefined') {
+      const { metadata, ...rest } = payload;
+      const safePayload: InAppNotificationPayload = {
+        ...rest,
+        metadata: this.publicMetadata(metadata as NotificationMetadata | undefined),
+      };
       window.dispatchEvent(new CustomEvent('cacheflow:notification', {
-        detail: payload,
+        detail: safePayload,
       }));
       return true;
     }
@@ -179,16 +195,36 @@ class NotificationService {
    * Send email notification.
    * Stub: logs the notification if SMTP not configured.
    */
-  private async sendEmail(payload: NotificationPayload): Promise<{ success: boolean; error?: string }> {
+  private publicMetadata(metadata?: NotificationMetadata): InAppNotificationPayload['metadata'] {
+    if (!metadata) {
+      return undefined;
+    }
+
+    const { recipientEmail: _recipientEmail, ...publicMetadata } = metadata;
+    return publicMetadata;
+  }
+
+  private getRecipientEmail(payload: NotificationPayload): string {
+    if ('recipientEmail' in payload && typeof payload.recipientEmail === 'string') {
+      return payload.recipientEmail.trim();
+    }
+
     const metadata = payload.metadata as NotificationMetadata | undefined;
-    const recipientEmail = typeof metadata?.recipientEmail === 'string'
+    return typeof metadata?.recipientEmail === 'string'
       ? metadata.recipientEmail.trim()
       : '';
+  }
+
+  private async sendEmail(payload: NotificationPayload): Promise<{ success: boolean; error?: AppError }> {
+    const recipientEmail = this.getRecipientEmail(payload);
 
     if (!recipientEmail) {
       return {
         success: false,
-        error: 'Recipient email missing',
+        error: new AppError({
+          code: ErrorCode.VALIDATION_FAILED,
+          message: 'Recipient email is required for email notifications',
+        }),
       };
     }
 
@@ -197,7 +233,10 @@ class NotificationService {
       console.log(`[NotificationService] Email not configured, skipping: ${payload.title}`);
       return {
         success: false,
-        error: 'Email not configured',
+        error: new AppError({
+          code: ErrorCode.INTERNAL_ERROR,
+          message: 'Email notifications are not configured',
+        }),
       };
     }
 
@@ -210,7 +249,10 @@ class NotificationService {
 
     return {
       success: false,
-      error: 'Email sending not implemented (stub)',
+      error: new AppError({
+        code: ErrorCode.INTERNAL_ERROR,
+        message: 'Email sending is not implemented',
+      }),
     };
   }
 
@@ -230,19 +272,19 @@ class NotificationService {
       channels.push('email');
     }
 
-    const payload: NotificationPayload = {
+    const payload: EmailNotificationPayload = {
       id: `quota-${providerName.toLowerCase()}-${Date.now()}`,
       title: isCritical ? 'Storage Critical' : 'Storage Low',
       message: `${providerName} storage at ${percentUsed}% capacity. ${formatBytes(freeSpace)} remaining.`,
       level: isCritical ? 'critical' : 'warning',
       channels,
+      recipientEmail: recipientEmail?.trim() || '',
       metadata: {
         userId,
         providerName,
         percentUsed,
         freeSpace,
         isCritical,
-        recipientEmail,
       },
       timestamp: new Date(),
     };

@@ -13,13 +13,14 @@ You are starting Sprint 7 planning for CacheFlow.
 CACHEFLOW_ROOT=/opt/docker/apps/cacheflow
 
 Before coding:
-1) git pull --rebase
-2) Read AGENTS.md and STATUS.md fully
-3) Read docs/roadmap.md, docs/sprints/sprint-7.md, docs/sprints-task-dashboard.md, and docs/orchestration/task-manifest.json
-4) Read .context/decisions.md, .context/patterns.md, .context/mistakes.md, .context/dependencies.md when relevant to touched scope
-5) Confirm sprint state in logs/orchestrator-state.json and docs/orchestration/task-manifest.json
-6) Confirm decomposition is approved before claiming any executable task key
-7) Update STATUS.md Active section with your current planning task + machine + agent + started time
+1) cd "$CACHEFLOW_ROOT"
+2) git pull --rebase
+3) Read AGENTS.md and STATUS.md fully
+4) Read docs/roadmap.md, docs/sprints/sprint-7.md, docs/sprints-task-dashboard.md, and docs/orchestration/task-manifest.json
+5) Read .context/decisions.md, .context/patterns.md, .context/mistakes.md, .context/dependencies.md when relevant to touched scope
+6) Confirm sprint state in logs/orchestrator-state.json and docs/orchestration/task-manifest.json
+7) Confirm decomposition is approved before claiming any executable task key
+8) Update STATUS.md Active section with your current planning task + machine + agent + started time
 
 Planning rules:
 - This sprint remains planning-only until decomposition is approved and executable task keys exist.
@@ -30,10 +31,11 @@ Planning rules:
 - Do not treat dirty-tree builds, uncommitted local changes, or dev-only verification as done for live.
 
 Session end:
-1) Move Active -> Last Session in STATUS.md
-2) Add unfinished items to Queue
-3) Commit STATUS.md with: git commit -m "chore: update status"
-4) git push
+1) cd "$CACHEFLOW_ROOT"
+2) Move Active -> Last Session in STATUS.md
+3) Add unfinished items to Queue
+4) Commit STATUS.md with: git commit -m "chore: update status"
+5) git push
 ```
 
 ## Prompt: OpenCode

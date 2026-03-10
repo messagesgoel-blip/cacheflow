@@ -85,7 +85,7 @@ class ProgressBridge {
     const redisOptions = {
       db: 1,
       retryStrategy: (attempt: number) => Math.min(attempt * 100, 2_000),
-      reconnectOnError: () => true,
+      reconnectOnError: (_error: Error) => true,
     };
 
     this.publisher = new Redis(REDIS_URL, redisOptions);

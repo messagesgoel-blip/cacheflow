@@ -68,11 +68,15 @@ def load_orchestrator_sprint() -> int | None:
     if isinstance(sprint, bool):
         return None
     if isinstance(sprint, int):
-        return sprint
+        return sprint if sprint > 0 else None
     if isinstance(sprint, float):
-        return int(sprint) if sprint.is_integer() else None
-    if isinstance(sprint, str) and sprint.strip().isdigit():
-        return int(sprint.strip())
+        sprint_value = int(sprint) if sprint.is_integer() else None
+        return sprint_value if sprint_value and sprint_value > 0 else None
+    if isinstance(sprint, str):
+        sprint_text = sprint.strip()
+        if sprint_text.isdigit():
+            sprint_value = int(sprint_text)
+            return sprint_value if sprint_value > 0 else None
     return None
 
 

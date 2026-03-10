@@ -11,7 +11,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/lib/hooks/useToast';
-import { formatBytes } from '../../../lib/utils/formatBytes';
+import { formatBytes } from '@/lib/providers/types';
 
 export interface QuotaInfo {
   used: number;
