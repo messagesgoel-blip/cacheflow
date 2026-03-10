@@ -16,6 +16,9 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_BASE_DELAY_MS = 1_000;
+
 export interface LogEntry {
   id: string;
   timestamp: Date;
@@ -109,6 +112,9 @@ export default function JobLogPanel({
   const [isComplete, setIsComplete] = useState(false);
   const [progress, setProgress] = useState(0);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const isCompleteRef = useRef(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
   const logIdCounter = useRef(0);
 
@@ -131,121 +137,146 @@ export default function JobLogPanel({
   }, [logs]);
 
   useEffect(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-
     setLogs([]);
     setIsConnected(false);
     setIsComplete(false);
+    isCompleteRef.current = false;
     setProgress(0);
     logIdCounter.current = 0;
+    reconnectAttemptsRef.current = 0;
 
-    // Primary: Use the dedicated worker log endpoint (LOGS-1)
-    const logsEndpoint = `/api/jobs/logs?jobId=${encodeURIComponent(jobId)}`;
-    const es = new EventSource(logsEndpoint);
-    eventSourceRef.current = es;
-
-    addLog('info', `Connecting to job ${jobId}...`);
-
-    // Handle connection established
-    es.addEventListener('connected', (event) => {
-      setIsConnected(true);
-      try {
-        const data = JSON.parse(event.data);
-        addLog('info', `Connected to log stream`, { jobId: data.jobId });
-      } catch {
-        addLog('info', 'Connected to log stream');
+    const cleanupConnection = (): void => {
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
       }
-    });
-
-    // Handle worker log events (LOGS-1) - primary event type
-    es.addEventListener('log', (event) => {
-      try {
-        const data: WorkerLogEvent = JSON.parse(event.data);
-
-        // Map worker log level to our log entry level
-        const levelMap: Record<string, LogEntry['level']> = {
-          info: 'info',
-          warn: 'warn',
-          error: 'error',
-          debug: 'info',
-        };
-
-        const level = levelMap[data.level] || 'info';
-        addLog(level, data.message, data.data);
-
-        // Update progress if available in data
-        const logProgress = resolveNumericProgress(data.data?.progress);
-        if (logProgress !== undefined) {
-          setProgress(logProgress);
-        }
-      } catch (err) {
-        console.error('Failed to parse log event:', err);
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
-    });
-
-    // Handle progress events (fallback from transfer endpoint)
-    es.addEventListener('progress', (event) => {
-      try {
-        const data: ProgressEvent = JSON.parse(event.data);
-        const progressVal = resolveNumericProgress(data.payload?.progress)
-          ?? resolveNumericProgress(data.progress);
-
-        if (progressVal !== undefined) {
-          setProgress(progressVal);
-        }
-
-        const message = data.payload?.message
-          ?? (progressVal !== undefined ? `Progress: ${Math.round(progressVal)}%` : 'Progress updated');
-        addLog('info', message, {
-          progress: progressVal,
-          total: data.payload?.total,
-          fileName: data.payload?.data?.fileName,
-          operation: data.payload?.data?.operation,
-        });
-      } catch (err) {
-        console.error('Failed to parse progress event:', err);
-      }
-    });
-
-    // Handle completion
-    es.addEventListener('done', (event) => {
-      try {
-        const data: ProgressEvent = JSON.parse(event.data);
-        if (data.status === 'completed') {
-          addLog('success', 'Job completed successfully', { jobId });
-          setProgress(100);
-          setIsComplete(true);
-        } else if (data.status === 'failed') {
-          const errorMessage = typeof data.error === 'string' && data.error.trim() !== ''
-            ? data.error
-            : 'Job failed';
-          addLog('error', errorMessage, {
-            jobId,
-            error: data.error,
-            terminalPayload: data.terminalPayload,
-          });
-          setIsComplete(true);
-        }
-      } catch {
-        addLog('success', 'Job stream ended');
-        setIsComplete(true);
-      }
-      setIsConnected(false);
-      es.close();
-    });
-
-    es.onerror = (err) => {
-      console.error('SSE error:', err);
-      addLog('error', 'Connection lost, attempting to reconnect...');
-      setIsConnected(false);
     };
 
+    const connect = (isReconnect = false): void => {
+      cleanupConnection();
+
+      const logsEndpoint = `/api/jobs/logs?jobId=${encodeURIComponent(jobId)}`;
+      const es = new EventSource(logsEndpoint);
+      eventSourceRef.current = es;
+
+      addLog('info', isReconnect ? `Reconnecting to job ${jobId}...` : `Connecting to job ${jobId}...`);
+
+      es.addEventListener('connected', (event) => {
+        setIsConnected(true);
+        reconnectAttemptsRef.current = 0;
+        try {
+          const data = JSON.parse(event.data);
+          addLog('info', 'Connected to log stream', { jobId: data.jobId });
+        } catch {
+          addLog('info', 'Connected to log stream');
+        }
+      });
+
+      es.addEventListener('log', (event) => {
+        try {
+          const data: WorkerLogEvent = JSON.parse(event.data);
+          const levelMap: Record<string, LogEntry['level']> = {
+            info: 'info',
+            warn: 'warn',
+            error: 'error',
+            debug: 'info',
+          };
+
+          const level = levelMap[data.level] || 'info';
+          addLog(level, data.message, data.data);
+
+          const logProgress = resolveNumericProgress(data.data?.progress);
+          if (logProgress !== undefined) {
+            setProgress(logProgress);
+          }
+        } catch (err) {
+          console.error('Failed to parse log event:', err);
+        }
+      });
+
+      es.addEventListener('progress', (event) => {
+        try {
+          const data: ProgressEvent = JSON.parse(event.data);
+          const progressVal = resolveNumericProgress(data.payload?.progress)
+            ?? resolveNumericProgress(data.progress);
+
+          if (progressVal !== undefined) {
+            setProgress(progressVal);
+          }
+
+          const message = data.payload?.message
+            ?? (progressVal !== undefined ? `Progress: ${Math.round(progressVal)}%` : 'Progress updated');
+          addLog('info', message, {
+            progress: progressVal,
+            total: data.payload?.total,
+            fileName: data.payload?.data?.fileName,
+            operation: data.payload?.data?.operation,
+          });
+        } catch (err) {
+          console.error('Failed to parse progress event:', err);
+        }
+      });
+
+      es.addEventListener('done', (event) => {
+        try {
+          const data: ProgressEvent = JSON.parse(event.data);
+          if (data.status === 'completed') {
+            addLog('success', 'Job completed successfully', { jobId });
+            setProgress(100);
+            setIsComplete(true);
+            isCompleteRef.current = true;
+          } else if (data.status === 'failed') {
+            const errorMessage = typeof data.error === 'string' && data.error.trim() !== ''
+              ? data.error
+              : 'Job failed';
+            addLog('error', errorMessage, {
+              jobId,
+              error: data.error,
+              terminalPayload: data.terminalPayload,
+            });
+            setIsComplete(true);
+            isCompleteRef.current = true;
+          }
+        } catch {
+          addLog('success', 'Job stream ended');
+          setIsComplete(true);
+          isCompleteRef.current = true;
+        }
+        setIsConnected(false);
+        cleanupConnection();
+      });
+
+      es.onerror = (err) => {
+        console.error('SSE error:', err);
+        setIsConnected(false);
+        cleanupConnection();
+
+        if (isCompleteRef.current) {
+          return;
+        }
+
+        reconnectAttemptsRef.current += 1;
+        if (reconnectAttemptsRef.current > MAX_RECONNECT_ATTEMPTS) {
+          addLog('error', 'Connection lost. Automatic reconnect failed.');
+          return;
+        }
+
+        const delayMs = RECONNECT_BASE_DELAY_MS * (2 ** (reconnectAttemptsRef.current - 1));
+        addLog('warn', `Connection lost. Retrying in ${Math.round(delayMs / 1000)}s...`);
+        reconnectTimerRef.current = setTimeout(() => {
+          connect(true);
+        }, delayMs);
+      };
+    };
+
+    connect();
+
     return () => {
-      es.close();
-      eventSourceRef.current = null;
+      cleanupConnection();
     };
   }, [jobId, addLog]);
 

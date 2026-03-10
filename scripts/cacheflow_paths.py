@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -34,3 +35,7 @@ def run_git(args: list[str], cwd: Path | None = None) -> str:
         )
         .stdout.strip()
     )
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()

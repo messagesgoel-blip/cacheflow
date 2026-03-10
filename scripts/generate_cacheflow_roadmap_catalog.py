@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
 
 import yaml
-from cacheflow_paths import resolve_base
+from cacheflow_paths import now_iso, resolve_base
 
 
 BASE = resolve_base()
@@ -25,11 +24,6 @@ ROADMAP_STAGE_DEFS = {
     "V2-C": {"title": "Moderate", "roadmap_version": "2", "sprint": "15-17"},
     "V2-D": {"title": "Advanced", "roadmap_version": "2", "sprint": "18-20"},
 }
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-
 
 def stage_item(stage_key: str) -> dict:
     stage = ROADMAP_STAGE_DEFS[stage_key]

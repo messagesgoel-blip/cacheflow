@@ -6,10 +6,9 @@ import json
 import re
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
 
 import yaml
-from cacheflow_paths import resolve_base, run_git
+from cacheflow_paths import now_iso, resolve_base, run_git
 
 
 BASE = resolve_base()
@@ -44,10 +43,6 @@ ROADMAP_STAGE_DEFS = {
     "V2-C": {"title": "Moderate", "roadmap_version": "2", "order": 6},
     "V2-D": {"title": "Advanced", "roadmap_version": "2", "order": 7},
 }
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 def load_orchestrator_state_file() -> dict:
     if not ORCHESTRATOR_STATE_FILE.exists():
