@@ -19,19 +19,21 @@
 | scripts/linear-sprint-sync.sh <ID> <STATUS> | Update ticket status |
 | scripts/linear-create-issue.sh <TITLE> <TEAM> | Create ticket, returns ID |
 | scripts/pre-push-review.sh | Run CodeRabbit before push, exits 1 on blockers |
-| scripts/watch_pr_feedback.py | Poll GitHub PR reviews every 5 min and notify the owning agent when CodeRabbit feedback arrives |
+| scripts/watch_pr_feedback.py | Track PR review baseline and check GitHub for new CodeRabbit feedback on demand |
 | scripts/setup-dev-tools.sh | One-shot install of all tools |
 | scripts/coderabbit-webhook.ts | Entry point for review completion events |
 
 ## PR Feedback Watch
 
-- `python3 scripts/watch_pr_feedback.py start --agent <Agent> --task <TASK>` launches a background watcher for the current branch PR.
-- Default heartbeat interval is `300` seconds.
-- On new CodeRabbit review feedback, the watcher:
+- `python3 scripts/watch_pr_feedback.py start --agent <Agent> --task <TASK>` records the current latest CodeRabbit review as the baseline for the current branch PR.
+- `python3 scripts/watch_pr_feedback.py check` checks GitHub for a newer CodeRabbit review than the stored baseline.
+- Suggested manual heartbeat is `600` seconds between `check` runs.
+- On new CodeRabbit review feedback, the check command:
   - writes `monitoring/coderabbit-<pr>.yaml`
   - appends a message to `logs/notifications.txt`
   - appends a message to `.context/cache_state/agent_notifications/<Agent>.log`
   - attempts to write a direct terminal notification to any TTYs mapped to that agent in `/tmp/cacheflow_agent_tty_map`
+- The monitoring YAML includes a `comments` section with unresolved CodeRabbit thread comments.
 - Watcher state is stored under `.context/cache_state/pr_feedback_watch/pr-<pr>.json`.
 
 ## Review Logic (lib/coderabbit/)

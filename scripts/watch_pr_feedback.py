@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Poll GitHub PR review state and notify the owning agent on new CodeRabbit feedback."""
+"""Track GitHub PR feedback for the current branch and notify the owning agent on new CodeRabbit reviews."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ import argparse
 import json
 import os
 import re
+import stat
 import subprocess
 import sys
-import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -51,7 +51,7 @@ def run(cmd: list[str], *, check: bool = True) -> subprocess.CompletedProcess[st
 def append_line(path: Path, line: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
-      handle.write(f"{line}\n")
+        handle.write(f"{line}\n")
 
 
 def strip_markdown(text: str) -> str:
@@ -74,12 +74,8 @@ def extract_suggestions(body: str) -> list[str]:
 
 
 def detect_severity(body: str) -> str:
-    raw = body or ""
-    lowered = raw.lower()
-    for level in ("critical", "high", "medium", "low"):
-        if re.search(rf"\bseverity\s*:\s*{level}\b", lowered) or re.search(rf"\b{level}\b", lowered):
-            return level
-    return "none"
+    match = re.search(r"\bseverity\s*[:=-]\s*(critical|high|medium|low)\b", body or "", re.IGNORECASE)
+    return match.group(1).lower() if match else "none"
 
 
 def has_issue_actions(body: str) -> bool:
@@ -116,7 +112,11 @@ def parse_review(body: str, review_state: str | None = None) -> dict[str, Any]:
     }
 
 
-def write_review_state(pr: int, parsed: dict[str, Any]) -> Path:
+def safe_dump(data: dict[str, Any]) -> str:
+    return yaml.safe_dump(data, sort_keys=False, allow_unicode=False)
+
+
+def write_review_state(pr: int, parsed: dict[str, Any], comments: list[dict[str, str]], *, agent_notified: bool) -> Path:
     MONITORING_DIR.mkdir(parents=True, exist_ok=True)
     out_path = MONITORING_DIR / f"coderabbit-{pr}.yaml"
     payload = {
@@ -126,10 +126,11 @@ def write_review_state(pr: int, parsed: dict[str, Any]) -> Path:
         "severity": parsed["severity"],
         "summary": parsed["summary"],
         "suggestions": parsed["suggestions"],
+        "comments": comments,
         "receivedAt": now_iso(),
-        "agentNotified": False,
+        "agentNotified": agent_notified,
     }
-    out_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    out_path.write_text(safe_dump(payload), encoding="utf-8")
     return out_path
 
 
@@ -146,19 +147,16 @@ def resolve_pr_number(explicit_pr: int | None) -> int:
         return explicit_pr
 
     direct = run(["gh", "pr", "view", "--json", "number", "--jq", ".number"], check=False)
-    if direct.returncode == 0:
-        value = direct.stdout.strip()
-        if value.isdigit():
-            return int(value)
+    if direct.returncode == 0 and direct.stdout.strip().isdigit():
+        return int(direct.stdout.strip())
 
     branch = current_branch()
     listing = run(
         ["gh", "pr", "list", "--head", branch, "--state", "open", "--json", "number", "--jq", ".[0].number"],
         check=False,
     )
-    value = listing.stdout.strip()
-    if listing.returncode == 0 and value.isdigit():
-        return int(value)
+    if listing.returncode == 0 and listing.stdout.strip().isdigit():
+        return int(listing.stdout.strip())
     raise RuntimeError("unable to resolve open PR for current branch")
 
 
@@ -185,9 +183,49 @@ def fetch_snapshot(pr: int) -> ReviewSnapshot:
     )
 
 
-def write_state(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+def fetch_coderabbit_comments(pr: int, limit: int = 12) -> list[dict[str, str]]:
+    query = (
+        "query($owner:String!,$repo:String!,$pr:Int!){"
+        "repository(owner:$owner,name:$repo){"
+        "pullRequest(number:$pr){"
+        "reviewThreads(first:50){nodes{isResolved comments(first:10){nodes{author{login} body path outdated createdAt}}}}"
+        "}}}"
+    )
+    remote = run(["git", "remote", "get-url", "origin"])
+    url = remote.stdout.strip()
+    match = re.search(r"github\.com[:/](?P<owner>[^/]+)/(?P<repo>[^/.]+)(?:\.git)?$", url)
+    if not match:
+        return []
+    owner = match.group("owner")
+    repo = match.group("repo")
+    result = run(
+        ["gh", "api", "graphql", "-f", f"query={query}", "-F", f"owner={owner}", "-F", f"repo={repo}", "-F", f"pr={pr}"],
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+
+    comments: list[dict[str, str]] = []
+    threads = payload.get("data", {}).get("repository", {}).get("pullRequest", {}).get("reviewThreads", {}).get("nodes", [])
+    for thread in threads:
+        if thread.get("isResolved") is True:
+            continue
+        for comment in thread.get("comments", {}).get("nodes", []):
+            if str(comment.get("author", {}).get("login", "")).startswith("coderabbitai"):
+                comments.append(
+                    {
+                        "path": str(comment.get("path") or ""),
+                        "createdAt": str(comment.get("createdAt") or ""),
+                        "body": strip_markdown(str(comment.get("body") or "")),
+                        "outdated": "true" if comment.get("outdated") else "false",
+                    }
+                )
+    comments.sort(key=lambda item: item["createdAt"], reverse=True)
+    return comments[:limit]
 
 
 def read_state(path: Path) -> dict[str, Any]:
@@ -197,6 +235,11 @@ def read_state(path: Path) -> dict[str, Any]:
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return {}
+
+
+def write_state(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
 def tty_paths_for_agent(agent: str) -> list[Path]:
@@ -214,12 +257,17 @@ def tty_paths_for_agent(agent: str) -> list[Path]:
             continue
         if mapped != normalized:
             continue
-        restored = entry.name.replace("_", "/")
-        if not restored.startswith("/"):
-            restored = f"/{restored}"
-        tty_path = Path(restored)
-        if tty_path.exists():
-            paths.append(tty_path)
+        match = re.fullmatch(r"_dev_pts_(\d+)", entry.name)
+        if not match:
+            continue
+        tty_path = Path("/dev/pts") / match.group(1)
+        try:
+            st = tty_path.stat()
+        except OSError:
+            continue
+        if tty_path.is_symlink() or not stat.S_ISCHR(st.st_mode):
+            continue
+        paths.append(tty_path)
     return paths
 
 
@@ -235,182 +283,110 @@ def notify_agent(agent: str, message: str) -> None:
             continue
 
 
-def watcher_paths(pr: int) -> tuple[Path, Path, Path]:
-    state_path = WATCH_DIR / f"pr-{pr}.json"
-    log_path = LOG_DIR / f"pr-feedback-watch-{pr}.log"
-    pid_path = WATCH_DIR / f"pr-{pr}.pid"
-    return state_path, log_path, pid_path
+def watcher_state_path(pr: int) -> Path:
+    return WATCH_DIR / f"pr-{pr}.json"
 
 
-def start_watch(args: argparse.Namespace) -> int:
+def summarize_comments(comments: list[dict[str, str]], limit: int = 3) -> str:
+    if not comments:
+        return "no unresolved inline comments captured"
+    lines = []
+    for comment in comments[:limit]:
+        path = comment.get("path") or "outside-diff"
+        body = comment.get("body") or ""
+        lines.append(f"{path}: {body[:180]}")
+    return " | ".join(lines)
+
+
+def init_watch(args: argparse.Namespace) -> int:
     pr = resolve_pr_number(args.pr)
-    state_path, log_path, pid_path = watcher_paths(pr)
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    pid_path.parent.mkdir(parents=True, exist_ok=True)
-    if pid_path.exists():
-        try:
-            existing_pid = int(pid_path.read_text(encoding="utf-8").strip())
-            os.kill(existing_pid, 0)
-            print(f"PR feedback watcher already running for PR #{pr}")
-            print(state_path)
-            return 0
-        except (OSError, ValueError):
-            pid_path.unlink(missing_ok=True)
-
-    command = [
-        sys.executable,
-        str(Path(__file__).resolve()),
-        "run",
-        "--pr",
-        str(pr),
-        "--interval",
-        str(args.interval),
-        "--timeout",
-        str(args.timeout),
-        "--agent",
-        args.agent,
-    ]
-    if args.task:
-        command.extend(["--task", args.task])
-    if args.notify_existing:
-        command.append("--notify-existing")
-
-    log_path.parent.mkdir(parents=True, exist_ok=True)
     snapshot = fetch_snapshot(pr)
-    write_state(
-        state_path,
-        {
-            "status": "running",
-            "pr": pr,
-            "branch": snapshot.branch,
-            "agent": args.agent,
-            "task": args.task or "",
-            "intervalSeconds": args.interval,
-            "timeoutSeconds": args.timeout,
-            "pid": None,
-            "startedAt": now_iso(),
-            "lastCheckedAt": None,
-            "latestReviewId": snapshot.latest_review_id,
-            "notifiedAt": None,
-            "logFile": str(log_path),
-        },
-    )
-    with log_path.open("a", encoding="utf-8") as log_handle:
-        process = subprocess.Popen(command, cwd=str(ROOT), stdout=log_handle, stderr=subprocess.STDOUT)
-    pid_path.write_text(f"{process.pid}\n", encoding="utf-8")
-    current = read_state(state_path)
-    current["pid"] = process.pid
-    write_state(state_path, current)
-    print(f"Started PR feedback watcher for PR #{pr}")
+    state = {
+        "status": "initialized",
+        "pr": pr,
+        "branch": snapshot.branch,
+        "agent": args.agent,
+        "task": args.task or "",
+        "intervalSeconds": args.interval,
+        "latestReviewId": snapshot.latest_review_id,
+        "latestReviewAt": snapshot.latest_review_at,
+        "reviewDecision": snapshot.review_decision,
+        "updatedAt": snapshot.updated_at,
+        "startedAt": now_iso(),
+        "lastCheckedAt": None,
+        "notifiedAt": None,
+        "url": snapshot.url,
+    }
+    state_path = watcher_state_path(pr)
+    write_state(state_path, state)
+    print(f"Initialized PR feedback tracking for PR #{pr}")
     print(state_path)
     return 0
 
 
-def run_watch(args: argparse.Namespace) -> int:
+def check_watch(args: argparse.Namespace) -> int:
     pr = resolve_pr_number(args.pr)
-    state_path, log_path, pid_path = watcher_paths(pr)
+    state_path = watcher_state_path(pr)
+    state = read_state(state_path)
     snapshot = fetch_snapshot(pr)
-    baseline_review_id = None if args.notify_existing else snapshot.latest_review_id
-    started_at = now_iso()
-    append_line(log_path, f"[{started_at}] watch start pr={pr} branch={snapshot.branch} agent={args.agent} task={args.task or '-'} baselineReviewId={baseline_review_id or '-'}")
 
-    deadline = time.time() + max(args.timeout, args.interval)
-    while time.time() <= deadline:
-        snapshot = fetch_snapshot(pr)
-        write_state(
-            state_path,
-            {
-                "status": "running",
-                "pr": pr,
-                "branch": snapshot.branch,
-                "agent": args.agent,
-                "task": args.task or "",
-                "intervalSeconds": args.interval,
-                "timeoutSeconds": args.timeout,
-                "pid": os.getpid(),
-                "startedAt": started_at,
-                "lastCheckedAt": now_iso(),
-                "latestReviewId": snapshot.latest_review_id,
-                "latestReviewAt": snapshot.latest_review_at,
-                "reviewDecision": snapshot.review_decision,
-                "updatedAt": snapshot.updated_at,
-                "logFile": str(log_path),
-                "notifiedAt": None,
-            },
-        )
-        append_line(
-            log_path,
-            f"[{now_iso()}] heartbeat pr={pr} decision={snapshot.review_decision or '-'} updatedAt={snapshot.updated_at or '-'} latestReviewId={snapshot.latest_review_id or '-'}",
-        )
+    agent = args.agent or str(state.get("agent") or "").strip()
+    task = args.task or str(state.get("task") or "").strip()
+    if not agent:
+        raise RuntimeError("missing agent; run start first or pass --agent")
 
-        if snapshot.latest_review_id and snapshot.latest_review_id != baseline_review_id:
-            parsed = parse_review(snapshot.latest_review_body, snapshot.latest_review_state)
-            review_file = write_review_state(pr, parsed)
-            summary = parsed["summary"] or snapshot.latest_review_state or "CodeRabbit feedback received"
-            message = (
-                f"CodeRabbit feedback for {args.agent} on PR #{pr}"
-                f"{f' task={args.task}' if args.task else ''}: "
-                f"decision={snapshot.review_decision or snapshot.latest_review_state or 'UNKNOWN'}; "
-                f"summary={summary}; file={review_file}"
-            )
-            notify_agent(args.agent, message)
-            append_line(log_path, f"[{now_iso()}] notified agent={args.agent} pr={pr} reviewId={snapshot.latest_review_id}")
-            write_state(
-                state_path,
-                {
-                    "status": "notified",
-                    "pr": pr,
-                    "branch": snapshot.branch,
-                    "agent": args.agent,
-                    "task": args.task or "",
-                    "intervalSeconds": args.interval,
-                    "timeoutSeconds": args.timeout,
-                    "pid": os.getpid(),
-                    "startedAt": started_at,
-                    "lastCheckedAt": now_iso(),
-                    "latestReviewId": snapshot.latest_review_id,
-                    "latestReviewAt": snapshot.latest_review_at,
-                    "reviewDecision": snapshot.review_decision,
-                    "updatedAt": snapshot.updated_at,
-                    "logFile": str(log_path),
-                    "notifiedAt": now_iso(),
-                    "monitoringFile": str(review_file),
-                },
-            )
-            pid_path.unlink(missing_ok=True)
-            return 0
+    baseline_review_id = str(state.get("latestReviewId") or "")
+    current_review_id = snapshot.latest_review_id or ""
+    next_state = {
+        "status": "idle",
+        "pr": pr,
+        "branch": snapshot.branch,
+        "agent": agent,
+        "task": task,
+        "intervalSeconds": args.interval if args.interval else int(state.get("intervalSeconds") or 600),
+        "latestReviewId": current_review_id,
+        "latestReviewAt": snapshot.latest_review_at,
+        "reviewDecision": snapshot.review_decision,
+        "updatedAt": snapshot.updated_at,
+        "startedAt": state.get("startedAt") or now_iso(),
+        "lastCheckedAt": now_iso(),
+        "notifiedAt": state.get("notifiedAt"),
+        "url": snapshot.url,
+    }
 
-        time.sleep(args.interval)
-
-    append_line(log_path, f"[{now_iso()}] timeout pr={pr} agent={args.agent}")
-    write_state(
-        state_path,
-        {
-            "status": "timeout",
-            "pr": pr,
-            "branch": snapshot.branch,
-            "agent": args.agent,
-            "task": args.task or "",
-            "intervalSeconds": args.interval,
-            "timeoutSeconds": args.timeout,
-            "pid": os.getpid(),
-            "startedAt": started_at,
-            "lastCheckedAt": now_iso(),
-            "latestReviewId": snapshot.latest_review_id,
-            "latestReviewAt": snapshot.latest_review_at,
-            "reviewDecision": snapshot.review_decision,
-            "updatedAt": snapshot.updated_at,
-            "logFile": str(log_path),
-            "notifiedAt": None,
-        },
+    append_line(
+        LOG_DIR / f"pr-feedback-watch-{pr}.log",
+        f"[{now_iso()}] check pr={pr} baseline={baseline_review_id or '-'} latest={current_review_id or '-'} decision={snapshot.review_decision or '-'}",
     )
-    pid_path.unlink(missing_ok=True)
-    return 124
+
+    if current_review_id and current_review_id != baseline_review_id:
+        comments = fetch_coderabbit_comments(pr)
+        parsed = parse_review(snapshot.latest_review_body, snapshot.latest_review_state)
+        review_file = write_review_state(pr, parsed, comments, agent_notified=True)
+        summary = parsed["summary"] or snapshot.latest_review_state or "CodeRabbit feedback received"
+        detail = summarize_comments(comments)
+        message = (
+            f"CodeRabbit feedback for {agent} on PR #{pr}"
+            f"{f' task={task}' if task else ''}: "
+            f"decision={snapshot.review_decision or snapshot.latest_review_state or 'UNKNOWN'}; "
+            f"summary={summary}; comments={detail}; file={review_file}"
+        )
+        notify_agent(agent, message)
+        next_state["status"] = "notified"
+        next_state["notifiedAt"] = now_iso()
+        next_state["monitoringFile"] = str(review_file)
+        write_state(state_path, next_state)
+        print(message)
+        return 0
+
+    write_state(state_path, next_state)
+    print(f"No new CodeRabbit feedback for PR #{pr}")
+    return 0
 
 
 def show_status(args: argparse.Namespace) -> int:
     pr = resolve_pr_number(args.pr)
-    state_path, _, _ = watcher_paths(pr)
+    state_path = watcher_state_path(pr)
     state = read_state(state_path)
     if not state:
         print(f"No PR feedback watcher state for PR #{pr}", file=sys.stderr)
@@ -426,23 +402,19 @@ def build_parser() -> argparse.ArgumentParser:
     def add_common(command: argparse.ArgumentParser) -> None:
         command.add_argument("--pr", type=int, default=None, help="Open PR number. Defaults to current branch PR.")
 
-    start = subparsers.add_parser("start", help="Launch background watcher for the current branch PR")
+    start = subparsers.add_parser("start", help="Record the current latest review as baseline after PR creation/push")
     add_common(start)
     start.add_argument("--agent", required=True, help="Owning agent name to notify")
     start.add_argument("--task", default="", help="Optional task key")
-    start.add_argument("--interval", type=int, default=300, help="Heartbeat interval in seconds")
-    start.add_argument("--timeout", type=int, default=7200, help="Maximum watch time in seconds")
-    start.add_argument("--notify-existing", action="store_true", help="Treat current latest CodeRabbit review as new feedback")
-    start.set_defaults(func=start_watch)
+    start.add_argument("--interval", type=int, default=600, help="Suggested heartbeat interval in seconds")
+    start.set_defaults(func=init_watch)
 
-    run_cmd = subparsers.add_parser("run", help="Internal watcher entrypoint")
-    add_common(run_cmd)
-    run_cmd.add_argument("--agent", required=True)
-    run_cmd.add_argument("--task", default="")
-    run_cmd.add_argument("--interval", type=int, default=300)
-    run_cmd.add_argument("--timeout", type=int, default=7200)
-    run_cmd.add_argument("--notify-existing", action="store_true")
-    run_cmd.set_defaults(func=run_watch)
+    check = subparsers.add_parser("check", help="Check for a newer CodeRabbit review and notify the owning agent")
+    add_common(check)
+    check.add_argument("--agent", default="", help="Owning agent name override")
+    check.add_argument("--task", default="", help="Optional task key override")
+    check.add_argument("--interval", type=int, default=0, help="Suggested heartbeat interval override")
+    check.set_defaults(func=check_watch)
 
     status = subparsers.add_parser("status", help="Show watcher state for the current branch PR")
     add_common(status)

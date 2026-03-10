@@ -65,7 +65,8 @@ except Exception:
 print(
     f"  PR #{data.get('pr', '?')}: {data.get('status', '?')} | "
     f"agent={data.get('agent', '?')} | task={data.get('task', '') or '-'} | "
-    f"decision={data.get('reviewDecision', '-')}"
+    f"decision={data.get('reviewDecision', '-')} | "
+    f"lastCheck={data.get('lastCheckedAt', '-') or '-'}"
 )
 PY
     done

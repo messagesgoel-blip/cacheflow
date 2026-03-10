@@ -181,11 +181,14 @@ if [ "$skip_push" -eq 0 ]; then
   git push
   if [ "$published_work" -eq 1 ]; then
     if command -v gh >/dev/null 2>&1; then
-      if python3 scripts/watch_pr_feedback.py start --agent "$agent" --task "$task_key" >/tmp/cacheflow-pr-watch.out 2>&1; then
-        sed 's/^/pr-feedback-watch: /' /tmp/cacheflow-pr-watch.out
+      watch_out="$(mktemp)"
+      trap 'rm -f "$watch_out"' EXIT
+      if python3 scripts/watch_pr_feedback.py start --agent "$agent" --task "$task_key" >"$watch_out" 2>&1; then
+        sed 's/^/pr-feedback-watch: /' "$watch_out" || true
       else
-        sed 's/^/pr-feedback-watch: /' /tmp/cacheflow-pr-watch.out >&2 || true
+        sed 's/^/pr-feedback-watch: /' "$watch_out" >&2 || true
       fi
+      echo "pr-feedback-check: python3 scripts/watch_pr_feedback.py check"
     fi
     if ! python3 scripts/update_cacheflow_task_state_from_git.py --event review --commit HEAD --selector "$task_key" --refresh; then
       echo "finish-task: warning: post-push task-state update failed for $task_key" >&2
