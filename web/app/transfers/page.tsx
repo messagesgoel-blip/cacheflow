@@ -1,3 +1,12 @@
+/**
+ * Transfers Page
+ *
+ * Displays transfer history with active and completed transfers.
+ * Provides retry and dismiss actions for failed transfers.
+ *
+ * Task: APP-08
+ */
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -14,6 +23,10 @@ export default function TransfersPage() {
     refreshTransfers()
   }, [refreshTransfers])
 
+  /**
+   * Handle retry action for a failed transfer
+   * @param jobId - The job ID of the transfer to retry
+   */
   async function handleRetry(jobId: string) {
     setProcessingId(jobId)
     try {
@@ -26,10 +39,19 @@ export default function TransfersPage() {
     }
   }
 
+  /**
+   * Handle dismiss action to remove a completed transfer from the list
+   * @param jobId - The job ID of the transfer to dismiss
+   */
   function handleDismiss(jobId: string) {
     dismissTransfer(jobId)
   }
 
+  /**
+   * Format bytes to human-readable size string
+   * @param bytes - Size in bytes
+   * @returns Formatted size string (e.g., "1.5 MB")
+   */
   function formatSize(bytes: number) {
     if (bytes === 0) return '0 B'
     const k = 1024
@@ -38,6 +60,11 @@ export default function TransfersPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  /**
+   * Get icon component for a transfer operation type
+   * @param operation - The operation type (upload, download, move, copy, delete)
+   * @returns React node with the appropriate icon
+   */
   function getOperationIcon(operation?: string) {
     switch (operation) {
       case 'upload': return <Upload size={16} className="text-blue-500" />
@@ -49,6 +76,11 @@ export default function TransfersPage() {
     }
   }
 
+  /**
+   * Get status badge component for a transfer status
+   * @param status - The transfer status (completed, failed, active, waiting)
+   * @returns React node with the status badge
+   */
   function getStatusBadge(status: string) {
     switch (status) {
       case 'completed':
