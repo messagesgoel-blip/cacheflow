@@ -148,6 +148,7 @@ export const TransferTray: React.FC = () => {
   if (!isOpen && !hasActiveTransfers) {
     return (
       <button
+        type="button"
         data-transfer-tray
         data-testid="transfer-tray-open-collapsed"
         onClick={() => setIsOpen(true)}
@@ -173,6 +174,7 @@ export const TransferTray: React.FC = () => {
   if (!isOpen && hasActiveTransfers) {
     return (
       <button
+        type="button"
         data-transfer-tray
         data-testid={rateLimited ? "transfer-tray-open-collapsed-rate-limited" : "transfer-tray-open-collapsed"}
         onClick={() => setIsOpen(true)}
@@ -225,6 +227,7 @@ export const TransferTray: React.FC = () => {
               </span>
             )}
             <button
+              type="button"
               data-testid="tray-refresh"
               onClick={refreshTransfers}
               className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 text-[var(--cf-text-2)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
@@ -266,6 +269,7 @@ export const TransferTray: React.FC = () => {
         )}
         <div className="mt-3 flex items-center justify-between gap-2">
           <button
+            type="button"
             data-testid="tray-minimize"
             onClick={() => setIsOpen(false)}
             className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-1.5 text-xs font-medium text-[var(--cf-text-1)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"

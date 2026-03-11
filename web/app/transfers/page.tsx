@@ -268,6 +268,7 @@ export default function TransfersPage() {
                                 disabled={!!processingId}
                                 className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                                 title="Retry"
+                                aria-label="Retry transfer"
                               >
                                 <RotateCcw size={16} className={processingId === transfer.jobId ? 'animate-spin' : ''} />
                               </button>
@@ -277,6 +278,7 @@ export default function TransfersPage() {
                               onClick={() => handleHide(transfer.jobId)}
                               className="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                               title="Hide"
+                              aria-label="Hide transfer"
                             >
                               <XCircle size={16} />
                             </button>

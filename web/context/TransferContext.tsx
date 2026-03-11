@@ -94,32 +94,41 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       }
 
       const retryAfterHeader = response.headers.get('Retry-After');
-      const seconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : 60;
-      const expiryTime = Math.floor(Date.now() / 1000) + seconds;
+      let seconds = 60;
+      let expiryTime: number;
 
-      if (!isNaN(seconds) && seconds > 0) {
-        setRateLimited(true);
-        setRetryAfter(seconds);
-        setRateLimitExpiry(expiryTime);
-        // Auto-clear after retry interval
-        rateLimitTimeoutRef.current = setTimeout(() => {
-          setRateLimited(false);
-          setRetryAfter(null);
-          setRateLimitExpiry(null);
-          rateLimitTimeoutRef.current = null;
-        }, seconds * 1000);
-        return true;
+      if (retryAfterHeader) {
+        // Try to parse as HTTP-date (e.g., "Wed, 02 Apr 2025 14:00:00 GMT")
+        const httpDate = Date.parse(retryAfterHeader);
+        if (!isNaN(httpDate)) {
+          // Calculate seconds until the HTTP-date
+          seconds = Math.max(1, Math.ceil((httpDate - Date.now()) / 1000));
+          expiryTime = Math.floor(httpDate / 1000);
+        } else {
+          // Try to parse as delta-seconds
+          const parsed = parseInt(retryAfterHeader, 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            seconds = parsed;
+            expiryTime = Math.floor(Date.now() / 1000) + seconds;
+          } else {
+            // Default to 60 seconds
+            expiryTime = Math.floor(Date.now() / 1000) + 60;
+          }
+        }
+      } else {
+        expiryTime = Math.floor(Date.now() / 1000) + 60;
       }
-      // Default to 60 seconds if no valid header
+
       setRateLimited(true);
-      setRetryAfter(60);
+      setRetryAfter(seconds);
       setRateLimitExpiry(expiryTime);
+      // Auto-clear after retry interval
       rateLimitTimeoutRef.current = setTimeout(() => {
         setRateLimited(false);
         setRetryAfter(null);
         setRateLimitExpiry(null);
         rateLimitTimeoutRef.current = null;
-      }, 60000);
+      }, seconds * 1000);
       return true;
     }
     return false;
@@ -167,7 +176,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     setTransfers(prev => [newTransfer, ...prev]);
 
     return result.jobId;
-  }, [handleRateLimit]);
+  }, [handleRateLimit, rateLimited]);
 
   /**
    * Cancel a transfer
@@ -249,17 +258,18 @@ export function TransferProvider({ children }: { children: ReactNode }) {
 
       if (result.success) {
         // Merge server state with local state, preserving any local-only entries
-        const serverTransfers: TransferItem[] = result.transfers || [];
-        const localJobIds = new Set(transfers.map(t => t.jobId));
-        const newLocalTransfers = transfers.filter(t => !serverTransfers.find(s => s.jobId === t.jobId));
-
-        // Combine: server transfers + any local transfers not yet on server
-        setTransfers([...serverTransfers, ...newLocalTransfers]);
+        // Use functional updater to avoid adding transfers to dependency array
+        setTransfers(prev => {
+          const serverTransfers: TransferItem[] = result.transfers || [];
+          const newLocalTransfers = prev.filter(t => !serverTransfers.find(s => s.jobId === t.jobId));
+          // Combine: server transfers + any local transfers not yet on server
+          return [...serverTransfers, ...newLocalTransfers];
+        });
       }
     } catch (error) {
       console.error('Failed to refresh transfers:', error);
     }
-  }, [transfers, handleRateLimit, rateLimited]);
+  }, [handleRateLimit, rateLimited]);
 
   const pathname = usePathname();
 
