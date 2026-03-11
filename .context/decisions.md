@@ -8,6 +8,14 @@
 - commit:
 - agent:
 
+## 2026-03-11 — Keep Sprint 7 decomposed in docs but off the executable manifest until repo drift settles
+- decision: Document Sprint 7 draft task keys, gates, and agent scopes in the sprint spec and contract docs, but do not activate Sprint 7 in `docs/orchestration/task-manifest.json` or generated monitoring yet.
+- rationale: Open cleanup PRs on shared CacheFlow surfaces would make immediate manifest activation likely to create rebase churn and prematurely start Version 2 implementation while review state is still unstable.
+- alternatives rejected: Leave Sprint 7 undecomposed and keep stale queue items; activate Sprint 7 execution immediately despite active cleanup drift.
+- files: docs/roadmap.md, docs/sprints/sprint-7.md, docs/contracts/7.1.md, docs/prompts/sprint-7-startup-all-agents.md, docs/sprints-task-dashboard.md, STATUS.md
+- commit: pending
+- agent: codex
+
 ## 2026-03-07 — Consolidate product planning into one canonical V1/V2 roadmap
 - decision: Replace the legacy launch-only Sprint 6 roadmap with a canonical roadmap where Version 1 = merged Phase 1 + Phase 1.5, Version 2 = former Phase 2, and GTM / Commercial work lives in a separate backlog.
 - rationale: The repo had two competing sprint-6 definitions and multiple roadmap sources, which caused orchestration, dashboards, and fresh context windows to disagree about what work was actually next.

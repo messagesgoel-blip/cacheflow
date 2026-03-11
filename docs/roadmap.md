@@ -21,6 +21,8 @@ Canonical roadmap for product planning and orchestration.
 - Version 1 remains complete in deterministic roadmap/task-state tracking.
 - A post-completion live E2E triage hold is open from the external green-run executed on `2026-03-10`.
 - Active roadmap state is Sprint 7 planning for Version 2.
+- Draft Sprint 7 decomposition is documented in `docs/sprints/sprint-7.md` and `docs/contracts/7.1.md`.
+- Sprint 7 manifest activation remains paused until the repo returns to a low-drift base state.
 - Orchestration runtime state is `idle` with `current_sprint: 7`.
 - Version 1 completion baseline: `f7f14d3`
 - Last full-suite artifact: `/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737`
@@ -201,7 +203,8 @@ Version 2 starts after Version 1 is green and complete.
 Current status:
 - entry gate satisfied
 - Sprint 7 is the active planning sprint
-- executable task decomposition for Sprint 7 is still pending
+- draft task decomposition is documented
+- executable manifest activation remains intentionally paused
 
 ### V2-A Foundation
 
