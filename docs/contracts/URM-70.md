@@ -28,3 +28,4 @@ Fix upload/list invalidation after successful upload to ensure proper UI updates
 - Upload returns created file object
 - File list updates automatically after upload
 - Downstream selectors (rename/version/trash/share) work properly
+- No breaking changes to existing upload functionality; prior upload flows, metadata, and hooks continue to work
