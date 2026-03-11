@@ -88,11 +88,14 @@ test('localhost login and tab navigation', async ({ page }, testInfo) => {
     })
   })
 
-  // Set auth token in localStorage before page loads
-  await page.addInitScript(() => {
-    localStorage.setItem('cf_token', 'test-token')
-    localStorage.setItem('cf_email', 'sup@goels.in')
-  })
+  await page.context().addCookies([{
+    name: 'accessToken',
+    value: 'test-token',
+    domain: 'localhost',
+    path: '/',
+    httpOnly: true,
+    sameSite: 'Lax',
+  }])
 
   // Browser console should not show SW 404 or CORS errors
   const consoleErrors: string[] = []
@@ -112,7 +115,7 @@ test('localhost login and tab navigation', async ({ page }, testInfo) => {
   await page.screenshot({ path: shotPath(id, 'files_tab'), fullPage: true })
 
   // Navigate to cloud drives (connections page)
-  const cloudDrivesLink = page.getByRole('link', { name: /cloud drives|connections|drives/i }).first()
+  const cloudDrivesLink = page.getByRole('link', { name: /your drives|cloud drives|connections|drives/i }).first()
   if (await cloudDrivesLink.isVisible({ timeout: 3000 }).catch(() => false)) {
     await cloudDrivesLink.click()
     await page.waitForTimeout(800)

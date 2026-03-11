@@ -40,7 +40,10 @@ async function openAllProviders(page: any, worker: number) {
 }
 
 async function searchOnce(page: any, worker: number) {
-  const search = page.locator('input[placeholder*="Search"], input[aria-label*="Search"], input[type="search"]').first()
+  const search = page.locator('input[placeholder*="Search"]')
+    .or(page.locator('input[aria-label*="Search"]'))
+    .or(page.locator('input[type="search"]'))
+    .first()
   if (await search.count()) {
     await search.fill('test')
     await page.waitForTimeout(1200)
@@ -59,7 +62,10 @@ async function createFolderUploadDelete(page: any, worker: number) {
   const newFolderBtn = page.getByRole('button', { name: /new folder|create folder/i }).first()
   if (await newFolderBtn.count()) {
     await newFolderBtn.click({ timeout: 10000 })
-    const nameInput = page.locator('input[placeholder*="folder" i], input[name*="folder" i], input[type="text"]').last()
+    const nameInput = page.locator('input[placeholder*="folder" i]')
+      .or(page.locator('input[name*="folder" i]'))
+      .or(page.locator('input[type="text"]'))
+      .last()
     if (await nameInput.count()) {
       await nameInput.fill(folderName)
       await page.getByRole('button', { name: /create|save|ok/i }).last().click().catch(async () => {

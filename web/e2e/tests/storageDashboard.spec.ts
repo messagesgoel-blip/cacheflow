@@ -167,8 +167,6 @@ test.describe('Storage Dashboard and Health Indicators', () => {
     await page.addInitScript(() => {
       localStorage.clear();
       sessionStorage.clear();
-      localStorage.setItem('cf_token', 'mock-jwt-token');
-      localStorage.setItem('cf_email', 'test@goels.in');
       
       // Seed local tokens so Sidebar can find them
       const googleTokens = [
@@ -396,19 +394,18 @@ test.describe('Storage Dashboard and Health Indicators', () => {
 
   test('Health API: Verify the endpoint is reachable and returns correct shape as per 3.14', async ({ page }) => {
     await page.goto('/connections');
-    const result = await page.evaluate(async () => {
-      const response = await fetch('/api/connections/health', {
-        headers: { Authorization: 'Bearer mock-jwt-token' }
-      });
-      return {
-        ok: response.ok,
-        status: response.status,
-        body: await response.json().catch(() => null),
-      };
+    const res = await context.request.get('/api/connections/health', {
+      headers: { Authorization: 'Bearer mock-jwt-token' }
     });
+    const result = {
+      ok: res.ok(),
+      status: res.status(),
+      body: await res.json().catch(() => null),
+    };
     expect(result.ok, `Expected /api/connections/health to succeed, got status ${result.status}`).toBeTruthy();
     const body = result.body as any;
     expect(body.success).toBe(true);
+    // Reconcile expected connection count with NAV-1 (Exactly 6 nav items -> typically matches provider count in health)
     expect(body.connections).toHaveLength(6);
     
     const google = body.connections.find((c: any) => c.id === 'remote-google-1');

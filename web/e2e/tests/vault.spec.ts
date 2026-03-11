@@ -13,12 +13,26 @@ test.describe('Vault / Private Folder E2E', () => {
   const MOCK_PIN = '1234';
   const MOCK_SESSION_TOKEN = 'vault_session_abc';
 
-  test.beforeEach(async ({ page }) => {
-    // Setup mock auth in localStorage
-    await page.addInitScript(({ token, email }) => {
-      window.localStorage.setItem('cf_token', token);
-      window.localStorage.setItem('cf_email', email);
-    }, { token: MOCK_TOKEN, email: MOCK_EMAIL });
+  test.beforeEach(async ({ page, context }) => {
+    await context.addCookies([{
+      name: 'accessToken',
+      value: MOCK_TOKEN,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+    }]);
+
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          authenticated: true,
+          user: { id: 'vault-user', email: MOCK_EMAIL },
+        }),
+      });
+    });
 
     // Mock connections API (empty)
     await page.route('**/api/connections', async (route) => {
@@ -60,20 +74,13 @@ test.describe('Vault / Private Folder E2E', () => {
     });
 
     await page.goto('/files');
-    const result = await page.evaluate(
-      async ({ vaultId, pin, token }) => {
-        const res = await fetch(`/api/vault/${vaultId}/unlock`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ pin }),
-        });
-        return { status: res.status, body: await res.json() };
+    const res = await page.request.post(`/api/vault/${MOCK_VAULT_ID}/unlock`, {
+      headers: {
+        Authorization: `Bearer ${MOCK_TOKEN}`,
       },
-      { vaultId: MOCK_VAULT_ID, pin: MOCK_PIN, token: MOCK_TOKEN },
-    );
+      data: { pin: MOCK_PIN },
+    });
+    const result = { status: res.status(), body: await res.json() };
 
     expect(result.status).toBe(200);
     expect(result.body.success).toBe(true);
@@ -91,20 +98,13 @@ test.describe('Vault / Private Folder E2E', () => {
     });
 
     await page.goto('/files');
-    const result = await page.evaluate(
-      async ({ vaultId, token }) => {
-        const res = await fetch(`/api/vault/${vaultId}/unlock`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ pin: '9999' }),
-        });
-        return { status: res.status, body: await res.json() };
+    const res = await page.request.post(`/api/vault/${MOCK_VAULT_ID}/unlock`, {
+      headers: {
+        Authorization: `Bearer ${MOCK_TOKEN}`,
       },
-      { vaultId: MOCK_VAULT_ID, token: MOCK_TOKEN },
-    );
+      data: { pin: '9999' },
+    });
+    const result = { status: res.status(), body: await res.json() };
 
     expect(result.status).toBe(401);
     expect(result.body.success).toBe(false);

@@ -157,15 +157,50 @@ export async function primeQaSession(
     token = payload?.token || payload?.data?.token || token
   }
 
-  await page.addInitScript(
-    ({ authToken, authEmail }) => {
-      localStorage.clear()
-      sessionStorage.clear()
-      localStorage.setItem('cf_token', authToken)
-      localStorage.setItem('cf_email', authEmail)
+  await page.context().addCookies([
+    {
+      name: 'accessToken',
+      value: token,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Lax',
     },
-    { authToken: token, authEmail: email },
-  )
+    {
+      name: 'accessToken',
+      value: token,
+      domain: '127.0.0.1',
+      path: '/',
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Lax',
+    },
+    {
+      name: 'userData',
+      value: JSON.stringify({ id: 'qa-user', email }),
+      domain: 'localhost',
+      path: '/',
+      httpOnly: false,
+      secure: false,
+      sameSite: 'Lax',
+    },
+    {
+      name: 'userData',
+      value: JSON.stringify({ id: 'qa-user', email }),
+      domain: '127.0.0.1',
+      path: '/',
+      httpOnly: false,
+      secure: false,
+      sameSite: 'Lax',
+    },
+  ])
+
+  await page.addInitScript(() => {
+    localStorage.removeItem('cf_token')
+    localStorage.removeItem('cf_email')
+    sessionStorage.clear()
+  })
 
   await page.route('**/api/auth/session', async (route) => {
     await route.fulfill({

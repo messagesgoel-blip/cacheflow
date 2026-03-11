@@ -45,8 +45,6 @@ test.describe('Zero-Disk Transfer & Tab-Close Survival', () => {
     // Navigate to root first to ensure we can set localStorage
     await page.goto('/');
     await page.evaluate(() => {
-      localStorage.setItem('cf_token', 'mock-jwt-token');
-      localStorage.setItem('cf_email', 'qa@goels.in');
       localStorage.setItem('cf_user_id', 'user-123');
 
       // Setup mock provider tokens in localStorage for the UI
@@ -124,20 +122,16 @@ test.describe('Zero-Disk Transfer & Tab-Close Survival', () => {
     await expect(page).toHaveURL(/\/files/);
 
     // 1. Trigger transfer via API directly to ensure we use the server-side path
-    await page.evaluate(async ({ fileName, fileSize }) => {
-      await fetch('/api/transfers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceProvider: 'google',
-          destProvider: 'dropbox',
-          fileId: 'file-large-123',
-          fileName,
-          fileSize,
-          operation: 'copy'
-        })
-      });
-    }, { fileName: FILE_NAME, fileSize: FILE_SIZE });
+    await page.request.post('/api/transfers', {
+      data: {
+        sourceProvider: 'google',
+        destProvider: 'dropbox',
+        fileId: 'file-large-123',
+        fileName: FILE_NAME,
+        fileSize: FILE_SIZE,
+        operation: 'copy'
+      }
+    });
 
     // 2. Verify TransferTray appears and shows the transfer
     const tray = page.getByTestId('cf-transfer-tray');

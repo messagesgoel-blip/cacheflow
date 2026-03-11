@@ -105,8 +105,8 @@ test.describe('File Action Entry Points', () => {
 
     // Checkbox selection
     const firstRow = rows.first()
-    const checkbox = firstRow.getByTestId('cf-row-checkbox')
-    await checkbox.setChecked(true, { force: true })
+    const checkbox = firstRow.getByRole('checkbox')
+    await checkbox.click({ force: true })
 
     // Wait a moment for state to update
     await page.waitForTimeout(500)

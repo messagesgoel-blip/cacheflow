@@ -33,8 +33,6 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
     // 2. Mock Auth and Provider state in localStorage
     const page = await context.newPage();
     await page.addInitScript(() => {
-      localStorage.setItem('cf_token', 'test-jwt-token');
-      localStorage.setItem('cf_email', 'qa-chunked@goels.in');
       localStorage.setItem('cf_user_id', 'user-chunked-123');
 
       localStorage.setItem('cacheflow_tokens_google', JSON.stringify([{
@@ -229,30 +227,22 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
 
     // 1. Start Upload and commit 2 chunks
     await test.step('Start upload and commit first 2 chunks', async () => {
-      const results = await page.evaluate(async ({ id, name, size, chunk }) => {
-        // Register (Contract 3.6 POST without chunkIndex)
-        await fetch(`/api/transfers/${id}/chunks`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileName: name, fileSize: size, chunkSize: chunk })
-        });
-        
-        // Commit chunk 0
-        await fetch(`/api/transfers/${id}/chunks`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chunkIndex: 0 })
-        });
-        
-        // Commit chunk 1
-        const res1 = await fetch(`/api/transfers/${id}/chunks`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chunkIndex: 1 })
-        });
-        
-        return res1.json();
-      }, { id: TRANSFER_ID, name: FILE_NAME, size: FILE_SIZE, chunk: CHUNK_SIZE });
+      // Register (Contract 3.6 POST without chunkIndex)
+      await page.request.post(`/api/transfers/${TRANSFER_ID}/chunks`, {
+        data: { fileName: FILE_NAME, fileSize: FILE_SIZE, chunkSize: CHUNK_SIZE }
+      });
+      
+      // Commit chunk 0
+      await page.request.post(`/api/transfers/${TRANSFER_ID}/chunks`, {
+        data: { chunkIndex: 0 }
+      });
+      
+      // Commit chunk 1
+      const res1 = await page.request.post(`/api/transfers/${TRANSFER_ID}/chunks`, {
+        data: { chunkIndex: 1 }
+      });
+      
+      const results = await res1.json();
 
       expect(results.success).toBe(true);
       expect(results.nextChunkIndex).toBe(2);
@@ -266,16 +256,9 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       simulateNetworkError = true;
       await context.setOffline(true);
       
-      const fetchFailed = await page.evaluate(async (id) => {
-        try {
-          await fetch(`/api/transfers/${id}/chunks`, { method: 'GET' });
-          return false;
-        } catch (e) {
-          return true;
-        }
-      }, TRANSFER_ID);
+      const fetchFailed = await page.request.get(`/api/transfers/${TRANSFER_ID}/chunks`).catch(() => ({ ok: () => false }));
       
-      expect(fetchFailed).toBe(true);
+      expect(fetchFailed.ok()).toBe(false);
       console.log('✅ Verified: Network is offline, requests are failing.');
     });
 
@@ -285,10 +268,8 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       simulateNetworkError = false;
       await context.setOffline(false);
       
-      const resumeState = await page.evaluate(async (id) => {
-        const res = await fetch(`/api/transfers/${id}/chunks`, { method: 'GET' });
-        return res.json();
-      }, TRANSFER_ID);
+      const res = await page.request.get(`/api/transfers/${TRANSFER_ID}/chunks`);
+      const resumeState = await res.json();
 
       expect(resumeState.success).toBe(true);
       expect(resumeState.nextChunkIndex).toBe(2);
@@ -298,18 +279,13 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
 
     // 4. Complete Upload from Resume Point
     await test.step('Complete remaining chunks (2-4)', async () => {
-      const finalResult = await page.evaluate(async ({ id, startAt, total }) => {
-        let lastRes: any;
-        for (let i = startAt; i < total; i++) {
-          const res = await fetch(`/api/transfers/${id}/chunks`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chunkIndex: i })
-          });
-          lastRes = await res.json();
-        }
-        return lastRes;
-      }, { id: TRANSFER_ID, startAt: 2, total: TOTAL_CHUNKS });
+      let finalResult: any;
+      for (let i = 2; i < TOTAL_CHUNKS; i++) {
+        const res = await page.request.post(`/api/transfers/${TRANSFER_ID}/chunks`, {
+          data: { chunkIndex: i }
+        });
+        finalResult = await res.json();
+      }
 
       expect(finalResult.success).toBe(true);
       expect(finalResult.complete).toBe(true);

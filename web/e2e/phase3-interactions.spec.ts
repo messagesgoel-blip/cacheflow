@@ -35,10 +35,10 @@ const connections: MockConnection[] = [
 ]
 
 async function ensureRowSelected(row: Locator, page: Page) {
-  const checkbox = row.locator('input[type="checkbox"]').first()
+  const checkbox = row.getByRole('checkbox')
   const isChecked = await checkbox.isChecked().catch(() => false)
   if (!isChecked) {
-    await checkbox.setChecked(true, { force: true })
+    await checkbox.click({ force: true })
   }
 
   const toolbar = page.getByTestId('cf-selection-toolbar')
