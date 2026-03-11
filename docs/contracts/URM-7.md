@@ -23,3 +23,10 @@ Verification:
 - `cd web && npx tsc --noEmit`
 - `cd web && npm test -- --runInBand components/__tests__/UnifiedFileBrowser.test.ts __tests__/jobsLogs.test.js lib/hooks/__tests__/useQuotaAlerts.test.tsx`
 - `cd web && npm run build`
+
+Follow-up polish scope:
+- convert the files sidebar into a proper mobile drawer so the workspace no longer renders underneath it on narrow screens
+- move the session-expired banner into shell flow instead of covering the navbar
+- tighten the files loading state layout and toolbar rhythm
+- raise light-theme contrast for shell labels and secondary text
+- reskin the login surface to match the deployed glass shell without changing auth behavior

@@ -14,12 +14,12 @@ export default function SessionExpiredBanner({
   onDismiss,
 }: SessionExpiredBannerProps) {
   return (
-    <div className="fixed top-0 left-0 right-0 z-50">
-      <div className="bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-700 dark:to-orange-700 text-white px-4 py-3 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="relative z-50 px-3 pt-3 md:px-4">
+      <div className="mx-auto max-w-[1600px]">
+        <div className="cf-panel flex flex-col gap-3 rounded-[24px] border border-[rgba(255,179,92,0.34)] bg-[linear-gradient(135deg,rgba(255,145,67,0.2),rgba(255,118,118,0.14))] px-4 py-3 text-[var(--cf-text-0)] shadow-[0_24px_60px_rgba(143,67,14,0.18)] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.26)] bg-[rgba(255,255,255,0.18)] text-[var(--cf-amber)]">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -28,20 +28,19 @@ export default function SessionExpiredBanner({
                 />
               </svg>
             </div>
-            <div>
-              <p className="font-medium">Session expired</p>
-              <p className="text-sm text-white/80">
-                {email || accountName}
-              </p>
+            <div className="min-w-0">
+              <p className="cf-kicker text-[rgba(97,46,7,0.72)] dark:text-[rgba(255,236,214,0.74)]">Session attention required</p>
+              <p className="mt-1 text-base font-semibold text-[var(--cf-text-0)]">Provider session expired</p>
+              <p className="mt-1 text-sm text-[var(--cf-text-1)]">{email || accountName}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <button
               onClick={onReauth}
-              className="px-4 py-2 bg-white text-orange-700 font-medium rounded-lg hover:bg-white/90 transition-colors flex items-center gap-2 shadow-sm"
+              className="inline-flex items-center gap-2 rounded-2xl border border-[rgba(255,255,255,0.4)] bg-[rgba(255,255,255,0.82)] px-4 py-2 text-sm font-semibold text-[#9a4900] shadow-sm transition hover:bg-white"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -54,19 +53,17 @@ export default function SessionExpiredBanner({
 
             <button
               onClick={onDismiss}
-              className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              className="rounded-2xl p-2 text-[rgba(97,46,7,0.72)] transition hover:bg-[rgba(255,255,255,0.18)] hover:text-[var(--cf-text-0)] dark:text-[rgba(255,236,214,0.74)]"
               aria-label="Dismiss"
               title="Dismiss for now"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         </div>
       </div>
-
-      <div className="h-14" />
     </div>
   )
 }

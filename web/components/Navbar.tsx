@@ -23,9 +23,9 @@ export default function Navbar({ email, onLogout }: NavbarProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-[var(--cf-border)] bg-[var(--cf-navbar-bg)] px-5 py-3 backdrop-blur-xl lg:px-6">
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-4 lg:gap-5">
+    <nav className="sticky top-0 z-40 border-b border-[var(--cf-border)] bg-[var(--cf-navbar-bg)] px-3 py-3 backdrop-blur-xl sm:px-5 lg:px-6">
+      <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 sm:gap-4">
+        <div className="flex min-w-0 items-center gap-3 lg:gap-5">
           <Link href="/" className="flex items-center gap-3 font-semibold tracking-tight text-[var(--cf-text-0)]">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--cf-blue)]/40 bg-[rgba(74,158,255,0.12)] text-[11px] font-bold text-[var(--cf-blue)]">
               CF
@@ -51,8 +51,10 @@ export default function Navbar({ email, onLogout }: NavbarProps) {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2.5">
-          <CommandPalette />
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="hidden xl:block">
+            <CommandPalette />
+          </div>
           <div className="hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-1 md:block">
             <ThemeToggle />
           </div>
@@ -86,7 +88,7 @@ export default function Navbar({ email, onLogout }: NavbarProps) {
           </div>
           <button
             onClick={onLogout}
-            className="rounded-lg border border-[rgba(255,92,92,0.3)] bg-[rgba(255,92,92,0.09)] px-3 py-1.5 text-[13px] font-medium text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.14)]"
+            className="rounded-lg border border-[rgba(255,92,92,0.3)] bg-[rgba(255,92,92,0.09)] px-2.5 py-1.5 text-[12px] font-medium text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.14)] sm:px-3 sm:text-[13px]"
           >
             Logout
           </button>

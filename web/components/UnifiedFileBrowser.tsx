@@ -56,6 +56,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [isFavoriting, setIsFavoriting] = useState<Set<string>>(new Set())
   const [recentRenameBlocklist, setRecentRenameBlocklist] = useState<Map<string, string>>(new Map())
@@ -191,6 +192,27 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
     if (localStorage.getItem('cacheflow:ui:sidebarCollapsed') === 'true') setIsSidebarCollapsed(true)
     if (localStorage.getItem('cacheflow:ui:allProvidersView') === 'flat') setIsGroupedView(false)
   }, [])
+
+  useEffect(() => {
+    if (!isMobileSidebarOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isMobileSidebarOpen])
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 768px)')
+    const syncSidebar = (event?: MediaQueryListEvent) => {
+      if ((event ? event.matches : media.matches) && isMobileSidebarOpen) {
+        setIsMobileSidebarOpen(false)
+      }
+    }
+    syncSidebar()
+    media.addEventListener('change', syncSidebar)
+    return () => media.removeEventListener('change', syncSidebar)
+  }, [isMobileSidebarOpen])
 
   useEffect(() => {
     const handleVpsFilesChanged = async (event: Event) => {
@@ -689,6 +711,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
   const handleSidebarNavigate = (pid: any, key?: string) => {
     clearTransientBrowserState()
     setPendingFolderPath(null)
+    setIsMobileSidebarOpen(false)
     setSelectedProvider(pid)
     if (key) {
       setActiveAccountKey(key)
@@ -1398,13 +1421,36 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
   )
 
   return (
-    <div className="cf-liquid cf-shell-browser flex h-[calc(100vh-132px)] gap-3 overflow-hidden rounded-[36px] p-3 shadow-[var(--cf-shadow-strong)]">
-      <Sidebar connectedProviders={connectedProviders} selectedProvider={selectedProvider} activeAccountKey={activeAccountKey} onNavigate={handleSidebarNavigate} onDrop={(e, pid, key, fid) => {
-        e.preventDefault(); const d = e.dataTransfer.getData('application/cacheflow-file'); if (!d) return
-        const f = JSON.parse(d); const mode = (f.provider === pid && f.accountKey === key) ? 'move' : 'copy'
-        addTransfer({ type: mode, file: f, targetProviderId: pid, targetAccountKey: key, targetFolderId: fid })
-      }} />
-      <main className="cf-liquid cf-shell-main relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-[30px] bg-[var(--cf-shell-card-strong)]">
+    <div className="relative">
+      {isMobileSidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close workspace dock"
+          className="fixed inset-0 z-30 bg-[rgba(6,10,18,0.52)] backdrop-blur-sm md:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+      <div className="cf-liquid cf-shell-browser flex min-h-[calc(100vh-132px)] gap-0 overflow-hidden rounded-[30px] p-2 shadow-[var(--cf-shadow-strong)] md:h-[calc(100vh-132px)] md:gap-3 md:rounded-[36px] md:p-3">
+        <div
+          className={`fixed inset-y-0 left-0 z-40 w-[min(24rem,calc(100vw-1.5rem))] p-3 transition-transform duration-300 md:static md:inset-auto md:w-auto md:p-0 ${
+            isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-[108%]'
+          } md:translate-x-0`}
+        >
+          <Sidebar
+            connectedProviders={connectedProviders}
+            selectedProvider={selectedProvider}
+            activeAccountKey={activeAccountKey}
+            mobileOpen={isMobileSidebarOpen}
+            onMobileOpenChange={setIsMobileSidebarOpen}
+            onNavigate={handleSidebarNavigate}
+            onDrop={(e, pid, key, fid) => {
+              e.preventDefault(); const d = e.dataTransfer.getData('application/cacheflow-file'); if (!d) return
+              const f = JSON.parse(d); const mode = (f.provider === pid && f.accountKey === key) ? 'move' : 'copy'
+              addTransfer({ type: mode, file: f, targetProviderId: pid, targetAccountKey: key, targetFolderId: fid })
+            }}
+          />
+        </div>
+        <main className="cf-liquid cf-shell-main relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-[24px] bg-[var(--cf-shell-card-strong)] md:rounded-[30px]">
         <input
           ref={uploadInputRef}
           type="file"
@@ -1623,9 +1669,22 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
         )}
         {showShortcutHelp && <ShortcutHelp onClose={() => setShowShortcutHelp(false)} />}
 
-        <div className="cf-toolbar-card mx-4 mt-4 flex flex-wrap items-start justify-between gap-4 rounded-[28px] border border-[var(--cf-border)] px-4 py-4 md:px-5 md:py-5">
-          <div className="min-w-0 flex-1">
-            <UnifiedBreadcrumb selectedProvider={selectedProvider} activeAccountName={activeAccountName} stack={breadcrumbStack} onNavigateStack={handleBreadcrumbNavigate} onNavigateHome={() => handleSidebarNavigate('all')} />
+        <div className="cf-toolbar-card mx-3 mt-3 flex flex-wrap items-start justify-between gap-4 rounded-[24px] border border-[var(--cf-border)] px-4 py-4 md:mx-4 md:mt-4 md:rounded-[28px] md:px-5 md:py-5">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <button
+              type="button"
+              data-testid="cf-mobile-dock-toggle"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="cf-toolbar-card inline-flex shrink-0 items-center gap-2 rounded-[18px] border border-[var(--cf-border)] px-3 py-2 text-sm font-medium text-[var(--cf-text-1)] md:hidden"
+            >
+              <svg className="h-4 w-4 text-[var(--cf-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              Dock
+            </button>
+            <div className="min-w-0 flex-1">
+              <UnifiedBreadcrumb selectedProvider={selectedProvider} activeAccountName={activeAccountName} stack={breadcrumbStack} onNavigateStack={handleBreadcrumbNavigate} onNavigateHome={() => handleSidebarNavigate('all')} />
+            </div>
           </div>
           <div className="flex w-full max-w-[980px] flex-col items-stretch gap-3 lg:w-auto lg:items-end">
             <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
@@ -1771,10 +1830,10 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
             : selectedProvider === 'starred' ? <StarredView onFileClick={handleFileOpen} onRemoveFavorite={async (fileId, provider, accountKey) => { await handleToggleFavorite({ id: fileId, provider, accountKey } as any) }} />
             : loading && files.length === 0 ? (
               /* UI-P1-T06: Loading state card - Polished */
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="cf-panel relative max-w-xl overflow-hidden rounded-[32px] p-6 sm:p-8">
+              <div className="flex flex-col items-center justify-start py-8 md:py-12">
+                <div className="cf-panel relative w-full max-w-2xl overflow-hidden rounded-[28px] p-6 sm:rounded-[32px] sm:p-8">
                   <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(74,158,255,0.6),transparent)]" />
-                  <div className="mb-6 flex items-center justify-between gap-6 border-b border-[var(--cf-border)] pb-6">
+                  <div className="mb-5 flex items-start justify-between gap-6 border-b border-[var(--cf-border)] pb-5 sm:mb-6 sm:items-center sm:pb-6">
                     <div>
                       <div className="cf-kicker mb-2">Workspace</div>
                       <h3 className="text-xl font-semibold text-[var(--cf-text-0)] sm:text-2xl">Loading files...</h3>
@@ -1920,7 +1979,8 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
         </div>
         <SelectionToolbar selectedFiles={selectedFileObjects} onOpen={handleFileOpen} onDownload={(fs) => fs.length === 1 ? handleFileDownload(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Download', message: 'Coming soon!' })} onRename={handleFileRename} onMove={(fs) => setTransferModal({ open: true, mode: 'move', file: fs[0], initialFolderPath: currentTransferFolderPath })} onCopy={(fs) => setTransferModal({ open: true, mode: 'copy', file: fs[0], initialFolderPath: currentTransferFolderPath })} onDelete={(fs) => fs.length === 1 ? handleFileDelete(fs[0]) : actions.notify({ kind: 'info', title: 'Bulk Delete', message: 'Coming soon!' })} onClearSelection={() => setSelectedFiles(new Set())} />
         <TransferQueuePanel />
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

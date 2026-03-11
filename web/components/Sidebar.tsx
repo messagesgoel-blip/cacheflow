@@ -10,6 +10,8 @@ interface SidebarProps {
   activeAccountKey: string
   onNavigate: (providerId: ProviderId | 'all' | 'recent' | 'starred' | 'activity', accountKey?: string) => void
   onDrop?: (e: React.DragEvent, providerId: ProviderId, accountKey: string, folderId: string) => void
+  mobileOpen?: boolean
+  onMobileOpenChange?: (open: boolean) => void
 }
 
 const PLATFORM_ITEMS: Array<{
@@ -29,6 +31,8 @@ export default function Sidebar({
   activeAccountKey,
   onNavigate,
   onDrop,
+  mobileOpen = false,
+  onMobileOpenChange,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [mounted, setIsMounted] = useState(false)
@@ -116,6 +120,11 @@ export default function Sidebar({
     connectedProviders.some((cp) => cp.providerId === p.id),
   )
 
+  const handleNavigate = (providerId: ProviderId | 'all' | 'recent' | 'starred' | 'activity', accountKey?: string) => {
+    onNavigate(providerId, accountKey)
+    onMobileOpenChange?.(false)
+  }
+
   const navItemClass = (isActive: boolean, isDragOver?: boolean) => `
     relative flex items-center gap-2.5 rounded-2xl border px-3 py-2.5 transition-all duration-200 backdrop-blur-md
     ${isActive
@@ -168,8 +177,8 @@ export default function Sidebar({
   return (
     <aside
       data-testid="cf-sidebar-root"
-      className={`cf-liquid flex h-full min-h-0 flex-col rounded-[30px] bg-[var(--cf-sidebar-bg)] transition-all duration-300 ${
-        isCollapsed ? 'w-[72px]' : 'w-72'
+      className={`cf-liquid flex h-full min-h-0 w-full flex-col rounded-[30px] bg-[var(--cf-sidebar-bg)] transition-all duration-300 ${
+        isCollapsed ? 'md:w-[72px]' : 'md:w-72'
       }`}
     >
       <div className={`flex items-center p-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
@@ -180,9 +189,22 @@ export default function Sidebar({
           </div>
         )}
         <button
+          onClick={() => onMobileOpenChange?.(!mobileOpen)}
+          className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] md:hidden"
+          title={mobileOpen ? 'Close dock' : 'Open dock'}
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {mobileOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+        <button
           data-testid="cf-sidebar-collapse-toggle"
           onClick={toggleCollapse}
-          className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+          className="hidden rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] md:inline-flex"
           title={isCollapsed ? 'Expand' : 'Collapse'}
         >
           <svg className={`h-5 w-5 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +250,7 @@ export default function Sidebar({
           <button
             key={item.id}
             data-testid={item.id === 'all' ? 'cf-sidebar-node-all-files' : undefined}
-            onClick={() => onNavigate(item.id)}
+            onClick={() => handleNavigate(item.id)}
             className={navItemClass(selectedProvider === item.id)}
             title={item.label}
           >
@@ -263,7 +285,7 @@ export default function Sidebar({
                   <div key={account.accountKey || `${account.providerId}-${idx}`} className="group/account">
                     <button
                       data-testid={`cf-sidebar-account-${account.accountKey || idx}`}
-                      onClick={() => onNavigate(provider.id, account.accountKey)}
+                      onClick={() => handleNavigate(provider.id, account.accountKey)}
                       onDragOver={(e) => {
                         e.preventDefault()
                         setDragOverAccount(cacheKey)
