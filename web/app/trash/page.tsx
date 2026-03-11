@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Trash2, RotateCcw, XCircle, Info } from 'lucide-react'
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
+import { EmptyState } from '@/components/EmptyState'
 
 interface TrashedFile {
   id: string
@@ -29,10 +28,8 @@ export default function TrashPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`${API}/trash`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const res = await fetch('/api/backend/trash', {
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Failed to fetch trash')
       const data = await res.json()
@@ -48,11 +45,9 @@ export default function TrashPage() {
   async function handleRestore(file: TrashedFile) {
     setProcessingId(file.id)
     try {
-      const res = await fetch(`${API}/trash/${file.id}/restore`, {
+      const res = await fetch(`/api/backend/trash/${file.id}/restore`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Restore failed')
       setFiles(files.filter(f => f.id !== file.id))
@@ -69,11 +64,9 @@ export default function TrashPage() {
     
     setProcessingId(file.id)
     try {
-      const res = await fetch(`${API}/trash/${file.id}`, {
+      const res = await fetch(`/api/backend/trash/${file.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Delete failed')
       setFiles(files.filter(f => f.id !== file.id))
@@ -90,11 +83,9 @@ export default function TrashPage() {
     
     setLoading(true)
     try {
-      const res = await fetch(`${API}/trash/empty`, {
+      const res = await fetch('/api/backend/trash/empty', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Empty trash failed')
       setFiles([])
@@ -151,12 +142,13 @@ export default function TrashPage() {
           <p className="text-gray-500">Loading your trash...</p>
         </div>
       ) : files.length === 0 ? (
-        <div className="text-center py-20 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
-          <div className="bg-gray-100 dark:bg-gray-800 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Trash2 size={40} className="text-gray-400" />
-          </div>
-          <h3 className="text-xl font-medium text-gray-900 dark:text-white">Trash is empty</h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Any files you delete will appear here.</p>
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+          <EmptyState
+            data-testid="trash-empty-state"
+            icon={<Trash2 size={40} className="text-gray-400" />}
+            title="Trash is empty"
+            description="Any files you delete will appear here."
+          />
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">

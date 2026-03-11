@@ -12,7 +12,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTransferContext, TransferItem as TransferItemType } from '../../context/TransferContext';
 import { TransferItem } from './TransferItem';
 import { formatBytes } from '@/lib/providers/types';
@@ -32,6 +32,8 @@ export const TransferTray: React.FC = () => {
     transfers,
     activeCount,
     hasActiveTransfers,
+    rateLimited,
+    retryAfter,
     cancelTransfer,
     retryTransfer,
     dismissTransfer,
@@ -40,6 +42,27 @@ export const TransferTray: React.FC = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [previewPanelOpen, setPreviewPanelOpen] = useState(false);
+
+  // Countdown timer for rate limit
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (rateLimited && retryAfter) {
+      setCountdown(retryAfter);
+      const interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === null || prev <= 1) {
+            clearInterval(interval);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setCountdown(null);
+    }
+  }, [rateLimited, retryAfter]);
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return undefined;
@@ -115,12 +138,22 @@ export const TransferTray: React.FC = () => {
   if (!isOpen && !hasActiveTransfers) {
     return (
       <button
+        data-transfer-tray
         onClick={() => setIsOpen(true)}
         style={trayStyle}
-        className="cf-liquid fixed bottom-4 z-50 rounded-[24px] p-3 text-[var(--cf-text-1)] shadow-[var(--cf-shadow-strong)] transition-colors hover:bg-[var(--cf-panel-soft)] hover:text-[var(--cf-text-0)]"
-        aria-label="Show transfers"
+        className={`cf-liquid fixed bottom-4 z-50 rounded-[24px] p-3 shadow-[var(--cf-shadow-strong)] transition-colors ${
+          rateLimited
+            ? 'border-[rgba(245,158,11,0.4)] bg-[rgba(245,158,11,0.15)] text-[#f59e0b] hover:bg-[rgba(245,158,11,0.2)]'
+            : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-panel-soft)] hover:text-[var(--cf-text-0)]'
+        }`}
+        aria-label={rateLimited ? `Rate limited, retry in ${countdown || retryAfter}s` : 'Show transfers'}
       >
         <span className="text-lg">⇅</span>
+        {rateLimited && (
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#f59e0b] text-xs text-white">
+            !
+          </span>
+        )}
       </button>
     );
   }
@@ -129,18 +162,27 @@ export const TransferTray: React.FC = () => {
   if (!isOpen && hasActiveTransfers) {
     return (
       <button
+        data-transfer-tray
         onClick={() => setIsOpen(true)}
         style={trayStyle}
-        className="cf-liquid fixed bottom-4 z-50 rounded-[24px] border-[rgba(74,158,255,0.26)] bg-[rgba(74,158,255,0.14)] p-2.5 text-[var(--cf-blue)] shadow-[var(--cf-shadow-strong)] transition-colors hover:bg-[rgba(74,158,255,0.18)]"
-        aria-label={`${activeCount} active transfer${activeCount > 1 ? 's' : ''}`}
+        className={`cf-liquid fixed bottom-4 z-50 rounded-[24px] p-2.5 shadow-[var(--cf-shadow-strong)] transition-colors ${
+          rateLimited
+            ? 'border-[rgba(245,158,11,0.4)] bg-[rgba(245,158,11,0.15)] text-[#f59e0b] hover:bg-[rgba(245,158,11,0.2)]'
+            : 'border-[rgba(74,158,255,0.26)] bg-[rgba(74,158,255,0.14)] text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]'
+        }`}
+        aria-label={rateLimited ? `Rate limited, ${activeCount} active, retry in ${countdown || retryAfter}s` : `${activeCount} active transfer${activeCount > 1 ? 's' : ''}`}
       >
         <div className="relative">
           <span className="text-lg">⇅</span>
-          {activeCount > 0 && (
+          {rateLimited ? (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#f59e0b] text-xs text-white">
+              !
+            </span>
+          ) : activeCount > 0 ? (
             <span data-testid="activeBadge" className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--cf-red)] text-xs text-white">
               {activeCount > 9 ? '9+' : activeCount}
             </span>
-          )}
+          ) : null}
         </div>
       </button>
     );
@@ -148,7 +190,8 @@ export const TransferTray: React.FC = () => {
 
   // Tray is expanded
   return (
-    <div 
+    <div
+      data-transfer-tray
       data-testid="cf-transfer-tray"
       style={trayStyle}
       className="cf-liquid fixed bottom-4 z-50 w-[22rem] max-h-[32rem] overflow-hidden rounded-[30px] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)]"
@@ -196,6 +239,18 @@ export const TransferTray: React.FC = () => {
             </div>
           </div>
         </div>
+        {/* Rate Limit Indicator */}
+        {rateLimited && (
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.1)] px-3 py-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(245,158,11,0.2)] text-sm">⚠</span>
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-[#f59e0b]">Rate Limited</p>
+              <p className="text-xs text-[var(--cf-text-2)]">
+                Retry in {countdown !== null ? `${countdown}s` : `${retryAfter}s`}
+              </p>
+            </div>
+          </div>
+        )}
         <div className="mt-3 flex items-center justify-between gap-2">
           <button
             onClick={() => setIsOpen(false)}

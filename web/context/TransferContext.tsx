@@ -25,11 +25,14 @@ export interface TransferContextValue {
   transfers: TransferItem[];
   activeCount: number;
   hasActiveTransfers: boolean;
+  rateLimited: boolean;
+  retryAfter: number | null;
   startTransfer: (options: TransferOptions) => Promise<string>;
   cancelTransfer: (jobId: string) => Promise<void>;
   retryTransfer: (jobId: string) => Promise<void>;
   dismissTransfer: (jobId: string) => void;
   refreshTransfers: () => Promise<void>;
+  clearRateLimit: () => void;
 }
 
 export interface TransferOptions {
@@ -60,6 +63,45 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   const [isPolling, setIsPolling] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
+  const [retryAfter, setRetryAfter] = useState<number | null>(null);
+
+  /**
+   * Clear rate limit state
+   */
+  const clearRateLimit = useCallback(() => {
+    setRateLimited(false);
+    setRetryAfter(null);
+  }, []);
+
+  /**
+   * Handle rate limit (429) response
+   */
+  const handleRateLimit = useCallback((response: Response): boolean => {
+    if (response.status === 429) {
+      const retryAfterHeader = response.headers.get('Retry-After');
+      const seconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : 60;
+      if (!isNaN(seconds) && seconds > 0) {
+        setRateLimited(true);
+        setRetryAfter(seconds);
+        // Auto-clear after retry interval
+        setTimeout(() => {
+          setRateLimited(false);
+          setRetryAfter(null);
+        }, seconds * 1000);
+        return true;
+      }
+      // Default to 60 seconds if no valid header
+      setRateLimited(true);
+      setRetryAfter(60);
+      setTimeout(() => {
+        setRateLimited(false);
+        setRetryAfter(null);
+      }, 60000);
+      return true;
+    }
+    return false;
+  }, []);
 
   /**
    * Start a new transfer via API
@@ -70,6 +112,11 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(options),
     });
+
+    // Check for rate limiting
+    if (handleRateLimit(response)) {
+      throw new Error('Rate limited. Please wait before starting new transfers.');
+    }
 
     const result = await response.json();
 
@@ -92,7 +139,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     setTransfers(prev => [newTransfer, ...prev]);
 
     return result.jobId;
-  }, []);
+  }, [handleRateLimit]);
 
   /**
    * Cancel a transfer
@@ -159,6 +206,10 @@ export function TransferProvider({ children }: { children: ReactNode }) {
         setIsAuthenticated(false);
         return;
       }
+      // Check for rate limiting
+      if (handleRateLimit(response)) {
+        return;
+      }
       const result = await response.json();
 
       if (result.success) {
@@ -173,7 +224,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to refresh transfers:', error);
     }
-  }, [transfers]);
+  }, [transfers, handleRateLimit]);
 
   const pathname = usePathname();
 
@@ -423,11 +474,14 @@ export function TransferProvider({ children }: { children: ReactNode }) {
         transfers,
         activeCount,
         hasActiveTransfers,
+        rateLimited,
+        retryAfter,
         startTransfer,
         cancelTransfer,
         retryTransfer,
         dismissTransfer,
         refreshTransfers,
+        clearRateLimit,
       }}
     >
       {children}
