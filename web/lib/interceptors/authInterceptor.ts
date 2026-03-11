@@ -65,12 +65,15 @@ export async function authInterceptor(
 ): Promise<Response> {
   let retryCount = 0;
 
+  // Ensure credentials are included for all requests by default
+  const finalOptions = {
+    ...options,
+    credentials: options.credentials || 'include', // Only set default if not already specified
+  };
+
   while (retryCount <= maxRetries) {
     try {
-      const response = await fetch(url, {
-        credentials: 'include',
-        ...options,
-      });
+      const response = await fetch(url, finalOptions);
 
       // Not a 401 - return as-is
       if (response.status !== 401) {
@@ -81,13 +84,30 @@ export async function authInterceptor(
       retryCount++;
       
       if (retryCount > maxRetries) {
-        // Max retries exceeded - redirect to login or throw
-        window.location.href = '/login?reason=session_expired';
-        throw new Error('Session expired - redirecting to login');
+        // Max retries exceeded - dispatch event instead of direct redirect to reduce noise
+        // This allows the UI to handle session expiration gracefully
+        const event = new CustomEvent('cacheflow:session-expired', {
+          detail: { url, status: response.status }
+        });
+        window.dispatchEvent(event);
+        
+        // Return the 401 response so callers can handle it appropriately
+        return response;
       }
 
       // Refresh the token
-      await refreshAuthToken();
+      try {
+        await refreshAuthToken();
+      } catch (refreshError) {
+        // Dispatch session-expired event when refresh fails
+        const event = new CustomEvent('cacheflow:session-expired', {
+          detail: { url, status: 401 }
+        });
+        window.dispatchEvent(event);
+        
+        // Re-throw the original error so callers can observe the failure
+        throw refreshError;
+      }
 
       // Retry the original request with updated credentials
       // Note: cookies are automatically included via credentials: 'include'
