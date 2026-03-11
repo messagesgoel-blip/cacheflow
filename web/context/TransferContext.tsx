@@ -68,6 +68,8 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [rateLimitExpiry, setRateLimitExpiry] = useState<number | null>(null);
   const rateLimitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const initialRefreshStartedRef = useRef(false);
+  const initialRefreshCompletedRef = useRef(false);
 
   /**
    * Clear rate limit state
@@ -468,13 +470,20 @@ export function TransferProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!authChecked || !isAuthenticated) return;
+    if (initialRefreshStartedRef.current) return;
+
+    initialRefreshStartedRef.current = true;
 
     // Use refreshTransfers to ensure rate-limit handling is applied
     refreshTransfers()
       .catch(() => {})
+      .finally(() => {
+        initialRefreshCompletedRef.current = true;
+      })
   }, [authChecked, isAuthenticated, refreshTransfers])
   useEffect(() => {
     if (!authChecked || !isAuthenticated) return;
+    if (!initialRefreshCompletedRef.current) return;
 
     if (transfers.length === 0) {
       // Use refreshTransfers to ensure rate-limit handling is applied
