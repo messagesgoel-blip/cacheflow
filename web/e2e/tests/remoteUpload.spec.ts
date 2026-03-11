@@ -46,18 +46,23 @@ test.describe('Remote Upload + Auto Placement', () => {
 
   test('TRANSFER-1: remote upload succeeds with local source URL and provider target', async ({ page }) => {
     await page.goto('/files');
-    const res = await page.request.post('/api/remote-upload', {
-      data: {
-        url: `${new URL(page.url()).origin}/manifest.json`,
-        provider: 'aws_s3',
-        filename: 'manifest-copy.json',
-        metadata: {
-          task: '4.15',
-          flow: 'e2e',
-        },
-      },
+    const result = await page.evaluate(async () => {
+      const res = await fetch('/api/remote-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          url: `${window.location.origin}/manifest.json`,
+          provider: 'aws_s3',
+          filename: 'manifest-copy.json',
+          metadata: {
+            task: '4.15',
+            flow: 'e2e',
+          },
+        }),
+      });
+      return { status: res.status, body: await res.json() };
     });
-    const result = { status: res.status(), body: await res.json() };
 
     expect(result.status).toBe(200);
     const body = result.body as Record<string, any>;
@@ -73,13 +78,18 @@ test.describe('Remote Upload + Auto Placement', () => {
 
   test('TRANSFER-1: remote upload rejects malformed URL input', async ({ page }) => {
     await page.goto('/files');
-    const res = await page.request.post('/api/remote-upload', {
-      data: {
-        url: 'not-a-valid-url',
-        provider: 'aws_s3',
-      },
+    const result = await page.evaluate(async () => {
+      const res = await fetch('/api/remote-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          url: 'not-a-valid-url',
+          provider: 'aws_s3',
+        }),
+      });
+      return { status: res.status, body: await res.json() };
     });
-    const result = { status: res.status(), body: await res.json() };
 
     expect(result.status).toBe(400);
     const body = result.body as Record<string, any>;

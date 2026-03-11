@@ -122,16 +122,21 @@ test.describe('Zero-Disk Transfer & Tab-Close Survival', () => {
     await expect(page).toHaveURL(/\/files/);
 
     // 1. Trigger transfer via API directly to ensure we use the server-side path
-    await page.request.post('/api/transfers', {
-      data: {
-        sourceProvider: 'google',
-        destProvider: 'dropbox',
-        fileId: 'file-large-123',
-        fileName: FILE_NAME,
-        fileSize: FILE_SIZE,
-        operation: 'copy'
-      }
-    });
+    await page.evaluate(async ({ fileName, fileSize }) => {
+      await fetch('/api/transfers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          sourceProvider: 'google',
+          destProvider: 'dropbox',
+          fileId: 'file-large-123',
+          fileName,
+          fileSize,
+          operation: 'copy'
+        })
+      });
+    }, { fileName: FILE_NAME, fileSize: FILE_SIZE });
 
     // 2. Verify TransferTray appears and shows the transfer
     const tray = page.getByTestId('cf-transfer-tray');

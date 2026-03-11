@@ -144,36 +144,46 @@ test.describe('Share Links (Task 4.11)', () => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
 
-    const firstAttemptRes = await page.request.post('/api/share', {
-      data: {
-        fileId: 'file-share-1',
-        password: 'Secret123!',
-        expiresAt: '2026-03-05T12:00:00.000Z',
-        maxDownloads: 3,
-      },
-    });
+    const firstAttempt = await page.evaluate(async () => {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          fileId: 'file-share-1',
+          password: 'Secret123!',
+          expiresAt: '2026-03-05T12:00:00.000Z',
+          maxDownloads: 3,
+        }),
+      });
 
-    const firstAttempt = {
-      status: firstAttemptRes.status(),
-      json: await firstAttemptRes.json(),
-    };
+      return {
+        status: res.status,
+        json: await res.json(),
+      };
+    });
 
     expect(firstAttempt.status).toBe(403);
     expect(firstAttempt.json.error).toContain('2FA');
 
-    const secondAttemptRes = await page.request.post('/api/share', {
-      data: {
-        fileId: 'file-share-1',
-        password: 'Secret123!',
-        expiresAt: '2026-03-05T12:00:00.000Z',
-        maxDownloads: 3,
-      },
-    });
+    const secondAttempt = await page.evaluate(async () => {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          fileId: 'file-share-1',
+          password: 'Secret123!',
+          expiresAt: '2026-03-05T12:00:00.000Z',
+          maxDownloads: 3,
+        }),
+      });
 
-    const secondAttempt = {
-      status: secondAttemptRes.status(),
-      json: await secondAttemptRes.json(),
-    };
+      return {
+        status: res.status,
+        json: await res.json(),
+      };
+    });
 
     expect(secondAttempt.status).toBe(201);
     expect(secondAttempt.json.token).toBe('share-token-abc123');
@@ -334,8 +344,10 @@ test.describe('Share Links (Task 4.11)', () => {
     await page.goto(`/share/${token}`);
     await expect(page.getByRole('heading', { name: 'Shared File' })).toBeVisible();
 
-    const firstRevokeRes = await page.request.post(`/api/share/${shareId}/revoke`);
-    const firstRevoke = { status: firstRevokeRes.status(), json: await firstRevokeRes.json() };
+    const firstRevoke = await page.evaluate(async (id) => {
+      const res = await fetch(`/api/share/${id}/revoke`, { method: 'POST', credentials: 'include' });
+      return { status: res.status, json: await res.json() };
+    }, shareId);
 
     expect(firstRevoke.status).toBe(200);
     expect(firstRevoke.json.success).toBe(true);
@@ -343,8 +355,10 @@ test.describe('Share Links (Task 4.11)', () => {
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Link Unavailable' })).toBeVisible();
 
-    const secondRevokeRes = await page.request.post(`/api/share/${shareId}/revoke`);
-    const secondRevoke = { status: secondRevokeRes.status(), json: await secondRevokeRes.json() };
+    const secondRevoke = await page.evaluate(async (id) => {
+      const res = await fetch(`/api/share/${id}/revoke`, { method: 'POST', credentials: 'include' });
+      return { status: res.status, json: await res.json() };
+    }, shareId);
 
     expect(secondRevoke.status).toBe(429);
     expect(secondRevoke.json.error).toBe('Rate limit exceeded');
