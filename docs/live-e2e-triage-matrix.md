@@ -1,6 +1,7 @@
 # Live E2E Triage Matrix
 
-Date: `2026-03-11`
+Run date: `2026-03-10T23:45:38Z`
+Document updated: `2026-03-11`
 
 Purpose: track the post-green-run implementation and verification backlog exposed by the external live Playwright suite, without losing it under the existing "Version 1 complete" roadmap state.
 
@@ -107,42 +108,10 @@ Follow this queue in order to avoid inconsistency and false classification. If a
 
 ## Ordered Task IDs Only
 
-For dispatching and issue tracking, the canonical ordered list is:
-
-1. `SEC-01`
-2. `APP-01`
-3. `APP-09`
-4. `APP-10`
-5. `APP-02`
-6. `APP-03`
-7. `APP-04`
-8. `APP-05`
-9. `APP-06`
-10. `APP-07`
-11. `APP-08`
-12. `APP-12`
-13. `SPEC-01`
-14. `SPEC-02`
-15. `SPEC-04`
-16. `SPEC-06`
-17. `SPEC-07`
-18. `SPEC-08`
-19. `SPEC-09`
-20. `SPEC-10`
-21. `SPEC-11`
-22. `APP-11`
-23. `SPEC-03`
-24. `SPEC-05`
-25. `APP-13`
-26. `ENV-01`
-27. `ENV-02`
-28. `ENV-03`
-29. `VERIFY-01`
-30. `VERIFY-02`
-31. `VERIFY-03`
-32. `VERIFY-04`
-33. `VERIFY-05`
-34. `VERIFY-06`
+For dispatching and issue tracking, use the dependency-safe order from the
+**Ordered Task Queue** above. That grouped queue is the canonical source for the
+full `SEC-01` through `VERIFY-06` sequence and should be updated in one place
+only to avoid drift.
 
 ## Re-run Gate
 
