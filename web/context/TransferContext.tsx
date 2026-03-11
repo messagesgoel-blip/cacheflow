@@ -188,6 +188,10 @@ export function TransferProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
 
+      if (handleRateLimit(response)) {
+        throw new Error('Rate limited. Please wait before cancelling.');
+      }
+
       const result = await response.json();
 
       if (result.success) {
@@ -199,7 +203,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       console.error('Failed to cancel transfer:', error);
       throw error;
     }
-  }, []);
+  }, [handleRateLimit]);
 
   /**
    * Retry a failed transfer
