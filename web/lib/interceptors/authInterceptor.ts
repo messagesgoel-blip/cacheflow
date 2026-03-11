@@ -86,10 +86,12 @@ export async function authInterceptor(
       if (retryCount > maxRetries) {
         // Max retries exceeded - dispatch event instead of direct redirect to reduce noise
         // This allows the UI to handle session expiration gracefully
-        const event = new CustomEvent('cacheflow:session-expired', {
-          detail: { url, status: response.status }
-        });
-        window.dispatchEvent(event);
+        if (typeof window !== 'undefined') {
+          const event = new CustomEvent('cacheflow:session-expired', {
+            detail: { url, status: response.status }
+          });
+          window.dispatchEvent(event);
+        }
         
         // Return the 401 response so callers can handle it appropriately
         return response;
