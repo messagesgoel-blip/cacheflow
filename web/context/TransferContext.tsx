@@ -185,6 +185,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch(`/api/transfers/${jobId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       const result = await response.json();
