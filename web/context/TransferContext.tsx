@@ -506,7 +506,8 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       .finally(() => {
         initialRefreshCompletedRef.current = true;
       })
-  }, [authChecked, isAuthenticated, refreshTransfers])
+  }, [authChecked, isAuthenticated, refreshTransfers]);
+
   useEffect(() => {
     if (!authChecked || !isAuthenticated) return;
     if (!initialRefreshCompletedRef.current) return;
