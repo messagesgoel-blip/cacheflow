@@ -3,40 +3,17 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import subprocess
-from pathlib import Path
+import sys
 
-
-def resolve_base() -> Path:
-    explicit = os.environ.get("CACHEFLOW_BASE")
-    if explicit:
-        return Path(explicit).resolve()
-    canonical = Path("/home/sanjay/cacheflow_work")
-    if (canonical / ".git").exists():
-        return canonical.resolve()
-    return Path(__file__).resolve().parent.parent
+from cacheflow_paths import resolve_base, run_git
 
 
 BASE = resolve_base()
 MANIFEST_FILE = BASE / "docs" / "orchestration" / "task-manifest.json"
 UPDATE_SCRIPT = BASE / "scripts" / "update_cacheflow_metrics.py"
 REFRESH_SCRIPT = BASE / "scripts" / "refresh_cacheflow_metrics.sh"
-
-
-def run_git(args: list[str]) -> str:
-    return (
-        subprocess.run(
-            ["git", *args],
-            cwd=str(BASE),
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        .stdout.strip()
-    )
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Update CacheFlow task state from a git commit or merge event.")
@@ -48,7 +25,14 @@ def parse_args() -> argparse.Namespace:
 
 
 def known_task_ids() -> set[str]:
-    manifest = json.loads(MANIFEST_FILE.read_text())
+    if not MANIFEST_FILE.exists():
+        return set()
+    try:
+        manifest = json.loads(MANIFEST_FILE.read_text())
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return set()
+    if not isinstance(manifest, dict):
+        return set()
     return {
         str(task.get("id", "")).strip()
         for task in manifest.get("tasks", [])
@@ -65,7 +49,7 @@ def extract_from_text(task_ids: set[str], text: str) -> set[str]:
 
 
 def extract_from_changed_files(task_ids: set[str], commit_ish: str) -> set[str]:
-    changed = run_git(["show", "--pretty=", "--name-only", commit_ish])
+    changed = run_git(["diff-tree", "-m", "--no-commit-id", "--name-only", "-r", commit_ish])
     found = set()
     for path in changed.splitlines():
         path = path.strip()
@@ -87,21 +71,22 @@ def extract_task_ids(task_ids: set[str], commit_ish: str) -> set[str]:
 
 def main() -> None:
     args = parse_args()
-    task_ids = sorted(set(args.selector) | extract_task_ids(known_task_ids(), args.commit))
+    commit_sha = run_git(["rev-parse", f"{args.commit}^{{commit}}"])
+    task_ids = sorted(set(args.selector) | extract_task_ids(known_task_ids(), commit_sha))
     if not task_ids:
-        print(f"no task ids inferred from {args.commit}; skipping task-state update")
+        print(f"no task ids inferred from {commit_sha}; skipping task-state update")
         return
 
-    message = run_git(["show", "-s", "--format=%s", args.commit])
+    message = run_git(["show", "-s", "--format=%s", commit_sha])
     status_flag = "--under-review" if args.event == "review" else "--complete"
     subprocess.run(
         [
-            "python3",
+            sys.executable,
             str(UPDATE_SCRIPT),
             status_flag,
             *task_ids,
             "--source-commit",
-            args.commit,
+            commit_sha,
             "--source-message",
             message,
         ],
@@ -109,7 +94,7 @@ def main() -> None:
         check=True,
     )
     if args.refresh:
-        subprocess.run([str(REFRESH_SCRIPT)], cwd=str(BASE), check=True)
+        subprocess.run(["bash", str(REFRESH_SCRIPT)], cwd=str(BASE), check=True)
 
 
 if __name__ == "__main__":

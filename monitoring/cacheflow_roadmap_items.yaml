@@ -1,0 +1,179 @@
+generated_at: '2026-03-09T15:31:23+00:00'
+source_document: docs/roadmap.md
+items:
+- item_id: V1-0
+  title: Release Blocker
+  sprint: gate
+  roadmap_version: '1'
+  roadmap_version_title: Version 1
+  stage: V1-0
+  stage_title: Release Blocker
+  item_type: gate
+- item_id: V1-1
+  title: Core Platform
+  sprint: 0-5
+  roadmap_version: '1'
+  roadmap_version_title: Version 1
+  stage: V1-1
+  stage_title: Core Platform
+  item_type: stage
+- item_id: '6.1'
+  title: Quota Alerts + Remote URL Import
+  sprint: '6'
+  roadmap_version: '1'
+  roadmap_version_title: Version 1
+  stage: V1-2
+  stage_title: Power User Essentials
+  item_type: execution
+- item_id: '6.2'
+  title: Real-Time Terminal & Log View
+  sprint: '6'
+  roadmap_version: '1'
+  roadmap_version_title: Version 1
+  stage: V1-2
+  stage_title: Power User Essentials
+  item_type: execution
+- item_id: '6.3'
+  title: Scheduled Backups + Bandwidth Throttle
+  sprint: '6'
+  roadmap_version: '1'
+  roadmap_version_title: Version 1
+  stage: V1-2
+  stage_title: Power User Essentials
+  item_type: execution
+- item_id: '6.4'
+  title: Media Streaming Polish
+  sprint: '6'
+  roadmap_version: '1'
+  roadmap_version_title: Version 1
+  stage: V1-3
+  stage_title: Power User Completion
+  item_type: execution
+- item_id: '6.5'
+  title: File Versioning + Trash Bin
+  sprint: '6'
+  roadmap_version: '1'
+  roadmap_version_title: Version 1
+  stage: V1-3
+  stage_title: Power User Completion
+  item_type: execution
+- item_id: '6.6'
+  title: VPS/SFTP Key Lifecycle
+  sprint: '6'
+  roadmap_version: '1'
+  roadmap_version_title: Version 1
+  stage: V1-3
+  stage_title: Power User Completion
+  item_type: execution
+- item_id: '7'
+  title: Zero-Knowledge Vault
+  sprint: '7'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-A
+  stage_title: Foundation
+  item_type: backlog
+- item_id: '8'
+  title: NAS Bridge + Advanced PWA
+  sprint: '8'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-A
+  stage_title: Foundation
+  item_type: backlog
+- item_id: '9'
+  title: AI FinOps
+  sprint: '9'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-A
+  stage_title: Foundation
+  item_type: backlog
+- item_id: '10'
+  title: MCP + Team Workspaces
+  sprint: '10'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-A
+  stage_title: Foundation
+  item_type: backlog
+- item_id: '11'
+  title: Design Refresh + Observability
+  sprint: '11'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-A
+  stage_title: Foundation
+  item_type: backlog
+- item_id: '12'
+  title: Sync Engine + Rule Engine + Smart Dedup
+  sprint: '12'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-B
+  stage_title: Easy Wins
+  item_type: backlog
+- item_id: '13'
+  title: Conflict Resolution + CLI + Webhooks
+  sprint: '13'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-B
+  stage_title: Easy Wins
+  item_type: backlog
+- item_id: '14'
+  title: Provider Failover + Cost Scheduling + Bundle Shares
+  sprint: '14'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-B
+  stage_title: Easy Wins
+  item_type: backlog
+- item_id: '15'
+  title: Storage Heatmap + Lifecycle Automation
+  sprint: '15'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-C
+  stage_title: Moderate
+  item_type: backlog
+- item_id: '16'
+  title: Storage Mirroring + Uptime Dashboard
+  sprint: '16'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-C
+  stage_title: Moderate
+  item_type: backlog
+- item_id: '17'
+  title: Data Residency Enforcement
+  sprint: '17'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-C
+  stage_title: Moderate
+  item_type: backlog
+- item_id: '18'
+  title: AI-Powered File Organisation
+  sprint: '18'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-D
+  stage_title: Advanced
+  item_type: backlog
+- item_id: '19'
+  title: Embeddable File Picker SDK
+  sprint: '19'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-D
+  stage_title: Advanced
+  item_type: backlog
+- item_id: '20'
+  title: Carbon + Energy Tracking
+  sprint: '20'
+  roadmap_version: '2'
+  roadmap_version_title: Version 2
+  stage: V2-D
+  stage_title: Advanced
+  item_type: backlog

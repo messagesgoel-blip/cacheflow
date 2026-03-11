@@ -6,11 +6,11 @@
  * (no extra Redis client per request).
  *
  * Gate: SSE-1
- * Task: 3.2@SSE-1
+ * Task: 3.2@SSE-1, 6.2@LOGS-1
  */
 
 import { EventEmitter } from 'events';
-import { progressBridge, ProgressUpdate } from './progressBridge';
+import { progressBridge, ProgressUpdate, WorkerLogEntry } from './progressBridge';
 
 const MAX_LISTENERS = 500;
 
@@ -50,6 +50,23 @@ class ProgressEmitter extends EventEmitter {
       userId,
       handler,
       (err) => console.error('[ProgressEmitter] user subscription error', err)
+    );
+  }
+
+  /**
+   * Subscribe to worker log events for a specific job.
+   * LOGS-1: Enables terminal-style log streaming.
+   */
+  onJobLogs(
+    userId: string,
+    jobId: string,
+    handler: (entry: WorkerLogEntry) => void
+  ): () => void {
+    return progressBridge.subscribeToJobLogs(
+      userId,
+      jobId,
+      handler,
+      (err) => console.error('[ProgressEmitter] job log subscription error', err)
     );
   }
 }

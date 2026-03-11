@@ -15,6 +15,7 @@ Canonical sprint definitions aligned to `docs/roadmap.md`.
 - Sprint 7 is the active planning sprint after Version 1 completion.
 - Sprints 7-20 are defined planning specs only until they are decomposed into executable manifest tasks.
 - `docs/orchestration/task-manifest.json` remains the executable source for active work.
+- `logs/orchestrator-state.json` is the runtime state source for the currently running sprint/status.
 - `docs/sprints/` is the human-readable sprint planning directory for the full roadmap.
 
 ## Outputs

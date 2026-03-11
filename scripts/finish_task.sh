@@ -39,6 +39,21 @@ detect_agent_from_tty() {
   tr -d ' \t\r\n' < "$map_file"
 }
 
+mark_active_tty() {
+  local agent_name="$1"
+  local source="${2:-finish_task}"
+  local tty_name state_dir state_file ts agent_key
+  tty_name="$(tty 2>/dev/null || true)"
+  [[ "$tty_name" == /dev/* ]] || return 0
+  agent_key="$(printf '%s' "${agent_name,,}" | sed 's#[^a-z0-9._-]#-#g')"
+  state_dir="$repo_root/.context/cache_state/active_agent_tty"
+  state_file="$state_dir/${agent_key}.json"
+  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  mkdir -p "$state_dir"
+  printf '{\n  "agent": "%s",\n  "ttyPath": "%s",\n  "source": "%s",\n  "updatedAt": "%s"\n}\n' \
+    "$agent_name" "$tty_name" "$source" "$ts" >"$state_file"
+}
+
 normalize_agent() {
   local raw="${1,,}"
   case "$raw" in
@@ -136,6 +151,7 @@ if [ -z "$agent" ]; then
   agent="$(detect_agent_from_tty 2>/dev/null || true)"
 fi
 agent="$(normalize_agent "${agent:-unknown}")"
+mark_active_tty "$agent" "finish_task"
 
 echo "finish-task: task=${task_key} agent=${agent}"
 
@@ -147,6 +163,7 @@ if [ "${#test_cmds[@]}" -gt 0 ]; then
 fi
 
 commit_created=0
+published_work=0
 if [ "$skip_commit" -eq 0 ]; then
   if [ "$stage_all" -eq 1 ]; then
     git add -A
@@ -169,12 +186,35 @@ if [ "$skip_commit" -eq 0 ]; then
 fi
 
 if [ "$skip_push" -eq 0 ]; then
-  git pull --rebase --autostash
-  git push
-fi
-
-if [ "$commit_created" -eq 1 ]; then
-  python3 scripts/update_cacheflow_task_state_from_git.py --event review --commit HEAD --selector "$task_key" --refresh || true
+  if git rev-parse --verify '@{upstream}' >/dev/null 2>&1; then
+    git pull --rebase --autostash
+    if [ "$(git rev-list --count '@{upstream}..HEAD')" -gt 0 ]; then
+      published_work=1
+    fi
+    git push
+  else
+    published_work=1
+    git push --set-upstream origin HEAD
+  fi
+  if [ "$published_work" -eq 1 ]; then
+    if command -v gh >/dev/null 2>&1; then
+      watch_out="$(mktemp)"
+      trap 'rm -f "$watch_out"' EXIT
+      if python3 scripts/watch_pr_feedback.py start --agent "$agent" --task "$task_key" >"$watch_out" 2>&1; then
+        sed 's/^/pr-feedback-watch: /' "$watch_out" || true
+      else
+        sed 's/^/pr-feedback-watch: /' "$watch_out" >&2 || true
+      fi
+      echo "pr-feedback-check: python3 scripts/watch_pr_feedback.py check"
+    fi
+    if ! python3 scripts/update_cacheflow_task_state_from_git.py --event review --commit HEAD --selector "$task_key" --refresh; then
+      echo "finish-task: warning: post-push task-state update failed for $task_key" >&2
+    fi
+  else
+    echo "finish-task: no commits published; skipping task-state update"
+  fi
+elif [ "$commit_created" -eq 1 ]; then
+  echo "finish-task: skipping task-state update because push was skipped"
 fi
 
 if [ "$skip_release" -eq 0 ]; then
