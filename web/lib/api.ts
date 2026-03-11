@@ -84,7 +84,9 @@ export async function uploadFile(file: File, token: string, path?: string) {
     throw new Error(error.error || `Upload failed with status ${res.status}`)
   }
 
-  return res.json()
+  // Return the created file object to enable downstream operations
+  const result = await res.json()
+  return result.file || result // Return file object if available, otherwise return full response
 }
 
 export async function downloadFile(id: string, filename: string, token: string) {
