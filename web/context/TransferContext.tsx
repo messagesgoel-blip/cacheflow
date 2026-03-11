@@ -205,9 +205,15 @@ export function TransferProvider({ children }: { children: ReactNode }) {
    * Retry a failed transfer
    */
   const retryTransfer = useCallback(async (jobId: string): Promise<void> => {
+    // Check if rate limited before making request
+    if (rateLimited) {
+      throw new Error('Rate limited. Please wait before retrying.');
+    }
+
     try {
       const response = await fetch(`/api/transfers/${jobId}/retry`, {
         method: 'POST',
+        credentials: 'include',
       });
 
       // Check for rate limiting before parsing JSON
@@ -230,7 +236,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       console.error('Failed to retry transfer:', error);
       throw error;
     }
-  }, [handleRateLimit]);
+  }, [handleRateLimit, rateLimited]);
 
   /**
    * Dismiss a completed/failed transfer from the list
