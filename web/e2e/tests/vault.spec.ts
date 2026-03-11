@@ -84,6 +84,7 @@ test.describe('Vault / Private Folder E2E', () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ pin }),
         });
         return { status: res.status, body: await res.json() };
@@ -118,6 +119,7 @@ test.describe('Vault / Private Folder E2E', () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ pin: '9999' }),
         });
         return { status: res.status, body: await res.json() };

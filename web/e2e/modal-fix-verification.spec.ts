@@ -81,7 +81,7 @@ test('Verification: Modal lifecycle and ActionLogger correlation', async ({ page
   await expect(page.getByText('VerifyMe.txt').first()).toBeVisible({ timeout: 15000 })
 
   const row = page.locator('[data-testid="cf-file-row"]').filter({ hasText: 'VerifyMe.txt' }).first()
-  await row.getByTestId('cf-row-checkbox').click({ force: true })
+  await row.getByRole('checkbox').click({ force: true })
   const toolbar = page.getByTestId('cf-selection-toolbar')
   await expect(toolbar).toBeVisible({ timeout: 10000 })
   const modalOverlay = page.getByTestId('rename-modal-overlay')

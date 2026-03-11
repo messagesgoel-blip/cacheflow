@@ -114,7 +114,7 @@ test('localhost login and tab navigation', async ({ page }, testInfo) => {
   await page.screenshot({ path: shotPath(id, 'files_tab'), fullPage: true })
 
   // Navigate to cloud drives (connections page)
-  const cloudDrivesLink = page.getByRole('link', { name: /cloud drives|connections|drives/i }).first()
+  const cloudDrivesLink = page.getByRole('link', { name: /your drives|cloud drives|connections|drives/i }).first()
   if (await cloudDrivesLink.isVisible({ timeout: 3000 }).catch(() => false)) {
     await cloudDrivesLink.click()
     await page.waitForTimeout(800)

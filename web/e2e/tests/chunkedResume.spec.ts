@@ -232,6 +232,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
         await fetch(`/api/transfers/${id}/chunks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ fileName: name, fileSize: size, chunkSize: chunk })
         });
         
@@ -239,6 +240,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
         await fetch(`/api/transfers/${id}/chunks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ chunkIndex: 0 })
         });
         
@@ -246,6 +248,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
         const res1 = await fetch(`/api/transfers/${id}/chunks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ chunkIndex: 1 })
         });
         
@@ -266,7 +269,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       
       const fetchFailed = await page.evaluate(async (id) => {
         try {
-          await fetch(`/api/transfers/${id}/chunks`, { method: 'GET' });
+          await fetch(`/api/transfers/${id}/chunks`, { method: 'GET', credentials: 'include' });
           return false;
         } catch (e) {
           return true;
@@ -284,7 +287,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
       await context.setOffline(false);
       
       const resumeState = await page.evaluate(async (id) => {
-        const res = await fetch(`/api/transfers/${id}/chunks`, { method: 'GET' });
+        const res = await fetch(`/api/transfers/${id}/chunks`, { method: 'GET', credentials: 'include' });
         return res.json();
       }, TRANSFER_ID);
 
@@ -302,6 +305,7 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
           const res = await fetch(`/api/transfers/${id}/chunks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ chunkIndex: i })
           });
           lastRes = await res.json();

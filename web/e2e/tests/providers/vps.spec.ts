@@ -86,14 +86,16 @@ function cardByLabel(page: Page, label: string) {
 
 async function login(page: Page) {
   const emailInput = page
-    .locator(
-      'input[placeholder*="email" i], input[type="email"], input[name*="email" i], input[id*="email" i]',
-    )
+    .locator('input[placeholder*="email" i]')
+    .or(page.locator('input[type="email"]'))
+    .or(page.locator('input[name*="email" i]'))
+    .or(page.locator('input[id*="email" i]'))
     .first()
   const passwordInput = page
-    .locator(
-      'input[placeholder*="password" i], input[type="password"], input[name*="password" i], input[id*="password" i]',
-    )
+    .locator('input[placeholder*="password" i]')
+    .or(page.locator('input[type="password"]'))
+    .or(page.locator('input[name*="password" i]'))
+    .or(page.locator('input[id*="password" i]'))
     .first()
 
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
@@ -105,19 +107,8 @@ async function login(page: Page) {
   await page.waitForLoadState('domcontentloaded', { timeout: 20_000 }).catch(() => {})
   await page.waitForURL(/\/files|\/providers|\/remotes|\/connections|\/$/, { timeout: 20_000 }).catch(() => {})
 
-  const hasSession = await page.evaluate(async () => {
-    try {
-      const response = await fetch('/api/auth/session', {
-        credentials: 'include',
-        cache: 'no-store',
-      })
-      if (!response.ok) return false
-      const payload = await response.json().catch(() => ({}))
-      return Boolean(payload?.authenticated)
-    } catch {
-      return false
-    }
-  })
+  const sessionRes = await page.request.get('/api/auth/session').catch(() => null)
+  const hasSession = sessionRes?.ok() ? (await sessionRes.json().catch(() => ({}))).authenticated : false
 
   if (hasSession) return
 
@@ -322,7 +313,7 @@ async function selectFileInUnifiedBrowser(page: Page, fileName: string) {
     .filter({ hasText: fileName })
     .first()
   await expect(row).toBeVisible({ timeout: 60_000 })
-  await row.getByTestId('cf-row-checkbox').check()
+  await row.getByRole('checkbox').click({ force: true })
   await expect(page.getByTestId('cf-selection-toolbar')).toBeVisible({ timeout: 30_000 })
 }
 

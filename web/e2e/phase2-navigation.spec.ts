@@ -98,7 +98,7 @@ test('Phase 2 Verification: Structural Navigation', async ({ page, request }) =>
 
     const fileRow = page.locator('[data-testid="cf-file-row"]').filter({ hasText: 'File from GOOGLE A.txt' }).first()
     await expect(fileRow).toBeVisible({ timeout: 15000 })
-    await fileRow.getByTestId('cf-row-checkbox').click({ force: true })
+    await fileRow.getByRole('checkbox').click({ force: true })
     await expect(page.getByTestId('cf-selection-toolbar')).toBeVisible({ timeout: 10000 })
     await expect(page.getByTestId('cf-selection-toolbar')).toContainText('1 item selected')
     results.sections.selectionToolbarContext = 'PASS'

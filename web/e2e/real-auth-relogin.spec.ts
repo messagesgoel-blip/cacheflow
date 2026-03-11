@@ -20,93 +20,48 @@ async function shot(page: any, name: string) {
 }
 
 async function hasAuthenticatedSession(page: any): Promise<boolean> {
-  return page.evaluate(async () => {
-    try {
-      const res = await fetch('/api/auth/session', { credentials: 'include', cache: 'no-store' })
-      if (!res.ok) return false
-      const body = await res.json().catch(() => ({}))
-      return Boolean(body?.authenticated)
-    } catch {
-      return false
-    }
-  })
+  try {
+    const res = await page.request.get('/api/auth/session').catch(() => null)
+    if (!res || !res.ok()) return false
+    const body = await res.json().catch(() => ({}))
+    return Boolean(body?.authenticated)
+  } catch {
+    return false
+  }
 }
 
 function emailLocator(page: any) {
-  return page.locator('input[placeholder*="email" i], input[type="email"], input[name*="email" i], input[id*="email" i]').first()
+  return page.getByTestId('email-input')
 }
 
 function passwordLocator(page: any) {
-  return page.locator('input[placeholder*="password" i], input[type="password"], input[name*="password" i], input[id*="password" i]').first()
+  return page.getByTestId('password-input')
 }
 
 async function login(page: any) {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  let email = emailLocator(page)
-  let password = passwordLocator(page)
-
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (await email.count()) break
-    const loginButton = page.getByRole('button', { name: /^log in$/i }).first()
-    const loginLink = page.getByRole('link', { name: /^log in$/i }).first()
-    if (await loginButton.count()) {
-      await loginButton.click({ timeout: 7000 }).catch(() => {})
-      await page.waitForLoadState('domcontentloaded').catch(() => {})
-      await page.waitForTimeout(1200)
-    } else if (await loginLink.count()) {
-      await loginLink.click({ timeout: 7000 }).catch(() => {})
-      await page.waitForLoadState('domcontentloaded').catch(() => {})
-      await page.waitForTimeout(1200)
-    } else {
-      await page.goto('/?mode=login', { waitUntil: 'domcontentloaded' })
-      await page.waitForTimeout(800)
-    }
-    if (!await email.count()) {
-      await page.goto('/?mode=login', { waitUntil: 'domcontentloaded' }).catch(() => {})
-      await page.waitForTimeout(800)
-    }
-    email = emailLocator(page)
-    password = passwordLocator(page)
+  await page.goto('/login', { waitUntil: 'networkidle' })
+  
+  // If redirected to home with mode=login, wait for it
+  if (page.url().includes('mode=login') || page.url().endsWith('/')) {
+    await expect(page.getByTestId('email-input')).toBeVisible({ timeout: 20_000 })
   }
+
+  const email = emailLocator(page)
+  const password = passwordLocator(page)
 
   await expect(email).toBeVisible({ timeout: 20_000 })
   await expect(password).toBeVisible({ timeout: 20_000 })
   await email.fill(EMAIL)
   await password.fill(PASSWORD)
-  await page.click('button[type="submit"]')
-  await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {})
-  await page.waitForURL(/\/files|\/providers|\/remotes|\/connections|\/$/, { timeout: 10000 }).catch(() => {})
+  await page.getByTestId('submit-button').click()
+  
+  await page.waitForURL(/\/files|\/providers|\/remotes|\/connections|\/$/, { timeout: 20_000 })
   const sidebarRoot = page.getByTestId('cf-sidebar-root')
-  for (let attempt = 0; attempt < 2; attempt++) {
-    await page.goto('/files', { waitUntil: 'domcontentloaded' }).catch(() => {})
-    if (await sidebarRoot.isVisible().catch(() => false)) break
-    if (attempt === 0) {
-      const retryEmail = emailLocator(page)
-      const retryPassword = passwordLocator(page)
-      if (await retryEmail.isVisible().catch(() => false)) {
-        await retryEmail.fill(EMAIL).catch(() => {})
-        await retryPassword.fill(PASSWORD).catch(() => {})
-        await page.click('button[type="submit"]').catch(() => {})
-        await page.waitForLoadState('domcontentloaded').catch(() => {})
-      }
-    }
-  }
-  let authenticated = await sidebarRoot.isVisible().catch(() => false)
-  if (!authenticated) {
-    authenticated = await hasAuthenticatedSession(page)
-  }
-  if (!authenticated) {
-    const apiLogin = await page.request.post('/api/auth/login', {
-      data: { email: EMAIL, password: PASSWORD },
-      failOnStatusCode: false,
-    }).catch(() => null)
-    if (apiLogin?.ok()) {
-      await page.goto('/files', { waitUntil: 'domcontentloaded' }).catch(() => {})
-      authenticated =
-        (await sidebarRoot.isVisible().catch(() => false)) ||
-        (await hasAuthenticatedSession(page))
-    }
-  }
+  
+  // Ensure we are on the files page and sidebar is visible
+  await expect(sidebarRoot).toBeVisible({ timeout: 20_000 })
+  
+  let authenticated = await hasAuthenticatedSession(page)
   if (!authenticated) {
     console.log('Login verification inconclusive on real site; continuing without hard failure')
     await shot(page, 'relogin-inconclusive-auth')
@@ -119,7 +74,7 @@ async function logout(page: any) {
   const candidates = [
     page.getByRole('button', { name: /logout|sign out/i }).first(),
     page.getByRole('link', { name: /logout|sign out/i }).first(),
-    page.locator('[data-testid="cf-nav-logout"], [data-testid="logout-button"]').first(),
+    page.getByTestId('cf-nav-logout').or(page.getByTestId('logout-button')).first(),
   ]
 
   let clicked = false

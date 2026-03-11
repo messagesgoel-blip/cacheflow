@@ -261,6 +261,30 @@ async function expectLoginLayout(page: Page) {
   expect(Math.abs(heroBox!.y + heroBox!.height - (formBox!.y + formBox!.height))).toBeLessThan(3)
 }
 
+async function expectConnectionsLayout(page: Page) {
+  const list = page.getByTestId('cf-connections-list')
+  await expect(list).toBeVisible({ timeout: 15_000 })
+  
+  // Stabilization wait for cards to settle (SPEC-10)
+  await page.waitForTimeout(1000)
+  
+  const cards = page.locator('[data-testid^="cf-connection-item-"]')
+  const count = await cards.count()
+  if (count >= 2) {
+    const box1 = await cards.nth(0).boundingBox()
+    const box2 = await cards.nth(1).boundingBox()
+    
+    expect(box1).not.toBeNull()
+    expect(box2).not.toBeNull()
+    
+    // On desktop, cards should be in a 2-column grid with matching heights (SPEC-10)
+    if (page.viewportSize()!.width > 768) {
+      expect(Math.abs(box1!.y - box2!.y)).toBeLessThan(5)
+      expect(Math.abs(box1!.height - box2!.height)).toBeLessThan(2)
+    }
+  }
+}
+
 for (const theme of ['light', 'dark'] as const) {
   test.describe(`${theme} theme`, () => {
     test('login page stays vertically centered with matched card heights', async ({ page }, testInfo) => {
@@ -272,6 +296,15 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(page.getByRole('heading', { name: 'Enter the control plane.' })).toBeVisible()
       await expectLoginLayout(page)
       await expectSnapshot(page.locator('.cf-shell-page').first(), `dispatch2-login-desktop-${theme}.png`)
+    })
+
+    test('connections page cards align in grid with stable dimensions', async ({ page, request }, testInfo) => {
+      test.skip(testInfo.project.name !== 'chromium-desktop', 'Desktop-only connections layout check')
+
+      await bootAuthedSurface(page, request, theme)
+      await page.goto('/connections')
+      await expectConnectionsLayout(page)
+      await expectSnapshot(page.locator('.cf-shell-page').first(), `dispatch2-connections-desktop-${theme}.png`)
     })
 
     test('MissionControl mobile status cards collapse into a horizontal strip', async ({ page, request }, testInfo) => {
@@ -329,7 +362,7 @@ for (const theme of ['light', 'dark'] as const) {
 
       await bootAuthedSurface(page, request, theme)
       await page.goto('/providers')
-      const navbar = page.locator('nav').first()
+      const navbar = page.locator('nav').filter({ has: page.locator('span:text("CacheFlow")') }).first()
       const contentHeading = page.getByRole('heading', { name: 'Available Integrations' })
 
       await expect(navbar).toBeVisible({ timeout: 15_000 })

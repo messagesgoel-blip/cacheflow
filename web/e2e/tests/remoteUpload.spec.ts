@@ -9,6 +9,39 @@ import { AutoPlacementEngine } from '../../../lib/placement/autoPlacementEngine'
 
 test.describe('Remote Upload + Auto Placement', () => {
   test.beforeEach(async ({ page }) => {
+    // Mock bootstrap APIs
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ authenticated: true, user: { id: 'test-user', email: 'test@example.com' } }),
+      });
+    });
+
+    await page.route('**/api/connections', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] }),
+      });
+    });
+
+    await page.route('**/api/files**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ files: [], hasMore: false }),
+      });
+    });
+
+    await page.route('**/api/remotes', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([]),
+      });
+    });
+
     await page.route('**/api/remote-upload', async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();
@@ -50,6 +83,7 @@ test.describe('Remote Upload + Auto Placement', () => {
       const res = await fetch('/api/remote-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           url: `${window.location.origin}/manifest.json`,
           provider: 'aws_s3',
@@ -81,6 +115,7 @@ test.describe('Remote Upload + Auto Placement', () => {
       const res = await fetch('/api/remote-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           url: 'not-a-valid-url',
           provider: 'aws_s3',
