@@ -89,7 +89,7 @@ export async function uploadFile(file: File, token: string, path?: string) {
   if (result.file && typeof result.file === 'object' && result.file.id) {
     return result.file // Return the file object if it exists and has expected properties
   } else {
-    throw new Error('Expected file object in upload response but got: ' + JSON.stringify(result))
+    throw new Error('Expected file object with id in upload response')
   }
 }
 
