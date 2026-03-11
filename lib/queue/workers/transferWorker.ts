@@ -94,6 +94,7 @@ async function processTransfer(
     sourceFolderId,
     destFolderId,
     operation,
+    throttle,
   } = job.data;
 
   const startMs = Date.now();
@@ -104,6 +105,9 @@ async function processTransfer(
   );
 
   await job.updateProgress(0);
+
+  // Publish worker log event (LOGS-1)
+  await progressBridge.publishTransferLog(job.id!, userId, 'info', `Starting transfer: ${operation} "${fileName}" (${fileSize} bytes) ${sourceProvider} → ${destProvider}`);
 
   await progressBridge.publishTransferProgress(job.id!, userId, 0, {
     userId,
@@ -136,6 +140,7 @@ async function processTransfer(
       targetAdapter,
       targetAuth,
       targetParentId: destFolderId,
+      throttle,
       onProgress: async ({ percentage }) => {
         await job.updateProgress(percentage);
         await progressBridge.publishTransferProgress(job.id!, userId, percentage, {
@@ -151,6 +156,12 @@ async function processTransfer(
     });
 
     const duration = Date.now() - startMs;
+
+    // Publish worker log event (LOGS-1)
+    await progressBridge.publishTransferLog(job.id!, userId, 'info', `Transfer completed successfully in ${duration}ms`, {
+      bytesTransferred: result.transferredBytes,
+      duration,
+    });
 
     await progressBridge.publishTransferComplete(job.id!, userId, {
       success: true,
@@ -176,6 +187,12 @@ async function processTransfer(
     const duration = Date.now() - startMs;
     const appErr = AppError.fromUnknown(err, ErrorCode.TRANSFER_FAILED);
     const errorMessage = appErr.message;
+
+    // Publish worker log event (LOGS-1)
+    await progressBridge.publishTransferLog(job.id!, userId, 'error', `Transfer failed: ${errorMessage}`, {
+      duration,
+      retryable: appErr.retryable,
+    });
 
     console.error(`[TransferWorker] Failed job ${job.id}: ${errorMessage}`);
 

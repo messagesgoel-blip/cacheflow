@@ -43,11 +43,6 @@ export default function TwoFactorChallengePage() {
 
       if (result.success) {
         toast.success('Authentication successful', '2FA Verified');
-        // Store session token and redirect
-        if (result.sessionToken) {
-          // In production, exchange for full session
-          document.cookie = `sessionToken=${result.sessionToken}; path=/; max-age=${7 * 24 * 60 * 60}`;
-        }
         router.push('/files');
       } else {
         setError(result.error || 'Verification failed');

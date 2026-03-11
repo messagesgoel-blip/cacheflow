@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import ConflictViewer from '@/components/ConflictViewer'
 import { resolveConflict } from '@/lib/api'
 import { useActionCenter } from '@/components/ActionCenterProvider'
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 interface Conflict {
   id: string
@@ -27,11 +26,9 @@ interface Conflict {
 
 export default function ConflictDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const conflictId = params.id as string
 
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const { authenticated, email, loading: sessionLoading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
   const [conflict, setConflict] = useState<Conflict | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -39,33 +36,18 @@ export default function ConflictDetailPage() {
   const actions = useActionCenter()
 
   useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-
-    if (!t) {
-      router.push('/')
-      return
-    }
-
-    setToken(t)
-    setEmail(e || '')
-  }, [router])
-
-  useEffect(() => {
-    if (token) {
+    if (authenticated) {
       fetchConflict()
     }
-  }, [token, conflictId])
+  }, [authenticated, conflictId])
 
   async function fetchConflict() {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch(`${API}/conflicts/${conflictId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch(`/api/backend/conflicts/${conflictId}`, {
+        credentials: 'include',
       })
 
       if (res.status === 404) {
@@ -87,14 +69,14 @@ export default function ConflictDetailPage() {
   }
 
   async function handleResolve(resolution: 'keep_local' | 'keep_remote') {
-    if (!token || !conflict) return
+    if (!conflict) return
 
     setResolving(resolution)
     setError(null)
 
     try {
       const task = actions.startTask({ title: 'Resolving conflict', message: resolution, progress: null })
-      await resolveConflict(conflict.id, resolution, token)
+      await resolveConflict(conflict.id, resolution, '')
 
       // Update conflict status
       setConflict({
@@ -110,13 +92,7 @@ export default function ConflictDetailPage() {
     }
   }
 
-  function handleLogout() {
-    localStorage.removeItem('cf_token')
-    localStorage.removeItem('cf_email')
-    router.push('/')
-  }
-
-  if (!token) {
+  if (sessionLoading || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -141,7 +117,7 @@ export default function ConflictDetailPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-blue-200 text-sm">{email}</span>
-            <button onClick={handleLogout} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
+            <button type="button" onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
           </div>
         </nav>
 
@@ -171,7 +147,7 @@ export default function ConflictDetailPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-blue-200 text-sm">{email}</span>
-            <button onClick={handleLogout} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
+            <button type="button" onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
           </div>
         </nav>
 
@@ -206,7 +182,7 @@ export default function ConflictDetailPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-blue-200 text-sm">{email}</span>
-          <button onClick={handleLogout} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
+          <button type="button" onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
         </div>
       </nav>
 

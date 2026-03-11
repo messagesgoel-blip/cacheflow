@@ -11,10 +11,16 @@ const SETTINGS_KEY = 'cacheflow_settings'
 const MAX_TOKENS_PER_PROVIDER = 3
 const MAX_TOKENS_TOTAL = 15
 
-interface StoredToken extends ProviderToken {
+export interface StoredToken extends ProviderToken {
   accountKey: string
   disabled?: boolean
   remoteId?: string
+}
+
+interface TokenSecretState {
+  accessToken: string
+  refreshToken?: string
+  expiresAt: number | null
 }
 
 interface TokenManagerSettings {
@@ -31,14 +37,11 @@ class TokenManager {
   private settings: TokenManagerSettings
   private refreshTimers: Map<ProviderId, NodeJS.Timeout> = new Map()
   private refreshCallbacks: Map<ProviderId, (token: ProviderToken) => Promise<ProviderToken>> = new Map()
+  private secretCache: Map<string, TokenSecretState> = new Map()
 
   constructor() {
     this.settings = this.loadSettings()
-  }
-
-  /**
-      console.error('[TokenManager] Failed to sync remotes:', err)
-    }
+    this.sanitizePersistedStorage()
   }
 
   // ===========================================================================
@@ -55,11 +58,27 @@ class TokenManager {
 
     const accountKey = token.accountKey || this.buildAccountKey(token)
     const existing = this.getTokens(provider)
+    const secretKey = this.getSecretCacheKey(provider, accountKey)
+    const existingSecrets = this.secretCache.get(secretKey)
+    const nextAccessToken = token.accessToken || existingSecrets?.accessToken || ''
+    const nextRefreshToken = token.refreshToken ?? existingSecrets?.refreshToken
+    const nextExpiresAt = token.expiresAt ?? existingSecrets?.expiresAt ?? null
+
+    if (nextAccessToken || nextRefreshToken) {
+      this.secretCache.set(secretKey, {
+        accessToken: nextAccessToken,
+        refreshToken: nextRefreshToken,
+        expiresAt: nextExpiresAt,
+      })
+    }
 
     const next: StoredToken[] = [...existing]
     const stored: StoredToken = { 
-      ...token, 
+      ...token,
       provider, 
+      accessToken: '',
+      refreshToken: undefined,
+      expiresAt: nextExpiresAt,
       accountKey, 
       remoteId: remoteId || existing.find(t => t.accountKey === accountKey)?.remoteId,
       disabled: existing.find(t => t.accountKey === accountKey)?.disabled ?? false 
@@ -87,7 +106,7 @@ class TokenManager {
   /**
    * Get token from localStorage
    */
-  getToken(provider: ProviderId, accountKey?: string): ProviderToken | null {
+  getToken(provider: ProviderId, accountKey?: string): StoredToken | null {
     if (typeof window === 'undefined') return null
     const tokens = this.getTokens(provider)
     if (tokens.length === 0) return null
@@ -105,7 +124,7 @@ class TokenManager {
 
     try {
       const tokens = JSON.parse(data) as StoredToken[]
-      return tokens.map((t) => ({ ...t, provider, disabled: t.disabled ?? false }))
+      return tokens.map((t) => this.withSecretState(provider, { ...t, provider, disabled: t.disabled ?? false }))
     } catch (e) {
       console.error(`[TokenManager] Failed to parse tokens for ${provider}:`, e)
       return []
@@ -121,6 +140,7 @@ class TokenManager {
     if (!accountKey) {
       localStorage.removeItem(key)
       localStorage.removeItem(this.getStorageKey(provider))
+      this.clearSecretState(provider)
       this.cancelRefresh(provider)
       return
     }
@@ -131,6 +151,7 @@ class TokenManager {
     } else {
       localStorage.setItem(key, JSON.stringify(remaining))
     }
+    this.secretCache.delete(this.getSecretCacheKey(provider, accountKey))
     this.cancelRefresh(provider)
   }
 
@@ -207,7 +228,9 @@ class TokenManager {
    */
   isTokenValid(token: ProviderToken | null): boolean {
     if (!token) return false
-    if (!token.accessToken) return false
+    // StoredToken entries may only keep remoteId because provider auth is delegated server-side;
+    // missing expiresAt means the ProviderToken/StoredToken should be treated as non-expiring.
+    if (!token.accessToken && !(token as StoredToken).remoteId) return false
     if (!token.expiresAt) return true // No expiry means valid
 
     return Date.now() < token.expiresAt
@@ -398,6 +421,33 @@ class TokenManager {
     return `${TOKEN_MULTI_PREFIX}${provider}`
   }
 
+  private getSecretCacheKey(provider: ProviderId, accountKey: string): string {
+    return `${provider}:${accountKey}`
+  }
+
+  private clearSecretState(provider: ProviderId): void {
+    const prefix = `${provider}:`
+    for (const key of Array.from(this.secretCache.keys())) {
+      if (key.startsWith(prefix)) {
+        this.secretCache.delete(key)
+      }
+    }
+  }
+
+  private withSecretState(provider: ProviderId, token: StoredToken): StoredToken {
+    const secret = this.secretCache.get(this.getSecretCacheKey(provider, token.accountKey))
+    if (!secret) {
+      return token
+    }
+
+    return {
+      ...token,
+      accessToken: secret.accessToken,
+      refreshToken: secret.refreshToken,
+      expiresAt: secret.expiresAt,
+    }
+  }
+
   private migrateLegacyToken(provider: ProviderId): void {
     if (typeof window === 'undefined') return
     const legacyKey = this.getStorageKey(provider)
@@ -416,6 +466,35 @@ class TokenManager {
 
   private buildAccountKey(token: ProviderToken): string {
     return token.accountId || token.accountEmail || token.displayName || `acct-${Date.now()}`
+  }
+
+  private sanitizePersistedStorage(): void {
+    if (typeof window === 'undefined') return
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (!key) continue
+
+      if (key.startsWith(TOKEN_PREFIX) && !key.startsWith(TOKEN_MULTI_PREFIX)) {
+        const provider = key.replace(TOKEN_PREFIX, '') as ProviderId
+        this.migrateLegacyToken(provider)
+        continue
+      }
+
+      if (!key.startsWith(TOKEN_MULTI_PREFIX)) continue
+
+      try {
+        const raw = JSON.parse(localStorage.getItem(key) || '[]') as StoredToken[]
+        const sanitized = raw.map((token) => ({
+          ...token,
+          accessToken: '',
+          refreshToken: undefined,
+        }))
+        localStorage.setItem(key, JSON.stringify(sanitized))
+      } catch (error) {
+        console.warn(`[TokenManager] Failed to sanitize persisted tokens for ${key}:`, error)
+      }
+    }
   }
 
   private countAllTokens(): number {
@@ -441,6 +520,7 @@ class TokenManager {
     for (const [provider] of Array.from(this.getAllTokens())) {
       this.removeToken(provider)
     }
+    this.secretCache.clear()
   }
 
   /**

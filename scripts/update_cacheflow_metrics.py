@@ -3,22 +3,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import subprocess
+import re
+import sys
 from collections import defaultdict
-from datetime import datetime, timezone
-from pathlib import Path
 
 import yaml
-
-def resolve_base() -> Path:
-    explicit = os.environ.get("CACHEFLOW_BASE")
-    if explicit:
-        return Path(explicit).resolve()
-    canonical = Path("/home/sanjay/cacheflow_work")
-    if (canonical / ".git").exists():
-        return canonical.resolve()
-    return Path(__file__).resolve().parent.parent
+from cacheflow_paths import now_iso, resolve_base, run_git
 
 
 BASE = resolve_base()
@@ -53,22 +43,6 @@ ROADMAP_STAGE_DEFS = {
     "V2-C": {"title": "Moderate", "roadmap_version": "2", "order": 6},
     "V2-D": {"title": "Advanced", "roadmap_version": "2", "order": 7},
 }
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-
-
-def run_git(args: list[str]) -> str:
-    return (
-        subprocess.run(
-            ["git", *args],
-            cwd=str(BASE),
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        .stdout.strip()
-    )
-
 
 def load_orchestrator_state_file() -> dict:
     if not ORCHESTRATOR_STATE_FILE.exists():
@@ -83,9 +57,20 @@ def load_orchestrator_state_file() -> dict:
 def load_roadmap_catalog() -> list[dict]:
     if not ROADMAP_CATALOG_FILE.exists():
         return []
-    raw = yaml.safe_load(ROADMAP_CATALOG_FILE.read_text()) or {}
+    try:
+        raw = yaml.safe_load(ROADMAP_CATALOG_FILE.read_text()) or {}
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        print(f"update_cacheflow_metrics: failed to load roadmap catalog {ROADMAP_CATALOG_FILE}: {exc}", file=sys.stderr)
+        return []
+
+    if not isinstance(raw, dict):
+        print(f"update_cacheflow_metrics: expected dict in {ROADMAP_CATALOG_FILE}, got {type(raw).__name__}", file=sys.stderr)
+        return []
     items = raw.get("items", [])
-    return items if isinstance(items, list) else []
+    if not isinstance(items, list):
+        print(f"update_cacheflow_metrics: expected list at {ROADMAP_CATALOG_FILE}:items", file=sys.stderr)
+        return []
+    return items
 
 
 def roadmap_stage_for_sprint(sprint: int) -> str:
@@ -306,7 +291,11 @@ def _status_map(args: argparse.Namespace) -> dict:
 def load_done_history() -> tuple[dict[str, dict], dict[str, dict]]:
     if not HISTORY_FILE.exists():
         return {}, {}
-    raw = yaml.safe_load(HISTORY_FILE.read_text()) or []
+    try:
+        raw = yaml.safe_load(HISTORY_FILE.read_text()) or []
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        print(f"update_cacheflow_metrics: failed to load task history {HISTORY_FILE}: {exc}", file=sys.stderr)
+        return {}, {}
     if not isinstance(raw, list):
         return {}, {}
 
@@ -331,11 +320,29 @@ def load_done_history() -> tuple[dict[str, dict], dict[str, dict]]:
             task_id = key.split("@", 1)[0]
             if task_id:
                 by_id[task_id] = payload
-        for task_id in entry.get("done_tasks", []) or []:
-            task_id = str(task_id).strip()
-            if task_id:
-                by_id[task_id] = payload
+        for done_task_id in entry.get("done_tasks", []) or []:
+            done_task_id = str(done_task_id).strip()
+            if done_task_id:
+                by_id[done_task_id] = payload
     return out, by_id
+
+
+def parse_sprint_number(value: object) -> int | None:
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value) if value.is_integer() else None
+
+    text = str(value).strip()
+    if not text:
+        return None
+    if text.isdigit():
+        return int(text)
+
+    match = re.search(r"\d+", text)
+    return int(match.group(0)) if match else None
 
 
 def _lookup_previous(existing_state: dict, task: dict) -> dict:
@@ -379,7 +386,7 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict, roadmap_cat
     orchestrator_tasks = orchestrator_state.get("tasks", {})
     if not isinstance(orchestrator_tasks, dict):
         orchestrator_tasks = {}
-    orchestrator_sprint = int(orchestrator_state.get("current_sprint", 0) or 0)
+    orchestrator_sprint = parse_sprint_number(orchestrator_state.get("current_sprint")) or 0
 
     for item in roadmap_catalog:
         item_id = str(item.get("item_id", "")).strip()
@@ -401,7 +408,9 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict, roadmap_cat
         if item_id == "V1-0":
             gate_status = gate_item_status(current_state)
             if gate_status != "done" and core_total and core_done == core_total and all(
-                all(t["status"] in DONE_STATES for t in tasks_by_id.get(key, []))
+                key in tasks_by_id
+                and tasks_by_id[key]
+                and all(t["status"] in DONE_STATES for t in tasks_by_id[key])
                 for key in ("6.1", "6.2", "6.3", "6.4", "6.5", "6.6")
             ):
                 gate_status = "done"
@@ -424,7 +433,7 @@ def build_roadmap_items(tasks: list[dict], orchestrator_state: dict, roadmap_cat
             done_criteria = counts["done"]
         else:
             status = normalize_status(orchestrator_tasks.get(item_id, "pending"))
-            sprint_num = int(sprint_label or 0)
+            sprint_num = parse_sprint_number(sprint_label) or 0
             if status in {"planned", "pending"} and orchestrator_sprint == sprint_num:
                 status = "running"
             progress = 100.0 if status == "done" else 0.0
@@ -501,12 +510,26 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
     done_history, done_history_by_id = load_done_history()
     state_out = {}
     changes = []
-    commit_full = args.source_commit.strip() or run_git(["rev-parse", "HEAD"])
-    commit_short = commit_full[:12]
-    message = args.source_message.strip() or run_git(["log", "-1", "--pretty=%s"])
+    commit_full = args.source_commit.strip()
+    commit_short = commit_full[:12] if commit_full else ""
+    message = args.source_message.strip()
+    provenance_loaded = False
     timestamp = now_iso()
     selectors = _status_map(args)
     active_locks = load_active_locks()
+
+    def ensure_provenance() -> tuple[str, str]:
+        nonlocal commit_full, commit_short, message, provenance_loaded
+        if not provenance_loaded:
+            if not commit_full:
+                commit_full = run_git(["rev-parse", "HEAD"])
+                commit_short = commit_full[:12]
+            elif not commit_short:
+                commit_short = commit_full[:12]
+            if not message:
+                message = run_git(["log", "-1", "--pretty=%s"])
+            provenance_loaded = True
+        return commit_short, message
 
     for task in tasks:
         key = task["task_key"]
@@ -550,10 +573,11 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
 
         if target_status:
             if target_status == "done":
+                commit_short_value, message_value = ensure_provenance()
                 record["status"] = "done"
-                record["commit"] = commit_short
+                record["commit"] = commit_short_value
                 record["done_at"] = timestamp
-                record["changelog"] = args.note.strip() or message
+                record["changelog"] = args.note.strip() or message_value
             else:
                 record["status"] = target_status
                 if target_status in ("planned", "pending", "running", "under_review"):
@@ -568,9 +592,10 @@ def apply_state(tasks: list[dict], args: argparse.Namespace) -> tuple[list[dict]
             record["status"] = status
 
         if status in DONE_STATES and not record.get("commit"):
-            record["commit"] = commit_short
+            commit_short_value, message_value = ensure_provenance()
+            record["commit"] = commit_short_value
             record["done_at"] = record.get("done_at") or timestamp
-            record["changelog"] = record.get("changelog") or (args.note.strip() or message)
+            record["changelog"] = record.get("changelog") or (args.note.strip() or message_value)
 
         task["status"] = status
         task["commit"] = record.get("commit", "")
@@ -698,7 +723,7 @@ def compute_metrics(tasks: list[dict], previous_metrics: dict, orchestrator_stat
     roadmap_items, roadmap_stages, roadmap_versions = build_roadmap_items(tasks, orchestrator_state, roadmap_catalog)
     current_state = str(orchestrator_state.get("current_state", "")).strip()
     roadmap_source = str(orchestrator_state.get("roadmap_source", "")).strip()
-    orchestrator_sprint = int(orchestrator_state.get("current_sprint", 0) or 0)
+    orchestrator_sprint = parse_sprint_number(orchestrator_state.get("current_sprint")) or 0
     if orchestrator_sprint > 0:
         current_sprint = orchestrator_sprint
         current_progress = 0.0
@@ -744,20 +769,37 @@ def write_yaml(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False))
 
 
-def record_history(changes: list[dict], tasks: list[dict]) -> None:
+def record_history(changes: list[dict], tasks: list[dict], source_commit: str = "", source_message: str = "") -> None:
     if not changes:
         return
     history = []
     if HISTORY_FILE.exists():
-        history = yaml.safe_load(HISTORY_FILE.read_text()) or []
-    commit_full = run_git(["rev-parse", "HEAD"])
-    message = run_git(["log", "-1", "--pretty=%s"])
+        try:
+            history = yaml.safe_load(HISTORY_FILE.read_text()) or []
+        except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+            print(f"update_cacheflow_metrics: failed to load existing task history {HISTORY_FILE}: {exc}", file=sys.stderr)
+            return
+    if not isinstance(history, list):
+        print(
+            f"update_cacheflow_metrics: expected list in {HISTORY_FILE}, got {type(history).__name__}; skipping history write",
+            file=sys.stderr,
+        )
+        return
+
     done_keys = [c["task_key"] for c in changes if c["to"] == "done"]
+    done_key_set = set(done_keys)
+    done_records = [task for task in tasks if task["task_key"] in done_key_set]
+    commit_full = source_commit.strip()
+    if not commit_full and done_records:
+        commit_full = run_git(["rev-parse", "HEAD"])
+    message = source_message.strip()
+    if not message and done_records:
+        message = run_git(["log", "-1", "--pretty=%s"])
     done_ids = sorted(
         {
             t["id"]
             for t in tasks
-            if t["task_key"] in set(done_keys)
+            if t["task_key"] in done_key_set
         }
     )
     history.append(
@@ -784,7 +826,7 @@ def main() -> None:
     write_yaml(SPRINT_TASKS_FILE, {"generated_at": metrics["generated_at"], "tasks": tasks})
     write_yaml(STATE_FILE, state_out)
     write_yaml(METRICS_FILE, metrics)
-    record_history(changes, tasks)
+    record_history(changes, tasks, args.source_commit, args.source_message)
 
     print(f"wrote {len(tasks)} task entries to {SPRINT_TASKS_FILE}")
     print(f"wrote metrics to {METRICS_FILE}")

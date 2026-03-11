@@ -75,6 +75,21 @@ detect_agent_from_tty() {
   tr -d ' \t\r\n' < "$map_file"
 }
 
+mark_active_tty() {
+  local agent_name="$1"
+  local source="${2:-start_sprint}"
+  local tty_name state_dir state_file ts agent_key
+  tty_name="$(tty 2>/dev/null || true)"
+  [[ "$tty_name" == /dev/* ]] || return 0
+  agent_key="$(printf '%s' "${agent_name,,}" | sed 's#[^a-z0-9._-]#-#g')"
+  state_dir="$repo_root/.context/cache_state/active_agent_tty"
+  state_file="$state_dir/${agent_key}.json"
+  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  mkdir -p "$state_dir"
+  printf '{\n  "agent": "%s",\n  "ttyPath": "%s",\n  "source": "%s",\n  "updatedAt": "%s"\n}\n' \
+    "$agent_name" "$tty_name" "$source" "$ts" >"$state_file"
+}
+
 agent_input=""
 sprint_override=""
 claim_mode="all"
@@ -141,6 +156,7 @@ agent_name="$(normalize_agent "$agent_input" 2>/dev/null || true)"
   usage
   exit 1
 }
+mark_active_tty "$agent_name" "start_sprint"
 
 sync_args=()
 if [ -n "$sprint_override" ]; then

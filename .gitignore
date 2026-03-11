@@ -38,3 +38,4 @@ monitoring/cacheflow_metrics.yaml
 monitoring/cacheflow_sprint_tasks.yaml
 monitoring/cacheflow_task_state.yaml
 .aider*
+monitoring/coderabbit-*.yaml

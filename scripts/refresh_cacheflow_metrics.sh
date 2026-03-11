@@ -25,7 +25,13 @@ if [ ! -f "$PY_SCRIPT" ]; then
 fi
 
 if [ -f "$ROADMAP_CATALOG_SCRIPT" ]; then
-  python3 "$ROADMAP_CATALOG_SCRIPT"
+  echo "refresh_cacheflow_metrics: generating roadmap catalog"
+  if python3 "$ROADMAP_CATALOG_SCRIPT"; then
+    echo "refresh_cacheflow_metrics: roadmap catalog generation succeeded"
+  else
+    echo "refresh_cacheflow_metrics: roadmap catalog generation failed" >&2
+    exit 1
+  fi
 fi
 
 python3 "$PY_SCRIPT"

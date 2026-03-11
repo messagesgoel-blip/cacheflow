@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
-
 interface Conflict {
   id: string
   filename: string
@@ -22,28 +20,22 @@ interface Conflict {
   }
 }
 
-interface ConflictListProps {
-  token: string
-}
-
-export default function ConflictList({ token }: ConflictListProps) {
+export default function ConflictList() {
   const [conflicts, setConflicts] = useState<Conflict[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchConflicts()
-  }, [token])
+    void fetchConflicts()
+  }, [])
 
   async function fetchConflicts() {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch(`${API}/conflicts`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/conflicts', {
+        credentials: 'include',
       })
 
       if (res.status === 404) {

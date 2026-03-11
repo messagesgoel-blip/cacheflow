@@ -1,12 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import TransferChart from '@/components/TransferChart'
 import StorageChart from '@/components/StorageChart'
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 interface AdminStats {
   total_users?: number
@@ -16,9 +14,7 @@ interface AdminStats {
 }
 
 export default function AdminPage() {
-  const router = useRouter()
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const { authenticated, email, loading: sessionLoading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
   const [stats, setStats] = useState<AdminStats>({})
   const [loading, setLoading] = useState(true)
   const [apiAvailable, setApiAvailable] = useState(true)
@@ -30,32 +26,17 @@ export default function AdminPage() {
   })
 
   useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-
-    if (!t) {
-      router.push('/')
-      return
+    if (authenticated) {
+      void fetchStats()
     }
-
-    setToken(t)
-    setEmail(e || '')
-  }, [router])
-
-  useEffect(() => {
-    if (token) {
-      fetchStats()
-    }
-  }, [token])
+  }, [authenticated])
 
   async function fetchStats() {
     setLoading(true)
 
     try {
-      const res = await fetch(`${API}/admin/stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/admin/stats', {
+        credentials: 'include',
       })
 
       if (res.status === 404) {
@@ -99,13 +80,7 @@ export default function AdminPage() {
     return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
   }
 
-  function handleLogout() {
-    localStorage.removeItem('cf_token')
-    localStorage.removeItem('cf_email')
-    router.push('/')
-  }
-
-  if (!token) {
+  if (sessionLoading || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
@@ -118,7 +93,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar email={email} onLogout={handleLogout} />
+      <Navbar email={email} onLogout={() => { void logoutClientSession('/login') }} />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
@@ -212,10 +187,10 @@ export default function AdminPage() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <TransferChart token={token!} />
+            <TransferChart />
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <StorageChart token={token!} />
+            <StorageChart />
           </div>
         </div>
 

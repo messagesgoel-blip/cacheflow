@@ -9,7 +9,7 @@
  * Task: 3.9@ZERODISK-1
  */
 
-import { PassThrough } from 'stream';
+import { PassThrough, Transform } from 'stream';
 import { AppError } from '../errors/AppError';
 import { ErrorCode } from '../errors/ErrorCode';
 import type { ProviderAdapter } from '../providers/ProviderAdapter.interface';
@@ -20,6 +20,160 @@ import type {
   ProviderOperationContext,
   UploadStreamRequest,
 } from '../providers/types';
+
+// ---------------------------------------------------------------------------
+// Throttle Transform Stream
+// ---------------------------------------------------------------------------
+
+/**
+ * Creates a throttle transform stream that limits bytes per second.
+ * Returns null if throttle is null/undefined/0 (unlimited).
+ *
+ * Uses token bucket algorithm:
+ * - Each input chunk is accepted immediately (callback called once)
+ * - Output is emitted over time based on available tokens
+ * - Large chunks are split across multiple ticks
+ * - Uses this.push() from within transform/flush callbacks only (valid Transform)
+ */
+export function createThrottleStream(
+  maxBytesPerSecond: number | null | undefined,
+): Transform | null {
+  if (!maxBytesPerSecond || maxBytesPerSecond <= 0) {
+    return null;
+  }
+  const rate = maxBytesPerSecond;
+
+  const highWaterMark = 16 * 1024;
+  const maxSliceSize = Math.max(1, Math.min(highWaterMark, Math.floor(rate)));
+
+  class ThrottleTransform extends Transform {
+    private availableTokens = rate;
+    private lastRefill = Date.now();
+    private pending: Array<{ chunk: Buffer; pos: number }> = [];
+    private flushCallback: ((err?: Error | null) => void) | null = null;
+    private timer: NodeJS.Timeout | null = null;
+    private draining = false;
+
+    constructor() {
+      super({ highWaterMark });
+    }
+
+    private refillTokens(): void {
+      const now = Date.now();
+      const elapsed = now - this.lastRefill;
+      const tokensToAdd = (elapsed / 1000) * rate;
+      this.availableTokens = Math.min(rate, this.availableTokens + tokensToAdd);
+      this.lastRefill = now;
+    }
+
+    private scheduleDrain(delayMs: number): void {
+      if (this.timer) {
+        return;
+      }
+
+      this.timer = setTimeout(() => {
+        this.timer = null;
+        this.drainPending();
+      }, Math.max(1, delayMs));
+    }
+
+    private finalizeIfIdle(): void {
+      if (this.flushCallback && this.pending.length === 0 && !this.timer && !this.draining) {
+        const done = this.flushCallback;
+        this.flushCallback = null;
+        done(null);
+      }
+    }
+
+    private drainPending(): void {
+      if (this.draining) {
+        return;
+      }
+
+      this.draining = true;
+      this.refillTokens();
+
+      while (this.pending.length > 0) {
+        const current = this.pending[0];
+        if (!current) {
+          break;
+        }
+        const remaining = current.chunk.length - current.pos;
+
+        if (remaining <= 0) {
+          this.pending.shift();
+          continue;
+        }
+
+        if (this.availableTokens < 1) {
+          const delayMs = Math.ceil(((1 - this.availableTokens) / rate) * 1000);
+          this.draining = false;
+          this.scheduleDrain(delayMs);
+          return;
+        }
+
+        const bytesToEmit = Math.min(
+          remaining,
+          Math.max(1, Math.floor(this.availableTokens)),
+          maxSliceSize,
+        );
+
+        const nextPos = current.pos + bytesToEmit;
+        const chunk = current.chunk.subarray(current.pos, nextPos);
+        current.pos = nextPos;
+        this.availableTokens -= bytesToEmit;
+
+        if (current.pos >= current.chunk.length) {
+          this.pending.shift();
+        }
+
+        const canContinue = this.push(chunk);
+        if (!canContinue) {
+          this.draining = false;
+          return;
+        }
+      }
+
+      this.draining = false;
+      this.finalizeIfIdle();
+    }
+
+    override _read(size: number): void {
+      super._read(size);
+      if (this.pending.length > 0) {
+        this.drainPending();
+      }
+    }
+
+    override _transform(
+      chunk: Buffer,
+      _encoding: BufferEncoding,
+      callback: (error?: Error | null) => void,
+    ): void {
+      this.pending.push({ chunk: Buffer.from(chunk), pos: 0 });
+      callback(null);
+      this.drainPending();
+    }
+
+    override _flush(callback: (error?: Error | null) => void): void {
+      this.flushCallback = callback;
+      this.drainPending();
+      this.finalizeIfIdle();
+    }
+
+    override _destroy(error: Error | null, callback: (error?: Error | null) => void): void {
+      if (this.timer) {
+        clearTimeout(this.timer);
+        this.timer = null;
+      }
+      this.pending = [];
+      this.flushCallback = null;
+      callback(error);
+    }
+  }
+
+  return new ThrottleTransform();
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -70,6 +224,14 @@ export interface StreamTransferOptions {
    * Default: 64 KiB. For STREAM-1 compliance, must be set to prevent unbounded memory growth.
    */
   highWaterMark?: number;
+
+  /**
+   * Optional bandwidth throttle (bytes per second). When set, transfer speed is
+   * limited to this rate. Null or undefined = unlimited.
+   */
+  throttle?: {
+    maxBytesPerSecond: number | null;
+  };
 }
 
 /** Per-tick progress payload forwarded to the caller. */
@@ -133,6 +295,7 @@ export async function streamTransfer(
     contentType,
     onProgress,
     highWaterMark = DEFAULT_HIGH_WATER_MARK,
+    throttle,
   } = opts;
 
   const startMs = Date.now();
@@ -163,6 +326,9 @@ export async function streamTransfer(
   let transferredBytes = 0;
   const pass = new PassThrough({ highWaterMark });
 
+  // Create optional throttle stream
+  const throttleStream = createThrottleStream(throttle?.maxBytesPerSecond);
+
   downloadStream.on('data', (chunk: Buffer) => {
     transferredBytes += chunk.length;
 
@@ -175,15 +341,25 @@ export async function streamTransfer(
     }
   });
 
-  downloadStream.pipe(pass);
+  // Pipeline: download -> pass -> [throttle] -> upload
+  if (throttleStream) {
+    downloadStream.pipe(pass).pipe(throttleStream);
+  } else {
+    downloadStream.pipe(pass);
+  }
 
   // Forward source stream errors into the PassThrough so the upload side
   // surfaces them cleanly rather than hanging.
   downloadStream.on('error', (err: Error) => {
     pass.destroy(err);
+    if (throttleStream) {
+      throttleStream.destroy(err);
+    }
   });
 
   // ── 3. Upload via target adapter ────────────────────────────────────────
+  const uploadStream = throttleStream || pass;
+
   const uploadReq: UploadStreamRequest = {
     context,
     auth: targetAuth,
@@ -193,7 +369,7 @@ export async function streamTransfer(
     // Pass the known length so providers that need it (e.g. resumable) can
     // use it.  When unknown (0) we omit it to avoid sending a wrong header.
     ...(totalBytes > 0 ? { contentLength: totalBytes } : {}),
-    stream: pass,
+    stream: uploadStream,
   };
 
   let uploadResp;
@@ -203,6 +379,9 @@ export async function streamTransfer(
     // Tear down the source pipe to avoid a memory leak.
     downloadStream.destroy();
     pass.destroy();
+    if (throttleStream) {
+      throttleStream.destroy();
+    }
 
     throw new AppError({
       code: ErrorCode.TRANSFER_FAILED,

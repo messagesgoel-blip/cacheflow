@@ -65,12 +65,23 @@ export default function SessionExpiredBannerHost() {
       })
     }
 
+    // Listen for session expired events from auth interceptor
+    const handleSessionExpired = (event: Event) => {
+      setSessionState({
+        expired: true,
+        reason: 'Session expired',
+        accountName: 'Your account',
+      })
+    }
+
     window.addEventListener('unhandledrejection', handleRejection)
     window.addEventListener('cacheflow:reauth-required', handleReauthRequired)
+    window.addEventListener('cacheflow:session-expired', handleSessionExpired)
 
     return () => {
       window.removeEventListener('unhandledrejection', handleRejection)
       window.removeEventListener('cacheflow:reauth-required', handleReauthRequired)
+      window.removeEventListener('cacheflow:session-expired', handleSessionExpired)
     }
   }, [])
 

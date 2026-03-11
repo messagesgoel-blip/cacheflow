@@ -1,29 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import ConflictList from '@/components/ConflictList'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 export default function ConflictsPage() {
-  const router = useRouter()
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const { authenticated, email, loading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
 
-  useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-
-    if (!t) {
-      router.push('/')
-      return
-    }
-
-    setToken(t)
-    setEmail(e || '')
-  }, [router])
-
-  if (!token) {
+  if (loading || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
@@ -34,15 +18,9 @@ export default function ConflictsPage() {
     )
   }
 
-  function handleLogout() {
-    localStorage.removeItem('cf_token')
-    localStorage.removeItem('cf_email')
-    router.push('/')
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar email={email} onLogout={handleLogout} />
+      <Navbar email={email} onLogout={() => { void logoutClientSession('/login') }} />
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
@@ -59,7 +37,7 @@ export default function ConflictsPage() {
             </a>
           </div>
 
-          <ConflictList token={token} />
+          <ConflictList />
         </div>
       </main>
     </div>

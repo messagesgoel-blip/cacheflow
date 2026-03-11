@@ -47,6 +47,10 @@ export interface TransferJobData {
   destFolderId?: string;
   /** Semantic operation type. */
   operation: 'copy' | 'move' | 'upload' | 'download';
+  /** Optional bandwidth throttle configuration (bytes per second). */
+  throttle?: {
+    maxBytesPerSecond: number | null;
+  };
 }
 
 /** Result payload returned by a completed transfer job. */

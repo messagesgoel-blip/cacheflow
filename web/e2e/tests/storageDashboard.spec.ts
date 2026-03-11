@@ -170,8 +170,6 @@ test.describe('Storage Dashboard and Health Indicators', () => {
     await page.addInitScript(() => {
       localStorage.clear();
       sessionStorage.clear();
-      localStorage.setItem('cf_token', 'mock-jwt-token');
-      localStorage.setItem('cf_email', 'test@goels.in');
       
       // Seed local tokens so Sidebar can find them
       const googleTokens = [

@@ -149,11 +149,13 @@ export function migrateFromLocalStorage(): void {
   
   // Remove old localStorage tokens
   localStorage.removeItem('cf_token');
+  localStorage.removeItem('cf_email');
+  localStorage.removeItem('token');
   localStorage.removeItem('cacheflow_token_');
   
-  // Remove any keys starting with our old prefixes
+  // Remove old provider token stores while preserving non-auth UI preferences.
   Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith('cacheflow_') || key.startsWith('cf_')) {
+    if (key.startsWith('cacheflow_token_') || key.startsWith('cacheflow_tokens_')) {
       localStorage.removeItem(key);
     }
   });
