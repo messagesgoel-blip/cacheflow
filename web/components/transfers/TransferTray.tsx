@@ -61,8 +61,8 @@ export const TransferTray: React.FC = () => {
       const interval = setInterval(() => {
         const newCountdown = calculateCountdown();
         if (newCountdown <= 0) {
-          clearInterval(interval);
-          setCountdown(null);
+          // Keep countdown at 0 to show "retry now" state; TransferContext will clear rateLimited
+          setCountdown(0);
         } else {
           setCountdown(newCountdown);
         }
@@ -158,7 +158,7 @@ export const TransferTray: React.FC = () => {
             ? 'border-[rgba(245,158,11,0.4)] bg-[rgba(245,158,11,0.15)] text-[#f59e0b] hover:bg-[rgba(245,158,11,0.2)]'
             : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-panel-soft)] hover:text-[var(--cf-text-0)]'
         }`}
-        aria-label={rateLimited ? `Rate limited, retry in ${countdown || retryAfter}s` : 'Show transfers'}
+        aria-label={rateLimited ? `Rate limited, retry in ${countdown !== null ? countdown : retryAfter}s` : 'Show transfers'}
       >
         <span className="text-lg">⇅</span>
         {rateLimited && (
@@ -184,7 +184,7 @@ export const TransferTray: React.FC = () => {
             ? 'border-[rgba(245,158,11,0.4)] bg-[rgba(245,158,11,0.15)] text-[#f59e0b] hover:bg-[rgba(245,158,11,0.2)]'
             : 'border-[rgba(74,158,255,0.26)] bg-[rgba(74,158,255,0.14)] text-[var(--cf-blue)] hover:bg-[rgba(74,158,255,0.18)]'
         }`}
-        aria-label={rateLimited ? `Rate limited, ${activeCount} active, retry in ${countdown || retryAfter}s` : `${activeCount} active transfer${activeCount > 1 ? 's' : ''}`}
+        aria-label={rateLimited ? `Rate limited, ${activeCount} active, retry in ${countdown !== null ? countdown : retryAfter}s` : `${activeCount} active transfer${activeCount > 1 ? 's' : ''}`}
       >
         <div className="relative">
           <span className="text-lg">⇅</span>

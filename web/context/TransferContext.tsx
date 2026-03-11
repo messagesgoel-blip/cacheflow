@@ -209,6 +209,11 @@ export function TransferProvider({ children }: { children: ReactNode }) {
         method: 'POST',
       });
 
+      // Check for rate limiting before parsing JSON
+      if (handleRateLimit(response)) {
+        throw new Error('Rate limited. Please wait before retrying.');
+      }
+
       const result = await response.json();
 
       if (result.success) {
@@ -224,7 +229,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       console.error('Failed to retry transfer:', error);
       throw error;
     }
-  }, []);
+  }, [handleRateLimit]);
 
   /**
    * Dismiss a completed/failed transfer from the list
