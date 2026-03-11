@@ -292,19 +292,36 @@ router.post('/:id/proxy', async (req, res) => {
 
     if (result.rowCount === 0) return res.fail('Remote not found', 404);
 
+    const { provider } = result.rows[0];
     const accessToken = encryption.decrypt(result.rows[0].access_token_enc);
 
     // Prepare headers
     const proxyHeaders = { ...headers };
-    proxyHeaders['Authorization'] = `Bearer ${accessToken}`;
-    
+    const authScheme = provider === 'webdav' ? 'Basic' : 'Bearer';
+    proxyHeaders['Authorization'] = `${authScheme} ${accessToken}`;
+
+    let proxyBody = body;
+    const bodyEncoding =
+      proxyHeaders['X-Cacheflow-Body-Encoding'] ||
+      proxyHeaders['x-cacheflow-body-encoding'];
+
+    if (bodyEncoding === 'base64' && typeof body === 'string') {
+      proxyBody = Buffer.from(body, 'base64');
+      delete proxyHeaders['X-Cacheflow-Body-Encoding'];
+      delete proxyHeaders['x-cacheflow-body-encoding'];
+    }
+
     // Some providers might need specific headers or have specific URL requirements
     // For now we assume Bearer token works for most (Google, Dropbox, etc.)
 
     const response = await fetch(url, {
       method: method || 'GET',
       headers: proxyHeaders,
-      body: body ? (typeof body === 'object' ? JSON.stringify(body) : body) : undefined
+      body: proxyBody
+        ? (Buffer.isBuffer(proxyBody)
+          ? proxyBody
+          : (typeof proxyBody === 'object' ? JSON.stringify(proxyBody) : proxyBody))
+        : undefined
     });
 
     const contentType = response.headers.get('content-type') || 'application/octet-stream';

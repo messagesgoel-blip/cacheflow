@@ -219,7 +219,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
     for (const [providerId, tokenList] of Array.from(allTokens.entries())) {
       const providerConfig = PROVIDERS.find(p => p.id === providerId)
       tokenList.filter(t => !t.disabled).forEach((tokenData, idx) => {
-        if (tokenData && tokenData.accessToken) {
+        if (tokenData && (tokenData.accessToken || (tokenData as any).remoteId)) {
           connectedRemotes.push({
             id: `cloud-${providerId}-${idx}`,
             name: providerConfig?.name || providerId,

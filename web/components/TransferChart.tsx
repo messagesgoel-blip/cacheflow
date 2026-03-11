@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
-
 interface TransferData {
   date: string
   transfer_gb: number
@@ -28,10 +26,8 @@ export default function TransferChart({ token }: TransferChartProps) {
     setLoading(true)
 
     try {
-      const res = await fetch(`${API}/admin/transfer-stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/admin/transfer-stats', {
+        credentials: 'include',
       })
 
       if (res.status === 404) {

@@ -38,8 +38,12 @@ export class WebDAVProvider extends StorageProvider {
   setConfig(config: WebDAVConfig): void {
     this.config = config
     if (typeof window === 'undefined') return
-    // Store in localStorage for persistence
-    localStorage.setItem('cacheflow_webdav_config', JSON.stringify(config))
+    // Persist only non-sensitive connection metadata.
+    localStorage.setItem('cacheflow_webdav_config', JSON.stringify({
+      url: config.url,
+      username: config.username,
+      prefix: config.prefix,
+    }))
   }
 
   private loadToken(): void {
@@ -51,7 +55,20 @@ export class WebDAVProvider extends StorageProvider {
     const stored = localStorage.getItem('cacheflow_webdav_config')
     if (stored) {
       try {
-        this.config = JSON.parse(stored)
+        const parsed = JSON.parse(stored)
+        this.config = {
+          url: parsed.url,
+          username: parsed.username,
+          password: '',
+          prefix: parsed.prefix,
+        }
+        if (parsed.password) {
+          localStorage.setItem('cacheflow_webdav_config', JSON.stringify({
+            url: parsed.url,
+            username: parsed.username,
+            prefix: parsed.prefix,
+          }))
+        }
       } catch (e) {
         console.error('[WebDAV] Failed to load config:', e)
       }
@@ -60,16 +77,21 @@ export class WebDAVProvider extends StorageProvider {
 
   private ensureActiveToken(): void {
     const token = tokenManager.getToken('webdav')
-    if (token && token.accessToken) {
-      // For WebDAV, accessToken IS the b64 credentials
-      // displayName IS the url
-      if (!this.config) {
-        this.config = {
-          url: token.displayName,
-          username: token.accountEmail || '',
-          password: '', // Password not stored separately in token
-        }
+    if (!token) return
+
+    if (!this.config && token.accountId) {
+      this.config = {
+        url: token.accountId,
+        username: token.accountEmail || '',
+        password: '',
       }
+    }
+
+    if (token.remoteId && !this.remoteId) {
+      this.remoteId = token.remoteId
+    }
+
+    if (token.accessToken) {
       this.accessToken = token.accessToken
     }
   }
@@ -447,7 +469,7 @@ export class WebDAVProvider extends StorageProvider {
     } = {}
   ): Promise<Response> {
     this.ensureActiveToken()
-    const config = this.getConfig()
+    this.getConfig()
     const url = this.getFullUrl(path)
 
     const headers: Record<string, string> = {
@@ -457,6 +479,19 @@ export class WebDAVProvider extends StorageProvider {
     // Add Depth header for PROPFIND
     if (options.Depth) {
       headers['Depth'] = options.Depth
+    }
+
+    if (this.remoteId) {
+      const { body, encoding } = await this.prepareProxyBody(options.body)
+      if (encoding) {
+        headers['X-Cacheflow-Body-Encoding'] = encoding
+      }
+
+      return this.proxyFetch(url, {
+        method: options.method || method,
+        headers,
+        body,
+      })
     }
 
     // Add basic auth
@@ -478,6 +513,54 @@ export class WebDAVProvider extends StorageProvider {
     const cleanPath = path.replace(/^\//, '')
 
     return `${baseUrl}/${cleanPath}`
+  }
+
+  private async prepareProxyBody(
+    body: unknown,
+  ): Promise<{ body?: BodyInit; encoding?: 'base64' }> {
+    if (body === undefined || body === null) {
+      return {}
+    }
+
+    if (typeof body === 'string' || body instanceof URLSearchParams) {
+      return { body }
+    }
+
+    if (body instanceof Blob) {
+      return {
+        body: this.arrayBufferToBase64(await body.arrayBuffer()),
+        encoding: 'base64',
+      }
+    }
+
+    if (body instanceof ArrayBuffer) {
+      return {
+        body: this.arrayBufferToBase64(body),
+        encoding: 'base64',
+      }
+    }
+
+    if (ArrayBuffer.isView(body)) {
+      return {
+        body: this.arrayBufferToBase64(body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)),
+        encoding: 'base64',
+      }
+    }
+
+    return { body: JSON.stringify(body) }
+  }
+
+  private arrayBufferToBase64(buffer: ArrayBufferLike): string {
+    const bytes = new Uint8Array(buffer)
+    const chunkSize = 0x8000
+    let binary = ''
+
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      const chunk = bytes.subarray(offset, offset + chunkSize)
+      binary += String.fromCharCode(...chunk)
+    }
+
+    return btoa(binary)
   }
 
   /**
@@ -547,8 +630,7 @@ export class WebDAVProvider extends StorageProvider {
 
 // Helper function for auth header
 function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem('cf_token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  return {}
 }
 
 // Export singleton with default config

@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { History, RotateCcw, X, Clock, User } from 'lucide-react'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
-
 interface FileVersion {
   id: string
   modifiedAt: string
@@ -36,10 +34,8 @@ export default function VersionHistoryPanel({
   async function fetchVersions() {
     setLoading(true)
     try {
-      const res = await fetch(`${API}/files/${fileId}/versions`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const res = await fetch(`/api/backend/files/${fileId}/versions`, {
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Failed to fetch versions')
       const data = await res.json()
@@ -56,11 +52,9 @@ export default function VersionHistoryPanel({
     
     setRestoringId(versionId)
     try {
-      const res = await fetch(`${API}/files/${fileId}/versions/${versionId}/restore`, {
+      const res = await fetch(`/api/backend/files/${fileId}/versions/${versionId}/restore`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Restore failed')
       alert('Version restored successfully')

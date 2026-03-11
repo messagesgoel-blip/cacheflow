@@ -20,7 +20,6 @@ export interface VerifyRequest {
 
 export interface VerifyResponse {
   success: boolean;
-  sessionToken?: string;
   error?: string;
   requiresBackup?: boolean;
 }
@@ -108,11 +107,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyRes
     const userId = authPayload?.id ?? pendingPayload?.userId;
     const email = authPayload?.email ?? pendingPayload?.email;
     const responsePayload: VerifyResponse = { success: true };
-    if (userId && email) {
-      responsePayload.sessionToken = generate2FASessionToken(String(userId), email);
-    }
-
     const response = NextResponse.json(responsePayload);
+    if (userId && email) {
+      response.cookies.set('sessionToken', generate2FASessionToken(String(userId), email), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60,
+        path: '/',
+      });
+    }
     if (backupCode && backupHashes.length > 0) {
       const updatedHashes: string[] = [];
       let consumed = false;

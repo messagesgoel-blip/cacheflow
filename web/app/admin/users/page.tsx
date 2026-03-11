@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useActionCenter } from '@/components/ActionCenterProvider'
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 interface User {
   id: string
@@ -17,9 +15,7 @@ interface User {
 }
 
 export default function UserManagementPage() {
-  const router = useRouter()
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const { authenticated, email, loading: sessionLoading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,33 +25,18 @@ export default function UserManagementPage() {
   const actions = useActionCenter()
 
   useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-
-    if (!t) {
-      router.push('/')
-      return
+    if (authenticated) {
+      void fetchUsers()
     }
-
-    setToken(t)
-    setEmail(e || '')
-  }, [router])
-
-  useEffect(() => {
-    if (token) {
-      fetchUsers()
-    }
-  }, [token])
+  }, [authenticated])
 
   async function fetchUsers() {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch(`${API}/admin/users`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/admin/users', {
+        credentials: 'include',
       })
 
       if (res.status === 404) {
@@ -78,19 +59,19 @@ export default function UserManagementPage() {
   }
 
   async function handleAdjustQuota(userId: string, currentQuotaGB: number) {
-    if (!token) return
+    if (!authenticated) return
 
     setQuotaLoading(userId)
 
     try {
       const quotaBytes = parseFloat(newQuota) * 1024 * 1024 * 1024
 
-      const res = await fetch(`${API}/admin/users/${userId}/quota`, {
+      const res = await fetch(`/api/backend/admin/users/${userId}/quota`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ quota_bytes: quotaBytes })
       })
 
@@ -126,14 +107,12 @@ export default function UserManagementPage() {
       cancelText: 'Cancel',
     })
     if (!ok) return
-    if (!token) return
+    if (!authenticated) return
 
     try {
-      const res = await fetch(`${API}/admin/users/${userId}/deactivate`, {
+      const res = await fetch(`/api/backend/admin/users/${userId}/deactivate`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include',
       })
 
       if (res.status === 404) {
@@ -168,13 +147,7 @@ export default function UserManagementPage() {
     })
   }
 
-  function handleLogout() {
-    localStorage.removeItem('cf_token')
-    localStorage.removeItem('cf_email')
-    router.push('/')
-  }
-
-  if (!token) {
+  if (sessionLoading || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -198,7 +171,7 @@ export default function UserManagementPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-blue-200 text-sm">{email}</span>
-          <button onClick={handleLogout} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
+          <button onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
         </div>
       </nav>
 

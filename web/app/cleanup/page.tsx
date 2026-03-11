@@ -1,12 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import DuplicateGroup from '@/components/cleanup/DuplicateGroup'
 import StaleFileList from '@/components/cleanup/StaleFileList'
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 interface DuplicateGroup {
   signature: string
@@ -28,9 +26,7 @@ interface DuplicateGroup {
 type TabType = 'duplicates' | 'stale'
 
 export default function CleanupPage() {
-  const router = useRouter()
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const { authenticated, email, loading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
   const [activeTab, setActiveTab] = useState<TabType>('duplicates')
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([])
   const [duplicatesLoading, setDuplicatesLoading] = useState(true)
@@ -43,20 +39,12 @@ export default function CleanupPage() {
   const [scanning, setScanning] = useState(false)
 
   useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-
-    if (!t) {
-      router.push('/')
-      return
+    if (authenticated) {
+      void fetchDuplicates()
     }
+  }, [authenticated])
 
-    setToken(t)
-    setEmail(e || '')
-    fetchDuplicates(t)
-  }, [router])
-
-  async function fetchDuplicates(authToken: string, options?: typeof scanOptions) {
+  async function fetchDuplicates(options?: typeof scanOptions) {
     setDuplicatesLoading(true)
     setDuplicatesError(null)
 
@@ -66,10 +54,8 @@ export default function CleanupPage() {
     if (options?.recursive) params.set('recursive', 'true')
 
     try {
-      const res = await fetch(`${API}/cleanup/duplicates?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+      const res = await fetch(`/api/backend/cleanup/duplicates?${params}`, {
+        credentials: 'include',
       })
 
       if (res.status === 404) {
@@ -92,9 +78,9 @@ export default function CleanupPage() {
   }
 
   function handleScan() {
-    if (!token) return
+    if (!authenticated) return
     setScanning(true)
-    fetchDuplicates(token, scanOptions).finally(() => setScanning(false))
+    fetchDuplicates(scanOptions).finally(() => setScanning(false))
   }
 
   function handleDeleteDuplicate(fileId: string) {
@@ -123,12 +109,6 @@ export default function CleanupPage() {
     )
   }
 
-  function handleLogout() {
-    localStorage.removeItem('cf_token')
-    localStorage.removeItem('cf_email')
-    router.push('/')
-  }
-
   function formatFileSize(bytes: number): string {
     if (bytes < 1024) return bytes + ' B'
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
@@ -144,7 +124,7 @@ export default function CleanupPage() {
     return total + group.files.length
   }, 0)
 
-  if (!token) {
+  if (loading || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
@@ -157,7 +137,7 @@ export default function CleanupPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar email={email} onLogout={handleLogout} />
+      <Navbar email={email} onLogout={() => { void logoutClientSession('/login') }} />
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
@@ -300,7 +280,7 @@ export default function CleanupPage() {
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                   <p className="text-red-700 dark:text-red-400">{duplicatesError}</p>
                   <button
-                    onClick={() => token && fetchDuplicates(token)}
+                    onClick={() => authenticated && fetchDuplicates()}
                     className="mt-2 text-sm text-red-600 dark:text-red-300 hover:text-red-800 dark:hover:text-red-200"
                   >
                     Retry
@@ -340,7 +320,7 @@ export default function CleanupPage() {
           {/* Stale Files Tab */}
           {activeTab === 'stale' && (
             <div className="p-6">
-              <StaleFileList token={token} />
+              <StaleFileList token="" />
             </div>
           )}
         </div>

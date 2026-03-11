@@ -88,11 +88,14 @@ test('localhost login and tab navigation', async ({ page }, testInfo) => {
     })
   })
 
-  // Set auth token in localStorage before page loads
-  await page.addInitScript(() => {
-    localStorage.setItem('cf_token', 'test-token')
-    localStorage.setItem('cf_email', 'sup@goels.in')
-  })
+  await page.context().addCookies([{
+    name: 'accessToken',
+    value: 'test-token',
+    domain: 'localhost',
+    path: '/',
+    httpOnly: true,
+    sameSite: 'Lax',
+  }])
 
   // Browser console should not show SW 404 or CORS errors
   const consoleErrors: string[] = []

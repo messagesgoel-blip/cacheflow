@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
-
 interface Conflict {
   id: string
   filename: string
@@ -40,10 +38,9 @@ export default function ConflictList({ token }: ConflictListProps) {
     setError(null)
 
     try {
-      const res = await fetch(`${API}/conflicts`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/conflicts', {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
       if (res.status === 404) {

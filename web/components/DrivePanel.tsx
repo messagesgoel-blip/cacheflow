@@ -62,7 +62,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     for (const pid of providerIds) {
       const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
       tokens.forEach((t) => {
-        if (t && t.accessToken) {
+        if (t && (t.accessToken || (t as any).remoteId)) {
           const providerConfig = PROVIDERS.find(p => p.id === pid)
           locationsWithTokens.push({ pid, token: t, config: providerConfig })
         }
@@ -72,9 +72,10 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     // Fetch quotas in parallel
     setQuotaLoading(true)
     const quotaResults = await Promise.allSettled(
-      locationsWithTokens.map(async ({ pid }) => {
+      locationsWithTokens.map(async ({ pid, token }) => {
         const provider = getProvider(pid)
         if (provider) {
+          provider.remoteId = (token as any).remoteId
           return await provider.getQuota()
         }
         return { used: 0, total: 0, free: 0, usedDisplay: '0 B', totalDisplay: '0 B', freeDisplay: '0 B', percentUsed: 0 }

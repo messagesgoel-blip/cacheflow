@@ -4,6 +4,11 @@ import { useState } from 'react'
 import { useActionCenter } from '@/components/ActionCenterProvider'
 import { useIntegration } from '@/context/IntegrationContext'
 import { authFetch } from '@/lib/apiClient'
+import { tokenManager } from '@/lib/tokenManager'
+
+function normalizeServerUrl(value: string): string {
+  return value.trim().replace(/\/+$/, '')
+}
 
 export default function WebDAVModal() {
   const { modalState, closeModal } = useIntegration()
@@ -23,26 +28,52 @@ export default function WebDAVModal() {
     }
     setConnecting(true)
     try {
-      // POST to /api/connections (exact endpoint)
-      const response = await authFetch('/api/connections', {
+      const normalizedServerUrl = normalizeServerUrl(serverUrl)
+      const accountKey = `${normalizedServerUrl}::${username.trim()}`
+
+      const response = await authFetch('/api/remotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: 'webdav',
-          serverUrl,
-          username,
-          password,
-          displayName: displayName || undefined,
+          provider: 'webdav',
+          accountKey,
+          accountId: normalizedServerUrl,
+          accountEmail: username.trim(),
+          displayName: displayName.trim() || 'WebDAV',
+          accessToken: btoa(`${username.trim()}:${password}`),
         }),
       })
 
-      const result = await response.json() as { success: boolean; connectionId?: string; error?: string }
+      const result = await response.json() as {
+        success: boolean
+        remote?: { id?: string }
+        data?: { remote?: { id?: string } }
+        error?: string
+      }
 
       if (!response.ok || !result.success) {
         throw new Error(result.error || 'Failed to connect')
       }
 
+      const remoteId = result.data?.remote?.id || result.remote?.id
+      if (remoteId) {
+        tokenManager.saveToken('webdav', {
+          provider: 'webdav',
+          accessToken: '',
+          expiresAt: null,
+          accountEmail: username.trim(),
+          displayName: displayName.trim() || 'WebDAV',
+          accountId: normalizedServerUrl,
+          accountKey,
+        } as any, remoteId)
+      }
+
       actions.notify({ kind: 'success', title: 'Connected', message: 'WebDAV connection created successfully' })
+      window.dispatchEvent(
+        new CustomEvent('cacheflow:remote-connected', {
+          detail: { providerId: 'webdav', remoteId, accountKey },
+        }),
+      )
       closeModal()
 
       // Clear sensitive data from state

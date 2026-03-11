@@ -84,7 +84,7 @@ export abstract class StorageProvider {
 
   /**
    * Proxy fetch through server-side API to avoid CORS issues
-   * Uses backend /api/remotes/:uuid/proxy with bearer token from cf_token.
+   * Uses backend /api/remotes/:uuid/proxy with cookie-backed session auth.
    */
   protected async proxyFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const requestHeaders = this.buildRequestHeaders(options.headers)
@@ -97,7 +97,6 @@ export abstract class StorageProvider {
         body: options.body,
       }
 
-      const bearerToken = typeof window !== 'undefined' ? localStorage.getItem('cf_token') : null
       const apiBase = process.env.NEXT_PUBLIC_API_URL || ''
       const proxyUrl = apiBase
         ? `${apiBase}/api/remotes/${this.remoteId}/proxy`
@@ -107,7 +106,6 @@ export abstract class StorageProvider {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}),
         },
         credentials: 'include',
         body: JSON.stringify(proxyBody),

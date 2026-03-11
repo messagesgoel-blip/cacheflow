@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
-
 interface StorageData {
   name: string
   value: number
@@ -37,10 +35,8 @@ export default function StorageChart({ token }: StorageChartProps) {
     setLoading(true)
 
     try {
-      const res = await fetch(`${API}/admin/storage-breakdown`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/admin/storage-breakdown', {
+        credentials: 'include',
       })
 
       if (res.status === 404) {

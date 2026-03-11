@@ -15,19 +15,13 @@ test.describe('Scheduled Jobs Management', () => {
   const MOCK_EMAIL = 'test@goels.in';
 
   test.beforeEach(async ({ page, context }) => {
-    // 1. Set authentication cookie and localStorage to bypass login
+    // 1. Set authentication cookie to bypass login
     await context.addCookies([{
       name: 'accessToken',
       value: MOCK_TOKEN,
       domain: 'localhost',
       path: '/'
     }]);
-
-    await page.addInitScript(({ token, email }) => {
-      localStorage.clear();
-      localStorage.setItem('cf_token', token);
-      localStorage.setItem('cf_email', email);
-    }, { token: MOCK_TOKEN, email: MOCK_EMAIL });
   });
 
   test('Schedules Page: should show empty state when no jobs exist', async ({ page }) => {
@@ -226,10 +220,6 @@ test.describe('Scheduled Jobs Management', () => {
 
     // --- Step 1: Open first context and see the job ---
     const page1 = await context.newPage();
-    await page1.addInitScript(({ token, email }) => {
-      localStorage.setItem('cf_token', token);
-      localStorage.setItem('cf_email', email);
-    }, { token: MOCK_TOKEN, email: MOCK_EMAIL });
 
     await page1.route('**/api/jobs', async (route) => {
       await route.fulfill({
@@ -261,10 +251,6 @@ test.describe('Scheduled Jobs Management', () => {
     }]);
     
     const page2 = await context2.newPage();
-    await page2.addInitScript(({ token, email }) => {
-      localStorage.setItem('cf_token', token);
-      localStorage.setItem('cf_email', email);
-    }, { token: MOCK_TOKEN, email: MOCK_EMAIL });
 
     // Mock the "server" having executed the job while we were away
     await page2.route('**/api/jobs', async (route) => {

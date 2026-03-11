@@ -39,9 +39,8 @@ export default function StaleFileList({ token }: StaleFileListProps) {
 
     try {
       const res = await fetch(`${API}/cleanup/stale`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
       if (res.status === 404) {
@@ -123,9 +122,9 @@ export default function StaleFileList({ token }: StaleFileListProps) {
       const res = await fetch(`${API}/cleanup/stale`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ fileIds: Array.from(selectedFiles) })
       })
 
@@ -145,9 +144,8 @@ export default function StaleFileList({ token }: StaleFileListProps) {
     try {
       const res = await fetch(`${API}/cleanup/stale/${fileId}/trash`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
       if (res.ok) {
@@ -167,9 +165,8 @@ export default function StaleFileList({ token }: StaleFileListProps) {
     try {
       const res = await fetch(`${API}/cleanup/stale/${fileId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
       if (res.ok) {

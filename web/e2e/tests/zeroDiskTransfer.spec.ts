@@ -45,8 +45,6 @@ test.describe('Zero-Disk Transfer & Tab-Close Survival', () => {
     // Navigate to root first to ensure we can set localStorage
     await page.goto('/');
     await page.evaluate(() => {
-      localStorage.setItem('cf_token', 'mock-jwt-token');
-      localStorage.setItem('cf_email', 'qa@goels.in');
       localStorage.setItem('cf_user_id', 'user-123');
 
       // Setup mock provider tokens in localStorage for the UI

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ProviderId, PROVIDERS, ConnectedProvider, ProviderQuota, formatBytes } from '@/lib/providers/types'
 import { getProvider } from '@/lib/providers'
+import { tokenManager } from '@/lib/tokenManager'
 
 interface SidebarProps {
   connectedProviders: ConnectedProvider[]
@@ -66,8 +67,7 @@ export default function Sidebar({
         const cacheKey = `${cp.providerId}:${cp.accountKey}`
 
         try {
-          const tokens = JSON.parse(localStorage.getItem(`cacheflow_tokens_${cp.providerId}`) || '[]')
-          const token = tokens.find((t: any) => t.accountKey === cp.accountKey)
+          const token = tokenManager.getToken(cp.providerId, cp.accountKey)
           if (token?.remoteId) {
             const res = await fetch(`/api/remotes/${token.remoteId}/health`, {
               credentials: 'include',
@@ -80,9 +80,8 @@ export default function Sidebar({
         try {
           const provider = getProvider(cp.providerId)
           if (provider) {
-            const tokens = JSON.parse(localStorage.getItem(`cacheflow_tokens_${cp.providerId}`) || '[]')
-            const tokenData = tokens.find((t: any) => t.accountKey === cp.accountKey)
-            provider.remoteId = (tokenData as any)?.remoteId
+            const tokenData = tokenManager.getToken(cp.providerId, cp.accountKey)
+            provider.remoteId = tokenData?.remoteId
             const quota = await provider.getQuota()
             newQuotas[cacheKey] = quota
           }

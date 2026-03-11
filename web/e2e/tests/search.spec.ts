@@ -48,9 +48,6 @@ test.describe('Global Cross-Provider Search', () => {
     }]);
 
     await page.addInitScript(() => {
-      localStorage.setItem('cf_token', 'mock-jwt-token');
-      localStorage.setItem('cf_email', 'test@goels.in');
-      
       const googleTokens = [{ 
         accountKey: 'g1', 
         accountEmail: 'google@example.com', 

@@ -1,6 +1,7 @@
 'use client'
 
 import Login from '@/components/Login'
+import { clearLegacyAuthState } from '@/lib/auth/clientSession'
 
 function clearStaleProviderState() {
   const keysToRemove: string[] = []
@@ -30,10 +31,9 @@ export default function HomeEntry({
         onLogin={(token, email) => {
           try {
             clearStaleProviderState()
-            localStorage.setItem('cf_token', token)
-            localStorage.setItem('cf_email', email)
+            clearLegacyAuthState()
           } catch (error) {
-            console.warn('Failed to persist local session token:', error)
+            console.warn('Failed to clear legacy local auth state:', error)
           }
           window.location.href = '/files'
         }}

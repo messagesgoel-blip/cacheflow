@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ProviderId, ProviderQuota, formatBytes } from '@/lib/providers/types'
+import { tokenManager } from '@/lib/tokenManager'
 
 interface AccountRowProps {
   providerId: ProviderId
@@ -41,8 +42,7 @@ export default function AccountRow({
 
     const fetchData = async () => {
       try {
-        const tokens = JSON.parse(localStorage.getItem(`cacheflow_tokens_${providerId}`) || '[]')
-        const token = tokens.find((t: any) => t.accountKey === accountKey)
+        const token = tokenManager.getToken(providerId, accountKey)
 
         if (token?.remoteId && mounted) {
           const res = await fetch(`/api/remotes/${token.remoteId}/health`, {

@@ -581,8 +581,7 @@ export class VPSProvider extends StorageProvider {
 
 // Helper functions
 function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem('cf_token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  return {}
 }
 
 function getMimeType(filename: string): string {

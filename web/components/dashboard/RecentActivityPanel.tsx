@@ -54,15 +54,9 @@ export default function RecentActivityPanel() {
     let active = true
 
     const loadActivity = async () => {
-      const token = localStorage.getItem('cf_token')
-      if (!token) {
-        if (active) setLoading(false)
-        return
-      }
-
       try {
-        const response = await fetch('/api/activity?limit=4', {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await fetch('/api/backend/activity?limit=4', {
+          credentials: 'include',
         })
         const payload = await response.json()
         if (!active) return

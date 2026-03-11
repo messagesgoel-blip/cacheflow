@@ -26,16 +26,13 @@ export default function ActivityFeed() {
 
   useEffect(() => {
     async function fetchActivity() {
-      const token = localStorage.getItem('cf_token')
-      if (!token) return
-
       try {
-        let url = '/api/activity?limit=50'
+        let url = '/api/backend/activity?limit=50'
         if (filter.action) url += `&action=${filter.action}`
         if (filter.provider) url += `&provider=${filter.provider}`
 
         const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` }
+          credentials: 'include',
         })
         const body = await res.json()
         if (body.ok) {

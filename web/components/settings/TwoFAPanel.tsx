@@ -25,12 +25,7 @@ interface BasicApiResponse {
 }
 
 function getAuthHeaders(): HeadersInit {
-  if (typeof window === 'undefined') {
-    return {}
-  }
-
-  const token = localStorage.getItem('cf_token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  return {}
 }
 
 export default function TwoFAPanel({ onSetup, onDisable }: TwoFAPanelProps) {

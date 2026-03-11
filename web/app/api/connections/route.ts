@@ -28,6 +28,7 @@ interface ProviderConnection {
   id: string;
   provider: string;
   accountKey: string;
+  accountId?: string;
   remoteId: string;
   accountName: string;
   accountEmail: string;
@@ -140,6 +141,7 @@ function mapRemoteToConnection(remote: BackendRemote): ProviderConnection {
     id: remote.id,
     provider: normalizeProviderId(remote.provider),
     accountKey,
+    accountId: remote.account_id,
     remoteId: remote.id,
     accountName: accountLabel,
     accountEmail,

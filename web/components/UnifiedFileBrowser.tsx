@@ -350,7 +350,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                 accessToken: existing?.accessToken || '',
                 accountEmail: conn.accountEmail || existing?.accountEmail || `${pid}@remote.local`,
                 displayName: conn.accountLabel || existing?.displayName || conn.accountName || accountKey,
-                accountId: (existing as any)?.accountId || accountKey,
+                accountId: conn.accountId || (existing as any)?.accountId || accountKey,
                 accountKey,
                 expiresAt: existing?.expiresAt || null,
               } as any,
