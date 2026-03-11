@@ -156,21 +156,14 @@ test.describe('Storage Dashboard and Health Indicators', () => {
   test.beforeEach(async ({ page, context, request }) => {
     test.setTimeout(120000); // Dev server can be slow
 
-    await primeQaSession(page, request);
-
-    // 0. Set authentication cookie to bypass middleware
-    await context.addCookies([{
-      name: 'accessToken',
-      value: 'mock-jwt-token',
-      domain: 'localhost',
-      path: '/'
-    }]);
+    // Use mock-only session to avoid live auth call
+    await primeQaSession(page, request, 'sup@goels.in', '123password', { mockOnly: true });
 
     // 1. Clean session and set mock tokens
     await page.addInitScript(() => {
       localStorage.clear();
       sessionStorage.clear();
-      
+
       // Seed local tokens so Sidebar can find them
       const googleTokens = [
         { 
