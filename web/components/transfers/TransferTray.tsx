@@ -213,6 +213,7 @@ export const TransferTray: React.FC = () => {
               </span>
             )}
             <button
+              data-testid="tray-refresh"
               onClick={refreshTransfers}
               className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 text-[var(--cf-text-2)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
               aria-label="Refresh transfers"
@@ -241,7 +242,7 @@ export const TransferTray: React.FC = () => {
         </div>
         {/* Rate Limit Indicator */}
         {rateLimited && (
-          <div className="mt-3 flex items-center gap-2 rounded-xl border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.1)] px-3 py-2">
+          <div data-testid="tray-rate-limit" className="mt-3 flex items-center gap-2 rounded-xl border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.1)] px-3 py-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(245,158,11,0.2)] text-sm">⚠</span>
             <div className="flex-1">
               <p className="text-xs font-semibold text-[#f59e0b]">Rate Limited</p>
@@ -253,6 +254,7 @@ export const TransferTray: React.FC = () => {
         )}
         <div className="mt-3 flex items-center justify-between gap-2">
           <button
+            data-testid="tray-minimize"
             onClick={() => setIsOpen(false)}
             className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-1.5 text-xs font-medium text-[var(--cf-text-1)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
             aria-label="Minimize"

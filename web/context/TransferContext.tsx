@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 
 export interface TransferItem {
@@ -65,6 +65,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   const [authChecked, setAuthChecked] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
+  const rateLimitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Clear rate limit state
@@ -79,24 +80,32 @@ export function TransferProvider({ children }: { children: ReactNode }) {
    */
   const handleRateLimit = useCallback((response: Response): boolean => {
     if (response.status === 429) {
+      // Cancel any previous backoff timer before scheduling a new one
+      if (rateLimitTimeoutRef.current) {
+        clearTimeout(rateLimitTimeoutRef.current);
+        rateLimitTimeoutRef.current = null;
+      }
+
       const retryAfterHeader = response.headers.get('Retry-After');
       const seconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : 60;
       if (!isNaN(seconds) && seconds > 0) {
         setRateLimited(true);
         setRetryAfter(seconds);
         // Auto-clear after retry interval
-        setTimeout(() => {
+        rateLimitTimeoutRef.current = setTimeout(() => {
           setRateLimited(false);
           setRetryAfter(null);
+          rateLimitTimeoutRef.current = null;
         }, seconds * 1000);
         return true;
       }
       // Default to 60 seconds if no valid header
       setRateLimited(true);
       setRetryAfter(60);
-      setTimeout(() => {
+      rateLimitTimeoutRef.current = setTimeout(() => {
         setRateLimited(false);
         setRetryAfter(null);
+        rateLimitTimeoutRef.current = null;
       }, 60000);
       return true;
     }
