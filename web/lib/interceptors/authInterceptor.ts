@@ -96,7 +96,18 @@ export async function authInterceptor(
       }
 
       // Refresh the token
-      await refreshAuthToken();
+      try {
+        await refreshAuthToken();
+      } catch (refreshError) {
+        // Dispatch session-expired event when refresh fails
+        const event = new CustomEvent('cacheflow:session-expired', {
+          detail: { url, status: 401 }
+        });
+        window.dispatchEvent(event);
+        
+        // Re-throw the original error so callers can observe the failure
+        throw refreshError;
+      }
 
       // Retry the original request with updated credentials
       // Note: cookies are automatically included via credentials: 'include'

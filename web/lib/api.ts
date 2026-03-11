@@ -86,7 +86,11 @@ export async function uploadFile(file: File, token: string, path?: string) {
 
   // Return the created file object to enable downstream operations
   const result = await res.json()
-  return result.file || result // Return file object if available, otherwise return full response
+  if (result.file && typeof result.file === 'object' && result.file.id) {
+    return result.file // Return the file object if it exists and has expected properties
+  } else {
+    throw new Error('Expected file object in upload response but got: ' + JSON.stringify(result))
+  }
 }
 
 export async function downloadFile(id: string, filename: string, token: string) {
