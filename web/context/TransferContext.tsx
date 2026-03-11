@@ -184,6 +184,11 @@ export function TransferProvider({ children }: { children: ReactNode }) {
    * Cancel a transfer
    */
   const cancelTransfer = useCallback(async (jobId: string): Promise<void> => {
+    // Check if rate limited before making request
+    if (rateLimited) {
+      throw new Error('Rate limited. Please wait before cancelling.');
+    }
+
     try {
       const response = await fetch(`/api/transfers/${jobId}`, {
         method: 'DELETE',
@@ -205,7 +210,8 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       console.error('Failed to cancel transfer:', error);
       throw error;
     }
-  }, [handleRateLimit]);
+  }, [handleRateLimit, rateLimited]);
+>>>>>>> b3889a8 (fix(URM-66): add rate-limit guard to cancelTransfer for consistency)
 
   /**
    * Retry a failed transfer
