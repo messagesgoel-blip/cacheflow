@@ -407,6 +407,7 @@ export default function ProviderHub() {
                           <div
                             key={`${connection.provider}:${connection.id}`}
                             data-testid={`cf-provider-card-${connection.id}`}
+                            data-provider-type={connection.provider}
                             className="cf-panel relative overflow-hidden rounded-[24px] p-5 transition-all hover:-translate-y-0.5"
                           >
                             <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(74,158,255,0.6),transparent)]" />
@@ -419,7 +420,10 @@ export default function ProviderHub() {
                                   <p className="truncate text-sm font-semibold text-[var(--cf-text-0)]">
                                     {connection.accountLabel || connection.accountName}
                                   </p>
-                                  <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${STATUS_CHIP[connection.status]}`}>
+                                  <span
+                                    data-status={connection.status}
+                                    className={`rounded-full px-2 py-1 text-[10px] font-semibold ${STATUS_CHIP[connection.status]}`}
+                                  >
                                     {connection.status === 'error' ? 'Auth Error' : connection.status}
                                   </span>
                                 </div>
