@@ -144,17 +144,21 @@ export async function primeQaSession(
   request: APIRequestContext,
   email = 'sup@goels.in',
   password = '123password',
+  options: { mockOnly?: boolean } = {},
 ): Promise<void> {
-  const response = await request
-    .post('http://localhost:8100/auth/login', {
-      data: { email, password },
-    })
-    .catch(() => null)
-
   let token = 'mock-token'
-  if (response?.ok()) {
-    const payload = await response.json()
-    token = payload?.token || payload?.data?.token || token
+
+  if (!options.mockOnly) {
+    const response = await request
+      .post('http://localhost:8100/auth/login', {
+        data: { email, password },
+      })
+      .catch(() => null)
+
+    if (response?.ok()) {
+      const payload = await response.json()
+      token = payload?.token || payload?.data?.token || token
+    }
   }
 
   await page.context().addCookies([
