@@ -397,14 +397,17 @@ test.describe('Storage Dashboard and Health Indicators', () => {
 
   test('Health API: Verify the endpoint is reachable and returns correct shape as per 3.14', async ({ page }) => {
     await page.goto('/connections');
-    const res = await page.request.get('/api/connections/health', {
-      headers: { Authorization: 'Bearer mock-jwt-token' }
+    const result = await page.evaluate(async () => {
+      const res = await fetch('/api/connections/health', {
+        method: 'GET',
+        headers: { Authorization: 'Bearer mock-jwt-token' }
+      });
+      return {
+        ok: res.ok,
+        status: res.status,
+        body: await res.json().catch(() => null),
+      };
     });
-    const result = {
-      ok: res.ok(),
-      status: res.status(),
-      body: await res.json().catch(() => null),
-    };
     expect(result.ok, `Expected /api/connections/health to succeed, got status ${result.status}`).toBeTruthy();
     const body = result.body as any;
     expect(body.success).toBe(true);
