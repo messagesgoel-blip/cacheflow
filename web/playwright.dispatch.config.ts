@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
@@ -18,9 +18,16 @@ export default defineConfig({
   reporter: [['list']],
   projects: [
     {
-      name: 'chromium',
+      name: 'chromium-desktop',
       use: {
         viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: 'chromium-mobile',
+      use: {
+        browserName: 'chromium',
+        ...devices['iPhone 13'],
       },
     },
   ],

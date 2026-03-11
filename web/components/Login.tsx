@@ -37,7 +37,16 @@ export default function Login({
   }
 
   return (
-    <div className="cf-shell-page flex min-h-screen items-center justify-center px-4 py-8 sm:px-6">
+    <div
+      className="cf-shell-page relative box-border"
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '40px 24px',
+      }}
+    >
       <div className="absolute right-4 top-4 z-20 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-1 shadow-[var(--cf-shadow-elev)]">
         <ThemeToggle />
       </div>
@@ -74,9 +83,9 @@ export default function Login({
           </div>
         </section>
 
-        <section className="cf-liquid relative self-stretch overflow-hidden rounded-[32px] p-6 sm:p-8 lg:min-h-[620px] lg:p-10">
+        <section className="cf-liquid relative flex self-stretch overflow-hidden rounded-[32px] p-6 sm:p-8 lg:min-h-[620px] lg:flex-col lg:p-10">
           <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(0,224,194,0.54),transparent)]" />
-          <div className="mx-auto flex h-full w-full max-w-md flex-col justify-center">
+          <div className="mx-auto flex h-full w-full max-w-md flex-1 flex-col justify-center">
             <p className="cf-kicker">{mode === 'login' ? 'Welcome back' : 'Create access'}</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[var(--cf-text-0)]">
               {mode === 'login' ? 'Enter the control plane.' : 'Start a new CacheFlow session.'}
@@ -91,6 +100,7 @@ export default function Login({
               <label className="block">
                 <span className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">Email</span>
                 <input
+                  data-testid="email-input"
                   className="w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] outline-none transition focus:border-[rgba(74,158,255,0.32)] focus:bg-[var(--cf-panel-softer)]"
                   type="email"
                   placeholder="Email"
@@ -102,6 +112,7 @@ export default function Login({
               <label className="block">
                 <span className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--cf-text-2)]">Password</span>
                 <input
+                  data-testid="password-input"
                   className="w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm text-[var(--cf-text-0)] outline-none transition focus:border-[rgba(74,158,255,0.32)] focus:bg-[var(--cf-panel-softer)]"
                   type="password"
                   placeholder="Password"
@@ -112,6 +123,7 @@ export default function Login({
               </label>
               {error && <p className="rounded-2xl border border-[rgba(255,92,92,0.2)] bg-[rgba(255,92,92,0.08)] px-4 py-3 text-sm text-[var(--cf-red)]">{error}</p>}
               <button
+                data-testid="submit-button"
                 className="w-full rounded-2xl border border-[rgba(74,158,255,0.34)] bg-[linear-gradient(135deg,rgba(74,158,255,0.88),rgba(43,104,223,0.92))] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(37,99,235,0.24)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                 type="submit"
                 disabled={loading}
@@ -119,6 +131,7 @@ export default function Login({
                 {loading ? (mode === 'login' ? 'Signing in...' : 'Creating account...') : (mode === 'login' ? 'Sign In' : 'Register')}
               </button>
               <button
+                data-testid="toggle-mode-button"
                 className="w-full rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3 text-sm font-medium text-[var(--cf-text-1)] transition hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] disabled:opacity-50"
                 type="button"
                 disabled={loading}

@@ -1701,7 +1701,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
               onClick={() => setIsMobileSidebarOpen(true)}
               className="cf-toolbar-card inline-flex shrink-0 items-center gap-2 rounded-[18px] border border-[var(--cf-border)] px-3 py-2 text-sm font-medium text-[var(--cf-text-1)] md:hidden"
             >
-              <svg className="h-4 w-4 text-[var(--cf-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg aria-hidden="true" className="h-4 w-4 text-[var(--cf-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
               Dock
@@ -1734,6 +1734,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                 <div className={`cf-toolbar-card flex items-center gap-2 rounded-[20px] px-2 py-2 ${isCompactToolbar ? 'w-auto flex-none' : 'flex-wrap'}`}>
                   <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)]">
                     <button
+                      type="button"
                       data-testid="cf-allproviders-view-toggle-grouped"
                       onClick={() => !isGroupedView && !isAggregatedView && toggleGroupedView()}
                       className={`px-3 py-2 text-sm font-medium transition-colors ${isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'} disabled:cursor-not-allowed disabled:opacity-50 ${isCompactToolbar ? 'px-2.5 text-[12px]' : ''}`}
@@ -1743,6 +1744,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                       Grouped
                     </button>
                     <button
+                      type="button"
                       data-testid="cf-allproviders-view-toggle-flat"
                       onClick={() => isGroupedView && !isAggregatedView && toggleGroupedView()}
                       className={`px-3 py-2 text-sm font-medium transition-colors ${!isGroupedView && !isAggregatedView ? 'bg-[rgba(74,158,255,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'} disabled:cursor-not-allowed disabled:opacity-50 ${isCompactToolbar ? 'px-2.5 text-[12px]' : ''}`}
@@ -1752,6 +1754,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                       Flat
                     </button>
                     <button
+                      type="button"
                       data-testid="cf-aggregated-view-toggle"
                       onClick={() => {
                         // When turning ON aggregated view, make sure we're in flat view
@@ -1791,6 +1794,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                       {/* Duplicates Only Toggle */}
                       <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)]">
                         <button
+                          type="button"
                           data-testid="cf-duplicates-filter-toggle"
                           onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)}
                           className={`px-3 py-2 text-sm font-medium transition-colors ${showDuplicatesOnly ? 'bg-[rgba(167,139,250,0.1)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
@@ -1808,6 +1812,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
               <div className="cf-toolbar-card flex w-full items-center justify-between gap-2 rounded-[20px] px-2 py-2">
                 <div className="flex overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)]">
                   <button
+                    type="button"
                     data-testid="cf-allproviders-view-toggle-grouped-mobile"
                     onClick={() => !isGroupedView && !isAggregatedView && toggleGroupedView()}
                     className={`px-2 py-1.5 text-[10px] font-medium transition-colors ${isGroupedView ? 'bg-[rgba(74,158,255,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
@@ -1816,6 +1821,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                     Grouped
                   </button>
                   <button
+                    type="button"
                     data-testid="cf-allproviders-view-toggle-flat-mobile"
                     onClick={() => isGroupedView && toggleGroupedView()}
                     className={`px-2 py-1.5 text-[10px] font-medium transition-colors ${!isGroupedView ? 'bg-[rgba(74,158,255,0.12)] text-[var(--cf-text-0)]' : 'text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}`}
@@ -1824,6 +1830,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                     Flat
                   </button>
                   <button
+                    type="button"
                     data-testid="cf-aggregated-view-toggle-mobile"
                     onClick={() => {
                       if (!isAggregatedView && isGroupedView) {
@@ -1839,6 +1846,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
+                    type="button"
                     data-testid="cf-action-upload-mobile"
                     onClick={() => uploadInputRef.current?.click()}
                     disabled={uploading || connectedProviders.length === 0}
@@ -1855,7 +1863,17 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                   >
                     ◎
                   </button>
-                  <button data-testid="files-refresh-mobile" onClick={() => void handleRefresh()} className="rounded-xl border border-[var(--cf-border)] p-1.5 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+                  <button
+                    type="button"
+                    data-testid="files-refresh-mobile"
+                    onClick={() => void handleRefresh()}
+                    className="rounded-xl border border-[var(--cf-border)] p-1.5 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+                    aria-label="Refresh files"
+                  >
+                    <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             )}
@@ -1873,7 +1891,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                     className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
                     aria-label="Collapse search"
                   >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -1883,6 +1901,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
             {(!isCompactToolbar || !isSearchExpandedOnMobile) && (!isCompactToolbar || isAggregatedView) && (
             <div className={`cf-toolbar-card flex flex-wrap items-center gap-2 rounded-[20px] px-2 py-2 ${isCompactToolbar ? 'w-full justify-between' : ''}`}>
               <button
+                type="button"
                 data-testid="cf-action-new-folder"
                 onClick={openNewFolderModal}
                 disabled={writeActionsDisabled}
@@ -1892,6 +1911,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                 {isCompactToolbar ? '📁' : 'New Folder'}
               </button>
               <button
+                type="button"
                 data-testid="cf-action-new-file"
                 onClick={openNewFileModal}
                 disabled={writeActionsDisabled}
@@ -1901,6 +1921,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                 {isCompactToolbar ? '＋' : 'New File'}
               </button>
               <button
+                type="button"
                 data-testid="cf-action-upload"
                 onClick={() => uploadInputRef.current?.click()}
                 disabled={uploading || connectedProviders.length === 0}
@@ -1918,7 +1939,17 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                   ◎
                 </button>
               )}
-              <button data-testid="files-refresh" onClick={() => void handleRefresh()} className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+              <button
+                type="button"
+                data-testid="files-refresh"
+                onClick={() => void handleRefresh()}
+                className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+                aria-label="Refresh files"
+              >
+                <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
             </div>
             )}
             </div>
@@ -1953,20 +1984,22 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--cf-blue)]/25 border-t-[var(--cf-blue)]" />
                     </div>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
-                      <div className="cf-kicker mb-1">View</div>
-                      <div className="text-sm font-semibold text-[var(--cf-text-0)]">{isAggregatedView ? 'Aggregated' : isGroupedView ? 'Grouped' : 'Flat'}</div>
+                  {!isCompactToolbar && (
+                    <div data-testid="cf-loading-workspace-meta" className="grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
+                        <div className="cf-kicker mb-1">View</div>
+                        <div className="text-sm font-semibold text-[var(--cf-text-0)]">{isAggregatedView ? 'Aggregated' : isGroupedView ? 'Grouped' : 'Flat'}</div>
+                      </div>
+                      <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
+                        <div className="cf-kicker mb-1">Path</div>
+                        <div className="truncate font-mono text-xs text-[var(--cf-text-1)]">{currentPath}</div>
+                      </div>
+                      <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
+                        <div className="cf-kicker mb-1">Providers</div>
+                        <div className="text-sm font-semibold text-[var(--cf-text-0)]">{connectedProviders.length || 0} connected</div>
+                      </div>
                     </div>
-                    <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
-                      <div className="cf-kicker mb-1">Path</div>
-                      <div className="truncate font-mono text-xs text-[var(--cf-text-1)]">{currentPath}</div>
-                    </div>
-                    <div className="rounded-[22px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-4">
-                      <div className="cf-kicker mb-1">Providers</div>
-                      <div className="text-sm font-semibold text-[var(--cf-text-0)]">{connectedProviders.length || 0} connected</div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ) : !loading && files.length === 0 ? (

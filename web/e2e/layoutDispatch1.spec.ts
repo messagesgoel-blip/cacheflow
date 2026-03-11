@@ -1,98 +1,145 @@
-import fs from 'node:fs/promises'
-import { type APIRequestContext, expect, type Locator, type Page, test } from '@playwright/test'
-import { primeQaSession } from './helpers/mockRuntime'
+import { expect, test, type Locator, type Page } from '@playwright/test'
+import {
+  gotoFilesAndWait,
+  installMockRuntime,
+  primeQaSession,
+  type MockConnection,
+  type MockProxyRequest,
+} from './helpers/mockRuntime'
 
-const SHOTS_DIR = '/srv/storage/screenshots/cacheflow/layout-dispatch1'
-
-type MockConnection = {
-  id: string
-  remoteId: string
-  provider: string
-  accountKey: string
-  accountEmail: string
-  accountLabel: string
-  accountName: string
-  status: 'connected' | 'disconnected' | 'error'
-  quota?: { used: number; total: number }
+type DispatchConnection = MockConnection & {
+  status?: 'connected' | 'disconnected' | 'error'
   host?: string
   port?: number
   username?: string
   lastSyncAt?: string
 }
 
-function shotPath(name: string): string {
-  return `${SHOTS_DIR}/${name}.png`
-}
+const QA_EMAIL = process.env.PLAYWRIGHT_QA_EMAIL || 'layout@cacheflow.test'
+const QA_PASSWORD = process.env.PLAYWRIGHT_QA_PASSWORD || '123password'
+
+const connections: DispatchConnection[] = [
+  {
+    id: 'remote-google-1',
+    remoteId: 'remote-google-1',
+    provider: 'google',
+    accountKey: 'google-1',
+    accountEmail: 'google@example.com',
+    accountLabel: 'Google Drive',
+    accountName: 'Google Drive',
+    status: 'connected',
+    quota: { used: quotaBytes(48), total: quotaBytes(100) },
+  },
+  {
+    id: 'remote-dropbox-1',
+    remoteId: 'remote-dropbox-1',
+    provider: 'dropbox',
+    accountKey: 'dropbox-1',
+    accountEmail: 'dropbox@example.com',
+    accountLabel: 'Dropbox Team',
+    accountName: 'Dropbox Team',
+    status: 'connected',
+    quota: { used: quotaBytes(12), total: quotaBytes(20) },
+  },
+  {
+    id: 'remote-vps-oci',
+    remoteId: 'remote-vps-oci',
+    provider: 'vps',
+    accountKey: 'vps-oci',
+    accountEmail: '',
+    accountLabel: 'OCI',
+    accountName: 'OCI',
+    status: 'connected',
+    quota: { used: 0, total: 0 },
+    host: '140.238.0.1',
+    port: 22,
+    username: 'sanjay',
+  },
+]
 
 function quotaBytes(gb: number): number {
   return gb * 1024 * 1024 * 1024
 }
 
-async function ensureShotDir(): Promise<void> {
-  await fs.mkdir(SHOTS_DIR, { recursive: true })
+function proxyHandler({ remoteId, url }: MockProxyRequest) {
+  if (remoteId === 'remote-google-1' && url.includes('about?fields=storageQuota')) {
+    return {
+      json: {
+        storageQuota: {
+          usage: String(quotaBytes(48)),
+          limit: String(quotaBytes(100)),
+        },
+      },
+    }
+  }
+
+  if (remoteId === 'remote-dropbox-1' && url.includes('/users/get_space_usage')) {
+    return {
+      json: {
+        allocation: { allocated: quotaBytes(20) },
+        used: quotaBytes(12),
+      },
+    }
+  }
+
+  if (remoteId === 'remote-google-1' && url.includes('/drive/v3/files') && !url.includes('fields=size,mimeType') && !url.includes('alt=media')) {
+    return {
+      json: {
+        files: [
+          {
+            id: 'g-file-1',
+            name: 'Roadmap.md',
+            mimeType: 'text/markdown',
+            size: '2048',
+            parents: ['root'],
+            modifiedTime: new Date('2026-03-10T12:00:00.000Z').toISOString(),
+            createdTime: new Date('2026-03-10T11:00:00.000Z').toISOString(),
+          },
+        ],
+        nextPageToken: null,
+      },
+    }
+  }
+
+  if (remoteId === 'remote-dropbox-1' && url.includes('/files/list_folder')) {
+    return {
+      json: {
+        entries: [],
+        has_more: false,
+        cursor: 'mock-cursor',
+      },
+    }
+  }
+
+  if (remoteId === 'remote-vps-oci' && url.includes('/folders/0/items')) {
+    return {
+      json: {
+        entries: [],
+        total_count: 0,
+      },
+    }
+  }
+
+  return undefined
 }
 
-async function box(locator: Locator) {
-  const bounds = await locator.boundingBox()
-  expect(bounds).not.toBeNull()
-  return bounds as { x: number; y: number; width: number; height: number }
+async function setTheme(page: Page, theme: 'light' | 'dark') {
+  await page.emulateMedia({ colorScheme: theme })
+  await page.addInitScript((selectedTheme: 'light' | 'dark') => {
+    localStorage.setItem('cf_theme', selectedTheme)
+    document.documentElement.classList.remove('light', 'dark')
+    document.documentElement.classList.add(selectedTheme)
+  }, theme)
 }
 
-async function seedAuthRuntime(
-  page: Page,
-  request: APIRequestContext,
-  connections: MockConnection[],
-): Promise<void> {
-  await primeQaSession(page, request)
-
-  await page.addInitScript((mockConnections: MockConnection[]) => {
-    localStorage.clear()
-    sessionStorage.clear()
-    localStorage.setItem('cf_token', 'mock-token')
-    localStorage.setItem('cf_email', 'layout@cacheflow.test')
-
-    const byProvider: Record<string, Array<Record<string, unknown>>> = {}
-    for (const connection of mockConnections) {
-      const token = {
-        provider: connection.provider,
-        accessToken: '',
-        refreshToken: '',
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-        accountEmail: connection.accountEmail,
-        displayName: connection.accountLabel,
-        accountId: connection.accountKey,
-        accountKey: connection.accountKey,
-        disabled: false,
-        remoteId: connection.remoteId,
-        quota: connection.quota,
-      }
-      byProvider[connection.provider] ||= []
-      byProvider[connection.provider].push(token)
-    }
-
-    for (const [provider, tokens] of Object.entries(byProvider)) {
-      localStorage.setItem(`cacheflow_tokens_${provider}`, JSON.stringify(tokens))
-    }
-  }, connections)
-
-  await page.route('**/api/connections', async (route) => {
+async function installDispatchRoutes(page: Page) {
+  await page.route('**/api/files**', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         success: true,
-        data: connections,
-      }),
-    })
-  })
-
-  await page.route('**/api/remotes/*/health', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        ok: true,
-        data: { status: 'connected', healthy: true },
+        data: [],
       }),
     })
   })
@@ -152,17 +199,6 @@ async function seedAuthRuntime(
     })
   })
 
-  await page.route('**/api/favorites**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        ok: true,
-        data: { favorites: [] },
-      }),
-    })
-  })
-
   await page.route('**/api/providers/vps/*/files?path=*', async (route) => {
     await route.fulfill({
       status: 200,
@@ -170,306 +206,144 @@ async function seedAuthRuntime(
       body: JSON.stringify({ files: [] }),
     })
   })
+}
 
-  await page.route('**/api/remotes/*/proxy', async (route) => {
-    const payload = route.request().postDataJSON() as {
-      url?: string
-      method?: string
-    }
-    const url = payload?.url || ''
+async function bootAuthedSurface(page: Page, request: any, theme: 'light' | 'dark') {
+  await primeQaSession(page, request, QA_EMAIL, QA_PASSWORD)
+  await setTheme(page, theme)
+  await installMockRuntime(page, connections, proxyHandler, {
+    activity: [
+      {
+        id: 'activity-1',
+        action: 'upload',
+        resource: 'file',
+        resource_id: 'file-1',
+        created_at: new Date('2026-03-10T12:00:00.000Z').toISOString(),
+        metadata: {
+          fileName: 'Roadmap.md',
+          providerId: 'google',
+        },
+      },
+    ],
+  })
+  await installDispatchRoutes(page)
+  await gotoFilesAndWait(page)
+}
 
-    if (url.includes('about?fields=storageQuota')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          storageQuota: {
-            usage: String(quotaBytes(48)),
-            limit: String(quotaBytes(100)),
-          },
-        }),
-      })
-      return
-    }
-
-    if (url.includes('/users/get_space_usage')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          allocation: { allocated: quotaBytes(20) },
-          used: quotaBytes(12),
-        }),
-      })
-      return
-    }
-
-    if (url.includes('/users/me')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          space_usage: {
-            used: quotaBytes(36),
-            allocated: quotaBytes(80),
-          },
-        }),
-      })
-      return
-    }
-
-    if (url.includes('drive/v3/files') && !url.includes('alt=media') && !url.includes('fields=size,mimeType')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          files: [
-            {
-              id: 'g-file-1',
-              name: 'Roadmap.md',
-              mimeType: 'text/markdown',
-              size: '2048',
-              parents: ['root'],
-              modifiedTime: new Date('2026-03-10T12:00:00.000Z').toISOString(),
-              createdTime: new Date('2026-03-10T11:00:00.000Z').toISOString(),
-            },
-          ],
-          nextPageToken: null,
-        }),
-      })
-      return
-    }
-
-    if (url.includes('/files/list_folder')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          entries: [],
-          has_more: false,
-          cursor: 'mock-cursor',
-        }),
-      })
-      return
-    }
-
-    if (url.includes('/folders/0/items')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          entries: [],
-          total_count: 0,
-        }),
-      })
-      return
-    }
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({}),
-    })
+async function expectSnapshot(locator: Locator, name: string) {
+  await expect(locator).toHaveScreenshot(name, {
+    animations: 'disabled',
+    caret: 'hide',
   })
 }
 
-const dashboardConnections: MockConnection[] = [
-  {
-    id: 'remote-google-1',
-    remoteId: 'remote-google-1',
-    provider: 'google',
-    accountKey: 'google-1',
-    accountEmail: 'google@example.com',
-    accountLabel: 'Google Drive',
-    accountName: 'Google Drive',
-    status: 'connected',
-    quota: { used: quotaBytes(48), total: quotaBytes(100) },
-  },
-  {
-    id: 'remote-dropbox-1',
-    remoteId: 'remote-dropbox-1',
-    provider: 'dropbox',
-    accountKey: 'dropbox-1',
-    accountEmail: 'dropbox@example.com',
-    accountLabel: 'Dropbox Team',
-    accountName: 'Dropbox Team',
-    status: 'connected',
-    quota: { used: quotaBytes(12), total: quotaBytes(20) },
-  },
-  {
-    id: 'remote-vps-oci',
-    remoteId: 'remote-vps-oci',
-    provider: 'vps',
-    accountKey: 'vps-oci',
-    accountEmail: '',
-    accountLabel: 'OCI',
-    accountName: 'OCI',
-    status: 'connected',
-    quota: { used: 0, total: 0 },
-    host: '140.238.0.1',
-    port: 22,
-    username: 'sanjay',
-  },
-]
+async function delay(ms: number) {
+  await new Promise(resolve => setTimeout(resolve, ms))
+}
 
-const connectionsPageData: MockConnection[] = [
-  {
-    id: 'conn-google',
-    remoteId: 'conn-google',
-    provider: 'google',
-    accountKey: 'google-1',
-    accountEmail: 'google@example.com',
-    accountLabel: 'Google Drive',
-    accountName: 'Google Drive',
-    status: 'connected',
-  },
-  {
-    id: 'conn-dropbox',
-    remoteId: 'conn-dropbox',
-    provider: 'dropbox',
-    accountKey: 'dropbox-1',
-    accountEmail: 'dropbox@example.com',
-    accountLabel: 'Dropbox Team',
-    accountName: 'Dropbox Team',
-    status: 'connected',
-  },
-  {
-    id: 'conn-box',
-    remoteId: 'conn-box',
-    provider: 'box',
-    accountKey: 'box-1',
-    accountEmail: 'ops@box.example.com',
-    accountLabel: 'Box Ops',
-    accountName: 'Box Ops',
-    status: 'error',
-  },
-  {
-    id: 'conn-vps',
-    remoteId: 'conn-vps',
-    provider: 'vps',
-    accountKey: 'vps-oci',
-    accountEmail: '',
-    accountLabel: 'OCI',
-    accountName: 'OCI',
-    status: 'connected',
-    host: '140.238.0.1',
-    port: 22,
-    username: 'sanjay',
-  },
-]
-
-test.beforeAll(async () => {
-  await ensureShotDir()
-})
-
-test('captures login layout centered with matched card bottoms', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1100 })
-  await page.goto('/?mode=login')
-  await expect(page.getByRole('heading', { name: 'Enter the control plane.' })).toBeVisible()
-
+async function expectLoginLayout(page: Page) {
   const grid = page.locator('.cf-shell-page > .grid').first()
   const hero = grid.locator('section').nth(0)
   const form = grid.locator('section').nth(1)
-  const gridBox = await box(grid)
-  const heroBox = await box(hero)
-  const formBox = await box(form)
-  const viewportHeight = page.viewportSize()?.height || 1100
-  const topGap = gridBox.y
-  const bottomGap = viewportHeight - (gridBox.y + gridBox.height)
+  const viewportHeight = page.viewportSize()?.height || 960
+  const gridBox = await grid.boundingBox()
+  const heroBox = await hero.boundingBox()
+  const formBox = await form.boundingBox()
+
+  expect(gridBox).not.toBeNull()
+  expect(heroBox).not.toBeNull()
+  expect(formBox).not.toBeNull()
+
+  const topGap = gridBox!.y
+  const bottomGap = viewportHeight - (gridBox!.y + gridBox!.height)
 
   expect(Math.abs(topGap - bottomGap)).toBeLessThan(120)
-  expect(Math.abs(heroBox.y + heroBox.height - (formBox.y + formBox.height))).toBeLessThan(3)
+  expect(Math.abs(heroBox!.y + heroBox!.height - (formBox!.y + formBox!.height))).toBeLessThan(3)
+}
 
-  await page.screenshot({ path: shotPath('dispatch1_login_desktop'), fullPage: true })
-})
+for (const theme of ['light', 'dark'] as const) {
+  test.describe(`${theme} theme`, () => {
+    test('login page stays vertically centered with matched card heights', async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== 'chromium-desktop', 'Desktop-only login layout capture')
 
-test('captures dashboard status row with proportional card widths and aligned bottoms', async ({ page, request }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 })
-  await seedAuthRuntime(page, request, dashboardConnections)
-  await page.goto('/dashboard')
-  await expect(page.getByTestId('cf-mission-control')).toBeVisible({ timeout: 15000 })
+      await setTheme(page, theme)
+      await page.goto('/?mode=login')
+      await expect(page.getByRole('heading', { name: 'Enter the control plane.' })).toBeVisible()
+      await expectLoginLayout(page)
+      await expectSnapshot(page.locator('.cf-shell-page').first(), `dispatch2-login-desktop-${theme}.png`)
+    })
 
-  const cards = page.locator('[data-testid="cf-mission-control"] > div > div')
-  const left = await box(cards.nth(0))
-  const middle = await box(cards.nth(1))
-  const right = await box(cards.nth(2))
+    test('MissionControl mobile status cards collapse into a horizontal strip', async ({ page, request }, testInfo) => {
+      test.skip(testInfo.project.name !== 'chromium-mobile', 'Mobile-only MissionControl capture')
 
-  expect(Math.abs(left.y + left.height - (middle.y + middle.height))).toBeLessThan(3)
-  expect(Math.abs(right.y + right.height - (middle.y + middle.height))).toBeLessThan(3)
-  expect(middle.width / left.width).toBeGreaterThan(1.7)
-  expect(middle.width / left.width).toBeLessThan(2.3)
-  expect(right.width / left.width).toBeGreaterThan(1.05)
-  expect(right.width / left.width).toBeLessThan(1.4)
+      await bootAuthedSurface(page, request, theme)
+      await page.goto('/dashboard')
+      const strip = page.getByTestId('cf-mission-control-mobile-strip')
+      await expect(strip).toBeVisible({ timeout: 15_000 })
+      await expect(page.getByTestId('cf-mission-control-mobile-item-control-plane')).toBeVisible()
+      await expectSnapshot(strip, `dispatch2-missioncontrol-mobile-${theme}.png`)
+    })
 
-  await page.screenshot({ path: shotPath('dispatch1_dashboard_status_desktop'), fullPage: true })
-})
+    test('files loading panel keeps workspace meta on desktop', async ({ page, request }, testInfo) => {
+      test.skip(testInfo.project.name !== 'chromium-desktop', 'Desktop-only loading panel capture')
 
-test('captures connections page in a two-column card grid', async ({ page, request }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 })
-  await seedAuthRuntime(page, request, connectionsPageData)
-  await page.goto('/connections')
-  await expect(page.getByTestId('cf-connections-list')).toBeVisible({ timeout: 15000 })
+      await bootAuthedSurface(page, request, theme)
+      await page.route('**/api/remotes/*/proxy', async (route) => {
+        await delay(2_000)
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ files: [], nextPageToken: null }),
+        })
+      })
 
-  const cards = page.locator('[data-testid^="cf-connection-item-"]')
-  const first = await box(cards.nth(0))
-  const second = await box(cards.nth(1))
-  const third = await box(cards.nth(2))
+      await page.goto('/files')
+      const workspace = page.getByText('Loading files...')
+      await expect(workspace).toBeVisible({ timeout: 15_000 })
+      await expect(page.getByTestId('cf-loading-workspace-meta')).toBeVisible()
+      await expectSnapshot(page.locator('[data-testid="cf-loading-workspace-meta"]').first(), `dispatch2-files-loading-desktop-${theme}.png`)
+    })
 
-  expect(Math.abs(first.y - second.y)).toBeLessThan(3)
-  expect(third.y).toBeGreaterThan(first.y + 20)
+    test('files loading panel hides workspace meta on mobile', async ({ page, request }, testInfo) => {
+      test.skip(testInfo.project.name !== 'chromium-mobile', 'Mobile-only loading panel capture')
 
-  await page.screenshot({ path: shotPath('dispatch1_connections_desktop'), fullPage: true })
-})
+      await bootAuthedSurface(page, request, theme)
+      await page.route('**/api/remotes/*/proxy', async (route) => {
+        await delay(2_000)
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ files: [], nextPageToken: null }),
+        })
+      })
 
-test('captures files desktop sidebar with neutral VPS quota placeholders', async ({ page, request }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 })
-  await seedAuthRuntime(page, request, dashboardConnections)
-  await page.goto('/files')
-  await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 20000 })
-  await expect(page.getByText('No usage data').first()).toBeVisible({ timeout: 15000 })
-  await expect(page.getByText('0 B · 0%', { exact: true })).toHaveCount(0)
+      await page.goto('/files')
+      await expect(page.getByText('Loading files...')).toBeVisible({ timeout: 15_000 })
+      await expect(page.getByTestId('cf-loading-workspace-meta')).toHaveCount(0)
+      await expectSnapshot(page.locator('main').first(), `dispatch2-files-loading-mobile-${theme}.png`)
+    })
 
-  await page.screenshot({ path: shotPath('dispatch1_files_sidebar_desktop'), fullPage: true })
-})
+    test('providers navbar stays sticky above content', async ({ page, request }, testInfo) => {
+      test.skip(testInfo.project.name !== 'chromium-desktop', 'Desktop-only providers capture')
 
-test('captures files mobile toolbar without section labels and with expandable search', async ({ page, request }) => {
-  await page.setViewportSize({ width: 390, height: 844 })
-  await seedAuthRuntime(page, request, dashboardConnections)
-  await page.goto('/files')
-  await expect(page.getByRole('button', { name: 'Open search' })).toBeVisible({ timeout: 20000 })
-  await expect(page.getByText('Views', { exact: true })).toHaveCount(0)
-  await expect(page.getByText('Search', { exact: true })).toHaveCount(0)
-  await expect(page.getByText('Actions', { exact: true })).toHaveCount(0)
+      await bootAuthedSurface(page, request, theme)
+      await page.goto('/providers')
+      const navbar = page.locator('nav').first()
+      const contentHeading = page.getByRole('heading', { name: 'Available Integrations' })
 
-  await page.screenshot({ path: shotPath('dispatch1_files_toolbar_mobile'), fullPage: true })
+      await expect(navbar).toBeVisible({ timeout: 15_000 })
+      await expect(contentHeading).toBeVisible({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Open search' }).click()
-  await expect(page.getByTestId('cf-global-search-input')).toBeVisible()
-})
+      await page.evaluate(() => window.scrollTo(0, 600))
+      const navbarBox = await navbar.boundingBox()
+      const headingBox = await contentHeading.boundingBox()
 
-test('captures provider integration cards with aligned heights and button baselines', async ({ page, request }) => {
-  await page.setViewportSize({ width: 1440, height: 1200 })
-  await seedAuthRuntime(page, request, dashboardConnections)
-  await page.goto('/providers')
-  await expect(page.getByRole('heading', { name: 'Available Integrations' })).toBeVisible({ timeout: 15000 })
+      expect(navbarBox).not.toBeNull()
+      expect(headingBox).not.toBeNull()
+      expect(navbarBox!.y).toBeLessThanOrEqual(1)
+      expect(headingBox!.y).toBeGreaterThan(navbarBox!.y + navbarBox!.height - 2)
 
-  const googleCard = page.getByTestId('cf-provider-connect-card-google')
-  const onedriveCard = page.getByTestId('cf-provider-connect-card-onedrive')
-  const dropboxCard = page.getByTestId('cf-provider-connect-card-dropbox')
-
-  await googleCard.scrollIntoViewIfNeeded()
-
-  const googleBox = await box(googleCard)
-  const onedriveBox = await box(onedriveCard)
-  const dropboxBox = await box(dropboxCard)
-  const googleButton = await box(googleCard.getByRole('button', { name: 'Connect' }))
-  const onedriveButton = await box(onedriveCard.getByRole('button', { name: 'Connect' }))
-  const dropboxButton = await box(dropboxCard.getByRole('button', { name: 'Connect' }))
-
-  expect(Math.abs(googleBox.height - onedriveBox.height)).toBeLessThan(3)
-  expect(Math.abs(googleBox.height - dropboxBox.height)).toBeLessThan(3)
-  expect(Math.abs((googleButton.y + googleButton.height) - (onedriveButton.y + onedriveButton.height))).toBeLessThan(3)
-  expect(Math.abs((googleButton.y + googleButton.height) - (dropboxButton.y + dropboxButton.height))).toBeLessThan(3)
-
-  await page.screenshot({ path: shotPath('dispatch1_providers_integrations_desktop'), fullPage: true })
-})
+      await expectSnapshot(page.locator('.cf-shell-page').first(), `dispatch2-providers-sticky-desktop-${theme}.png`)
+    })
+  })
+}

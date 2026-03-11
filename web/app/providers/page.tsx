@@ -55,7 +55,7 @@ export default function ProvidersPage() {
     <IntegrationProvider>
       <div className="cf-shell-page">
         <Navbar email={email} onLogout={handleLogout} />
-        <main className="mx-auto max-w-[1600px] p-4 md:p-6">
+        <main className="mx-auto max-w-[1600px] px-4 pb-6 pt-0 md:px-6 md:pb-6 md:pt-0">
           <MissionControl />
           <ProviderHub />
         </main>
