@@ -37,16 +37,7 @@ export default function Login({
   }
 
   return (
-    <div
-      className="cf-shell-page relative box-border"
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 24px',
-      }}
-    >
+    <div className="relative box-border w-full px-6 py-8">
       <div className="absolute right-4 top-4 z-20 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-1 shadow-[var(--cf-shadow-elev)]">
         <ThemeToggle />
       </div>

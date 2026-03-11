@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { ProviderId, PROVIDERS } from '@/lib/providers/types'
 
 interface BreadcrumbProps {
@@ -17,7 +18,19 @@ export default function UnifiedBreadcrumb({
   onNavigateStack,
   onNavigateHome,
 }: BreadcrumbProps) {
-  
+  const [showLabel, setShowLabel] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 640px)')
+    const syncLabel = (event?: MediaQueryListEvent) => {
+      setShowLabel(event ? event.matches : media.matches)
+    }
+
+    syncLabel()
+    media.addEventListener('change', syncLabel)
+    return () => media.removeEventListener('change', syncLabel)
+  }, [])
+
   const getProviderName = () => {
     if (selectedProvider === 'all') return 'All Files'
     if (selectedProvider === 'recent') return 'Recent'
@@ -31,12 +44,12 @@ export default function UnifiedBreadcrumb({
       data-testid="cf-breadcrumb"
       className="min-w-0"
     >
-      <div className="cf-micro-label mb-2">Navigation Path</div>
-      <div className="flex min-w-0 flex-wrap items-center gap-1.5 overflow-x-auto whitespace-nowrap py-1">
+      {showLabel && <div className="cf-micro-label mb-2">Navigation Path</div>}
+      <div className="flex min-w-0 w-full flex-nowrap items-center gap-1.5 overflow-x-auto whitespace-nowrap py-1 sm:flex-wrap">
         <button
           data-testid="cf-breadcrumb-crumb-home"
           onClick={onNavigateHome}
-          className="flex h-8 items-center rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 text-[12px] font-medium text-[var(--cf-text-1)] transition-all hover:border-[rgba(74,158,255,0.3)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-blue)]"
+          className="flex h-8 shrink-0 items-center rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 text-[12px] font-medium text-[var(--cf-text-1)] transition-all hover:border-[rgba(74,158,255,0.3)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-blue)]"
         >
           All Files
         </button>
@@ -50,12 +63,12 @@ export default function UnifiedBreadcrumb({
             </div>
             <button
               onClick={() => onNavigateStack(-1)}
-              className="flex h-8 items-center rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 text-[12px] font-semibold text-[var(--cf-text-0)] transition-all hover:border-[rgba(74,158,255,0.3)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-blue)]"
+              className="flex h-8 shrink-0 items-center rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 text-[12px] font-semibold text-[var(--cf-text-0)] transition-all hover:border-[rgba(74,158,255,0.3)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-blue)]"
             >
               {getProviderName()}
             </button>
             {activeAccountName && (
-              <span className="flex h-6 items-center rounded-full border border-[rgba(74,158,255,0.2)] bg-[rgba(74,158,255,0.06)] px-2.5 text-[10px] font-medium text-[var(--cf-blue)]">
+              <span className="flex h-6 shrink-0 items-center rounded-full border border-[rgba(74,158,255,0.2)] bg-[rgba(74,158,255,0.06)] px-2.5 text-[10px] font-medium text-[var(--cf-blue)]">
                 {activeAccountName}
               </span>
             )}
@@ -63,8 +76,8 @@ export default function UnifiedBreadcrumb({
         )}
 
         {stack.map((segment, idx) => (
-          <div key={`${segment.id}-${idx}`} className="flex min-w-0 items-center gap-1.5">
-            <div className="flex items-center text-[var(--cf-text-3)]">
+          <div key={`${segment.id}-${idx}`} className="flex min-w-0 shrink-0 items-center gap-1.5">
+            <div className="flex shrink-0 items-center text-[var(--cf-text-3)]">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -72,7 +85,7 @@ export default function UnifiedBreadcrumb({
             <button
               data-testid={`cf-breadcrumb-crumb-${idx}`}
               onClick={() => onNavigateStack(idx)}
-              className="flex h-8 max-w-[180px] items-center truncate rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 text-[12px] font-medium text-[var(--cf-text-1)] transition-all hover:border-[rgba(74,158,255,0.3)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+              className="flex h-8 max-w-[180px] shrink-0 items-center truncate rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 text-[12px] font-medium text-[var(--cf-text-1)] transition-all hover:border-[rgba(74,158,255,0.3)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
             >
               {segment.name}
             </button>

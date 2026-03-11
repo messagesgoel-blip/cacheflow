@@ -242,7 +242,7 @@ async function delay(ms: number) {
 }
 
 async function expectLoginLayout(page: Page) {
-  const grid = page.locator('.cf-shell-page > .grid').first()
+  const grid = page.locator('.cf-shell-page .grid').first()
   const hero = grid.locator('section').nth(0)
   const form = grid.locator('section').nth(1)
   const viewportHeight = page.viewportSize()?.height || 960
@@ -266,6 +266,7 @@ for (const theme of ['light', 'dark'] as const) {
     test('login page stays vertically centered with matched card heights', async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== 'chromium-desktop', 'Desktop-only login layout capture')
 
+      await page.setViewportSize({ width: 1440, height: 900 })
       await setTheme(page, theme)
       await page.goto('/?mode=login')
       await expect(page.getByRole('heading', { name: 'Enter the control plane.' })).toBeVisible()
@@ -347,3 +348,12 @@ for (const theme of ['light', 'dark'] as const) {
     })
   })
 }
+
+test('mobile files breadcrumb hides the navigation path label', async ({ page, request }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium-mobile', 'Mobile-only breadcrumb capture')
+
+  await bootAuthedSurface(page, request, 'light')
+  await expect(page.getByTestId('cf-breadcrumb')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('Navigation Path', { exact: true })).toHaveCount(0)
+  await expectSnapshot(page.getByTestId('cf-breadcrumb'), 'dispatch2-mobile-breadcrumb-light.png')
+})

@@ -24,18 +24,20 @@ export default function HomeEntry({
   initialMode?: 'login' | 'register'
 }) {
   return (
-    <Login
-      initialMode={initialMode}
-      onLogin={(token, email) => {
-        try {
-          clearStaleProviderState()
-          localStorage.setItem('cf_token', token)
-          localStorage.setItem('cf_email', email)
-        } catch (error) {
-          console.warn('Failed to persist local session token:', error)
-        }
-        window.location.href = '/files'
-      }}
-    />
+    <div className="cf-shell-page flex min-h-screen w-full items-center justify-center">
+      <Login
+        initialMode={initialMode}
+        onLogin={(token, email) => {
+          try {
+            clearStaleProviderState()
+            localStorage.setItem('cf_token', token)
+            localStorage.setItem('cf_email', email)
+          } catch (error) {
+            console.warn('Failed to persist local session token:', error)
+          }
+          window.location.href = '/files'
+        }}
+      />
+    </div>
   )
 }
