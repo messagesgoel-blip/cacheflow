@@ -9,6 +9,39 @@ import { AutoPlacementEngine } from '../../../lib/placement/autoPlacementEngine'
 
 test.describe('Remote Upload + Auto Placement', () => {
   test.beforeEach(async ({ page }) => {
+    // Mock bootstrap APIs
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ authenticated: true, user: { id: 'test-user', email: 'test@example.com' } }),
+      });
+    });
+
+    await page.route('**/api/connections', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] }),
+      });
+    });
+
+    await page.route('**/api/files**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ files: [], hasMore: false }),
+      });
+    });
+
+    await page.route('**/api/remotes', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([]),
+      });
+    });
+
     await page.route('**/api/remote-upload', async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();

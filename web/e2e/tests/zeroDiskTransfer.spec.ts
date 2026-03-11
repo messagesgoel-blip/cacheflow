@@ -76,6 +76,14 @@ test.describe('Zero-Disk Transfer & Tab-Close Survival', () => {
         ]
       }) });
     });
+
+    // Mock auth session API
+    await context.route('**/api/auth/session', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        user: { id: 'user-123', email: 'test@example.com' },
+        authenticated: true
+      }) });
+    });
   });
 
   test('ZERODISK-1: Verifies zero-disk path for large files and tab-close survival', async () => {
@@ -178,13 +186,18 @@ test.describe('Zero-Disk Transfer & Tab-Close Survival', () => {
     progress = 100;
     committedChunks = Array.from({ length: TOTAL_CHUNKS }, (_, i) => i);
     console.log('Simulating background worker completing the transfer...');
-    
-    await new Promise(r => setTimeout(r, 1000));
 
     // 6. OPEN A NEW TAB and navigate back
     console.log('Opening new tab to verify survival...');
     const page2 = await context.newPage();
-    await page2.goto('/files');
+    
+    // Deterministic wait: wait for the polling request to complete on the new page
+    const [response] = await Promise.all([
+      page2.waitForResponse('**/api/transfers*'),
+      page2.goto('/files')
+    ]);
+    
+    expect(response.ok()).toBe(true);
     
     // 7. Verify transfer is completed and still present in tray
     const tray2 = page2.getByTestId('cf-transfer-tray');
