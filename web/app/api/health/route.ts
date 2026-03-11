@@ -13,18 +13,17 @@ interface HealthData {
 }
 
 export async function GET() {
+  let timeoutId: NodeJS.Timeout | null = null;
+  
   try {
     // Create an AbortController with timeout for the fetch request
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
     // Proxy the request to the backend health endpoint
     const backendResponse = await fetch('http://127.0.0.1:8100/health', {
       signal: controller.signal
     });
-    
-    // Clear the timeout if the request completes in time
-    clearTimeout(timeoutId);
     
     if (backendResponse.ok) {
       const backendData = await backendResponse.json();
@@ -35,10 +34,6 @@ export async function GET() {
       return NextResponse.json(backendData, { status: backendResponse.status });
     }
   } catch (error) {
-    // Clear any pending timeout
-    // Note: We can't clear the timeout from here since it might already have fired,
-    // but AbortController handles the cleanup properly
-    
     // Check if the error was due to timeout/abort
     if (error instanceof Error && error.name === 'AbortError') {
       // Log the timeout error server-side for debugging
@@ -64,6 +59,11 @@ export async function GET() {
       };
 
       return NextResponse.json(errorData, { status: 502 });
+    }
+  } finally {
+    // Always clear the timeout to prevent memory leaks
+    if (timeoutId) {
+      clearTimeout(timeoutId);
     }
   }
 }
