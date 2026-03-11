@@ -117,10 +117,10 @@ export default function Sidebar({
   )
 
   const navItemClass = (isActive: boolean, isDragOver?: boolean) => `
-    relative flex items-center gap-2.5 rounded-xl border px-3 py-2 transition-all
+    relative flex items-center gap-2.5 rounded-2xl border px-3 py-2.5 transition-all duration-200 backdrop-blur-md
     ${isActive
-      ? 'border-[rgba(74,158,255,0.34)] bg-[rgba(74,158,255,0.12)] text-[var(--cf-blue)] shadow-[0_0_0_1px_rgba(74,158,255,0.06)]'
-      : 'border-transparent text-[var(--cf-text-1)] hover:border-[var(--cf-border)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]'}
+      ? 'border-[rgba(116,174,252,0.34)] bg-[linear-gradient(180deg,rgba(116,174,252,0.2),rgba(116,174,252,0.08))] text-[var(--cf-blue)] shadow-[0_12px_24px_rgba(24,42,84,0.25)]'
+      : 'border-[rgba(255,255,255,0.03)] bg-[rgba(255,255,255,0.02)] text-[var(--cf-text-1)] hover:border-[var(--cf-border)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[var(--cf-text-0)]'}
     ${isDragOver ? 'z-10 scale-[1.02] ring-2 ring-[var(--cf-blue)]' : ''}
     ${isCollapsed ? 'justify-center px-0' : ''}
   `
@@ -168,21 +168,21 @@ export default function Sidebar({
   return (
     <aside
       data-testid="cf-sidebar-root"
-      className={`flex h-full flex-col border-r border-[var(--cf-border)] bg-[var(--cf-sidebar-bg)] transition-all duration-300 ${
+      className={`cf-liquid flex h-full min-h-0 flex-col rounded-[30px] bg-[var(--cf-sidebar-bg)] transition-all duration-300 ${
         isCollapsed ? 'w-[72px]' : 'w-72'
       }`}
     >
       <div className={`flex items-center p-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         {!isCollapsed && (
           <div>
-            <span className="block text-sm font-semibold text-[var(--cf-text-0)]">Navigation Grid</span>
-            <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cf-text-2)]">Platform Surface</span>
+            <span className="block text-base font-semibold tracking-[-0.03em] text-[var(--cf-text-0)]">Workspace Dock</span>
+            <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cf-text-2)]">Glass Control Rail</span>
           </div>
         )}
         <button
           data-testid="cf-sidebar-collapse-toggle"
           onClick={toggleCollapse}
-          className="rounded-xl border border-[var(--cf-border)] p-1.5 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+          className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
           title={isCollapsed ? 'Expand' : 'Collapse'}
         >
           <svg className={`h-5 w-5 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +193,7 @@ export default function Sidebar({
 
       {!isCollapsed && aggregateQuota.total > 0 && (
         <div data-testid="cf-sidebar-quota-aggregate" className="mb-4 px-4">
-          <div className="rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] p-4 shadow-[var(--cf-shadow-elev)]">
+          <div className="cf-panel rounded-[26px] p-4">
             <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--cf-text-2)]">
               <span>Total Storage</span>
               <span>{Math.round(aggregateQuota.percent)}%</span>
@@ -328,7 +328,7 @@ export default function Sidebar({
       <div className="border-t border-[var(--cf-border)] p-4">
         <a
           href="/providers"
-          className={`flex items-center gap-3 rounded-xl border border-[var(--cf-border)] px-3 py-2 text-[var(--cf-text-1)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] ${
+          className={`cf-toolbar-card flex items-center gap-3 rounded-2xl px-3 py-2.5 text-[var(--cf-text-1)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] ${
             isCollapsed ? 'justify-center px-0' : ''
           }`}
           title="Add Provider"

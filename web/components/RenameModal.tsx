@@ -80,19 +80,19 @@ export default function RenameModal({
   return (
     <div
       data-testid="rename-modal-overlay"
-      className="fixed inset-0 z-[1200] bg-black/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[1200] flex items-center justify-center bg-[rgba(6,8,12,0.72)] p-4 backdrop-blur-sm"
       onPointerDown={(e) => {
         if (e.target === e.currentTarget && !isSubmitting) onClose()
       }}
     >
-      <div data-testid="rename-modal-content" className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-5 border-b border-gray-200 dark:border-gray-800">
+      <div data-testid="rename-modal-content" className="cf-liquid w-full max-w-md overflow-hidden rounded-[28px] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)]" onClick={e => e.stopPropagation()}>
+        <div className="cf-toolbar-card border-b border-[var(--cf-border)] p-5">
           <div className="flex items-center justify-between gap-4">
-            <div className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</div>
+            <div className="text-base font-semibold tracking-[-0.03em] text-[var(--cf-text-0)]">{title}</div>
             <button
               onClick={() => !isSubmitting && onClose()}
               disabled={isSubmitting}
-              className="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-500 disabled:opacity-50"
+              className="rounded-2xl p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] disabled:opacity-50"
               aria-label="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@ export default function RenameModal({
             value={value}
             onChange={(e) => setValue(e.target.value)}
             disabled={isSubmitting}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+            className="w-full rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-[var(--cf-text-0)] outline-none transition focus:border-[var(--cf-blue)] disabled:opacity-50"
             placeholder="New name"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -116,24 +116,24 @@ export default function RenameModal({
               }
             }}
           />
-          {error && <div className="mt-2 text-sm text-red-600 dark:text-red-300">{error}</div>}
+          {error && <div className="mt-2 text-sm text-[var(--cf-red)]">{error}</div>}
         </div>
-        <div className="p-5 border-t border-gray-200 dark:border-gray-800 flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-2 border-t border-[var(--cf-border)] p-5">
           <button
             onClick={() => !isSubmitting && onClose()}
             disabled={isSubmitting}
-            className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-2xl border border-[var(--cf-border)] px-3 py-2 text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            className="flex items-center gap-2 rounded-2xl border border-[rgba(116,174,252,0.26)] bg-[rgba(116,174,252,0.16)] px-4 py-2 text-[var(--cf-blue)] hover:bg-[rgba(116,174,252,0.22)] disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--cf-blue)]/25 border-t-[var(--cf-blue)]" />
                 Saving...
               </>
             ) : (

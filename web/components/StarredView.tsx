@@ -62,20 +62,20 @@ export default function StarredView({ onFileClick, onRemoveFavorite }: StarredVi
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Starred Items</h2>
-        <span data-testid="cf-starred-count" className="px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold">
+        <h2 className="text-xl font-bold tracking-[-0.03em] text-[var(--cf-text-0)]">Starred Items</h2>
+        <span data-testid="cf-starred-count" className="cf-chip cf-chip-blue px-2 py-1 text-xs">
           {favorites.length} items
         </span>
       </div>
 
       {loading ? (
         <div data-testid="cf-starred-loading" className="py-12 flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />
         </div>
       ) : favorites.length === 0 ? (
-        <div className="py-24 text-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
+        <div className="cf-panel rounded-[28px] border-2 border-dashed border-[var(--cf-border)] py-24 text-center">
           <span className="text-4xl mb-4 block">⭐</span>
-          <p className="text-gray-500">You haven't starred any files yet.</p>
+          <p className="text-[var(--cf-text-2)]">You haven't starred any files yet.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -83,7 +83,7 @@ export default function StarredView({ onFileClick, onRemoveFavorite }: StarredVi
             <div 
               key={fav.id}
               data-testid={`cf-starred-list-item-${fav.id}`}
-              className="group relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer"
+              className="cf-panel group relative cursor-pointer rounded-[26px] p-4 transition-all hover:translate-y-[-2px]"
               onClick={() => onFileClick(mapToMetadata(fav))}
             >
               <div className="flex items-start gap-3">
@@ -91,10 +91,10 @@ export default function StarredView({ onFileClick, onRemoveFavorite }: StarredVi
                   {fav.is_folder ? '📁' : '📄'}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-sm truncate pr-6">{fav.file_name}</p>
+                  <p className="truncate pr-6 text-sm font-semibold text-[var(--cf-text-0)]">{fav.file_name}</p>
                   <div className="mt-1 flex items-center gap-2">
                     <span className="text-sm">{PROVIDERS.find(p => p.id === fav.provider)?.icon}</span>
-                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-tighter truncate">
+                    <span className="truncate text-[10px] font-bold uppercase tracking-tighter text-[var(--cf-text-2)]">
                       {fav.provider} • {fav.path}
                     </span>
                   </div>
@@ -107,7 +107,7 @@ export default function StarredView({ onFileClick, onRemoveFavorite }: StarredVi
                   onRemoveFavorite(fav.file_id, fav.provider, fav.account_key)
                   setFavorites(prev => prev.filter(f => f.id !== fav.id))
                 }}
-                className="absolute top-3 right-3 text-yellow-400 hover:text-gray-300 transition-colors"
+                className="absolute right-3 top-3 text-yellow-400 transition-colors hover:text-[var(--cf-text-1)]"
                 title="Remove from Starred"
               >
                 ⭐

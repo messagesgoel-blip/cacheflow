@@ -1398,13 +1398,13 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
   )
 
   return (
-    <div className="flex h-[calc(100vh-132px)] overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-bg)] shadow-[var(--cf-shadow-strong)]">
+    <div className="cf-liquid cf-shell-browser flex h-[calc(100vh-132px)] gap-3 overflow-hidden rounded-[36px] p-3 shadow-[var(--cf-shadow-strong)]">
       <Sidebar connectedProviders={connectedProviders} selectedProvider={selectedProvider} activeAccountKey={activeAccountKey} onNavigate={handleSidebarNavigate} onDrop={(e, pid, key, fid) => {
         e.preventDefault(); const d = e.dataTransfer.getData('application/cacheflow-file'); if (!d) return
         const f = JSON.parse(d); const mode = (f.provider === pid && f.accountKey === key) ? 'move' : 'copy'
         addTransfer({ type: mode, file: f, targetProviderId: pid, targetAccountKey: key, targetFolderId: fid })
       }} />
-      <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+      <main className="cf-liquid cf-shell-main relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-[30px] bg-[var(--cf-shell-card-strong)]">
         <input
           ref={uploadInputRef}
           type="file"
@@ -1623,7 +1623,7 @@ export default function UnifiedFileBrowser({ token, routeView }: UnifiedFileBrow
         )}
         {showShortcutHelp && <ShortcutHelp onClose={() => setShowShortcutHelp(false)} />}
 
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--cf-border)] bg-[var(--cf-toolbar-bg)] p-4 md:p-6">
+        <div className="cf-toolbar-card mx-4 mt-4 flex flex-wrap items-start justify-between gap-4 rounded-[28px] border border-[var(--cf-border)] px-4 py-4 md:px-5 md:py-5">
           <div className="min-w-0 flex-1">
             <UnifiedBreadcrumb selectedProvider={selectedProvider} activeAccountName={activeAccountName} stack={breadcrumbStack} onNavigateStack={handleBreadcrumbNavigate} onNavigateHome={() => handleSidebarNavigate('all')} />
           </div>

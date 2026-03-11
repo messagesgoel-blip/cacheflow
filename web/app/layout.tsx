@@ -1,11 +1,24 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { IBM_Plex_Mono, Syne } from 'next/font/google'
 import './globals.css'
 import SessionExpiredBannerHost from '@/components/SessionExpiredBannerHost'
 import ActionCenterProvider from '@/components/ActionCenterProvider'
 import { TransferQueueProvider } from '@/components/TransferQueueProvider'
 import { TransferProvider } from '@/context/TransferContext'
 import { TransferTray } from '@/components/transfers/TransferTray'
+
+const cfUiFont = Syne({
+  subsets: ['latin'],
+  variable: '--font-cf-ui',
+  weight: ['400', '500', '600', '700', '800'],
+})
+
+const cfMonoFont = IBM_Plex_Mono({
+  subsets: ['latin'],
+  variable: '--font-cf-mono',
+  weight: ['400', '500', '600'],
+})
 
 export const metadata: Metadata = {
   title: 'CacheFlow',
@@ -58,7 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <body className={`${cfUiFont.variable} ${cfMonoFont.variable} bg-gray-50 text-gray-900 antialiased dark:bg-gray-900 dark:text-gray-100`}>
         <Suspense fallback={null}>
           <SessionExpiredBannerHost />
         </Suspense>

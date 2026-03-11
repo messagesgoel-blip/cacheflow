@@ -64,15 +64,15 @@ export default function PreviewPanel({
   return (
     <div 
       data-testid="cf-preview-panel"
-      className="w-80 md:w-96 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col h-full animate-in slide-in-from-right duration-300 shadow-2xl z-20"
+      className="cf-liquid z-20 flex h-full w-80 flex-col animate-in slide-in-from-right rounded-l-[30px] border-l-0 bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)] duration-300 md:w-96"
     >
       {/* Header */}
-      <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-        <h3 className="font-bold text-gray-900 dark:text-white truncate pr-4">File Details</h3>
+      <div className="cf-toolbar-card flex items-center justify-between border-b border-[var(--cf-border)] p-4">
+        <h3 className="truncate pr-4 text-base font-bold tracking-[-0.03em] text-[var(--cf-text-0)]">File Details</h3>
         <button 
           data-testid="cf-preview-close"
           onClick={onClose}
-          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500"
+          className="rounded-2xl p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -81,17 +81,17 @@ export default function PreviewPanel({
       </div>
 
       {/* Preview Area */}
-      <div className="aspect-square bg-gray-50 dark:bg-gray-950 flex items-center justify-center overflow-hidden border-b border-gray-100 dark:border-gray-800">
+      <div className="flex aspect-square items-center justify-center overflow-hidden border-b border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)]">
         {previewError ? (
           <div className="flex flex-col items-center gap-2 text-center p-8">
             <span className="text-5xl">⚠️</span>
-            <p className="text-xs text-red-600 uppercase font-bold tracking-widest">Could not load preview</p>
-            <p className="text-xs text-gray-500">{previewError}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--cf-red)]">Could not load preview</p>
+            <p className="text-xs text-[var(--cf-text-2)]">{previewError}</p>
           </div>
         ) : previewLoading ? (
           <div className="flex flex-col items-center gap-2 text-center p-8">
             <span className="text-5xl animate-pulse">{getFileIcon(file.mimeType)}</span>
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest">Loading preview</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--cf-text-2)]">Loading preview</p>
           </div>
         ) : type === 'image' ? (
           <img src={url || undefined} alt={file.name} className="max-w-full max-h-full object-contain" />
@@ -113,16 +113,16 @@ export default function PreviewPanel({
             >
               Your browser does not support audio playback.
             </audio>
-            <span className="text-xs text-gray-500 uppercase font-bold tracking-widest">Audio File</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--cf-text-2)]">Audio File</span>
           </div>
         ) : type === 'pdf' ? (
           <div className="flex flex-col items-center gap-2">
             <span className="text-6xl">📄</span>
-            <span className="text-xs text-gray-500 uppercase font-bold tracking-widest">PDF Document</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--cf-text-2)]">PDF Document</span>
           </div>
         ) : type === 'text' ? (
           <div className="w-full h-full overflow-auto p-4 text-left">
-            <pre className="text-xs leading-relaxed font-mono whitespace-pre-wrap break-words text-gray-700 dark:text-gray-200">
+            <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-[var(--cf-text-1)]">
               {textContent ?? 'Loading text preview…'}
             </pre>
           </div>
@@ -131,54 +131,54 @@ export default function PreviewPanel({
         ) : (
           <div className="flex flex-col items-center gap-2 text-center p-8">
             <span className="text-6xl">{getFileIcon(file.mimeType)}</span>
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest">Preview not available</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--cf-text-2)]">Preview not available</p>
           </div>
         )}
       </div>
 
       {/* Metadata */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 space-y-6 overflow-y-auto p-6">
         <div>
-          <h4 data-testid="cf-preview-metadata-name" className="text-lg font-bold text-gray-900 dark:text-white break-words leading-tight">
+          <h4 data-testid="cf-preview-metadata-name" className="break-words text-lg font-bold leading-tight text-[var(--cf-text-0)]">
             {file.name}
           </h4>
           <div className="mt-2 flex items-center gap-2">
             <span className="text-lg">{provider?.icon}</span>
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--cf-text-2)]">
               {file.providerName || file.provider}
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-gray-800 pt-6 text-xs">
+        <div className="grid grid-cols-2 gap-4 border-t border-[var(--cf-border)] pt-6 text-xs">
           <div className="space-y-1">
-            <p className="text-gray-400 font-bold uppercase tracking-tighter">Size</p>
-            <p data-testid="cf-preview-metadata-size" className="font-medium">{formatBytes(file.size)}</p>
+            <p className="font-bold uppercase tracking-tighter text-[var(--cf-text-3)]">Size</p>
+            <p data-testid="cf-preview-metadata-size" className="font-medium text-[var(--cf-text-1)]">{formatBytes(file.size)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-gray-400 font-bold uppercase tracking-tighter">Type</p>
-            <p className="font-medium truncate" title={file.mimeType}>{file.mimeType.split('/').pop()?.toUpperCase() || 'FILE'}</p>
+            <p className="font-bold uppercase tracking-tighter text-[var(--cf-text-3)]">Type</p>
+            <p className="truncate font-medium text-[var(--cf-text-1)]" title={file.mimeType}>{file.mimeType.split('/').pop()?.toUpperCase() || 'FILE'}</p>
           </div>
           <div className="col-span-2 space-y-1">
-            <p className="text-gray-400 font-bold uppercase tracking-tighter">Modified</p>
-            <p data-testid="cf-preview-metadata-modified" className="font-medium">{new Date(file.modifiedTime).toLocaleString()}</p>
+            <p className="font-bold uppercase tracking-tighter text-[var(--cf-text-3)]">Modified</p>
+            <p data-testid="cf-preview-metadata-modified" className="font-medium text-[var(--cf-text-1)]">{new Date(file.modifiedTime).toLocaleString()}</p>
           </div>
           <div className="col-span-2 space-y-1">
-            <p className="text-gray-400 font-bold uppercase tracking-tighter">Path</p>
-            <p className="font-medium break-all text-gray-500 dark:text-gray-400 font-mono text-[10px]">
+            <p className="font-bold uppercase tracking-tighter text-[var(--cf-text-3)]">Path</p>
+            <p className="break-all font-mono text-[10px] font-medium text-[var(--cf-text-2)]">
               {file.pathDisplay || file.path}
             </p>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="pt-6 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 border-t border-[var(--cf-border)] pt-6">
           <button 
             data-testid="cf-preview-action-download"
             onClick={() => canActOnFile && onDownload(file)}
             disabled={!canActOnFile}
             title={!canActOnFile ? 'File details loading...' : undefined}
-            className={`flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-shadow shadow-md hover:shadow-lg col-span-2 ${!canActOnFile ? actionDisabledClass : ''}`}
+            className={`col-span-2 flex items-center justify-center gap-2 rounded-2xl border border-[rgba(116,174,252,0.26)] bg-[rgba(116,174,252,0.16)] py-2.5 text-xs font-bold text-[var(--cf-blue)] transition-colors hover:bg-[rgba(116,174,252,0.22)] ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Download File
           </button>
@@ -187,7 +187,7 @@ export default function PreviewPanel({
             onClick={() => canActOnFile && onRename(file)}
             disabled={!canActOnFile}
             title={!canActOnFile ? 'File details loading...' : undefined}
-            className={`flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium ${!canActOnFile ? actionDisabledClass : ''}`}
+            className={`flex items-center justify-center gap-2 rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] py-2 text-xs font-medium text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Rename
           </button>
@@ -196,7 +196,7 @@ export default function PreviewPanel({
             onClick={() => canActOnFile && onMove(file)}
             disabled={!canActOnFile}
             title={!canActOnFile ? 'File details loading...' : undefined}
-            className={`flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium ${!canActOnFile ? actionDisabledClass : ''}`}
+            className={`flex items-center justify-center gap-2 rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] py-2 text-xs font-medium text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Move
           </button>
@@ -205,7 +205,7 @@ export default function PreviewPanel({
             onClick={() => canActOnFile && onCopy(file)}
             disabled={!canActOnFile}
             title={!canActOnFile ? 'File details loading...' : undefined}
-            className={`flex items-center justify-center gap-2 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-xs font-medium ${!canActOnFile ? actionDisabledClass : ''}`}
+            className={`flex items-center justify-center gap-2 rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] py-2 text-xs font-medium text-[var(--cf-text-1)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)] ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Copy
           </button>
@@ -214,7 +214,7 @@ export default function PreviewPanel({
             onClick={() => canActOnFile && onDelete(file)}
             disabled={!canActOnFile}
             title={!canActOnFile ? 'File details loading...' : undefined}
-            className={`flex items-center justify-center gap-2 py-2 border border-red-100 dark:border-red-900/30 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-medium ${!canActOnFile ? actionDisabledClass : ''}`}
+            className={`flex items-center justify-center gap-2 rounded-2xl border border-[rgba(255,92,92,0.22)] bg-[rgba(255,92,92,0.08)] py-2 text-xs font-medium text-[var(--cf-red)] hover:bg-[rgba(255,92,92,0.12)] ${!canActOnFile ? actionDisabledClass : ''}`}
           >
             Delete
           </button>

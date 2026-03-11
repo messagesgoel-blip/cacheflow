@@ -32,12 +32,12 @@ export default function SelectionToolbar({
   return (
     <div
       data-testid="cf-selection-toolbar"
-      className="fixed bottom-8 left-1/2 z-[100] flex w-[min(92vw,960px)] -translate-x-1/2 items-center justify-between gap-4 rounded-[24px] border border-[var(--cf-border-2)] bg-[var(--cf-menu-bg)] px-4 py-3 text-[var(--cf-text-0)] shadow-[var(--cf-shadow-strong)] animate-in fade-in slide-in-from-bottom-4 duration-300"
+      className="cf-liquid fixed bottom-8 left-1/2 z-[100] flex w-[min(92vw,960px)] -translate-x-1/2 items-center justify-between gap-4 rounded-[28px] bg-[var(--cf-menu-bg)] px-4 py-3 text-[var(--cf-text-0)] shadow-[var(--cf-shadow-strong)] animate-in fade-in slide-in-from-bottom-4 duration-300"
     >
       <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={onClearSelection}
-          className="rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-2 transition-colors hover:bg-[var(--cf-hover-bg-strong)]"
+          className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 transition-colors hover:bg-[var(--cf-hover-bg-strong)]"
           title="Clear selection"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@ export default function SelectionToolbar({
 
         <button
           onClick={() => onDelete(selectedFiles)}
-          className="flex items-center gap-2 rounded-xl border border-[rgba(255,92,92,0.24)] bg-[rgba(255,92,92,0.08)] px-3 py-2 text-[var(--cf-red)] transition-colors hover:bg-[rgba(255,92,92,0.12)]"
+          className="flex items-center gap-2 rounded-2xl border border-[rgba(255,92,92,0.24)] bg-[rgba(255,92,92,0.08)] px-3 py-2 text-[var(--cf-red)] transition-colors hover:bg-[rgba(255,92,92,0.12)]"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -106,7 +106,7 @@ function ToolbarButton({ label, onClick, icon }: { label: string, onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="group flex items-center gap-2 rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-3 py-2 transition-colors hover:border-[rgba(74,158,255,0.18)] hover:bg-[var(--cf-hover-bg-strong)]"
+      className="group flex items-center gap-2 rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-2 transition-colors hover:border-[rgba(74,158,255,0.18)] hover:bg-[var(--cf-hover-bg-strong)]"
     >
       <svg className="w-5 h-5 opacity-80 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         {icon}
