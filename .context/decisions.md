@@ -8,6 +8,14 @@
 - commit:
 - agent:
 
+## 2026-03-11 — Dispatch the live E2E triage hold as three Batch 1 slices before Sprint 7 activation
+- decision: Run the first post-PR cleanup batch as three parallel slices split by auth/runtime cleanup, UI affordance cleanup, and E2E/spec cleanup, and keep Sprint 7 activation on hold until that batch is reconciled.
+- rationale: The normalized live triage backlog is larger than a single safe branch, but its highest-signal items separate cleanly across OpenCode, ClaudeCode, and Gemini scopes with minimal file overlap.
+- alternatives rejected: Start Sprint 7 immediately after PR cleanup; dispatch the full triage matrix as one unbounded cleanup pass; keep the triage plan only in chat without a reusable prompt pack.
+- files: docs/prompts/live-e2e-triage-batch-1.md, STATUS.md
+- commit: pending
+- agent: codex
+
 ## 2026-03-11 — Keep Sprint 7 decomposed in docs but off the executable manifest until repo drift settles
 - decision: Document Sprint 7 draft task keys, gates, and agent scopes in the sprint spec and contract docs, but do not activate Sprint 7 in `docs/orchestration/task-manifest.json` or generated monitoring yet.
 - rationale: Open cleanup PRs on shared CacheFlow surfaces would make immediate manifest activation likely to create rebase churn and prematurely start Version 2 implementation while review state is still unstable.
