@@ -23,17 +23,17 @@ Implement an unauthenticated GET `/api/health` endpoint that returns system heal
 - Method: GET
 - Authentication: None (unauthenticated)
 - Response Format: JSON
-- Success Status: 200 OK
-- Error Status: 500 Internal Server Error
+- Success Status: 200 OK (forwarded from backend)
+- Error Status: 502 Bad Gateway when backend is unreachable
 
 
 ## Verification Steps
 
 1. Access `/api/health` endpoint without authentication
-2. Verify response includes all required fields
-3. Confirm response status is 200 when system is healthy
-4. Test error handling by simulating failure conditions
-5. Validate JSON schema compliance
+2. Verify response matches backend /health endpoint response
+3. Confirm non-2xx responses from backend are forwarded unchanged
+4. Test error handling when backend is unreachable (should return 502)
+5. Validate timeout behavior when backend is unresponsive
 
 
 ## API Response Schema
@@ -62,7 +62,7 @@ Implement an unauthenticated GET `/api/health` endpoint that returns system heal
 {
   "status": "error",
   "timestamp": "2026-03-11T12:00:00.000Z",
-  "error": "Error message"
+  "error": "Backend health service unavailable"
 }
 
 ```
@@ -70,6 +70,8 @@ Implement an unauthenticated GET `/api/health` endpoint that returns system heal
 
 ## Integration Notes
 
-- This endpoint serves as a fallback to the existing `/health` endpoint in the backend
-- Used for operational readiness checks and health monitoring
+- Proxies the existing /health endpoint in the backend at http://127.0.0.1:8100/health
+- Non-2xx responses from backend are forwarded unchanged
+- Returns 502 when backend is unreachable or times out
+- Uses 10 second timeout for backend requests
 - Should be accessible without authentication for infrastructure monitoring
