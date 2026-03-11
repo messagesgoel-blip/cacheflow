@@ -19,9 +19,9 @@ async function shot(page: any, name: string, worker: number) {
 async function login(page: any, worker: number) {
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
   await shot(page, '01-login-page', worker)
-  await page.fill('input[placeholder="Email"]', EMAIL)
-  await page.fill('input[placeholder="Password"]', PASSWORD)
-  await page.click('button[type="submit"]')
+  await page.getByTestId('email-input').fill(EMAIL)
+  await page.getByTestId('password-input').fill(PASSWORD)
+  await page.getByTestId('submit-button').click()
   await page.waitForURL(/\/files|\/providers|\/remotes|\/$/, { timeout: 30000 })
   await page.goto('/files', { waitUntil: 'domcontentloaded' })
   await expect(page.getByTestId('cf-sidebar-root')).toBeVisible({ timeout: 30000 })
@@ -40,7 +40,8 @@ async function openAllProviders(page: any, worker: number) {
 }
 
 async function searchOnce(page: any, worker: number) {
-  const search = page.locator('input[placeholder*="Search"]')
+  const search = page.getByTestId('cf-global-search-input')
+    .or(page.locator('input[placeholder*="Search"]'))
     .or(page.locator('input[aria-label*="Search"]'))
     .or(page.locator('input[type="search"]'))
     .first()
@@ -99,7 +100,7 @@ async function createFolderUploadDelete(page: any, worker: number) {
   // Try delete uploaded file/folder if row exists
   const row = page.locator('tr', { hasText: folderName }).first()
   if (await row.count()) {
-    const cb = row.locator('input[type="checkbox"]').first()
+    const cb = row.getByTestId('cf-row-checkbox').first()
     if (await cb.count()) await cb.click({ force: true })
     const del = page.getByRole('button', { name: /^delete$/i }).first()
     if (await del.count()) {
@@ -121,10 +122,10 @@ async function copyMoveBetweenProviders(page: any, worker: number) {
   await accounts.nth(0).click()
   await page.waitForTimeout(1200)
 
-  const firstRow = page.locator('tbody tr').first()
+  const firstRow = page.getByTestId('cf-file-row').first()
   if (!await firstRow.count()) return
 
-  const cb = firstRow.locator('input[type="checkbox"]').first()
+  const cb = firstRow.getByTestId('cf-row-checkbox').first()
   if (await cb.count()) await cb.click({ force: true })
 
   const copyBtn = page.getByRole('button', { name: /^copy$/i }).first()

@@ -90,7 +90,7 @@ test('move between providers via transfer modal', async ({ page, request }) => {
   const budgetRow = page.getByTestId('cf-file-row').filter({ hasText: 'Budget 2026.xlsx' }).first()
   await expect(budgetRow).toBeVisible({ timeout: 15_000 })
 
-  await budgetRow.locator('input[type="checkbox"]').click({ force: true })
+  await budgetRow.getByTestId('cf-row-checkbox').click({ force: true })
   await page.getByTestId('cf-selection-toolbar').getByRole('button', { name: 'Move' }).click({ force: true })
   await expect(page.getByText('Move file')).toBeVisible()
 
