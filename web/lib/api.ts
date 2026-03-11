@@ -14,6 +14,7 @@ export async function apiFetch(path: string, opts: RequestInit = {}, token?: str
     const res = await authInterceptor(`${API}${path}`, {
       ...opts,
       headers,
+      credentials: opts.credentials || 'include', // Ensure credentials are included by default
       signal: externalSignal || controller?.signal
     })
     return res
@@ -74,7 +75,8 @@ export async function uploadFile(file: File, token: string, path?: string) {
       'Authorization': `Bearer ${token}`
       // Don't set Content-Type - browser will set it with boundary for multipart/form-data
     },
-    body: formData
+    body: formData,
+    credentials: 'include'
   })
 
   if (!res.ok) {
