@@ -30,10 +30,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(healthData, { status: 200 });
   } catch (error) {
+    // Log the actual error server-side for debugging
+    console.error('Health check failed:', error instanceof Error ? error : new Error(String(error)));
+    
     const errorData = {
       status: 'error',
       timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : 'Health check failed'
+      error: 'Health check failed'
     };
 
     return NextResponse.json(errorData, { status: 500 });
