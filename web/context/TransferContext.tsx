@@ -469,16 +469,8 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       // Use refreshTransfers to ensure rate-limit handling is applied
       refreshTransfers()
         .catch(() => {})
-              const newTransfers = data.transfers.filter(
-                (t: TransferItem) => !existingIds.has(t.jobId)
-              )
-              return [...prev, ...newTransfers]
-            })
-          }
-        })
-        .catch(() => {})
     }
-  }, [pathname, transfers, authChecked, isAuthenticated])
+  }, [pathname, transfers, authChecked, isAuthenticated, refreshTransfers])
 
   // Poll for updates every 5 seconds as fallback
   useEffect(() => {
