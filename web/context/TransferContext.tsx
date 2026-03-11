@@ -98,18 +98,18 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       let expiryTime: number;
 
       if (retryAfterHeader) {
-        // Try to parse as HTTP-date (e.g., "Wed, 02 Apr 2025 14:00:00 GMT")
-        const httpDate = Date.parse(retryAfterHeader);
-        if (!isNaN(httpDate)) {
-          // Calculate seconds until the HTTP-date
-          seconds = Math.max(1, Math.ceil((httpDate - Date.now()) / 1000));
-          expiryTime = Math.floor(httpDate / 1000);
+        // Try to parse as delta-seconds first (e.g., "120")
+        const parsed = Number.parseInt(retryAfterHeader, 10);
+        if (!Number.isNaN(parsed) && parsed > 0) {
+          seconds = parsed;
+          expiryTime = Math.floor(Date.now() / 1000) + seconds;
         } else {
-          // Try to parse as delta-seconds
-          const parsed = parseInt(retryAfterHeader, 10);
-          if (!isNaN(parsed) && parsed > 0) {
-            seconds = parsed;
-            expiryTime = Math.floor(Date.now() / 1000) + seconds;
+          // Try to parse as HTTP-date (e.g., "Wed, 02 Apr 2025 14:00:00 GMT")
+          const httpDate = Date.parse(retryAfterHeader);
+          if (!Number.isNaN(httpDate)) {
+            // Calculate seconds until the HTTP-date
+            seconds = Math.max(1, Math.ceil((httpDate - Date.now()) / 1000));
+            expiryTime = Math.floor(httpDate / 1000);
           } else {
             // Default to 60 seconds
             expiryTime = Math.floor(Date.now() / 1000) + 60;
@@ -458,31 +458,17 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!authChecked || !isAuthenticated) return;
 
-    fetch('/api/transfers?limit=50')
-      .then(r => r.json())
-      .then(data => {
-        if (data.transfers?.length) {
-          setTransfers(prev => {
-            const existingIds = new Set(prev.map(t => t.jobId))
-            const newTransfers = data.transfers.filter(
-              (t: TransferItem) => !existingIds.has(t.jobId)
-            )
-            return [...prev, ...newTransfers]
-          })
-        }
-      })
+    // Use refreshTransfers to ensure rate-limit handling is applied
+    refreshTransfers()
       .catch(() => {})
-  }, [authChecked, isAuthenticated])
+  }, [authChecked, isAuthenticated, refreshTransfers])
   useEffect(() => {
     if (!authChecked || !isAuthenticated) return;
 
     if (transfers.length === 0) {
-      fetch('/api/transfers?limit=50')
-        .then(r => r.json())
-        .then(data => {
-          if (data.success && data.transfers?.length) {
-            setTransfers(prev => {
-              const existingIds = new Set(prev.map(t => t.jobId))
+      // Use refreshTransfers to ensure rate-limit handling is applied
+      refreshTransfers()
+        .catch(() => {})
               const newTransfers = data.transfers.filter(
                 (t: TransferItem) => !existingIds.has(t.jobId)
               )

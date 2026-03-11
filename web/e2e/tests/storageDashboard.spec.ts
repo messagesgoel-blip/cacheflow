@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { primeQaSession } from '../helpers/mockRuntime';
 
 /**
  * Task 3.16: Dashboard + health E2E tests
@@ -152,8 +153,10 @@ test.describe('Storage Dashboard and Health Indicators', () => {
     ]
   };
 
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page, context, request }) => {
     test.setTimeout(120000); // Dev server can be slow
+
+    await primeQaSession(page, request);
 
     // 0. Set authentication cookie to bypass middleware
     await context.addCookies([{
@@ -396,16 +399,14 @@ test.describe('Storage Dashboard and Health Indicators', () => {
 
   test('Health API: Verify the endpoint is reachable and returns correct shape as per 3.14', async ({ page }) => {
     await page.goto('/connections');
-    const result = await page.evaluate(async () => {
-      const response = await fetch('/api/connections/health', {
-        headers: { Authorization: 'Bearer mock-jwt-token' }
-      });
-      return {
-        ok: response.ok,
-        status: response.status,
-        body: await response.json().catch(() => null),
-      };
+    const res = await page.request.get('/api/connections/health', {
+      headers: { Authorization: 'Bearer mock-jwt-token' }
     });
+    const result = {
+      ok: res.ok(),
+      status: res.status(),
+      body: await res.json().catch(() => null),
+    };
     expect(result.ok, `Expected /api/connections/health to succeed, got status ${result.status}`).toBeTruthy();
     const body = result.body as any;
     expect(body.success).toBe(true);
