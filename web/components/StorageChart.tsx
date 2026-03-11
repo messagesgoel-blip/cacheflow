@@ -3,19 +3,13 @@
 import { useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
-
 interface StorageData {
   name: string
   value: number
   color: string
 }
 
-interface StorageChartProps {
-  token: string
-}
-
-export default function StorageChart({ token }: StorageChartProps) {
+export default function StorageChart() {
   const [data, setData] = useState<StorageData[]>([])
   const [loading, setLoading] = useState(true)
   const [totalGB, setTotalGB] = useState(0)
@@ -30,17 +24,15 @@ export default function StorageChart({ token }: StorageChartProps) {
   }, {} as Record<string, string>)
 
   useEffect(() => {
-    fetchStorageBreakdown()
-  }, [token])
+    void fetchStorageBreakdown()
+  }, [])
 
   async function fetchStorageBreakdown() {
     setLoading(true)
 
     try {
-      const res = await fetch(`${API}/admin/storage-breakdown`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/admin/storage-breakdown', {
+        credentials: 'include',
       })
 
       if (res.status === 404) {

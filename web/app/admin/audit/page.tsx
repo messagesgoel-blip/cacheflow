@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 interface AuditLogEntry {
   id: string
@@ -16,9 +14,7 @@ interface AuditLogEntry {
 }
 
 export default function AuditLogPage() {
-  const router = useRouter()
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const { authenticated, email, loading: sessionLoading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
   const [logs, setLogs] = useState<AuditLogEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [filterAction, setFilterAction] = useState<string>('all')
@@ -28,32 +24,17 @@ export default function AuditLogPage() {
   const itemsPerPage = 20
 
   useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-
-    if (!t) {
-      router.push('/')
-      return
+    if (authenticated) {
+      void fetchAuditLogs()
     }
-
-    setToken(t)
-    setEmail(e || '')
-  }, [router])
-
-  useEffect(() => {
-    if (token) {
-      fetchAuditLogs()
-    }
-  }, [token])
+  }, [authenticated])
 
   async function fetchAuditLogs() {
     setLoading(true)
 
     try {
-      const res = await fetch(`${API}/admin/audit-log`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/admin/audit-log', {
+        credentials: 'include',
       })
 
       if (res.status === 404) {
@@ -189,13 +170,7 @@ export default function AuditLogPage() {
     return colors[action] || 'bg-gray-100 text-gray-700'
   }
 
-  function handleLogout() {
-    localStorage.removeItem('cf_token')
-    localStorage.removeItem('cf_email')
-    router.push('/')
-  }
-
-  if (!token) {
+  if (sessionLoading || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -224,7 +199,7 @@ export default function AuditLogPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-blue-200 text-sm">{email}</span>
-          <button onClick={handleLogout} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
+          <button type="button" onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
         </div>
       </nav>
 

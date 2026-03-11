@@ -6,7 +6,6 @@ describe('VPSProvider file operations', () => {
 
   beforeEach(() => {
     localStorage.clear()
-    localStorage.setItem('cf_token', 'test-token')
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({}),
@@ -60,7 +59,6 @@ describe('VPSProvider file operations', () => {
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
-          Authorization: 'Bearer test-token',
           'Content-Type': 'application/json',
         }),
         body: JSON.stringify({
@@ -125,7 +123,6 @@ describe('VPSProvider file operations', () => {
       '/api/providers/vps/conn-1/files/download?path=%2Fsrv%2Fstorage%2Flocal%2Fmock%20run%2Freadme.txt',
       expect.objectContaining({
         headers: expect.objectContaining({
-          Authorization: 'Bearer test-token',
           Range: 'bytes=0-65535',
         }),
       }),

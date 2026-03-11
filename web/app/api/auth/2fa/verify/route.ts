@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifyTOTP, generate2FASessionToken, verify2FASessionToken, verifyBackupCode } from '@/lib/auth/totp';
+import { verifyTOTP, verifyBackupCode } from '@/lib/auth/totp';
 import { decodeAuthPayload, resolveAccessToken } from '@/lib/auth/requestAuth';
 
 export interface VerifyRequest {
@@ -20,7 +20,6 @@ export interface VerifyRequest {
 
 export interface VerifyResponse {
   success: boolean;
-  sessionToken?: string;
   error?: string;
   requiresBackup?: boolean;
 }
@@ -103,16 +102,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyRes
       );
     }
 
-    const pendingToken = cookieStore.get('sessionToken')?.value;
-    const pendingPayload = pendingToken ? verify2FASessionToken(pendingToken) : null;
-    const userId = authPayload?.id ?? pendingPayload?.userId;
-    const email = authPayload?.email ?? pendingPayload?.email;
     const responsePayload: VerifyResponse = { success: true };
-    if (userId && email) {
-      responsePayload.sessionToken = generate2FASessionToken(String(userId), email);
-    }
-
     const response = NextResponse.json(responsePayload);
+    response.cookies.set('sessionToken', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0,
+      path: '/',
+    });
     if (backupCode && backupHashes.length > 0) {
       const updatedHashes: string[] = [];
       let consumed = false;

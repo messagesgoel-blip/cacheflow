@@ -144,17 +144,21 @@ export async function primeQaSession(
   request: APIRequestContext,
   email = 'sup@goels.in',
   password = '123password',
-): Promise<string> {
-  const response = await request
-    .post('http://localhost:8100/auth/login', {
-      data: { email, password },
-    })
-    .catch(() => null)
-
+  options: { mockOnly?: boolean } = {},
+): Promise<void> {
   let token = 'mock-token'
-  if (response?.ok()) {
-    const payload = await response.json()
-    token = payload?.token || payload?.data?.token || token
+
+  if (!options.mockOnly) {
+    const response = await request
+      .post('http://localhost:8100/auth/login', {
+        data: { email, password },
+      })
+      .catch(() => null)
+
+    if (response?.ok()) {
+      const payload = await response.json()
+      token = payload?.token || payload?.data?.token || token
+    }
   }
 
   await page.context().addCookies([
@@ -176,24 +180,6 @@ export async function primeQaSession(
       secure: false,
       sameSite: 'Lax',
     },
-    {
-      name: 'userData',
-      value: JSON.stringify({ id: 'qa-user', email }),
-      domain: 'localhost',
-      path: '/',
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-    },
-    {
-      name: 'userData',
-      value: JSON.stringify({ id: 'qa-user', email }),
-      domain: '127.0.0.1',
-      path: '/',
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-    },
   ])
 
   await page.addInitScript(() => {
@@ -208,14 +194,11 @@ export async function primeQaSession(
       contentType: 'application/json',
       body: JSON.stringify({
         authenticated: true,
-        accessToken: token,
         user: { id: 'qa-user', email },
         expires: new Date(Date.now() + 3600000).toISOString(),
       }),
     })
   })
-
-  return token
 }
 
 export async function installMockRuntime(

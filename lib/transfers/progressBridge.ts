@@ -11,12 +11,14 @@
 import Redis from 'ioredis';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const JOB_TYPES = ['transfer', 'rate_limit', 'scheduled'] as const;
 
 const PROGRESS_CHANNEL_PREFIX = 'progress:';
+const LOG_CHANNEL_PREFIX = 'logs:';
 
 export interface ProgressUpdate {
   jobId: string;
-  jobType: 'transfer' | 'rate_limit';
+  jobType: 'transfer' | 'rate_limit' | 'scheduled';
   userId: string;
   progress: number | Record<string, unknown>;
   status: 'progress' | 'completed' | 'failed';
@@ -24,6 +26,17 @@ export interface ProgressUpdate {
   data?: TransferJobData;
   result?: TransferJobResult;
   error?: string;
+}
+
+/** Log entry for worker events */
+export interface WorkerLogEntry {
+  jobId: string;
+  jobType: 'transfer' | 'rate_limit' | 'scheduled';
+  userId: string;
+  level: 'info' | 'warn' | 'error' | 'debug';
+  message: string;
+  timestamp?: number;
+  data?: Record<string, unknown>;
 }
 
 export interface TransferJobData {
@@ -52,22 +65,43 @@ export interface ProgressSubscriber {
   onError: (error: Error) => void;
 }
 
+export interface LogSubscriber {
+  userId: string;
+  jobId?: string;
+  onLog: (entry: WorkerLogEntry) => void;
+  onError: (error: Error) => void;
+}
+
 class ProgressBridge {
   private publisher: Redis;
   private subscriber: Redis;
   private subscriptions: Map<string, Set<ProgressSubscriber>> = new Map();
+  private logSubscriptions: Map<string, Set<LogSubscriber>> = new Map();
+  private callbackIds: WeakMap<Function, number> = new WeakMap();
+  private nextCallbackId = 1;
   private initialized = false;
 
   constructor() {
-    this.publisher = new Redis(REDIS_URL, { db: 1 });
-    this.subscriber = new Redis(REDIS_URL, { db: 1 });
+    const redisOptions = {
+      db: 1,
+      retryStrategy: (attempt: number) => Math.min(attempt * 100, 2_000),
+      reconnectOnError: (_error: Error) => true,
+    };
+
+    this.publisher = new Redis(REDIS_URL, redisOptions);
+    this.subscriber = new Redis(REDIS_URL, redisOptions);
+
+    this.attachRedisListeners(this.publisher, 'publisher');
+    this.attachRedisListeners(this.subscriber, 'subscriber');
   }
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    await this.subscriber.subscribe(PROGRESS_CHANNEL_PREFIX + 'transfer');
-    await this.subscriber.subscribe(PROGRESS_CHANNEL_PREFIX + 'rate_limit');
+    for (const jobType of JOB_TYPES) {
+      await this.subscriber.subscribe(PROGRESS_CHANNEL_PREFIX + jobType);
+      await this.subscriber.subscribe(LOG_CHANNEL_PREFIX + jobType);
+    }
 
     this.subscriber.on('message', (channel, message) => {
       this.handleMessage(channel, message);
@@ -79,37 +113,119 @@ class ProgressBridge {
 
   private handleMessage(channel: string, message: string): void {
     try {
+      // Check if this is a log message
+      if (channel.startsWith(LOG_CHANNEL_PREFIX)) {
+        const entry: WorkerLogEntry = JSON.parse(message);
+        this.notifyLogSubscribers(entry);
+        return;
+      }
+
+      // Otherwise it's a progress message
       const update: ProgressUpdate = JSON.parse(message);
-      const jobType = channel.replace(PROGRESS_CHANNEL_PREFIX, '');
-      
-      this.notifySubscribers(jobType, update);
+      this.notifySubscribers(update);
     } catch (error) {
       console.error('[ProgressBridge] Failed to parse message:', error);
     }
   }
 
-  private notifySubscribers(jobType: string, update: ProgressUpdate): void {
+  private attachRedisListeners(client: Redis, label: 'publisher' | 'subscriber'): void {
+    client.on('connect', () => {
+      console.log(`[ProgressBridge] Redis ${label} connected`);
+    });
+
+    client.on('reconnecting', (delay: number) => {
+      console.warn(`[ProgressBridge] Redis ${label} reconnecting in ${delay}ms`);
+    });
+
+    client.on('end', () => {
+      console.warn(`[ProgressBridge] Redis ${label} connection ended`);
+    });
+
+    client.on('error', (error) => {
+      console.error(`[ProgressBridge] Redis ${label} error:`, error);
+    });
+  }
+
+  private ensureInitialized(methodName: string): void {
+    if (!this.initialized) {
+      throw new Error(`[ProgressBridge] ${methodName} called before initialize()`);
+    }
+  }
+
+  private callbackId(callback: Function): number {
+    const existingId = this.callbackIds.get(callback);
+    if (existingId) {
+      return existingId;
+    }
+
+    const id = this.nextCallbackId++;
+    this.callbackIds.set(callback, id);
+    return id;
+  }
+
+  private progressSubscriberKey(subscriber: ProgressSubscriber): string {
+    return `${subscriber.userId}:${this.callbackId(subscriber.onProgress)}:${this.callbackId(subscriber.onError)}`;
+  }
+
+  private logSubscriberKey(subscriber: LogSubscriber): string {
+    return `${subscriber.userId}:${this.callbackId(subscriber.onLog)}:${this.callbackId(subscriber.onError)}`;
+  }
+
+  private notifyLogSubscribers(entry: WorkerLogEntry): void {
+    const userKey = entry.userId;
+    const jobKey = `${entry.userId}:${entry.jobId}`;
+
+    const userSubs = this.logSubscriptions.get(userKey);
+    const jobSubs = this.logSubscriptions.get(jobKey);
+    const allSubs = new Map<string, LogSubscriber>();
+    for (const sub of userSubs || []) {
+      allSubs.set(this.logSubscriberKey(sub), sub);
+    }
+    for (const sub of jobSubs || []) {
+      allSubs.set(this.logSubscriberKey(sub), sub);
+    }
+
+    for (const subscriber of allSubs.values()) {
+      if (!subscriber.jobId || subscriber.jobId === entry.jobId) {
+        try {
+          subscriber.onLog(entry);
+        } catch (error) {
+          const err = error instanceof Error ? error : new Error(String(error));
+          subscriber.onError(err);
+        }
+      }
+    }
+  }
+
+  private notifySubscribers(update: ProgressUpdate): void {
     const userKey = update.userId;
     const jobKey = `${update.userId}:${update.jobId}`;
 
     const userSubs = this.subscriptions.get(userKey);
     const jobSubs = this.subscriptions.get(jobKey);
+    const allSubs = new Map<string, ProgressSubscriber>();
+    for (const sub of userSubs || []) {
+      allSubs.set(this.progressSubscriberKey(sub), sub);
+    }
+    for (const sub of jobSubs || []) {
+      allSubs.set(this.progressSubscriberKey(sub), sub);
+    }
 
-    const allSubs = [...(userSubs || []), ...(jobSubs || [])];
-
-    for (const sub of allSubs) {
-      if (!sub.jobId || sub.jobId === update.jobId) {
+    for (const subscriber of allSubs.values()) {
+      if (!subscriber.jobId || subscriber.jobId === update.jobId) {
         try {
-          sub.onProgress(update);
+          subscriber.onProgress(update);
         } catch (error) {
           const err = error instanceof Error ? error : new Error(String(error));
-          sub.onError(err);
+          subscriber.onError(err);
         }
       }
     }
   }
 
   async publishProgress(update: ProgressUpdate): Promise<void> {
+    this.ensureInitialized('publishProgress');
+
     const channel = PROGRESS_CHANNEL_PREFIX + (update.jobType || 'transfer');
     const message = JSON.stringify({
       ...update,
@@ -168,6 +284,36 @@ class ProgressBridge {
     });
   }
 
+  // --- Log event publishing ---
+
+  async publishWorkerLog(entry: WorkerLogEntry): Promise<void> {
+    this.ensureInitialized('publishWorkerLog');
+
+    const channel = LOG_CHANNEL_PREFIX + (entry.jobType || 'transfer');
+    const message = JSON.stringify({
+      ...entry,
+      timestamp: Date.now(),
+    });
+    await this.publisher.publish(channel, message);
+  }
+
+  async publishTransferLog(
+    jobId: string,
+    userId: string,
+    level: WorkerLogEntry['level'],
+    message: string,
+    data?: Record<string, unknown>
+  ): Promise<void> {
+    await this.publishWorkerLog({
+      jobId,
+      jobType: 'transfer',
+      userId,
+      level,
+      message,
+      data,
+    });
+  }
+
   subscribe(subscriber: ProgressSubscriber): () => void {
     const key = subscriber.jobId 
       ? `${subscriber.userId}:${subscriber.jobId}` 
@@ -207,10 +353,52 @@ class ProgressBridge {
     return this.subscribe({ userId, onProgress, onError });
   }
 
+  // --- Log subscription methods (LOGS-1) ---
+
+  subscribeToLog(subscriber: LogSubscriber): () => void {
+    const key = subscriber.jobId
+      ? `${subscriber.userId}:${subscriber.jobId}`
+      : subscriber.userId;
+
+    if (!this.logSubscriptions.has(key)) {
+      this.logSubscriptions.set(key, new Set());
+    }
+
+    this.logSubscriptions.get(key)!.add(subscriber);
+
+    return () => {
+      const subs = this.logSubscriptions.get(key);
+      if (subs) {
+        subs.delete(subscriber);
+        if (subs.size === 0) {
+          this.logSubscriptions.delete(key);
+        }
+      }
+    };
+  }
+
+  subscribeToJobLogs(
+    userId: string,
+    jobId: string,
+    onLog: (entry: WorkerLogEntry) => void,
+    onError: (error: Error) => void
+  ): () => void {
+    return this.subscribeToLog({ userId, jobId, onLog, onError });
+  }
+
+  subscribeToUserLogs(
+    userId: string,
+    onLog: (entry: WorkerLogEntry) => void,
+    onError: (error: Error) => void
+  ): () => void {
+    return this.subscribeToLog({ userId, onLog, onError });
+  }
+
   async shutdown(): Promise<void> {
     await this.publisher.quit();
     await this.subscriber.quit();
     this.subscriptions.clear();
+    this.logSubscriptions.clear();
     this.initialized = false;
     console.log('[ProgressBridge] Shutdown complete');
   }

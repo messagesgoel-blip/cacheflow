@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import MissionControl from '@/components/MissionControl'
 import JobCard from '@/components/schedules/JobCard'
 import CreateJobModal from '@/components/schedules/CreateJobModal'
 import ScheduleTransferSnapshot from '@/components/schedules/ScheduleTransferSnapshot'
 import type { ScheduledJob } from '@/lib/jobs/types'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 const JOB_TYPE_LABELS: Record<string, string> = {
   'sync-file': 'File Sync',
@@ -24,34 +24,19 @@ const JOB_TYPE_ICONS: Record<string, string> = {
 }
 
 export default function SchedulesPage() {
-  const router = useRouter()
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const { authenticated, email, loading: sessionLoading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
   const [jobs, setJobs] = useState<ScheduledJob[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingJob, setEditingJob] = useState<ScheduledJob | null>(null)
 
-  useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-
-    if (!t) {
-      router.push('/')
-      return
-    }
-
-    setToken(t)
-    setEmail(e || '')
-  }, [router])
-
-  const fetchJobs = useCallback(async (t: string) => {
+  const fetchJobs = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/jobs', {
-        headers: { Authorization: `Bearer ${t}` },
+        credentials: 'include',
         cache: 'no-store',
       })
       const data = await res.json()
@@ -68,10 +53,10 @@ export default function SchedulesPage() {
   }, [])
 
   useEffect(() => {
-    if (token) {
-      fetchJobs(token)
+    if (authenticated) {
+      fetchJobs()
     }
-  }, [token, fetchJobs])
+  }, [authenticated, fetchJobs])
 
   useEffect(() => {
     const syncComposeState = () => {
@@ -96,15 +81,15 @@ export default function SchedulesPage() {
     cronExpression: string
     enabled: boolean
   }) => {
-    if (!token) return
+    if (!authenticated) return
 
     try {
       const res = await fetch('/api/jobs', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(jobData),
       })
       const data = await res.json()
@@ -122,15 +107,15 @@ export default function SchedulesPage() {
   }
 
   const handleUpdateJob = async (jobId: string, updates: Partial<ScheduledJob>) => {
-    if (!token) return
+    if (!authenticated) return
 
     try {
       const res = await fetch(`/api/jobs?id=${jobId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(updates),
       })
       const data = await res.json()
@@ -148,7 +133,7 @@ export default function SchedulesPage() {
   }
 
   const handleDeleteJob = async (jobId: string) => {
-    if (!token) return
+    if (!authenticated) return
 
     if (!confirm('Are you sure you want to delete this scheduled job?')) {
       return
@@ -157,7 +142,7 @@ export default function SchedulesPage() {
     try {
       const res = await fetch(`/api/jobs?id=${jobId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       })
       const data = await res.json()
 
@@ -190,13 +175,7 @@ export default function SchedulesPage() {
   const pausedJobs = jobs.filter((job) => !job.enabled).length
   const upcomingJobs = jobs.filter((job) => Boolean(job.nextRunAt)).length
 
-  const handleLogout = () => {
-    localStorage.removeItem('cf_token')
-    localStorage.removeItem('cf_email')
-    router.push('/')
-  }
-
-  if (!token) {
+  if (sessionLoading || !authenticated) {
     return (
       <div className="cf-shell-page flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -209,7 +188,7 @@ export default function SchedulesPage() {
 
   return (
     <div className="cf-shell-page">
-      <Navbar email={email} onLogout={handleLogout} />
+      <Navbar email={email} onLogout={() => { void logoutClientSession('/login') }} />
 
       <main data-testid="cf-schedules-page" className="mx-auto max-w-[1600px] px-4 py-6 md:px-6">
         <MissionControl />

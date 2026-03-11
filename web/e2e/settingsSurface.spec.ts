@@ -2,14 +2,24 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Settings Surface', () => {
   test.beforeEach(async ({ page, context }) => {
-    await context.addCookies([{
-      name: 'accessToken',
-      value: 'mock-token',
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax',
-    }])
+    await context.addCookies([
+      {
+        name: 'accessToken',
+        value: 'mock-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+      {
+        name: 'accessToken',
+        value: 'mock-token',
+        domain: '127.0.0.1',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ])
 
     await page.route('**/api/auth/session', async (route) => {
       await route.fulfill({

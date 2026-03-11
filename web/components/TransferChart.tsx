@@ -3,35 +3,27 @@
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
-
 interface TransferData {
   date: string
   transfer_gb: number
 }
 
-interface TransferChartProps {
-  token: string
-}
-
-export default function TransferChart({ token }: TransferChartProps) {
+export default function TransferChart() {
   const [data, setData] = useState<TransferData[]>([])
   const [loading, setLoading] = useState(true)
   const [todayTransfer, setTodayTransfer] = useState(0)
   const [isMockData, setIsMockData] = useState(false)
 
   useEffect(() => {
-    fetchTransferStats()
-  }, [token])
+    void fetchTransferStats()
+  }, [])
 
   async function fetchTransferStats() {
     setLoading(true)
 
     try {
-      const res = await fetch(`${API}/admin/transfer-stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch('/api/backend/admin/transfer-stats', {
+        credentials: 'include',
       })
 
       if (res.status === 404) {

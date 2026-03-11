@@ -1,22 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import os
 import re
-from datetime import datetime, timezone
-from pathlib import Path
 
 import yaml
-
-
-def resolve_base() -> Path:
-    explicit = os.environ.get("CACHEFLOW_BASE")
-    if explicit:
-        return Path(explicit).resolve()
-    canonical = Path("/home/sanjay/cacheflow_work")
-    if (canonical / ".git").exists():
-        return canonical.resolve()
-    return Path(__file__).resolve().parent.parent
+from cacheflow_paths import now_iso, resolve_base
 
 
 BASE = resolve_base()
@@ -27,27 +15,22 @@ ROADMAP_VERSION_TITLES = {
     "2": "Version 2",
 }
 ROADMAP_STAGE_DEFS = {
-    "V1-0": {"title": "Release Blocker", "roadmap_version": "1"},
-    "V1-1": {"title": "Core Platform", "roadmap_version": "1"},
-    "V1-2": {"title": "Power User Essentials", "roadmap_version": "1"},
-    "V1-3": {"title": "Power User Completion", "roadmap_version": "1"},
-    "V2-A": {"title": "Foundation", "roadmap_version": "2"},
-    "V2-B": {"title": "Easy Wins", "roadmap_version": "2"},
-    "V2-C": {"title": "Moderate", "roadmap_version": "2"},
-    "V2-D": {"title": "Advanced", "roadmap_version": "2"},
+    "V1-0": {"title": "Release Blocker", "roadmap_version": "1", "sprint": "gate"},
+    "V1-1": {"title": "Core Platform", "roadmap_version": "1", "sprint": "0-5"},
+    "V1-2": {"title": "Power User Essentials", "roadmap_version": "1", "sprint": "6"},
+    "V1-3": {"title": "Power User Completion", "roadmap_version": "1", "sprint": "6"},
+    "V2-A": {"title": "Foundation", "roadmap_version": "2", "sprint": "7-11"},
+    "V2-B": {"title": "Easy Wins", "roadmap_version": "2", "sprint": "12-14"},
+    "V2-C": {"title": "Moderate", "roadmap_version": "2", "sprint": "15-17"},
+    "V2-D": {"title": "Advanced", "roadmap_version": "2", "sprint": "18-20"},
 }
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-
 
 def stage_item(stage_key: str) -> dict:
     stage = ROADMAP_STAGE_DEFS[stage_key]
     return {
         "item_id": stage_key,
         "title": stage["title"],
-        "sprint": "gate" if stage_key == "V1-0" else "0-5",
+        "sprint": stage["sprint"],
         "roadmap_version": stage["roadmap_version"],
         "roadmap_version_title": ROADMAP_VERSION_TITLES[stage["roadmap_version"]],
         "stage": stage_key,
@@ -57,7 +40,14 @@ def stage_item(stage_key: str) -> dict:
 
 
 def parse_roadmap_items() -> list[dict]:
-    lines = ROADMAP_FILE.read_text().splitlines()
+    if not ROADMAP_FILE.exists():
+        print(f"generate_cacheflow_roadmap_catalog: roadmap file not found: {ROADMAP_FILE}")
+        return []
+    try:
+        lines = ROADMAP_FILE.read_text().splitlines()
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"generate_cacheflow_roadmap_catalog: failed to read roadmap {ROADMAP_FILE}: {exc}")
+        return []
     items = [stage_item("V1-0"), stage_item("V1-1")]
     current_stage = ""
 

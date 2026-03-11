@@ -14,6 +14,7 @@ export async function apiFetch(path: string, opts: RequestInit = {}, token?: str
     const res = await authInterceptor(`${API}${path}`, {
       ...opts,
       headers,
+      credentials: opts.credentials || 'include', // Ensure credentials are included by default
       signal: externalSignal || controller?.signal
     })
     return res
@@ -74,7 +75,8 @@ export async function uploadFile(file: File, token: string, path?: string) {
       'Authorization': `Bearer ${token}`
       // Don't set Content-Type - browser will set it with boundary for multipart/form-data
     },
-    body: formData
+    body: formData,
+    credentials: 'include'
   })
 
   if (!res.ok) {
@@ -82,7 +84,13 @@ export async function uploadFile(file: File, token: string, path?: string) {
     throw new Error(error.error || `Upload failed with status ${res.status}`)
   }
 
-  return res.json()
+  // Return the created file object to enable downstream operations
+  const result = await res.json()
+  if (result.file && typeof result.file === 'object' && result.file.id) {
+    return result.file // Return the file object if it exists and has expected properties
+  } else {
+    throw new Error('Expected file object with id in upload response')
+  }
 }
 
 export async function downloadFile(id: string, filename: string, token: string) {

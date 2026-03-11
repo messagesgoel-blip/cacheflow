@@ -5,19 +5,9 @@ import argparse
 import json
 import os
 import re
-from pathlib import Path
 
 import yaml
-
-
-def resolve_base() -> Path:
-    explicit = os.environ.get("CACHEFLOW_BASE")
-    if explicit:
-        return Path(explicit).resolve()
-    canonical = Path("/home/sanjay/cacheflow_work")
-    if (canonical / ".git").exists():
-        return canonical.resolve()
-    return Path(__file__).resolve().parent.parent
+from cacheflow_paths import resolve_base
 
 
 BASE = resolve_base()
@@ -70,10 +60,24 @@ def load_orchestrator_sprint() -> int | None:
         return None
     try:
         raw = json.loads(ORCHESTRATOR_STATE_FILE.read_text())
-    except Exception:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(raw, dict):
         return None
     sprint = raw.get("current_sprint")
-    return int(sprint) if sprint is not None else None
+    if isinstance(sprint, bool):
+        return None
+    if isinstance(sprint, int):
+        return sprint if sprint > 0 else None
+    if isinstance(sprint, float):
+        sprint_value = int(sprint) if sprint.is_integer() else None
+        return sprint_value if sprint_value and sprint_value > 0 else None
+    if isinstance(sprint, str):
+        sprint_text = sprint.strip()
+        if sprint_text.isdigit():
+            sprint_value = int(sprint_text)
+            return sprint_value if sprint_value > 0 else None
+    return None
 
 
 def find_running_sprint(status_text: str, state: dict, explicit: int | None) -> int:
