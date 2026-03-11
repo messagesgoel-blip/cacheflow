@@ -1,17 +1,11 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import UnifiedFileBrowser from '@/components/UnifiedFileBrowser'
 import Navbar from '@/components/Navbar'
 import MissionControl from '@/components/MissionControl'
-
-interface SessionResponse {
-  authenticated?: boolean
-  user?: {
-    email?: string
-  }
-}
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 function FilesBrowserShell({ token }: { token: string }) {
   const searchParams = useSearchParams()
@@ -20,72 +14,7 @@ function FilesBrowserShell({ token }: { token: string }) {
 }
 
 export default function FilesPage() {
-  const [token, setToken] = useState<string | null>(null)
-  const [authenticated, setAuthenticated] = useState(false)
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    let isMounted = true
-
-    const hydrateSession = async () => {
-      const localToken = localStorage.getItem('cf_token')
-      const localEmail = localStorage.getItem('cf_email') || ''
-
-      try {
-        const res = await fetch('/api/auth/session', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store',
-        })
-
-        if (!res.ok) {
-          if (isMounted) {
-            setToken(null)
-            setAuthenticated(false)
-            setEmail('')
-          }
-          localStorage.removeItem('cf_token')
-          localStorage.removeItem('cf_email')
-          return
-        }
-
-        const session = (await res.json()) as SessionResponse
-        if (!isMounted) return
-
-        if (session.authenticated) {
-          setAuthenticated(true)
-          setToken(localToken || '')
-          setEmail(session.user?.email || localEmail)
-        } else {
-          setToken(null)
-          setAuthenticated(false)
-          setEmail('')
-          localStorage.removeItem('cf_token')
-          localStorage.removeItem('cf_email')
-        }
-      } catch {
-        if (isMounted) {
-          if (localToken) {
-            setToken(localToken)
-            setAuthenticated(true)
-            setEmail(localEmail)
-          } else {
-            setToken(null)
-            setAuthenticated(false)
-            setEmail('')
-          }
-        }
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    }
-
-    hydrateSession()
-    return () => {
-      isMounted = false
-    }
-  }, [])
+  const { loading, authenticated, email } = useClientSession()
 
   if (loading) {
     return (
@@ -116,9 +45,7 @@ export default function FilesPage() {
       <Navbar
         email={email}
         onLogout={() => {
-          localStorage.removeItem('cf_token')
-          localStorage.removeItem('cf_email')
-          window.location.href = '/login'
+          void logoutClientSession('/login')
         }}
       />
       <main className="mx-auto max-w-[1600px] p-4 md:p-6">
@@ -130,7 +57,7 @@ export default function FilesPage() {
             </div>
           }
         >
-          <FilesBrowserShell token={token || ''} />
+          <FilesBrowserShell token="" />
         </Suspense>
       </main>
     </div>

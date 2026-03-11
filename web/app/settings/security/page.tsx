@@ -3,21 +3,12 @@
 import { useState, useEffect } from 'react'
 import TwoFAPanel from '@/components/settings/TwoFAPanel'
 import Navbar from '@/components/Navbar'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 export default function SecuritySettingsPage() {
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
+  const { authenticated, email, loading } = useClientSession()
 
-  useEffect(() => {
-    const t = localStorage.getItem('cf_token')
-    const e = localStorage.getItem('cf_email')
-    if (t && e) {
-      setToken(t)
-      setEmail(e)
-    }
-  }, [])
-
-  if (!token) {
+  if (loading || !authenticated) {
     return (
       <div className="cf-shell-page flex min-h-screen items-center justify-center px-4">
         <div className="cf-panel w-full max-w-md rounded-[28px] p-8 text-center">
@@ -38,9 +29,7 @@ export default function SecuritySettingsPage() {
   return (
     <div className="cf-shell-page min-h-screen">
       <Navbar email={email} onLogout={() => {
-        localStorage.removeItem('cf_token')
-        localStorage.removeItem('cf_email')
-        window.location.href = '/login'
+        void logoutClientSession('/login')
       }} />
       <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-6 sm:px-6">
         <section className="cf-panel overflow-hidden rounded-[32px]">

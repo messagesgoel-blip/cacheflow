@@ -16,11 +16,9 @@ export class LocalProvider extends StorageProvider {
   }
 
   async connect(): Promise<ProviderToken> {
-    // Already connected via main app token
-    const token = localStorage.getItem('cf_token') || ''
     return {
       provider: 'local',
-      accessToken: token,
+      accessToken: 'cookie-session',
       accountEmail: 'local-storage',
       displayName: 'Local Storage',
       expiresAt: null
@@ -53,10 +51,7 @@ export class LocalProvider extends StorageProvider {
 
   async listFiles(options?: ListFilesOptions): Promise<ListFilesResult> {
     try {
-      const token = localStorage.getItem('cf_token') || ''
-      if (!token) return { files: [], hasMore: false }
-      
-      const res = await browseFiles(options?.folderId || '/', token)
+      const res = await browseFiles(options?.folderId || '/', '')
       
       const files: FileMetadata[] = [
         ...(res.folders || []).map((f: any) => ({
@@ -102,8 +97,7 @@ export class LocalProvider extends StorageProvider {
   }
 
   async uploadFile(file: File, options?: UploadOptions): Promise<FileMetadata> {
-    const token = localStorage.getItem('cf_token') || ''
-    const res = await apiUploadFile(file, token, options?.folderId)
+    const res = await apiUploadFile(file, '', options?.folderId)
     
     // Convert to FileMetadata
     return {
@@ -121,9 +115,7 @@ export class LocalProvider extends StorageProvider {
   }
 
   async downloadFile(id: string, options?: DownloadOptions): Promise<Blob> {
-    const token = localStorage.getItem('cf_token') || ''
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     }
     if (typeof options?.range?.start === 'number') {
@@ -139,20 +131,16 @@ export class LocalProvider extends StorageProvider {
   }
 
   async deleteFile(id: string): Promise<void> {
-    const token = localStorage.getItem('cf_token') || ''
     const res = await this.proxyFetch(`/api/files/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Delete failed')
   }
 
   async createFolder(name: string, parentId?: string): Promise<FileMetadata> {
-    const token = localStorage.getItem('cf_token') || ''
     const res = await this.proxyFetch('/api/files/folders', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ name, parentPath: parentId || '/' })
@@ -174,8 +162,7 @@ export class LocalProvider extends StorageProvider {
   }
 
   async renameFile(id: string, newName: string): Promise<FileMetadata> {
-    const token = localStorage.getItem('cf_token') || ''
-    const data = await apiRenameFile(id, newName, token, this.getRequestCorrelationId())
+    const data = await apiRenameFile(id, newName, '', this.getRequestCorrelationId())
     const f = data.data.file
     return {
       id: f.id,
@@ -192,8 +179,7 @@ export class LocalProvider extends StorageProvider {
   }
 
   async moveFile(id: string, pid: string): Promise<FileMetadata> {
-    const token = localStorage.getItem('cf_token') || ''
-    const data = await apiMoveFile(id, pid, token, this.getRequestCorrelationId())
+    const data = await apiMoveFile(id, pid, '', this.getRequestCorrelationId())
     const f = data.data.file
     return {
       id: f.id,
@@ -214,11 +200,9 @@ export class LocalProvider extends StorageProvider {
   }
 
   async getShareLink(id: string): Promise<string | null> {
-    const token = localStorage.getItem('cf_token') || ''
     const data = await this.proxyFetch('/api/share', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ id })

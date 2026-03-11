@@ -33,8 +33,6 @@ test.describe('Chunked Upload & Auto-Resume (Task 3.8)', () => {
     // 2. Mock Auth and Provider state in localStorage
     const page = await context.newPage();
     await page.addInitScript(() => {
-      localStorage.setItem('cf_token', 'test-jwt-token');
-      localStorage.setItem('cf_email', 'qa-chunked@goels.in');
       localStorage.setItem('cf_user_id', 'user-chunked-123');
 
       localStorage.setItem('cacheflow_tokens_google', JSON.stringify([{

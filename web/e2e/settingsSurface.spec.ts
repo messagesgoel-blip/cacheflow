@@ -1,10 +1,38 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Settings Surface', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
+    await context.addCookies([
+      {
+        name: 'accessToken',
+        value: 'mock-token',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+      {
+        name: 'accessToken',
+        value: 'mock-token',
+        domain: '127.0.0.1',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ])
+
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          authenticated: true,
+          user: { id: 'qa-user', email: 'sup@goels.in' },
+        }),
+      })
+    })
+
     await page.addInitScript(() => {
-      localStorage.setItem('cf_token', 'mock-token')
-      localStorage.setItem('cf_email', 'sup@goels.in')
       localStorage.removeItem('cacheflow_settings')
     })
   })

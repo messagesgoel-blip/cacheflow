@@ -71,12 +71,6 @@ test.describe('Transfer Tray', () => {
 
     // 5. Go to files page
     await page.goto('/files')
-    
-    // Inject localStorage for UI consistency
-    await page.evaluate(() => {
-      localStorage.setItem('cf_token', 'test-token')
-      localStorage.setItem('cf_email', 'test@example.com')
-    })
   })
 
   test('transfer entry survives navigation', async ({ page }) => {

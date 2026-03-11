@@ -11,6 +11,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { lookup } from 'node:dns/promises';
+import { isIP } from 'node:net';
 
 interface BackendRemote {
   id: string;
@@ -28,6 +30,7 @@ interface ProviderConnection {
   id: string;
   provider: string;
   accountKey: string;
+  accountId?: string;
   remoteId: string;
   accountName: string;
   accountEmail: string;
@@ -112,6 +115,114 @@ function resolveApiBase(): string {
   return normalizeBaseUrl(selected);
 }
 
+function parseEnvList(value?: string): string[] {
+  return String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function isPrivateIpv4(address: string): boolean {
+  const parts = address.split('.').map((segment) => Number(segment));
+  if (parts.length !== 4 || parts.some((part) => Number.isNaN(part) || part < 0 || part > 255)) return true;
+
+  const [a, b] = parts;
+  return (
+    a === 10 ||
+    a === 127 ||
+    a === 0 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168)
+  );
+}
+
+function isPrivateIpv6(address: string): boolean {
+  const normalized = address.toLowerCase();
+  if (normalized === '::1') return true;
+  if (normalized.startsWith('::ffff:')) {
+    return isPrivateAddress(normalized.slice('::ffff:'.length));
+  }
+
+  const compact = normalized.replace(/:/g, '');
+  return (
+    normalized.startsWith('fe8') ||
+    normalized.startsWith('fe9') ||
+    normalized.startsWith('fea') ||
+    normalized.startsWith('feb') ||
+    compact.startsWith('fc') ||
+    compact.startsWith('fd')
+  );
+}
+
+function isPrivateAddress(address: string): boolean {
+  const family = isIP(address);
+  if (family === 4) return isPrivateIpv4(address);
+  if (family === 6) return isPrivateIpv6(address);
+  return true;
+}
+
+function getAllowedProxyHosts(): string[] {
+  return parseEnvList(process.env.ALLOWED_PROXY_HOSTS).map((host) => host.toLowerCase());
+}
+
+function getAllowedProxyPatterns(): RegExp[] {
+  return parseEnvList(process.env.ALLOWED_PROXY_PATTERNS)
+    .map((pattern) => {
+      try {
+        return new RegExp(pattern, 'i');
+      } catch {
+        return null;
+      }
+    })
+    .filter((pattern): pattern is RegExp => Boolean(pattern));
+}
+
+function isAllowedProxyHostname(hostname: string): boolean {
+  const normalizedHost = hostname.toLowerCase();
+  const allowedHosts = getAllowedProxyHosts();
+  const allowedPatterns = getAllowedProxyPatterns();
+
+  if (allowedHosts.includes(normalizedHost)) return true;
+  return allowedPatterns.some((pattern) => pattern.test(normalizedHost));
+}
+
+async function validateProxyTarget(rawUrl: string): Promise<{ ok: true; parsed: URL } | { ok: false; status: number; message: string }> {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return { ok: false, status: 400, message: 'Invalid proxy URL' };
+  }
+
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    return { ok: false, status: 400, message: 'Only http and https proxy targets are allowed' };
+  }
+
+  if (!isAllowedProxyHostname(parsed.hostname)) {
+    return { ok: false, status: 403, message: 'Proxy target host is not allowlisted' };
+  }
+
+  if (isIP(parsed.hostname) && isPrivateAddress(parsed.hostname)) {
+    return { ok: false, status: 403, message: 'Proxy target IP is not allowed' };
+  }
+
+  try {
+    const resolved = await lookup(parsed.hostname, { all: true, verbatim: true });
+    if (resolved.length === 0) {
+      return { ok: false, status: 400, message: 'Proxy target hostname could not be resolved' };
+    }
+    if (resolved.some((record) => isPrivateAddress(record.address))) {
+      return { ok: false, status: 403, message: 'Proxy target resolved to a private or loopback address' };
+    }
+  } catch {
+    return { ok: false, status: 400, message: 'Proxy target hostname could not be resolved' };
+  }
+
+  return { ok: true, parsed };
+}
+
 function extractRemotes(payload: any): BackendRemote[] {
   if (Array.isArray(payload?.remotes)) return payload.remotes;
   if (Array.isArray(payload?.data?.remotes)) return payload.data.remotes;
@@ -140,6 +251,7 @@ function mapRemoteToConnection(remote: BackendRemote): ProviderConnection {
     id: remote.id,
     provider: normalizeProviderId(remote.provider),
     accountKey,
+    accountId: remote.account_id,
     remoteId: remote.id,
     accountName: accountLabel,
     accountEmail,
@@ -315,8 +427,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const validatedTarget = await validateProxyTarget(url);
+    if (!validatedTarget.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: validatedTarget.message,
+          requestError: {
+            type: 'proxy',
+            message: validatedTarget.message,
+            url,
+            operation: 'POST /api/connections/test-proxy'
+          } as ProxyRequestError
+        },
+        { status: validatedTarget.status }
+      );
+    }
+
     // Perform proxy request
-    const proxyResponse = await fetch(url, {
+    const proxyResponse = await fetch(validatedTarget.parsed, {
       method,
       headers: headers || {},
       body: body ? JSON.stringify(body) : undefined,

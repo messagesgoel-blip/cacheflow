@@ -144,7 +144,7 @@ export async function primeQaSession(
   request: APIRequestContext,
   email = 'sup@goels.in',
   password = '123password',
-): Promise<string> {
+): Promise<void> {
   const response = await request
     .post('http://localhost:8100/auth/login', {
       data: { email, password },
@@ -157,15 +157,32 @@ export async function primeQaSession(
     token = payload?.token || payload?.data?.token || token
   }
 
-  await page.addInitScript(
-    ({ authToken, authEmail }) => {
-      localStorage.clear()
-      sessionStorage.clear()
-      localStorage.setItem('cf_token', authToken)
-      localStorage.setItem('cf_email', authEmail)
+  await page.context().addCookies([
+    {
+      name: 'accessToken',
+      value: token,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Lax',
     },
-    { authToken: token, authEmail: email },
-  )
+    {
+      name: 'accessToken',
+      value: token,
+      domain: '127.0.0.1',
+      path: '/',
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Lax',
+    },
+  ])
+
+  await page.addInitScript(() => {
+    localStorage.removeItem('cf_token')
+    localStorage.removeItem('cf_email')
+    sessionStorage.clear()
+  })
 
   await page.route('**/api/auth/session', async (route) => {
     await route.fulfill({
@@ -173,14 +190,11 @@ export async function primeQaSession(
       contentType: 'application/json',
       body: JSON.stringify({
         authenticated: true,
-        accessToken: token,
         user: { id: 'qa-user', email },
         expires: new Date(Date.now() + 3600000).toISOString(),
       }),
     })
   })
-
-  return token
 }
 
 export async function installMockRuntime(

@@ -13,9 +13,23 @@ function shotPath(id: string, name: string): string {
 
 test('basic pages screenshots', async ({ page }, testInfo) => {
   const id = runId(testInfo.workerIndex)
-  await page.addInitScript(() => {
-    localStorage.setItem('cf_token', 'test-token')
-    localStorage.setItem('cf_email', 'test@example.com')
+  await page.context().addCookies([{
+    name: 'accessToken',
+    value: 'test-token',
+    domain: 'localhost',
+    path: '/',
+    httpOnly: true,
+    sameSite: 'Lax',
+  }])
+  await page.route('**/api/auth/session', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        authenticated: true,
+        user: { id: 'ui-shot-user', email: 'test@example.com' },
+      }),
+    })
   })
 
   await page.goto('/providers')

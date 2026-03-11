@@ -7,57 +7,19 @@ import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel'
 import RecentActivityPanel from '@/components/dashboard/RecentActivityPanel'
 import RecentTransfersPanel from '@/components/dashboard/RecentTransfersPanel'
+import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 import { tokenManager } from '@/lib/tokenManager'
 import { ProviderId } from '@/lib/providers/types'
 import apiClient from '@/lib/apiClient'
 
 export default function DashboardPage() {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [email, setEmail] = useState('')
-  const [ready, setReady] = useState(false)
+  const { authenticated, email, loading: readyLoading } = useClientSession()
   const [connectedProviders, setConnectedProviders] = useState<Array<{
     providerId: string
     accountEmail: string
     displayName: string
     quota?: { used: number; total: number }
   }>>([])
-
-  useEffect(() => {
-    let isMounted = true
-
-    const hydrateSession = async () => {
-      try {
-        const response = await fetch('/api/auth/session', {
-          credentials: 'include',
-          cache: 'no-store',
-        })
-        if (!response.ok) {
-          if (isMounted) {
-            setAuthenticated(false)
-            setEmail('')
-          }
-          return
-        }
-        const payload = await response.json()
-        if (!isMounted) return
-        setAuthenticated(Boolean(payload?.authenticated))
-        setEmail(payload?.user?.email || '')
-      } catch {
-        if (isMounted) {
-          setAuthenticated(false)
-          setEmail('')
-        }
-      } finally {
-        if (isMounted) setReady(true)
-      }
-    }
-
-    void hydrateSession()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
 
   useEffect(() => {
     if (!authenticated) return
@@ -95,7 +57,7 @@ export default function DashboardPage() {
     void loadConnections()
   }, [authenticated])
 
-  if (!ready) {
+  if (readyLoading) {
     return (
       <div className="cf-shell-page flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />
@@ -126,9 +88,7 @@ export default function DashboardPage() {
   return (
     <div className="cf-shell-page">
       <Navbar email={email} onLogout={() => {
-        localStorage.removeItem('cf_token')
-        localStorage.removeItem('cf_email')
-        window.location.href = '/login'
+        void logoutClientSession('/login')
       }} />
       <div className="mx-auto max-w-[1600px] px-4 py-6">
         

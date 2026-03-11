@@ -44,6 +44,7 @@ export interface ProviderConnection {
   id: string;
   provider: string;
   accountKey?: string;
+  accountId?: string;
   remoteId?: string;
   accountName: string;
   accountEmail?: string;
@@ -168,19 +169,7 @@ export const apiClient = {
    */
   async getConnections(): Promise<ApiResponse<ProviderConnection[]>> {
     try {
-      // Use cookie auth by default, with legacy bearer fallback for flows that still
-      // bootstrap from cf_token until full cookie migration completes.
-      const bearerToken =
-        typeof window !== 'undefined' ? localStorage.getItem('cf_token') : null;
-      const response = await authFetch('/api/connections', {
-        ...(bearerToken
-          ? {
-              headers: {
-                Authorization: `Bearer ${bearerToken}`,
-              },
-            }
-          : {}),
-      });
+      const response = await authFetch('/api/connections');
 
       if (!response.ok) {
         return {
