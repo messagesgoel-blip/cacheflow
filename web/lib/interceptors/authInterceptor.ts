@@ -12,6 +12,15 @@
 
 let refreshPromise: Promise<string> | null = null;
 
+function shouldIncludeCredentials(url: string): boolean {
+  if (typeof window === 'undefined') {
+    return !/^[a-z]+:\/\//i.test(url);
+  }
+
+  const resolvedUrl = new URL(url, window.location.origin);
+  return resolvedUrl.origin === window.location.origin;
+}
+
 /**
  * Singleton token refresh - ensures only one refresh happens at a time
  * even if multiple 401s occur concurrently
@@ -64,11 +73,11 @@ export async function authInterceptor(
   maxRetries = 1
 ): Promise<Response> {
   let retryCount = 0;
+  const includeCredentials = shouldIncludeCredentials(url);
 
-  // Ensure credentials are included for all requests by default
   const finalOptions = {
     ...options,
-    credentials: options.credentials || 'include', // Only set default if not already specified
+    credentials: options.credentials ?? (includeCredentials ? 'include' : undefined),
   };
 
   while (retryCount <= maxRetries) {
@@ -86,10 +95,12 @@ export async function authInterceptor(
       if (retryCount > maxRetries) {
         // Max retries exceeded - dispatch event instead of direct redirect to reduce noise
         // This allows the UI to handle session expiration gracefully
-        const event = new CustomEvent('cacheflow:session-expired', {
-          detail: { url, status: response.status }
-        });
-        window.dispatchEvent(event);
+        if (typeof window !== 'undefined') {
+          const event = new CustomEvent('cacheflow:session-expired', {
+            detail: { url, status: response.status }
+          });
+          window.dispatchEvent(event);
+        }
         
         // Return the 401 response so callers can handle it appropriately
         return response;
@@ -129,10 +140,12 @@ export async function authInterceptor(
  */
 export function createAuthFetch(defaultOptions: RequestInit = {}) {
   return function authFetch(url: string, options: RequestInit = {}) {
+    const includeCredentials = shouldIncludeCredentials(url);
+
     return authInterceptor(url, {
       ...defaultOptions,
       ...options,
-      credentials: options.credentials || defaultOptions.credentials || 'include',
+      credentials: options.credentials ?? defaultOptions.credentials ?? (includeCredentials ? 'include' : undefined),
     });
   };
 }
