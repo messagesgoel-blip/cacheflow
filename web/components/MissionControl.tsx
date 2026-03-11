@@ -30,7 +30,7 @@ export default function MissionControl() {
     const fetchSystemData = async () => {
       try {
         // 1. Fetch Activity for sparkline
-        const actRes = await fetch('/api/activity?limit=20')
+        const actRes = await fetch('/api/activity?limit=20', { credentials: 'include' })
         const actPayload = await actRes.json()
         if (actPayload?.ok && Array.isArray(actPayload.data?.activity)) {
           setActivityData(prev => [...prev.slice(1), actPayload.data.activity.length % 12])

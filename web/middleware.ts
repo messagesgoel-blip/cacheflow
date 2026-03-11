@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const PUBLIC_PREFIXES = [
   '/api/auth/',
+  '/api/health',
   '/auth/',
   '/login',
   '/register',
@@ -72,8 +73,7 @@ export function middleware(request: NextRequest): NextResponse {
     return NextResponse.next();
   }
 
-  // Page routes: allow through for both cookie auth AND localStorage-based auth (E2E tests)
-  // Client-side code will handle redirect to login if localStorage token is missing
+  // Page routes: allow through; client-side session hooks handle redirect
   if (isProtectedPage(pathname)) {
     return NextResponse.next();
   }
