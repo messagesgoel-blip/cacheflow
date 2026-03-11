@@ -12,7 +12,7 @@ Implement an unauthenticated GET `/api/health` endpoint that returns system heal
 - Endpoint returns health data without authentication
 - Response includes:
   - status: Current system status ("ok" or "error")
-  - timestamp: ISO formatted current timestamp
+  - timestamp: ISO-formatted current timestamp
   - memory: Memory usage statistics (rss, heapTotal, heapUsed, external)
   - uptime: System uptime in seconds
 

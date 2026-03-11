@@ -1,44 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+interface HealthData {
+  status: 'ok' | 'error';
+  timestamp: string;
+  memory?: {
+    rss: number;
+    heapTotal: number;
+    heapUsed: number;
+    external: number;
+  } | null;
+  uptime?: number | null;
+}
+
+export async function GET() {
   try {
-    // Create health response
-    const healthData: any = {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-    };
-
-    // Add memory and uptime if available in the environment
-    if (typeof process !== 'undefined' && process.memoryUsage && process.uptime) {
-      try {
-        const memoryUsage = process.memoryUsage();
-        const uptime = Math.floor(process.uptime());
-        
-        healthData.memory = {
-          rss: memoryUsage.rss,
-          heapTotal: memoryUsage.heapTotal,
-          heapUsed: memoryUsage.heapUsed,
-          external: memoryUsage.external,
-        };
-        healthData.uptime = uptime;
-      } catch (memErr) {
-        // If memory/uptime collection fails, still return health data
-        healthData.memory = null;
-        healthData.uptime = null;
-      }
+    // Proxy the request to the backend health endpoint
+    const backendResponse = await fetch('http://127.0.0.1:8100/health');
+    
+    if (backendResponse.ok) {
+      const backendData = await backendResponse.json();
+      return NextResponse.json(backendData, { status: backendResponse.status });
+    } else {
+      // If backend returns an error status, return that response
+      const backendData = await backendResponse.json().catch(() => ({}));
+      return NextResponse.json(backendData, { status: backendResponse.status });
     }
-
-    return NextResponse.json(healthData, { status: 200 });
   } catch (error) {
     // Log the actual error server-side for debugging
     console.error('Health check failed:', error instanceof Error ? error : new Error(String(error)));
     
+    // Return 502 Bad Gateway when backend is unreachable
     const errorData = {
       status: 'error',
       timestamp: new Date().toISOString(),
-      error: 'Health check failed'
+      error: 'Backend health service unavailable'
     };
 
-    return NextResponse.json(errorData, { status: 500 });
+    return NextResponse.json(errorData, { status: 502 });
   }
 }
