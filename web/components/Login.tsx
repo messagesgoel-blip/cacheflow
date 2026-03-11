@@ -42,8 +42,8 @@ export default function Login({
         <ThemeToggle />
       </div>
 
-      <div className="grid w-full max-w-6xl gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="cf-liquid relative hidden overflow-hidden rounded-[36px] p-8 lg:flex lg:min-h-[620px] lg:flex-col lg:justify-between xl:p-10">
+      <div className="grid w-full max-w-6xl items-stretch gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="cf-liquid relative hidden self-stretch overflow-hidden rounded-[36px] p-8 lg:flex lg:min-h-[620px] lg:flex-col lg:justify-between xl:p-10">
           <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(116,174,252,0.62),transparent)]" />
           <div>
             <p className="cf-kicker">CacheFlow access surface</p>
@@ -74,7 +74,7 @@ export default function Login({
           </div>
         </section>
 
-        <section className="cf-liquid relative overflow-hidden rounded-[32px] p-6 sm:p-8 lg:min-h-[620px] lg:p-10">
+        <section className="cf-liquid relative self-stretch overflow-hidden rounded-[32px] p-6 sm:p-8 lg:min-h-[620px] lg:p-10">
           <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(0,224,194,0.54),transparent)]" />
           <div className="mx-auto flex h-full w-full max-w-md flex-col justify-center">
             <p className="cf-kicker">{mode === 'login' ? 'Welcome back' : 'Create access'}</p>

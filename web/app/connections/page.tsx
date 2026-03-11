@@ -153,7 +153,7 @@ export default function ConnectionsPage() {
           />
         </div>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-4 pb-10 md:p-6 md:pb-10">
           <div className="mx-auto max-w-[1280px]">
             <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -201,36 +201,42 @@ export default function ConnectionsPage() {
             ) : (
               <div
                 data-testid="cf-connections-list"
-                className="space-y-3"
+                className="grid grid-cols-1 gap-3 md:grid-cols-2"
               >
                 {connections.map((conn) => (
                   <div
                     key={`${conn.provider}:${conn.accountKey}`}
                     data-testid={`cf-connection-item-${conn.accountKey}`}
-                    className="cf-panel flex flex-col gap-3 rounded-[24px] p-5 sm:flex-row sm:items-center sm:justify-between"
+                    className="cf-panel flex min-h-[80px] rounded-[24px] p-5"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-[var(--cf-text-0)]">
+                    <div className="grid w-full gap-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto_auto] sm:items-center">
+                      <div className="min-w-0">
+                        <span className="block truncate text-sm font-medium text-[var(--cf-text-0)]">
                           {conn.accountLabel || conn.accountName}
                         </span>
-                        {(conn.provider === 'vps' ? (conn.username && conn.host ? `${conn.username}@${conn.host}` : conn.host || conn.username || '') : conn.accountEmail) && (
-                          <span className="text-xs text-[var(--cf-text-2)]">
+                      </div>
+                      <div className="min-w-0">
+                        {(conn.provider === 'vps' ? (conn.username && conn.host ? `${conn.username}@${conn.host}` : conn.host || conn.username || '') : conn.accountEmail) ? (
+                          <span className="block truncate text-xs text-[var(--cf-text-2)]">
                             {conn.provider === 'vps'
                               ? (conn.username && conn.host ? `${conn.username}@${conn.host}` : conn.host || conn.username)
                               : conn.accountEmail}
                           </span>
+                        ) : (
+                          <span className="block truncate text-xs italic text-[var(--cf-text-3)]">
+                            No account metadata
+                          </span>
                         )}
-                        <span className="text-xs capitalize text-[var(--cf-text-3)]">
-                          {conn.provider}
-                        </span>
                       </div>
+                      <span className="text-xs capitalize text-[var(--cf-text-3)]">
+                        {conn.provider}
+                      </span>
+                      <span
+                        className={`justify-self-start rounded-full px-2.5 py-1 text-xs font-medium sm:justify-self-end ${STATUS_COLOR[conn.status] ?? STATUS_COLOR.disconnected}`}
+                      >
+                        {STATUS_LABEL[conn.status] ?? conn.status}
+                      </span>
                     </div>
-                    <span
-                      className={`self-start rounded-full px-2.5 py-1 text-xs font-medium sm:self-center ${STATUS_COLOR[conn.status] ?? STATUS_COLOR.disconnected}`}
-                    >
-                      {STATUS_LABEL[conn.status] ?? conn.status}
-                    </span>
                   </div>
                 ))}
               </div>

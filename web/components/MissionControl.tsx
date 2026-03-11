@@ -136,10 +136,10 @@ export default function MissionControl() {
       data-testid="cf-mission-control"
       className="mb-6 w-full animate-in fade-in duration-500"
     >
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr_320px]">
+      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1fr_2fr_1.2fr]">
         
         {/* Left: System Integrity & Sparkline */}
-        <div className="cf-panel flex items-center justify-between gap-4 rounded-[28px] p-5">
+        <div className="cf-panel flex h-full items-center justify-between gap-4 rounded-[28px] p-5">
           <div className="min-w-0">
             <div className="cf-kicker leading-none">Control Plane</div>
             <div className="mt-2 flex items-center gap-2">
@@ -165,7 +165,7 @@ export default function MissionControl() {
         </div>
 
         {/* Middle: Mission/Alert Hub */}
-        <div className="cf-panel flex min-w-0 items-center justify-center rounded-[28px] p-5">
+        <div className="cf-panel flex h-full min-w-0 items-center justify-center rounded-[28px] p-5">
           {activeAlert ? (
             <div 
               key={activeAlert.id}
@@ -244,7 +244,7 @@ export default function MissionControl() {
         </div>
 
         {/* Right: Storage Stats */}
-        <div className={`cf-panel rounded-[28px] p-5 transition-all duration-500 ${
+        <div className={`cf-panel h-full rounded-[28px] p-5 transition-all duration-500 ${
           quotaPercent >= 95 ? 'ring-1 ring-[var(--cf-red)]/50 bg-[var(--cf-red)]/5' :
           quotaPercent >= 80 ? 'ring-1 ring-[var(--cf-amber)]/50 bg-[var(--cf-amber)]/5' : ''
         }`}>

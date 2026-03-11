@@ -281,6 +281,8 @@ export default function Sidebar({
                 const isDragOver = dragOverAccount === cacheKey
                 const usagePercent = quota && quota.total > 0 ? (quota.used / quota.total) * 100 : 0
 
+                const hasNoUsageData = account.providerId === 'vps' && quota && quota.used === 0 && quota.total === 0
+
                 return (
                   <div key={account.accountKey || `${account.providerId}-${idx}`} className="group/account">
                     <button
@@ -322,22 +324,30 @@ export default function Sidebar({
                     {!isCollapsed && quota && (
                       <div data-testid={`cf-sidebar-quota-account-${account.accountKey}`} className="mb-2 mt-1 px-9">
                         <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--cf-bg3)]">
-                          <div
-                            className={`h-full ${getUsageColor(usagePercent)}`}
-                            style={{ width: `${Math.max(0, Math.min(usagePercent, 100))}%` }}
-                          />
+                          {!hasNoUsageData && (
+                            <div
+                              className={`h-full ${getUsageColor(usagePercent)}`}
+                              style={{ width: `${Math.max(0, Math.min(usagePercent, 100))}%` }}
+                            />
+                          )}
                         </div>
-                        <div className="mt-0.5 flex justify-between font-mono text-[8px] tracking-[0.08em] text-[var(--cf-text-3)]">
-                          <span>{formatBytes(quota.used)}</span>
-                          {(() => {
-                            const status = getStorageStatusLabel(usagePercent)
-                            return status ? (
-                              <span className={status.className}>{status.text}</span>
-                            ) : (
-                              <span>{Math.round(usagePercent)}%</span>
-                            )
-                          })()}
-                        </div>
+                        {hasNoUsageData ? (
+                          <div className="mt-0.5 text-right font-mono text-[8px] italic tracking-[0.08em] text-[var(--cf-text-3)]">
+                            No usage data
+                          </div>
+                        ) : (
+                          <div className="mt-0.5 flex justify-between font-mono text-[8px] tracking-[0.08em] text-[var(--cf-text-3)]">
+                            <span>{formatBytes(quota.used)}</span>
+                            {(() => {
+                              const status = getStorageStatusLabel(usagePercent)
+                              return status ? (
+                                <span className={status.className}>{status.text}</span>
+                              ) : (
+                                <span>{Math.round(usagePercent)}%</span>
+                              )
+                            })()}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

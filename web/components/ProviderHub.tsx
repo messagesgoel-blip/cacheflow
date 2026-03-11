@@ -625,12 +625,12 @@ export default function ProviderHub() {
                       {group.providers.length} available
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {group.providers.map((provider) => (
                       <div
                         key={provider.id}
                         data-testid={`cf-provider-connect-card-${provider.id}`}
-                        className="rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-5 transition-all hover:-translate-y-0.5"
+                        className="flex h-full flex-col rounded-[22px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-5 transition-all hover:-translate-y-0.5"
                       >
                         <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cf-text-3)]">
                           {provider.id === 'vps' ? 'Server-side remote' : 'OAuth provider'}
@@ -647,7 +647,7 @@ export default function ProviderHub() {
                         <button
                           type="button"
                           onClick={() => openConnectModal(provider.id)}
-                          className={`w-full rounded-2xl border px-3 py-2.5 text-sm font-medium transition ${
+                          className={`mt-auto w-full rounded-2xl border px-3 py-2.5 text-sm font-medium transition ${
                             provider.id === 'vps'
                               ? 'border-[rgba(255,159,67,0.22)] bg-[rgba(255,159,67,0.1)] text-[var(--cf-amber)] hover:bg-[rgba(255,159,67,0.16)]'
                               : 'border-[var(--cf-border)] bg-[rgba(255,255,255,0.04)] text-[var(--cf-text-0)] hover:bg-[rgba(255,255,255,0.08)]'
