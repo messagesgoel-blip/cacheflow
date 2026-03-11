@@ -30,3 +30,46 @@ Follow-up polish scope:
 - tighten the files loading state layout and toolbar rhythm
 - raise light-theme contrast for shell labels and secondary text
 - reskin the login surface to match the deployed glass shell without changing auth behavior
+
+Dispatch 1 layout fixes:
+- `MissionControl` status row now uses fixed proportional columns (`1fr 2fr 1.2fr`) with stretched card heights so `Control Plane`, `Provider Breakdown`, and `Total Pooled Storage` align on the same bottom edge.
+- the login entry surface keeps both hero and form cards vertically centered with matched desktop bottoms
+- `/connections` now renders connection cards in a two-column desktop grid with `min-height` protection and bottom padding to avoid trailing dead space
+- sidebar VPS quota rows replace `0 B · 0%` with a neutral placeholder bar and `No usage data`
+- the mobile files toolbar drops the `Views / Search / Actions` labels, keeps the write target truncated inline, and collapses the default controls into a compact two-row layout with search expanding on demand
+- `ProviderHub` integration cards stretch to equal height and keep `Connect` buttons bottom-aligned within each provider group
+
+Dispatch 1 screenshot gate:
+- local verification spec: `cd web && npx playwright test e2e/layoutDispatch1.spec.ts --config playwright.dispatch.config.ts`
+- screenshots saved under `/srv/storage/screenshots/cacheflow/layout-dispatch1`
+- captured files:
+  - `dispatch1_login_desktop.png`
+  - `dispatch1_dashboard_status_desktop.png`
+  - `dispatch1_connections_desktop.png`
+  - `dispatch1_files_sidebar_desktop.png`
+  - `dispatch1_files_toolbar_mobile.png`
+  - `dispatch1_providers_integrations_desktop.png`
+
+Dispatch 2 layout fixes:
+- `Login` root shell uses a full-height centered flex wrapper so the hero and auth card stay vertically centered, and the desktop cards land on the same bottom edge.
+- `MissionControl` collapses to a single horizontal mobile status strip at `<=640px`, keeping the status cards readable without stacking.
+- the files loading workspace hides the `VIEW | PATH | PROVIDERS` meta cards on compact mobile layouts while preserving them on desktop.
+- the providers navbar is sticky at `z-50`, and the providers page content spacing is handled below the navbar so the shell does not start underneath it.
+- `UnifiedFileBrowser` toolbar/action buttons now declare `type="button"` explicitly, and decorative button SVGs are hidden from assistive tech where the button already carries the label.
+- dispatch verification E2E now uses shared mock runtime helpers (`primeQaSession`, `installMockRuntime`, `gotoFilesAndWait`) plus snapshot assertions across desktop and mobile Playwright projects.
+
+Dispatch 2 screenshot gate:
+- local verification spec: `cd web && npx playwright test e2e/layoutDispatch1.spec.ts --config playwright.dispatch.config.ts`
+- snapshot baselines live under `web/e2e/layoutDispatch1.spec.ts-snapshots/`
+- exported screenshots saved under `/srv/storage/screenshots/cacheflow/layout-dispatch2`
+- captured light/dark files:
+  - `dispatch2-login-desktop-light.png`
+  - `dispatch2-login-desktop-dark.png`
+  - `dispatch2-missioncontrol-mobile-light.png`
+  - `dispatch2-missioncontrol-mobile-dark.png`
+  - `dispatch2-files-loading-desktop-light.png`
+  - `dispatch2-files-loading-desktop-dark.png`
+  - `dispatch2-files-loading-mobile-light.png`
+  - `dispatch2-files-loading-mobile-dark.png`
+  - `dispatch2-providers-sticky-desktop-light.png`
+  - `dispatch2-providers-sticky-desktop-dark.png`

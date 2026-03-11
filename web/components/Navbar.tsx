@@ -23,7 +23,7 @@ export default function Navbar({ email, onLogout }: NavbarProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-[var(--cf-border)] bg-[var(--cf-navbar-bg)] px-3 py-3 backdrop-blur-xl sm:px-5 lg:px-6">
+    <nav className="sticky top-0 z-50 border-b border-[var(--cf-border)] bg-[var(--cf-navbar-bg)] px-3 py-3 sm:px-5 lg:px-6">
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 sm:gap-4">
         <div className="flex min-w-0 items-center gap-3 lg:gap-5">
           <Link href="/" className="flex items-center gap-3 font-semibold tracking-tight text-[var(--cf-text-0)]">
