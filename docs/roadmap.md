@@ -18,11 +18,17 @@ Canonical roadmap for product planning and orchestration.
 
 ## Current Status
 
-- Version 1 is complete and green.
+- Version 1 remains complete in deterministic roadmap/task-state tracking.
+- A post-completion live E2E triage hold is open from the external green-run executed on `2026-03-10`.
 - Active roadmap state is Sprint 7 planning for Version 2.
 - Orchestration runtime state is `idle` with `current_sprint: 7`.
 - Version 1 completion baseline: `f7f14d3`
 - Last full-suite artifact: `/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737`
+- Latest external live green-run signal (`2026-03-10T23:45:38Z`):
+  - `26 passed`
+  - `54 failed`
+  - `32 skipped`
+  - normalized tracking source: `docs/live-e2e-triage-matrix.md`
 - Latest deterministic gate validation (`2026-03-07T06:54:42Z`):
   - `test-all`: pass
   - `tsc`: pass
@@ -142,6 +148,52 @@ Status note:
 - implemented during the Sprint 6 Version 1 completion pass
 - tracked complete in `logs/orchestrator-state.json`
 
+### V1-4 Post-Completion Live E2E Triage Hold
+
+Goal: preserve and close the live-validation backlog exposed by the external green-run before treating Version 1 as fully closed from a live E2E perspective.
+
+Status:
+- open as of `2026-03-11`
+- tracking source: `docs/live-e2e-triage-matrix.md`
+- does not roll back the deterministic Version 1 completion baseline
+- must remain visible while Sprint 7 / Version 2 planning continues
+
+Entry signal:
+
+- external live run on `2026-03-10T23:45:38Z`
+- result: `26 passed`, `54 failed`, `32 skipped`
+
+Scope:
+
+- fix the `AUTH-3` browser-storage security bug
+- close the normalized app-bug matrix from `docs/live-e2e-triage-matrix.md`
+- close the normalized spec-bug matrix from `docs/live-e2e-triage-matrix.md`
+- rerun with `CF_TOTP_SECRET` and stable live fixtures/accounts
+- reclassify Version `6.1` through `6.6` live failures as shipped regression, fixture gap, or stale spec issue
+
+Ordered task queue:
+
+1. `SEC-01`
+2. `APP-01`
+3. `APP-09`
+4. `APP-10`
+5. `APP-02` to `APP-08`, `APP-12`
+6. `SPEC-01`, `SPEC-02`, `SPEC-04`, `SPEC-06` to `SPEC-11`
+7. `APP-11`
+8. `SPEC-03`, `SPEC-05`, `APP-13`
+9. `ENV-01` to `ENV-03`
+10. `VERIFY-01` to `VERIFY-06`
+
+Exit gate:
+
+- `AUTH-3` green
+- upload/list invalidation green
+- `/api/health` green
+- transfer tray, provider health attributes, vault PIN gate, empty states, and VPS sidebar re-verified
+- false-failure spec bugs removed from the suite
+- rerun executed with 2FA secret and stable fixtures
+- Version `6.1` through `6.6` explicitly reclassified after rerun
+
 ## Version 2
 
 Version 2 starts after Version 1 is green and complete.
@@ -187,6 +239,7 @@ Current status:
 ## Canonical Files
 
 - Product roadmap: `docs/roadmap.md`
+- Live E2E triage matrix: `docs/live-e2e-triage-matrix.md`
 - GTM / Commercial backlog: `docs/gtm-commercial-backlog.md`
 - Sprint specs: `docs/sprints/`
 - Orchestration manifest: `docs/orchestration/task-manifest.json`
