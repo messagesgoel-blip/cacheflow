@@ -1,18 +1,11 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import UnifiedFileBrowser from '@/components/UnifiedFileBrowser'
 import Navbar from '@/components/Navbar'
 import MissionControl from '@/components/MissionControl'
 import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
-
-interface SessionResponse {
-  authenticated?: boolean
-  user?: {
-    email?: string
-  }
-}
 
 function FilesBrowserShell({ token }: { token: string }) {
   const searchParams = useSearchParams()

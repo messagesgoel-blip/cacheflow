@@ -127,6 +127,7 @@ export abstract class StorageProvider {
 
     return fetch(url, {
       ...options,
+      credentials: 'include',
       headers: requestHeaders,
     })
   }

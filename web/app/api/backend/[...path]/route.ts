@@ -24,10 +24,12 @@ async function proxyRequest(
   const requestHeaders = new Headers()
   const contentType = request.headers.get('content-type')
   const accept = request.headers.get('accept')
+  const contentLength = request.headers.get('content-length')
   const range = request.headers.get('range')
 
   if (contentType) requestHeaders.set('content-type', contentType)
   if (accept) requestHeaders.set('accept', accept)
+  if (contentLength) requestHeaders.set('content-length', contentLength)
   if (range) requestHeaders.set('range', range)
   requestHeaders.set('authorization', authHeader)
 
@@ -35,7 +37,7 @@ async function proxyRequest(
   const body =
     method === 'GET' || method === 'HEAD'
       ? undefined
-      : await request.text()
+      : new Uint8Array(await request.arrayBuffer())
 
   const upstream = await fetch(upstreamUrl, {
     method,

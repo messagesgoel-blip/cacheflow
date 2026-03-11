@@ -37,7 +37,7 @@ export default function ConflictsPage() {
             </a>
           </div>
 
-          <ConflictList token="" />
+          <ConflictList />
         </div>
       </main>
     </div>

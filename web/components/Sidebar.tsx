@@ -65,11 +65,11 @@ export default function Sidebar({
 
       for (const cp of connectedProviders) {
         const cacheKey = `${cp.providerId}:${cp.accountKey}`
+        const tokenData = tokenManager.getToken(cp.providerId, cp.accountKey)
 
         try {
-          const token = tokenManager.getToken(cp.providerId, cp.accountKey)
-          if (token?.remoteId) {
-            const res = await fetch(`/api/remotes/${token.remoteId}/health`, {
+          if (tokenData?.remoteId) {
+            const res = await fetch(`/api/remotes/${tokenData.remoteId}/health`, {
               credentials: 'include',
             })
             const body = await res.json()
@@ -80,7 +80,6 @@ export default function Sidebar({
         try {
           const provider = getProvider(cp.providerId)
           if (provider) {
-            const tokenData = tokenManager.getToken(cp.providerId, cp.accountKey)
             provider.remoteId = tokenData?.remoteId
             const quota = await provider.getQuota()
             newQuotas[cacheKey] = quota

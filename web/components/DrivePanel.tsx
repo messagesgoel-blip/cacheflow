@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { tokenManager } from '@/lib/tokenManager'
+import { tokenManager, type StoredToken } from '@/lib/tokenManager'
 import { getProvider } from '@/lib/providers'
 import { PROVIDERS, ProviderId } from '@/lib/providers/types'
 
@@ -57,12 +57,12 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
     if (typeof window === 'undefined') return []
     
     const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex']
-    const locationsWithTokens: { pid: ProviderId; token: any; config: any }[] = []
+    const locationsWithTokens: Array<{ pid: ProviderId; token: StoredToken; config: any }> = []
 
     for (const pid of providerIds) {
       const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
       tokens.forEach((t) => {
-        if (t && (t.accessToken || (t as any).remoteId)) {
+        if (t && (t.accessToken || t.remoteId)) {
           const providerConfig = PROVIDERS.find(p => p.id === pid)
           locationsWithTokens.push({ pid, token: t, config: providerConfig })
         }
@@ -75,7 +75,7 @@ export default function DrivePanel({ token, onLocationSelect, onRefresh }: Drive
       locationsWithTokens.map(async ({ pid, token }) => {
         const provider = getProvider(pid)
         if (provider) {
-          provider.remoteId = (token as any).remoteId
+          provider.remoteId = token.remoteId
           return await provider.getQuota()
         }
         return { used: 0, total: 0, free: 0, usedDisplay: '0 B', totalDisplay: '0 B', freeDisplay: '0 B', percentUsed: 0 }

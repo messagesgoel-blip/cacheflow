@@ -219,7 +219,7 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
     for (const [providerId, tokenList] of Array.from(allTokens.entries())) {
       const providerConfig = PROVIDERS.find(p => p.id === providerId)
       tokenList.filter(t => !t.disabled).forEach((tokenData, idx) => {
-        if (tokenData && (tokenData.accessToken || (tokenData as any).remoteId)) {
+        if (tokenData?.accessToken) {
           connectedRemotes.push({
             id: `cloud-${providerId}-${idx}`,
             name: providerConfig?.name || providerId,
@@ -241,9 +241,8 @@ export default function RemotesPanel({ token }: RemotesPanelProps) {
         setRemotes([...connectedRemotes, ...serverRemotes])
       })
       .catch(err => {
-        // If server fails, just show cloud remotes
         console.error('Failed to load server remotes:', err)
-        setRemotes(connectedRemotes)
+        setRemotes([])
       })
       .finally(() => setLoading(false))
   }

@@ -134,6 +134,7 @@ export class VPSProvider extends StorageProvider {
 
     const response = await fetch(this.getConnectionApiPath('', '').replace(/\/$/, ''), {
       method: 'POST',
+      credentials: 'include',
       headers: {
         ...(getAuthHeader()),
       },
@@ -171,6 +172,7 @@ export class VPSProvider extends StorageProvider {
 
     await fetch(this.getConnectionApiPath(connectionId), {
       method: 'DELETE',
+      credentials: 'include',
       headers: getAuthHeader(),
     })
 
@@ -230,7 +232,7 @@ export class VPSProvider extends StorageProvider {
 
     const response = await fetch(
       this.getConnectionApiPath(connectionId, `/files?path=${encodeURIComponent(path)}`),
-      { headers: getAuthHeader() }
+      { credentials: 'include', headers: getAuthHeader() }
     )
 
     if (!response.ok) {
@@ -278,6 +280,7 @@ export class VPSProvider extends StorageProvider {
 
     const response = await fetch(this.getConnectionApiPath(connectionId, `/files/upload?path=${encodeURIComponent(targetPath)}`), {
       method: 'POST',
+      credentials: 'include',
       headers: getAuthHeader(),
       body: formData,
     })
@@ -316,7 +319,7 @@ export class VPSProvider extends StorageProvider {
 
     const response = await fetch(
       this.getConnectionApiPath(connectionId, `/files/download?path=${encodeURIComponent(fileId)}`),
-      { headers }
+      { credentials: 'include', headers }
     )
 
     if (!response.ok) {
@@ -336,7 +339,7 @@ export class VPSProvider extends StorageProvider {
 
     const response = await fetch(
       this.getConnectionApiPath(connectionId, `/files?path=${encodeURIComponent(fileId)}`),
-      { method: 'DELETE', headers: getAuthHeader() }
+      { method: 'DELETE', credentials: 'include', headers: getAuthHeader() }
     )
 
     if (!response.ok) {
@@ -357,6 +360,7 @@ export class VPSProvider extends StorageProvider {
 
     const response = await fetch(this.getConnectionApiPath(connectionId, `/files/mkdir?path=${encodeURIComponent(targetPath)}`), {
       method: 'POST',
+      credentials: 'include',
       headers: getAuthHeader(),
     })
 
@@ -389,6 +393,7 @@ export class VPSProvider extends StorageProvider {
     const targetPath = joinRemotePath(newParentId || this.getRootPath(), getFileName(fileId))
     const response = await fetch(this.getConnectionApiPath(connectionId, '/files/move'), {
       method: 'POST',
+      credentials: 'include',
       headers: {
         ...getAuthHeader(),
         'Content-Type': 'application/json',
@@ -429,6 +434,7 @@ export class VPSProvider extends StorageProvider {
     const targetPath = joinRemotePath(newParentId || this.getRootPath(), getFileName(fileId))
     const response = await fetch(this.getConnectionApiPath(connectionId, '/files/copy'), {
       method: 'POST',
+      credentials: 'include',
       headers: {
         ...getAuthHeader(),
         'Content-Type': 'application/json',
@@ -468,6 +474,7 @@ export class VPSProvider extends StorageProvider {
     const existing = await this.getFile(fileId).catch(() => null)
     const response = await fetch(this.getConnectionApiPath(connectionId, '/files/rename'), {
       method: 'POST',
+      credentials: 'include',
       headers: {
         ...getAuthHeader(),
         'Content-Type': 'application/json',

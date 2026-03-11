@@ -9,11 +9,7 @@ interface StorageData {
   color: string
 }
 
-interface StorageChartProps {
-  token: string
-}
-
-export default function StorageChart({ token }: StorageChartProps) {
+export default function StorageChart() {
   const [data, setData] = useState<StorageData[]>([])
   const [loading, setLoading] = useState(true)
   const [totalGB, setTotalGB] = useState(0)
@@ -28,8 +24,8 @@ export default function StorageChart({ token }: StorageChartProps) {
   }, {} as Record<string, string>)
 
   useEffect(() => {
-    fetchStorageBreakdown()
-  }, [token])
+    void fetchStorageBreakdown()
+  }, [])
 
   async function fetchStorageBreakdown() {
     setLoading(true)

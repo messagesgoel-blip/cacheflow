@@ -320,7 +320,7 @@ export default function CleanupPage() {
           {/* Stale Files Tab */}
           {activeTab === 'stale' && (
             <div className="p-6">
-              <StaleFileList token="" />
+              <StaleFileList />
             </div>
           )}
         </div>

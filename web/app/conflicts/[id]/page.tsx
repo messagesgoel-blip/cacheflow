@@ -117,7 +117,7 @@ export default function ConflictDetailPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-blue-200 text-sm">{email}</span>
-            <button onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
+            <button type="button" onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
           </div>
         </nav>
 
@@ -147,7 +147,7 @@ export default function ConflictDetailPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-blue-200 text-sm">{email}</span>
-            <button onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
+            <button type="button" onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
           </div>
         </nav>
 
@@ -182,7 +182,7 @@ export default function ConflictDetailPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-blue-200 text-sm">{email}</span>
-          <button onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
+          <button type="button" onClick={() => { void logoutClientSession('/login') }} className="text-sm bg-blue-800 px-3 py-1 rounded hover:bg-blue-900">Logout</button>
         </div>
       </nav>
 

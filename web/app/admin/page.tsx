@@ -187,10 +187,10 @@ export default function AdminPage() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <TransferChart token="" />
+            <TransferChart />
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <StorageChart token="" />
+            <StorageChart />
           </div>
         </div>
 

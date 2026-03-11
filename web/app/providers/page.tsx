@@ -11,9 +11,9 @@ import VPSModal from '@/components/modals/VPSModal'
 import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 
 export default function ProvidersPage() {
-  const { email, loading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
+  const { authenticated, email, loading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
 
-  if (loading) {
+  if (loading || !authenticated) {
     return (
       <div className="cf-shell-page flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--cf-blue)]" />

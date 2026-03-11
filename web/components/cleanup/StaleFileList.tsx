@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100'
-
 interface StaleFile {
   id: string
   name: string
@@ -17,11 +15,7 @@ interface StaleFile {
   webUrl?: string
 }
 
-interface StaleFileListProps {
-  token: string
-}
-
-export default function StaleFileList({ token }: StaleFileListProps) {
+export default function StaleFileList() {
   const [files, setFiles] = useState<StaleFile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -30,17 +24,16 @@ export default function StaleFileList({ token }: StaleFileListProps) {
   const [filter, setFilter] = useState<'all' | 'stale' | 'error' | 'orphan'>('all')
 
   useEffect(() => {
-    fetchStaleFiles()
-  }, [token])
+    void fetchStaleFiles()
+  }, [])
 
   async function fetchStaleFiles() {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch(`${API}/cleanup/stale`, {
+      const res = await fetch('/api/backend/cleanup/stale', {
         credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
       if (res.status === 404) {
@@ -119,7 +112,7 @@ export default function StaleFileList({ token }: StaleFileListProps) {
 
     setActionLoading(true)
     try {
-      const res = await fetch(`${API}/cleanup/stale`, {
+      const res = await fetch('/api/backend/cleanup/stale', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -142,10 +135,9 @@ export default function StaleFileList({ token }: StaleFileListProps) {
   async function handleMoveToTrash(fileId: string) {
     setActionLoading(true)
     try {
-      const res = await fetch(`${API}/cleanup/stale/${fileId}/trash`, {
+      const res = await fetch(`/api/backend/cleanup/stale/${fileId}/trash`, {
         method: 'POST',
         credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
       if (res.ok) {
@@ -163,10 +155,9 @@ export default function StaleFileList({ token }: StaleFileListProps) {
     
     setActionLoading(true)
     try {
-      const res = await fetch(`${API}/cleanup/stale/${fileId}`, {
+      const res = await fetch(`/api/backend/cleanup/stale/${fileId}`, {
         method: 'DELETE',
         credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
       if (res.ok) {

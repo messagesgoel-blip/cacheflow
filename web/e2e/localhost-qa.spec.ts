@@ -27,7 +27,6 @@ test('localhost login and tab navigation', async ({ page }, testInfo) => {
       contentType: 'application/json',
       body: JSON.stringify({
         authenticated: true,
-        accessToken: 'test-token',
         user: { id: 'user-123', email: 'sup@goels.in' },
         expires: new Date(Date.now() + 3600000).toISOString(),
       }),
@@ -40,7 +39,7 @@ test('localhost login and tab navigation', async ({ page }, testInfo) => {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        accessToken: 'test-token-refreshed',
+        authenticated: true,
         expiresIn: 3600,
       }),
     })

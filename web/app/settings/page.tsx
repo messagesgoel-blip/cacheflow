@@ -8,7 +8,15 @@ import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
 export default function SettingsPage() {
   const { authenticated, email, loading } = useClientSession()
 
-  if (loading || !authenticated) {
+  if (loading) {
+    return (
+      <div className="cf-shell-page flex min-h-screen items-center justify-center">
+        <p className="font-mono text-sm text-[var(--cf-text-2)]">Loading settings…</p>
+      </div>
+    )
+  }
+
+  if (!authenticated) {
     return (
       <div className="cf-shell-page flex min-h-screen items-center justify-center px-4">
         <div className="cf-panel w-full max-w-md rounded-[28px] p-8 text-center">

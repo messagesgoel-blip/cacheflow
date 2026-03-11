@@ -38,8 +38,8 @@ export async function logoutClientSession(redirectTo = '/login'): Promise<void> 
       method: 'POST',
       credentials: 'include',
     })
-  } catch {
-    // Best-effort cookie cleanup; always clear legacy client auth state below.
+  } catch (error) {
+    console.debug('[auth] logout failed, redirecting anyway', { error, redirectTo })
   }
 
   clearLegacyAuthState()

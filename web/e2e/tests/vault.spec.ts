@@ -52,7 +52,10 @@ test.describe('Vault / Private Folder E2E', () => {
   });
 
   test('VAULT-1: Unlock endpoint accepts valid PIN', async ({ page }) => {
+    let authorizationHeader: string | undefined
+
     await page.route(`**/api/vault/*/unlock`, async (route) => {
+      authorizationHeader = route.request().headers().authorization
       const { pin } = route.request().postDataJSON();
       if (pin === MOCK_PIN) {
         await route.fulfill({
@@ -75,20 +78,20 @@ test.describe('Vault / Private Folder E2E', () => {
 
     await page.goto('/files');
     const result = await page.evaluate(
-      async ({ vaultId, pin, token }) => {
+      async ({ vaultId, pin }) => {
         const res = await fetch(`/api/vault/${vaultId}/unlock`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ pin }),
         });
         return { status: res.status, body: await res.json() };
       },
-      { vaultId: MOCK_VAULT_ID, pin: MOCK_PIN, token: MOCK_TOKEN },
+      { vaultId: MOCK_VAULT_ID, pin: MOCK_PIN },
     );
 
+    expect(authorizationHeader).toBeUndefined();
     expect(result.status).toBe(200);
     expect(result.body.success).toBe(true);
     expect(result.body.session_token).toBe(MOCK_SESSION_TOKEN);
@@ -96,7 +99,10 @@ test.describe('Vault / Private Folder E2E', () => {
   });
 
   test('VAULT-1: Unlock endpoint rejects invalid PIN', async ({ page }) => {
+    let authorizationHeader: string | undefined
+
     await page.route(`**/api/vault/*/unlock`, async (route) => {
+      authorizationHeader = route.request().headers().authorization
       await route.fulfill({
         status: 401,
         contentType: 'application/json',
@@ -106,20 +112,20 @@ test.describe('Vault / Private Folder E2E', () => {
 
     await page.goto('/files');
     const result = await page.evaluate(
-      async ({ vaultId, token }) => {
+      async ({ vaultId }) => {
         const res = await fetch(`/api/vault/${vaultId}/unlock`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ pin: '9999' }),
         });
         return { status: res.status, body: await res.json() };
       },
-      { vaultId: MOCK_VAULT_ID, token: MOCK_TOKEN },
+      { vaultId: MOCK_VAULT_ID },
     );
 
+    expect(authorizationHeader).toBeUndefined();
     expect(result.status).toBe(401);
     expect(result.body.success).toBe(false);
     expect(result.body.error).toContain('Invalid PIN');

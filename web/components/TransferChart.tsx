@@ -8,19 +8,15 @@ interface TransferData {
   transfer_gb: number
 }
 
-interface TransferChartProps {
-  token: string
-}
-
-export default function TransferChart({ token }: TransferChartProps) {
+export default function TransferChart() {
   const [data, setData] = useState<TransferData[]>([])
   const [loading, setLoading] = useState(true)
   const [todayTransfer, setTodayTransfer] = useState(0)
   const [isMockData, setIsMockData] = useState(false)
 
   useEffect(() => {
-    fetchTransferStats()
-  }, [token])
+    void fetchTransferStats()
+  }, [])
 
   async function fetchTransferStats() {
     setLoading(true)

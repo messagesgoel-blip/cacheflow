@@ -628,10 +628,5 @@ export class WebDAVProvider extends StorageProvider {
   }
 }
 
-// Helper function for auth header
-function getAuthHeader(): Record<string, string> {
-  return {}
-}
-
 // Export singleton with default config
 export const webdavProvider = new WebDAVProvider()

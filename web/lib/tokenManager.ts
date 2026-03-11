@@ -11,7 +11,7 @@ const SETTINGS_KEY = 'cacheflow_settings'
 const MAX_TOKENS_PER_PROVIDER = 3
 const MAX_TOKENS_TOTAL = 15
 
-interface StoredToken extends ProviderToken {
+export interface StoredToken extends ProviderToken {
   accountKey: string
   disabled?: boolean
   remoteId?: string
@@ -42,11 +42,6 @@ class TokenManager {
   constructor() {
     this.settings = this.loadSettings()
     this.sanitizePersistedStorage()
-  }
-
-  /**
-      console.error('[TokenManager] Failed to sync remotes:', err)
-    }
   }
 
   // ===========================================================================
@@ -233,6 +228,8 @@ class TokenManager {
    */
   isTokenValid(token: ProviderToken | null): boolean {
     if (!token) return false
+    // StoredToken entries may only keep remoteId because provider auth is delegated server-side;
+    // missing expiresAt means the ProviderToken/StoredToken should be treated as non-expiring.
     if (!token.accessToken && !(token as StoredToken).remoteId) return false
     if (!token.expiresAt) return true // No expiry means valid
 

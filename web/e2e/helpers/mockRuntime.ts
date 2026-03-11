@@ -144,7 +144,7 @@ export async function primeQaSession(
   request: APIRequestContext,
   email = 'sup@goels.in',
   password = '123password',
-): Promise<string> {
+): Promise<void> {
   const response = await request
     .post('http://localhost:8100/auth/login', {
       data: { email, password },
@@ -176,24 +176,6 @@ export async function primeQaSession(
       secure: false,
       sameSite: 'Lax',
     },
-    {
-      name: 'userData',
-      value: JSON.stringify({ id: 'qa-user', email }),
-      domain: 'localhost',
-      path: '/',
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-    },
-    {
-      name: 'userData',
-      value: JSON.stringify({ id: 'qa-user', email }),
-      domain: '127.0.0.1',
-      path: '/',
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-    },
   ])
 
   await page.addInitScript(() => {
@@ -208,14 +190,11 @@ export async function primeQaSession(
       contentType: 'application/json',
       body: JSON.stringify({
         authenticated: true,
-        accessToken: token,
         user: { id: 'qa-user', email },
         expires: new Date(Date.now() + 3600000).toISOString(),
       }),
     })
   })
-
-  return token
 }
 
 export async function installMockRuntime(

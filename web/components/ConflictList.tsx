@@ -20,18 +20,14 @@ interface Conflict {
   }
 }
 
-interface ConflictListProps {
-  token: string
-}
-
-export default function ConflictList({ token }: ConflictListProps) {
+export default function ConflictList() {
   const [conflicts, setConflicts] = useState<Conflict[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchConflicts()
-  }, [token])
+    void fetchConflicts()
+  }, [])
 
   async function fetchConflicts() {
     setLoading(true)
@@ -40,7 +36,6 @@ export default function ConflictList({ token }: ConflictListProps) {
     try {
       const res = await fetch('/api/backend/conflicts', {
         credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
       if (res.status === 404) {
