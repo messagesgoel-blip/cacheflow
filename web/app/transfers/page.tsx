@@ -53,7 +53,7 @@ export default function TransfersPage() {
    * @returns Formatted size string (e.g., "1.5 MB")
    */
   function formatSize(bytes: number) {
-    if (bytes === 0) return '0 B'
+    if (bytes <= 0) return '0 B'
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -113,6 +113,7 @@ export default function TransfersPage() {
         </div>
 
         <button
+          type="button"
           onClick={() => refreshTransfers()}
           disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
@@ -249,6 +250,7 @@ export default function TransfersPage() {
                           <div className="flex items-center justify-center gap-2">
                             {transfer.status === 'failed' && (
                               <button
+                                type="button"
                                 onClick={() => handleRetry(transfer.jobId)}
                                 disabled={!!processingId}
                                 className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
@@ -258,6 +260,7 @@ export default function TransfersPage() {
                               </button>
                             )}
                             <button
+                              type="button"
                               onClick={() => handleDismiss(transfer.jobId)}
                               className="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                               title="Dismiss"
