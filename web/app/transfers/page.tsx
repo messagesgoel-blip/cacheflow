@@ -20,7 +20,8 @@ export default function TransfersPage() {
   const [processingId, setProcessingId] = useState<string | null>(null)
 
   useEffect(() => {
-    refreshTransfers()
+    setLoading(true)
+    refreshTransfers().finally(() => setLoading(false))
   }, [refreshTransfers])
 
   /**
@@ -40,11 +41,23 @@ export default function TransfersPage() {
   }
 
   /**
-   * Handle dismiss action to remove a completed transfer from the list
-   * @param jobId - The job ID of the transfer to dismiss
+   * Handle hide action to remove a completed transfer from the view (in-memory only)
+   * @param jobId - The job ID of the transfer to hide
    */
-  function handleDismiss(jobId: string) {
+  function handleHide(jobId: string) {
     dismissTransfer(jobId)
+  }
+
+  /**
+   * Handle manual refresh button click
+   */
+  async function handleRefresh() {
+    setLoading(true)
+    try {
+      await refreshTransfers()
+    } finally {
+      setLoading(false)
+    }
   }
 
   /**
@@ -114,7 +127,7 @@ export default function TransfersPage() {
 
         <button
           type="button"
-          onClick={() => refreshTransfers()}
+          onClick={handleRefresh}
           disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
         >
@@ -261,9 +274,9 @@ export default function TransfersPage() {
                             )}
                             <button
                               type="button"
-                              onClick={() => handleDismiss(transfer.jobId)}
+                              onClick={() => handleHide(transfer.jobId)}
                               className="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                              title="Dismiss"
+                              title="Hide"
                             >
                               <XCircle size={16} />
                             </button>

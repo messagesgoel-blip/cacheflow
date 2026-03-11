@@ -34,6 +34,7 @@ export const TransferTray: React.FC = () => {
     hasActiveTransfers,
     rateLimited,
     retryAfter,
+    rateLimitExpiry,
     cancelTransfer,
     retryTransfer,
     dismissTransfer,
@@ -43,26 +44,35 @@ export const TransferTray: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [previewPanelOpen, setPreviewPanelOpen] = useState(false);
 
-  // Countdown timer for rate limit
+  // Countdown timer for rate limit - derived from expiry timestamp
   const [countdown, setCountdown] = useState<number | null>(null);
 
   useEffect(() => {
-    if (rateLimited && retryAfter) {
-      setCountdown(retryAfter);
+    if (rateLimited && rateLimitExpiry) {
+      // Calculate initial countdown from expiry
+      const calculateCountdown = () => {
+        const now = Math.floor(Date.now() / 1000);
+        const remaining = Math.max(0, Math.ceil(rateLimitExpiry - now));
+        return remaining;
+      };
+
+      setCountdown(calculateCountdown());
+
       const interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev === null || prev <= 1) {
-            clearInterval(interval);
-            return null;
-          }
-          return prev - 1;
-        });
+        const newCountdown = calculateCountdown();
+        if (newCountdown <= 0) {
+          clearInterval(interval);
+          setCountdown(null);
+        } else {
+          setCountdown(newCountdown);
+        }
       }, 1000);
+
       return () => clearInterval(interval);
     } else {
       setCountdown(null);
     }
-  }, [rateLimited, retryAfter]);
+  }, [rateLimited, rateLimitExpiry]);
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return undefined;
@@ -139,6 +149,7 @@ export const TransferTray: React.FC = () => {
     return (
       <button
         data-transfer-tray
+        data-testid="transfer-tray-open-collapsed"
         onClick={() => setIsOpen(true)}
         style={trayStyle}
         className={`cf-liquid fixed bottom-4 z-50 rounded-[24px] p-3 shadow-[var(--cf-shadow-strong)] transition-colors ${
@@ -163,6 +174,7 @@ export const TransferTray: React.FC = () => {
     return (
       <button
         data-transfer-tray
+        data-testid={rateLimited ? "transfer-tray-open-collapsed-rate-limited" : "transfer-tray-open-collapsed"}
         onClick={() => setIsOpen(true)}
         style={trayStyle}
         className={`cf-liquid fixed bottom-4 z-50 rounded-[24px] p-2.5 shadow-[var(--cf-shadow-strong)] transition-colors ${

@@ -27,6 +27,7 @@ export interface TransferContextValue {
   hasActiveTransfers: boolean;
   rateLimited: boolean;
   retryAfter: number | null;
+  rateLimitExpiry: number | null;
   startTransfer: (options: TransferOptions) => Promise<string>;
   cancelTransfer: (jobId: string) => Promise<void>;
   retryTransfer: (jobId: string) => Promise<void>;
@@ -65,14 +66,20 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   const [authChecked, setAuthChecked] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
+  const [rateLimitExpiry, setRateLimitExpiry] = useState<number | null>(null);
   const rateLimitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Clear rate limit state
    */
   const clearRateLimit = useCallback(() => {
+    if (rateLimitTimeoutRef.current) {
+      clearTimeout(rateLimitTimeoutRef.current);
+      rateLimitTimeoutRef.current = null;
+    }
     setRateLimited(false);
     setRetryAfter(null);
+    setRateLimitExpiry(null);
   }, []);
 
   /**
@@ -88,13 +95,17 @@ export function TransferProvider({ children }: { children: ReactNode }) {
 
       const retryAfterHeader = response.headers.get('Retry-After');
       const seconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : 60;
+      const expiryTime = Math.floor(Date.now() / 1000) + seconds;
+
       if (!isNaN(seconds) && seconds > 0) {
         setRateLimited(true);
         setRetryAfter(seconds);
+        setRateLimitExpiry(expiryTime);
         // Auto-clear after retry interval
         rateLimitTimeoutRef.current = setTimeout(() => {
           setRateLimited(false);
           setRetryAfter(null);
+          setRateLimitExpiry(null);
           rateLimitTimeoutRef.current = null;
         }, seconds * 1000);
         return true;
@@ -102,9 +113,11 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       // Default to 60 seconds if no valid header
       setRateLimited(true);
       setRetryAfter(60);
+      setRateLimitExpiry(expiryTime);
       rateLimitTimeoutRef.current = setTimeout(() => {
         setRateLimited(false);
         setRetryAfter(null);
+        setRateLimitExpiry(null);
         rateLimitTimeoutRef.current = null;
       }, 60000);
       return true;
@@ -116,10 +129,16 @@ export function TransferProvider({ children }: { children: ReactNode }) {
    * Start a new transfer via API
    */
   const startTransfer = useCallback(async (options: TransferOptions): Promise<string> => {
+    // Check if rate limited before making request
+    if (rateLimited) {
+      throw new Error('Rate limited. Please wait before starting new transfers.');
+    }
+
     const response = await fetch('/api/transfers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(options),
+      credentials: 'include',
     });
 
     // Check for rate limiting
@@ -209,8 +228,15 @@ export function TransferProvider({ children }: { children: ReactNode }) {
    * Refresh transfers from API
    */
   const refreshTransfers = useCallback(async (): Promise<void> => {
+    // Skip if rate limited
+    if (rateLimited) {
+      return;
+    }
+
     try {
-      const response = await fetch('/api/transfers?limit=50');
+      const response = await fetch('/api/transfers?limit=50', {
+        credentials: 'include',
+      });
       if (response.status === 401) {
         setIsAuthenticated(false);
         return;
@@ -233,7 +259,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to refresh transfers:', error);
     }
-  }, [transfers, handleRateLimit]);
+  }, [transfers, handleRateLimit, rateLimited]);
 
   const pathname = usePathname();
 
@@ -457,6 +483,11 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!authChecked || !isAuthenticated) return;
 
+    // Don't poll if rate limited
+    if (rateLimited) {
+      return;
+    }
+
     const hasActiveTransfers = transfers.some(t => t.status === 'active' || t.status === 'waiting');
 
     if (!isPolling && hasActiveTransfers) {
@@ -464,6 +495,10 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     }
 
     const interval = setInterval(() => {
+      // Don't poll if rate limited
+      if (rateLimited) {
+        return;
+      }
       const hasActive = transfers.some(t => t.status === 'active' || t.status === 'waiting');
       if (hasActive) {
         refreshTransfers();
@@ -471,7 +506,17 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [transfers, isPolling, refreshTransfers, authChecked, isAuthenticated]);
+  }, [transfers, isPolling, refreshTransfers, authChecked, isAuthenticated, rateLimited]);
+
+  // Cleanup rate limit timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (rateLimitTimeoutRef.current) {
+        clearTimeout(rateLimitTimeoutRef.current);
+        rateLimitTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Calculate active count
   const activeCount = transfers.filter(t => t.status === 'active' || t.status === 'waiting').length;
@@ -485,6 +530,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
         hasActiveTransfers,
         rateLimited,
         retryAfter,
+        rateLimitExpiry,
         startTransfer,
         cancelTransfer,
         retryTransfer,
