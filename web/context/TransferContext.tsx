@@ -34,6 +34,7 @@ export interface TransferContextValue {
   dismissTransfer: (jobId: string) => void;
   refreshTransfers: () => Promise<void>;
   clearRateLimit: () => void;
+  resetSessionState: () => void;
 }
 
 export interface TransferOptions {
@@ -63,6 +64,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
   const [transfers, setTransfers] = useState<TransferItem[]>([]);
   const [isPolling, setIsPolling] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const prevAuthenticatedRef = useRef(isAuthenticated);
   const [authChecked, setAuthChecked] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
@@ -83,6 +85,25 @@ export function TransferProvider({ children }: { children: ReactNode }) {
     setRetryAfter(null);
     setRateLimitExpiry(null);
   }, []);
+
+  /**
+   * Reset all session state when auth is lost
+   */
+  const resetSessionState = useCallback(() => {
+    clearRateLimit();
+    setTransfers([]);
+    initialRefreshStartedRef.current = false;
+    initialRefreshCompletedRef.current = false;
+  }, [clearRateLimit]);
+
+  // Reset session state when auth is lost
+  useEffect(() => {
+    if (prevAuthenticatedRef.current && !isAuthenticated) {
+      // Auth went from true to false - reset session state
+      resetSessionState();
+    }
+    prevAuthenticatedRef.current = isAuthenticated;
+  }, [isAuthenticated, resetSessionState]);
 
   /**
    * Handle rate limit (429) response
@@ -211,7 +232,6 @@ export function TransferProvider({ children }: { children: ReactNode }) {
       throw error;
     }
   }, [handleRateLimit, rateLimited]);
->>>>>>> b3889a8 (fix(URM-66): add rate-limit guard to cancelTransfer for consistency)
 
   /**
    * Retry a failed transfer
@@ -556,6 +576,7 @@ export function TransferProvider({ children }: { children: ReactNode }) {
         dismissTransfer,
         refreshTransfers,
         clearRateLimit,
+        resetSessionState,
       }}
     >
       {children}
