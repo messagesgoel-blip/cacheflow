@@ -153,10 +153,10 @@ test.describe('Storage Dashboard and Health Indicators', () => {
     ]
   };
 
-  test.beforeEach(async ({ page, request }) => {
+  test.beforeEach(async ({ page, context, request }) => {
     test.setTimeout(120000); // Dev server can be slow
 
-    // Use mock-only session to avoid live auth calls while keeping cookie-based auth bootstrap.
+    // Use mock-only session to avoid live auth call
     await primeQaSession(page, request, 'sup@goels.in', '123password', { mockOnly: true });
 
     // 1. Clean session and set mock tokens
@@ -391,20 +391,19 @@ test.describe('Storage Dashboard and Health Indicators', () => {
   test('Health API: Verify the endpoint is reachable and returns correct shape as per 3.14', async ({ page }) => {
     await page.goto('/connections');
     const result = await page.evaluate(async () => {
-      const response = await fetch('/api/connections/health', {
-        headers: { Authorization: 'Bearer mock-jwt-token' },
-        credentials: 'include'
+      const res = await fetch('/api/connections/health', {
+        method: 'GET',
+        headers: { Authorization: 'Bearer mock-jwt-token' }
       });
       return {
-        ok: response.ok,
-        status: response.status,
-        body: await response.json().catch(() => null),
+        ok: res.ok,
+        status: res.status,
+        body: await res.json().catch(() => null),
       };
     });
     expect(result.ok, `Expected /api/connections/health to succeed, got status ${result.status}`).toBeTruthy();
     const body = result.body as any;
     expect(body.success).toBe(true);
-    // Reconcile expected connection count with NAV-1 (Exactly 6 nav items -> typically matches provider count in health)
     expect(body.connections).toHaveLength(6);
     
     const google = body.connections.find((c: any) => c.id === 'remote-google-1');
