@@ -4,51 +4,59 @@
 
 :root,
 html.dark {
-  --cf-bg0: #040508;
-  --cf-bg1: #07090d;
-  --cf-bg2: #0a0d14;
-  --cf-bg3: #0e121b;
-  --cf-surface: #121722;
-  --cf-border: #1a2130;
-  --cf-border-2: #222b3d;
-  --cf-text-0: #f0f4f8;
-  --cf-text-1: #a0aec0;
-  --cf-text-2: #6a768a;
-  --cf-text-3: #404a5f;
-  --cf-teal: #00d9b1;
-  --cf-blue: #5baaff;
-  --cf-amber: #ffaa5a;
-  --cf-red: #ff6b6b;
-  --cf-green: #5df091;
-  --cf-purple: #b794f4;
-  --cf-font-ui: "DM Sans", "Outfit", "Segoe UI", sans-serif;
-  --cf-font-mono: "IBM Plex Mono", "Fira Code", "SFMono-Regular", monospace;
+  --cf-bg0: #04060d;
+  --cf-bg1: #060912;
+  --cf-bg2: #0a0f1b;
+  --cf-bg3: #10192a;
+  --cf-surface: #141f33;
+  --cf-border: rgba(255, 255, 255, 0.08);
+  --cf-border-2: rgba(255, 255, 255, 0.14);
+  --cf-text-0: #edf3ff;
+  --cf-text-1: #a2b6d9;
+  --cf-text-2: #6f83a7;
+  --cf-text-3: #40516f;
+  --cf-teal: #00e0c2;
+  --cf-blue: #74aefc;
+  --cf-amber: #ffb35c;
+  --cf-red: #ff7676;
+  --cf-green: #63e7a0;
+  --cf-purple: #c2a6ff;
+  --cf-font-ui: var(--font-cf-ui), "Syne", "DM Sans", "Segoe UI", sans-serif;
+  --cf-font-mono: var(--font-cf-mono), "IBM Plex Mono", "Fira Code", "SFMono-Regular", monospace;
   --cf-page-bg:
-    radial-gradient(circle at top left, rgba(74, 158, 255, 0.1), transparent 32%),
-    radial-gradient(circle at top right, rgba(0, 201, 167, 0.06), transparent 28%),
-    linear-gradient(180deg, var(--cf-bg0) 0%, var(--cf-bg1) 100%);
+    radial-gradient(circle at 10% 12%, rgba(91, 168, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 84% 10%, rgba(0, 229, 192, 0.1), transparent 22%),
+    radial-gradient(circle at 52% 100%, rgba(182, 157, 255, 0.12), transparent 28%),
+    linear-gradient(180deg, #04060d 0%, #050915 42%, #03050b 100%);
   --cf-shell-bg:
-    radial-gradient(circle at top left, rgba(74, 158, 255, 0.08), transparent 30%),
-    linear-gradient(180deg, rgba(4, 5, 8, 0.98) 0%, rgba(7, 9, 13, 0.98) 100%);
-  --cf-panel-bg: rgba(26, 33, 48, 0.85);
-  --cf-subpanel-bg: rgba(18, 23, 34, 0.9);
-  --cf-panel-soft: rgba(255, 255, 255, 0.04);
-  --cf-panel-softer: rgba(255, 255, 255, 0.025);
-  --cf-sidebar-bg: rgba(4, 5, 8, 0.96);
-  --cf-navbar-bg: rgba(7, 9, 13, 0.92);
-  --cf-toolbar-bg: rgba(7, 9, 13, 0.92);
-  --cf-shell-card-bg: rgba(26, 33, 48, 0.7);
-  --cf-shell-card-strong: rgba(14, 18, 27, 0.88);
-  --cf-table-head-bg: rgba(26, 33, 48, 0.96);
-  --cf-menu-bg: rgba(26, 33, 48, 0.98);
+    radial-gradient(circle at 14% 14%, rgba(116, 174, 252, 0.12), transparent 24%),
+    radial-gradient(circle at 92% 12%, rgba(0, 224, 194, 0.09), transparent 18%),
+    linear-gradient(180deg, rgba(4, 6, 13, 0.9) 0%, rgba(7, 11, 20, 0.86) 48%, rgba(5, 8, 15, 0.92) 100%);
+  --cf-panel-bg: rgba(10, 16, 30, 0.62);
+  --cf-subpanel-bg: rgba(16, 24, 41, 0.74);
+  --cf-panel-soft: rgba(255, 255, 255, 0.06);
+  --cf-panel-softer: rgba(255, 255, 255, 0.03);
+  --cf-sidebar-bg: rgba(8, 13, 25, 0.72);
+  --cf-navbar-bg: rgba(10, 16, 28, 0.68);
+  --cf-toolbar-bg: rgba(10, 16, 29, 0.64);
+  --cf-shell-card-bg: rgba(11, 18, 32, 0.56);
+  --cf-shell-card-strong: rgba(8, 14, 26, 0.72);
+  --cf-table-head-bg: rgba(10, 16, 28, 0.82);
+  --cf-menu-bg: rgba(12, 19, 35, 0.88);
   --cf-divider-soft: rgba(255, 255, 255, 0.05);
   --cf-hover-bg: rgba(255, 255, 255, 0.05);
   --cf-hover-bg-strong: rgba(255, 255, 255, 0.09);
-  --cf-shadow-strong: 0 32px 96px rgba(0, 0, 0, 0.45);
+  --cf-shadow-strong: 0 28px 90px rgba(0, 0, 0, 0.52);
   --cf-scroll-track: var(--cf-bg1);
-  --cf-scroll-thumb: #2d3748;
-  --cf-scroll-thumb-hover: #4a5568;
-  --cf-shadow-elev: 0 20px 50px rgba(0, 0, 0, 0.35);
+  --cf-scroll-thumb: rgba(255, 255, 255, 0.12);
+  --cf-scroll-thumb-hover: rgba(255, 255, 255, 0.2);
+  --cf-shadow-elev: 0 16px 48px rgba(0, 0, 0, 0.34);
+  --cf-glass-blur: blur(22px) saturate(165%);
+  --cf-glass-blur-heavy: blur(30px) saturate(190%);
+  --cf-glass-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
 }
 
 html.light {
@@ -57,8 +65,8 @@ html.light {
   --cf-bg2: #ffffff;
   --cf-bg3: #dde6f2;
   --cf-surface: #ffffff;
-  --cf-border: #d6e0ec;
-  --cf-border-2: #c6d3e3;
+  --cf-border: rgba(148, 163, 184, 0.2);
+  --cf-border-2: rgba(255, 255, 255, 0.72);
   --cf-text-0: #0f172a;
   --cf-text-1: #334155;
   --cf-text-2: #64748b;
@@ -69,24 +77,26 @@ html.light {
   --cf-red: #dc2626;
   --cf-green: #16a34a;
   --cf-purple: #7c3aed;
+  --cf-font-ui: var(--font-cf-ui), "Syne", "DM Sans", "Segoe UI", sans-serif;
+  --cf-font-mono: var(--font-cf-mono), "IBM Plex Mono", "Fira Code", "SFMono-Regular", monospace;
   --cf-page-bg:
     radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
     radial-gradient(circle at top right, rgba(15, 159, 139, 0.08), transparent 24%),
     linear-gradient(180deg, #f8fbff 0%, #eef4fb 52%, #e9eff7 100%);
   --cf-shell-bg:
     radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 24%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(243, 247, 252, 0.96) 100%);
-  --cf-panel-bg: rgba(255, 255, 255, 0.92);
-  --cf-subpanel-bg: rgba(248, 251, 255, 0.95);
-  --cf-panel-soft: rgba(255, 255, 255, 0.72);
-  --cf-panel-softer: rgba(255, 255, 255, 0.58);
-  --cf-sidebar-bg: rgba(246, 249, 253, 0.96);
-  --cf-navbar-bg: rgba(255, 255, 255, 0.86);
-  --cf-toolbar-bg: rgba(255, 255, 255, 0.9);
-  --cf-shell-card-bg: rgba(255, 255, 255, 0.76);
-  --cf-shell-card-strong: rgba(255, 255, 255, 0.9);
-  --cf-table-head-bg: rgba(244, 248, 252, 0.96);
-  --cf-menu-bg: rgba(255, 255, 255, 0.98);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76) 0%, rgba(243, 247, 252, 0.8) 100%);
+  --cf-panel-bg: rgba(255, 255, 255, 0.62);
+  --cf-subpanel-bg: rgba(248, 251, 255, 0.74);
+  --cf-panel-soft: rgba(255, 255, 255, 0.66);
+  --cf-panel-softer: rgba(255, 255, 255, 0.52);
+  --cf-sidebar-bg: rgba(246, 249, 253, 0.78);
+  --cf-navbar-bg: rgba(255, 255, 255, 0.74);
+  --cf-toolbar-bg: rgba(255, 255, 255, 0.72);
+  --cf-shell-card-bg: rgba(255, 255, 255, 0.58);
+  --cf-shell-card-strong: rgba(255, 255, 255, 0.74);
+  --cf-table-head-bg: rgba(244, 248, 252, 0.84);
+  --cf-menu-bg: rgba(255, 255, 255, 0.9);
   --cf-divider-soft: rgba(148, 163, 184, 0.18);
   --cf-hover-bg: rgba(37, 99, 235, 0.06);
   --cf-hover-bg-strong: rgba(37, 99, 235, 0.1);
@@ -95,6 +105,12 @@ html.light {
   --cf-scroll-thumb: #b7c3d4;
   --cf-scroll-thumb-hover: #93a4bb;
   --cf-shadow-elev: 0 18px 40px rgba(15, 23, 42, 0.08);
+  --cf-glass-blur: blur(20px) saturate(160%);
+  --cf-glass-blur-heavy: blur(28px) saturate(180%);
+  --cf-glass-shadow:
+    0 20px 48px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.28);
 }
 
 html {
@@ -115,6 +131,31 @@ body {
   color: var(--cf-text-0);
   font-family: var(--cf-font-ui);
   background: var(--cf-page-bg);
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(116, 174, 252, 0.18), transparent 24%),
+    radial-gradient(circle at 84% 12%, rgba(0, 224, 194, 0.12), transparent 20%),
+    radial-gradient(circle at 48% 112%, rgba(194, 166, 255, 0.11), transparent 26%);
+  opacity: 0.85;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 ::-webkit-scrollbar {
@@ -139,45 +180,85 @@ body {
 .cf-shell-page {
   min-height: 100vh;
   background: var(--cf-shell-bg);
+  position: relative;
+  isolation: isolate;
+}
+
+.cf-shell-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(116, 174, 252, 0.12), transparent 22%),
+    radial-gradient(circle at 96% 10%, rgba(0, 224, 194, 0.09), transparent 18%);
+  opacity: 0.9;
 }
 
 .cf-kicker {
   color: var(--cf-text-2);
   font-size: 10px;
   font-family: var(--cf-font-mono);
-  letter-spacing: 0.12em;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.cf-panel {
+.cf-panel,
+.cf-liquid {
   background: linear-gradient(165deg, var(--cf-panel-bg) 0%, var(--cf-subpanel-bg) 100%);
-  border: 1px solid var(--cf-border);
-  box-shadow: 
-    var(--cf-shadow-elev),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  backdrop-filter: var(--cf-glass-blur);
+  -webkit-backdrop-filter: var(--cf-glass-blur);
+  box-shadow: var(--cf-glass-shadow);
   position: relative;
+  isolation: isolate;
 }
 
-.cf-panel::before {
+.cf-panel::before,
+.cf-liquid::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, var(--cf-border-2) 0%, rgba(255, 255, 255, 0.02) 100%);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+.cf-panel::after,
+.cf-liquid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 20%),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 34%);
   pointer-events: none;
 }
 
 .cf-subpanel {
-  background: var(--cf-subpanel-bg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent), var(--cf-subpanel-bg);
   border: 1px solid var(--cf-border-2);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 
 .cf-toolbar-card {
-  background: var(--cf-panel-soft);
-  border: 1px solid var(--cf-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent), var(--cf-panel-soft);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .cf-micro-label {
@@ -194,8 +275,8 @@ body {
   align-items: center;
   gap: 0.375rem;
   border-radius: 9999px;
-  border: 1px solid var(--cf-border);
-  background: var(--cf-panel-soft);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent), var(--cf-panel-soft);
   padding: 0.375rem 0.75rem;
   color: var(--cf-text-1);
   font-family: var(--cf-font-mono);
@@ -203,6 +284,8 @@ body {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
 }
 
 .cf-chip-blue {
@@ -227,4 +310,42 @@ body {
   border-color: rgba(255, 92, 92, 0.24);
   background: rgba(255, 92, 92, 0.1);
   color: var(--cf-red);
+}
+
+.cf-shell-browser {
+  position: relative;
+  overflow: hidden;
+}
+
+.cf-shell-browser::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 6% 8%, rgba(116, 174, 252, 0.16), transparent 18%),
+    radial-gradient(circle at 94% 0%, rgba(0, 224, 194, 0.12), transparent 16%);
+}
+
+.cf-shell-main {
+  position: relative;
+  overflow: hidden;
+}
+
+.cf-shell-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 18%);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .cf-panel,
+  .cf-liquid,
+  .cf-subpanel,
+  .cf-toolbar-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }

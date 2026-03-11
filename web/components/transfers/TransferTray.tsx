@@ -117,7 +117,7 @@ export const TransferTray: React.FC = () => {
       <button
         onClick={() => setIsOpen(true)}
         style={trayStyle}
-        className="fixed bottom-4 z-50 rounded-2xl border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] p-3 text-[var(--cf-text-1)] shadow-[var(--cf-shadow-strong)] transition-colors hover:bg-[var(--cf-panel-soft)] hover:text-[var(--cf-text-0)]"
+        className="cf-liquid fixed bottom-4 z-50 rounded-[24px] p-3 text-[var(--cf-text-1)] shadow-[var(--cf-shadow-strong)] transition-colors hover:bg-[var(--cf-panel-soft)] hover:text-[var(--cf-text-0)]"
         aria-label="Show transfers"
       >
         <span className="text-lg">⇅</span>
@@ -131,7 +131,7 @@ export const TransferTray: React.FC = () => {
       <button
         onClick={() => setIsOpen(true)}
         style={trayStyle}
-        className="fixed bottom-4 z-50 rounded-2xl border border-[rgba(74,158,255,0.26)] bg-[rgba(74,158,255,0.14)] p-2.5 text-[var(--cf-blue)] shadow-[var(--cf-shadow-strong)] transition-colors hover:bg-[rgba(74,158,255,0.18)]"
+        className="cf-liquid fixed bottom-4 z-50 rounded-[24px] border-[rgba(74,158,255,0.26)] bg-[rgba(74,158,255,0.14)] p-2.5 text-[var(--cf-blue)] shadow-[var(--cf-shadow-strong)] transition-colors hover:bg-[rgba(74,158,255,0.18)]"
         aria-label={`${activeCount} active transfer${activeCount > 1 ? 's' : ''}`}
       >
         <div className="relative">
@@ -151,10 +151,10 @@ export const TransferTray: React.FC = () => {
     <div 
       data-testid="cf-transfer-tray"
       style={trayStyle}
-      className="fixed bottom-4 z-50 w-[22rem] max-h-[32rem] overflow-hidden rounded-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)]"
+      className="cf-liquid fixed bottom-4 z-50 w-[22rem] max-h-[32rem] overflow-hidden rounded-[30px] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)]"
     >
       {/* Header */}
-      <div className="border-b border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-4 py-3.5">
+      <div className="cf-toolbar-card border-b border-[var(--cf-border)] px-4 py-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="cf-kicker">Transfers</div>
@@ -165,13 +165,13 @@ export const TransferTray: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             {activeCount > 0 && (
-              <span className="rounded-full border border-[var(--cf-border)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--cf-text-2)]">
+              <span className="cf-chip px-2 py-1 text-[10px] font-semibold">
                 {activeCount} active
               </span>
             )}
             <button
               onClick={refreshTransfers}
-              className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-2)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+              className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 text-[var(--cf-text-2)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
               aria-label="Refresh transfers"
             >
               ↻
@@ -179,17 +179,17 @@ export const TransferTray: React.FC = () => {
           </div>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <div className="rounded-[18px] border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] px-3 py-2">
+          <div className="cf-panel rounded-[20px] px-3 py-2">
             <div className="cf-kicker text-[9px]">Active</div>
             <div className="mt-1 text-base font-semibold text-[var(--cf-blue)]">{activeTransfers.length}</div>
           </div>
-          <div className="rounded-[18px] border border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.1)] px-3 py-2">
+          <div className="cf-panel rounded-[20px] px-3 py-2">
             <div className="cf-kicker text-[9px]">Done</div>
             <div className="mt-1 text-base font-semibold text-[var(--cf-green)]">
               {completedTransfers.filter((transfer) => transfer.status === 'completed').length}
             </div>
           </div>
-          <div className="rounded-[18px] border border-[rgba(255,92,92,0.22)] bg-[rgba(255,92,92,0.08)] px-3 py-2">
+          <div className="cf-panel rounded-[20px] px-3 py-2">
             <div className="cf-kicker text-[9px]">Failed</div>
             <div className="mt-1 text-base font-semibold text-[var(--cf-red)]">
               {completedTransfers.filter((transfer) => transfer.status === 'failed').length}
@@ -199,7 +199,7 @@ export const TransferTray: React.FC = () => {
         <div className="mt-3 flex items-center justify-between gap-2">
           <button
             onClick={() => setIsOpen(false)}
-            className="rounded-xl border border-[var(--cf-border)] px-3 py-1.5 text-xs font-medium text-[var(--cf-text-1)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+            className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-3 py-1.5 text-xs font-medium text-[var(--cf-text-1)] transition-colors hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
             aria-label="Minimize"
           >
             Minimize

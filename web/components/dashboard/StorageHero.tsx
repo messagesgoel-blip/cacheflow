@@ -75,7 +75,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
 
   if (connectedProviders.length === 0) {
     return (
-      <div className="cf-panel rounded-[28px] p-8 text-center">
+      <div className="cf-panel rounded-[32px] p-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)]">
           <svg className="h-8 w-8 text-[var(--cf-text-2)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
@@ -88,9 +88,9 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[30px] border border-[var(--cf-border)] bg-[linear-gradient(145deg,rgba(24,29,40,0.98),rgba(11,14,20,0.98))] p-5 text-[var(--cf-text-0)] shadow-[0_24px_80px_rgba(0,0,0,0.34)] lg:p-6">
+    <div className="cf-liquid overflow-hidden rounded-[34px] p-5 text-[var(--cf-text-0)] shadow-[var(--cf-shadow-strong)] lg:p-6">
       <div className="mb-4 grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
-        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-4 lg:p-5">
+        <div className="cf-panel rounded-[28px] p-4 lg:p-5">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <div className="cf-kicker mb-2">Overview</div>
@@ -121,7 +121,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
           </div>
         </div>
 
-        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4">
+        <div className="cf-panel rounded-[28px] p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <div className="cf-kicker">Priority Providers</div>
@@ -172,7 +172,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.45fr_0.95fr]">
-        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4 lg:p-5">
+        <div className="cf-panel rounded-[28px] p-4 lg:p-5">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <div className="cf-kicker">Usage</div>
@@ -211,7 +211,7 @@ export default function StorageHero({ connectedProviders }: StorageHeroProps) {
           </div>
         </div>
 
-        <div className="rounded-[26px] border border-[var(--cf-border)] bg-[rgba(255,255,255,0.025)] p-4">
+        <div className="cf-panel rounded-[28px] p-4">
           <div className="mb-3">
             <div className="cf-kicker">Quota Coverage</div>
             <div className="mt-1 text-sm text-[var(--cf-text-1)]">Operational split between quota-reported accounts and opaque remotes.</div>

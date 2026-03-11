@@ -71,10 +71,10 @@ export default function TransferQueuePanel() {
     <div
       data-testid="cf-transfer-queue-panel"
       style={panelStyle}
-      className={`fixed bottom-0 z-[1100] w-[23rem] rounded-t-[28px] border border-[var(--cf-border)] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)] transition-all duration-300 ${isMinimized ? 'translate-y-[calc(100%-64px)]' : ''}`}
+      className={`cf-liquid fixed bottom-0 z-[1100] w-[23rem] rounded-t-[30px] bg-[var(--cf-shell-card-strong)] shadow-[var(--cf-shadow-strong)] transition-all duration-300 ${isMinimized ? 'translate-y-[calc(100%-64px)]' : ''}`}
     >
       <div
-        className="cursor-pointer rounded-t-[28px] border-b border-[var(--cf-border)] bg-[var(--cf-panel-soft)] px-5 py-4"
+        className="cf-toolbar-card cursor-pointer rounded-t-[30px] border-b border-[var(--cf-border)] px-5 py-4"
         onClick={() => setIsCollapsed(!isMinimized)}
       >
         <div className="flex items-start justify-between gap-3">
@@ -95,12 +95,12 @@ export default function TransferQueuePanel() {
                   event.stopPropagation()
                   clearCompleted()
                 }}
-                className="rounded-xl border border-[var(--cf-border)] px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
+                className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]"
               >
                 Clear
               </button>
             )}
-            <button className="rounded-xl border border-[var(--cf-border)] p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]">
+            <button className="rounded-2xl border border-[var(--cf-border)] bg-[rgba(255,255,255,0.03)] p-2 text-[var(--cf-text-2)] hover:bg-[var(--cf-hover-bg)] hover:text-[var(--cf-text-0)]">
               <svg className={`h-4 w-4 transition-transform ${isMinimized ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -109,15 +109,15 @@ export default function TransferQueuePanel() {
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <div className="rounded-2xl border border-[rgba(74,158,255,0.22)] bg-[rgba(74,158,255,0.1)] px-3 py-2">
+          <div className="cf-panel rounded-[20px] px-3 py-2">
             <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Active</div>
             <div className="mt-1 text-lg font-semibold text-[var(--cf-blue)]">{activeCount}</div>
           </div>
-          <div className="rounded-2xl border border-[rgba(74,222,128,0.22)] bg-[rgba(74,222,128,0.1)] px-3 py-2">
+          <div className="cf-panel rounded-[20px] px-3 py-2">
             <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Completed</div>
             <div className="mt-1 text-lg font-semibold text-[var(--cf-green)]">{completedCount}</div>
           </div>
-          <div className="rounded-2xl border border-[rgba(255,92,92,0.22)] bg-[rgba(255,92,92,0.08)] px-3 py-2">
+          <div className="cf-panel rounded-[20px] px-3 py-2">
             <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--cf-text-2)]">Failed</div>
             <div className="mt-1 text-lg font-semibold text-[var(--cf-red)]">{failedCount}</div>
           </div>
@@ -129,7 +129,7 @@ export default function TransferQueuePanel() {
           <div
             key={job.id}
             data-testid={`cf-transfer-queue-item-${job.id}`}
-            className="group rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] p-4"
+            className="cf-panel group rounded-[24px] p-4"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
