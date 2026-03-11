@@ -30,7 +30,7 @@ Important note:
 | `APP-01` | App bug | OpenCode | `UPLOAD-1`, downstream upload-dependent tests | none | Invalidate/refresh file listing after successful upload; ensure upload response returns the created file object. | `open` |
 | `APP-02` | App bug | ClaudeCode | `TRANSFER-1` | none | Add `data-transfer-tray` and keep tray mounted in the shell layout so it survives navigation. | `open` |
 | `APP-03` | App bug | ClaudeCode | storage dashboard checks | none | Add `data-storage-total` and confirm aggregate quota data actually renders on Overview. | `open` |
-| `APP-04` | App bug | ClaudeCode | provider health-dot checks | none | Add `data-status="connected|degraded|expired"` to provider status indicators. | `open` |
+| `APP-04` | App bug | ClaudeCode | provider health-dot checks | none | Add `data-status="connected\|degraded\|expired"` to provider status indicators. | `open` |
 | `APP-05` | App bug | ClaudeCode | `TRANSFER-1` 429 indicator | none | Surface `429` rate-limit state in UI with amber indicator and `Retry-After` countdown. | `open` |
 | `APP-06` | App bug | ClaudeCode | VPS sidebar checks | none | Render VPS/SFTP entries in the sidebar and add `data-provider-type="vps"`. | `open` |
 | `APP-07` | App bug | ClaudeCode | `VAULT-1` PIN challenge | none | Default vault to locked state and render the PIN challenge before content. | `open` |
