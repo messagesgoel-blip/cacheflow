@@ -1,5 +1,5 @@
 {
-  "current_sprint": 7,
+  "current_sprint": 6,
   "current_wave": 0,
   "current_state": "idle",
   "roadmap_version": "5.0",
@@ -120,9 +120,13 @@
     "6.3": "done",
     "6.4": "done",
     "6.5": "done",
-    "6.6": "done"
+    "6.6": "done",
+    "V1-4-OC-B1": "done",
+    "V1-4-CC-B1": "done",
+    "V1-4-GM-B1": "done",
+    "V1-4-RERUN": "pending"
   },
-  "last_updated": "2026-03-09T12:39:01.365Z",
+  "last_updated": "2026-03-12T02:25:33.000Z",
   "post_gate_status": {
     "baseline_commit": "f7f14d3",
     "artifact_dir": "/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737",

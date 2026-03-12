@@ -65,8 +65,8 @@ test.describe('Providers surface', () => {
     await expect(vpsSection.getByTestId(/cf-provider-card-/).first()).toBeVisible({ timeout: 15_000 })
 
     await expect(page.getByRole('heading', { name: 'Available Integrations' })).toBeVisible()
-    await expect(page.getByText('Cloud Providers').first()).toBeVisible()
-    await expect(page.getByText('Server-side Remotes').first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Cloud Providers' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Server-side Remotes' })).toBeVisible()
     await expect(page.getByTestId('cf-provider-connect-card-google')).toBeVisible()
     await expect(page.getByTestId('cf-provider-connect-card-vps')).toBeVisible()
   })

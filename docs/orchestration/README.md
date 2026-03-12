@@ -19,7 +19,8 @@ Current planning model:
 Manifest scope:
 - Sprints 0-6 are the completed executable Version 1 manifest.
 - Version 1 is complete and green.
-- Sprint 7 is the active planning stage in runtime state.
+- The active runtime loop is the V1-4 live-triage batch under Sprint 6 state.
+- Sprint 7 remains planning-only until the live-triage hold is closed.
 - Sprints 7-20 are defined in `docs/sprints/` for sequencing, but are not yet decomposed into executable manifest tasks.
 
 ## Start

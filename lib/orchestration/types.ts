@@ -18,6 +18,7 @@ export interface Task {
 export interface Criterion {
   description: string;
   sprint_reference: string;
+  requires_task_completion?: string;
 }
 
 export interface ScopeConstraint {

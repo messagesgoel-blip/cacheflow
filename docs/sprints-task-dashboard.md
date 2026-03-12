@@ -18,8 +18,8 @@ Each sprint below tracks execution progress, commits, and changelog entries agai
   - `playwright`: `PASS` - 87 passed, 1 skipped
 - Canonical roadmap is now: `docs/roadmap.md`
 - Historical roadmap snapshots remain in: `/srv/storage/local/Cacheflow/Roadmap/`
-- Orchestration State: `idle` (`current_sprint: 7`, Sprint 7 planning active)
-- Sprint 7 draft decomposition is documented in `docs/sprints/sprint-7.md` and `docs/contracts/7.1.md`; manifest activation remains intentionally paused until the repo returns to a low-drift state.
+- Orchestration State: `idle` (`current_sprint: 6`, V1-4 live-triage batch active)
+- Sprint 7 draft decomposition is documented in `docs/sprints/sprint-7.md` and `docs/contracts/7.1.md`; manifest activation remains intentionally paused until the live-triage queue closes and the repo returns to a low-drift state.
 - Note: Version 1 is complete. Live smoke coverage remains isolated in `web/playwright.live.config.ts`; the archived full-suite artifact above remains the latest integrated deterministic run.
 
 ## Sprint 0

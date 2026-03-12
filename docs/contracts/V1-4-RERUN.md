@@ -1,0 +1,48 @@
+# V1-4-RERUN: V1-4 live rerun and reclassification
+
+## Summary
+
+Contract placeholder for the Sprint 6 post-batch live validation rerun. This task is not complete until the live rerun has executed and the triage reclassification is recorded.
+
+## Task Metadata
+
+- ID: `V1-4-RERUN`
+- Sprint: `6`
+- Wave: `2`
+- Agent: `gemini`
+- Depends on contracts:
+  - `V1-4-OC-B1`
+  - `V1-4-CC-B1`
+  - `V1-4-GM-B1`
+- Acceptance criteria:
+  - `V1-4-RERUN`
+  - `V1-4-RERUN-EXECUTED`
+
+## Scope
+
+- Execute the post-batch live Playwright rerun with stable fixtures.
+- Reclassify Version 1 areas `6.1` through `6.6` as green, real regression, or fixture/spec issue.
+- Record any remaining blockers that still prevent closure of the V1-4 triage hold.
+
+## Expected Inputs
+
+- `docs/live-e2e-triage-matrix.md`
+- `docs/contracts/V1-4-OC-B1.md`
+- `docs/contracts/V1-4-CC-B1.md`
+- `docs/contracts/V1-4-GM-B1.md`
+- `web/playwright.live.config.ts`
+
+## Validation Requirements
+
+- Run the live rerun from `web/` with the applicable Playwright live configuration.
+- Capture pass/fail/skip counts and any blocking failures.
+- Record the final classification for `VERIFY-01` through `VERIFY-06`.
+
+## Rollout Notes
+
+- This task should run only after Batch 1 implementation/spec fixes are verified.
+- Do not treat this contract as sufficient by itself; the rerun must actually reach task state `done`.
+
+## Rollback Notes
+
+- If the rerun exposes regressions or unstable fixtures, keep Sprint 6 open and revert to the last sprint gate tag only if a separate remediation change needs to be backed out.

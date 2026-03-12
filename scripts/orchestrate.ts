@@ -531,6 +531,17 @@ async function loadState(manifest: TaskManifest): Promise<OrchestratorState> {
     return initialState;
   }
 
+  const loaded = await readState(manifest);
+  loaded.last_updated = nowIso();
+  await writeState(loaded);
+  return loaded;
+}
+
+async function readState(manifest: TaskManifest): Promise<OrchestratorState> {
+  if (!existsSync(STATE_PATH)) {
+    return buildInitialState(manifest);
+  }
+
   const loaded = await readJsonFile<OrchestratorState>(STATE_PATH);
   for (const task of manifest.tasks) {
     if (!loaded.tasks[task.id]) {
@@ -538,8 +549,6 @@ async function loadState(manifest: TaskManifest): Promise<OrchestratorState> {
     }
   }
 
-  loaded.last_updated = nowIso();
-  await writeState(loaded);
   return loaded;
 }
 
@@ -1307,9 +1316,32 @@ async function evaluateContractsGate(
     };
   }
 
+  const state = await readState(manifest);
+  const requiredTaskCompletions = naturalSort(
+    criteria
+      .map((criterion) => {
+        const criterionMeta = (manifest.criteria as Record<string, unknown>)[criterion];
+        if (!criterionMeta || typeof criterionMeta !== "object") {
+          return null;
+        }
+        const requiredTaskCompletion = (criterionMeta as Record<string, unknown>).requires_task_completion;
+        return typeof requiredTaskCompletion === "string" && requiredTaskCompletion.trim().length > 0
+          ? requiredTaskCompletion.trim()
+          : null;
+      })
+      .filter((value): value is string => Boolean(value)),
+  );
+  const incompleteTasks = requiredTaskCompletions.filter((taskId) => state.tasks[taskId] !== "done");
+  if (incompleteTasks.length > 0) {
+    return {
+      pass: false,
+      detail: `Contract gate (${modeLabel}) blocked; required task completion missing for ${incompleteTasks.join(", ")}; criteria=${criteria.join(", ")}`,
+    };
+  }
+
   return {
     pass: true,
-    detail: `Contract gate (${modeLabel}) passed; verified ${requiredContracts.length} contract file(s); criteria=${criteria.join(", ")}`,
+    detail: `Contract gate (${modeLabel}) passed; verified ${requiredContracts.length} contract file(s); executed_tasks=${requiredTaskCompletions.join(", ") || "none"}; criteria=${criteria.join(", ")}`,
   };
 }
 

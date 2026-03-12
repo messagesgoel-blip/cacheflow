@@ -20,6 +20,7 @@ Definition of done: no change is considered done until it is tested, committed, 
 All feature branches must follow: `feat/URM-{issue-id}-{short-description}`
 Example: `feat/URM-42-oauth-token-fix`
 This enables issue auto-tracking of commits against issues.
+Effective immediately for the next batch onward: use `URM` as the issue prefix and do not create new `LIN-*` branches.
 
 ## Pull Requests
 
