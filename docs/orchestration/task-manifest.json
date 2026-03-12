@@ -3333,7 +3333,7 @@
       "sprint": 6,
       "wave": 2,
       "agent": "claudecode",
-      "title": "V1-4 live triage batch 1 frontend affordances — APP-02, APP-03, APP-04, APP-06, APP-08, APP-12",
+      "title": "V1-4 live triage batch 1 frontend affordances — APP-02, APP-04, APP-06, APP-08, APP-12",
       "files": [
         "/web/components/transfers/TransferTray.tsx",
         "/web/components/dashboard/StorageHero.tsx",

@@ -531,6 +531,17 @@ async function loadState(manifest: TaskManifest): Promise<OrchestratorState> {
     return initialState;
   }
 
+  const loaded = await readState(manifest);
+  loaded.last_updated = nowIso();
+  await writeState(loaded);
+  return loaded;
+}
+
+async function readState(manifest: TaskManifest): Promise<OrchestratorState> {
+  if (!existsSync(STATE_PATH)) {
+    return buildInitialState(manifest);
+  }
+
   const loaded = await readJsonFile<OrchestratorState>(STATE_PATH);
   for (const task of manifest.tasks) {
     if (!loaded.tasks[task.id]) {
@@ -538,8 +549,6 @@ async function loadState(manifest: TaskManifest): Promise<OrchestratorState> {
     }
   }
 
-  loaded.last_updated = nowIso();
-  await writeState(loaded);
   return loaded;
 }
 
@@ -1307,7 +1316,7 @@ async function evaluateContractsGate(
     };
   }
 
-  const state = await loadState(manifest);
+  const state = await readState(manifest);
   const requiredTaskCompletions = naturalSort(
     criteria
       .map((criterion) => {
