@@ -201,16 +201,80 @@
       "description": "E2E preflight validates API readiness and watcher-driven unblock flow for Playwright execution",
       "sprint_reference": "Sprint 2 · OPS-E2E-READY, OPS-QA-WATCH"
     },
-    "V1-4-OC-B1": {
-      "description": "Batch 1 backend/auth live-triage pass closes SEC-01 and APP-10, and verifies APP-01 plus APP-09 without reopening already-landed fixes",
+    "SEC-01": {
+      "description": "Remove token-like auth state from browser-visible storage and rely on cookie/session-derived auth state only",
       "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
     },
-    "V1-4-CC-B1": {
-      "description": "Batch 1 frontend affordance live-triage pass closes APP-02, APP-03, APP-04, APP-06, APP-08, and APP-12 with stable test hooks",
+    "APP-01": {
+      "description": "Invalidate and refresh file listings after successful upload so downstream mutation flows see the created file",
       "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
     },
-    "V1-4-GM-B1": {
-      "description": "Batch 1 spec-fix live-triage pass closes non-upload-dependent false failures and verifies SPEC-07 plus SPEC-08 without product churn",
+    "APP-02": {
+      "description": "Keep the transfer tray mounted with stable test hooks so transfer state survives navigation",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "APP-04": {
+      "description": "Expose stable provider health status attributes for live dashboard and sidebar checks",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "APP-06": {
+      "description": "Expose VPS/SFTP sidebar affordances with stable provider-type attributes",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "APP-08": {
+      "description": "Render explicit trash and transfers empty states with stable test hooks",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "APP-09": {
+      "description": "Serve an unauthenticated health endpoint with status, timestamp, memory, and uptime",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "APP-10": {
+      "description": "Eliminate avoidable background and prefetch auth noise while preserving cookie-backed session behavior",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "APP-12": {
+      "description": "Keep providers-page content below the sticky nav so the live layout check is stable",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-01": {
+      "description": "Replace stale login-layout locator assumptions with stable selectors",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-02": {
+      "description": "Align navigation and provider-surface assertions with the current shell and mobile sidebar behavior",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-04": {
+      "description": "Use the actual row-selection checkbox affordance in action tests",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-06": {
+      "description": "Target the embedded global search surface with stable selectors",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-07": {
+      "description": "Use page.request APIs instead of page.evaluate(fetch) for security-sensitive request checks",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-08": {
+      "description": "Use request paths that preserve session cookies for live media and security checks",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-09": {
+      "description": "Align login-page selectors with the mounted auth layout",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-10": {
+      "description": "Replace hard waits in connections and transfer checks with deterministic stabilization conditions",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "SPEC-11": {
+      "description": "Target the sticky top navigation via the real navigation role",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "V1-4-RERUN": {
+      "description": "Execute the live V1-4 rerun with stable fixtures and record the reclassification of Version 1 features 6.1 through 6.6",
       "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
     }
   },
@@ -416,13 +480,12 @@
       ],
       "wave2": [
         "V1-4-CC-B1",
-        "V1-4-GM-B1"
+        "V1-4-GM-B1",
+        "V1-4-RERUN"
       ],
       "wave3": [],
       "gate_criteria": [
-        "V1-4-OC-B1",
-        "V1-4-CC-B1",
-        "V1-4-GM-B1"
+        "V1-4-RERUN"
       ],
       "gate_mode": "contracts_only"
     }
@@ -3249,8 +3312,8 @@
       "acceptance_criteria": [
         "SEC-01",
         "APP-10",
-        "APP-01 verify-first status recorded",
-        "APP-09 verify-first status recorded"
+        "APP-01",
+        "APP-09"
       ],
       "forbidden_side_effects": [
         "Do not modify frontend component UX outside listed files.",
@@ -3283,7 +3346,6 @@
       ],
       "acceptance_criteria": [
         "APP-02",
-        "APP-03",
         "APP-04",
         "APP-06",
         "APP-08",
@@ -3323,11 +3385,41 @@
         "SPEC-02",
         "SPEC-04",
         "SPEC-06",
+        "SPEC-07",
+        "SPEC-08",
         "SPEC-09",
         "SPEC-10",
-        "SPEC-11",
-        "SPEC-07 verify-first status recorded",
-        "SPEC-08 verify-first status recorded"
+        "SPEC-11"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "V1-4-RERUN",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "V1-4 live rerun and reclassification — execute the post-batch live validation pass before closing Sprint 6 triage",
+      "files": [
+        "/docs/live-e2e-triage-matrix.md",
+        "/docs/contracts/V1-4-RERUN.md",
+        "/web/playwright.live.config.ts",
+        "/web/e2e/**",
+        "/scripts/**"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/V1-4-RERUN.md",
+      "depends_on_contracts": [
+        "V1-4-OC-B1",
+        "V1-4-CC-B1",
+        "V1-4-GM-B1"
+      ],
+      "acceptance_criteria": [
+        "V1-4-RERUN"
       ],
       "forbidden_side_effects": [
         "Do not modify production source implementation files unless explicitly listed.",

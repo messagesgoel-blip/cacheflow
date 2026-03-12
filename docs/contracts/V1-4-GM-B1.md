@@ -71,6 +71,7 @@ Batch 1 verification for the CacheFlow V1-4 live E2E triage hold - Gemini spec f
 - Search is embedded in UnifiedFileBrowser component (not a separate route)
 - Input has `data-testid="cf-global-search-input"` at line 1883
 - real-ui-operations.spec.ts line 43-47 correctly handles with fallback chain:
+
   ```typescript
   const search = page.getByTestId('cf-global-search-input')
     .or(page.locator('input[placeholder*="Search"]'))
@@ -78,6 +79,7 @@ Batch 1 verification for the CacheFlow V1-4 live E2E triage hold - Gemini spec f
     .or(page.locator('input[type="search"]'))
     .first()
   ```
+
 
 ### SPEC-07: Replace page.evaluate(fetch) Patterns
 
@@ -149,12 +151,14 @@ None. The remaining open items in the triage matrix are outside this batch (`SPE
 ## Validation Performed
 
 ### TypeScript Check
+
 ```bash
 cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit
 # Result: No errors
 ```
 
 ### Repo Diff Review
+
 - Verified targeted edits in `layoutDispatch1.spec.ts`, `phase3-interactions.spec.ts`, `providersSurface.spec.ts`, `real-ui-operations.spec.ts`, and `helpers/mockRuntime.ts`
 - Confirmed `securityAudit.spec.ts` and `real-auth-relogin.spec.ts` already used `page.request.*`
 

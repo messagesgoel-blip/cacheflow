@@ -90,11 +90,13 @@ Batch 1 verification for the CacheFlow V1-4 live E2E triage hold.
 The upload flow in `web/components/UnifiedFileBrowser.tsx` properly invalidates and refreshes:
 
 1. **Upload handler** (`handleUploadSelection`, lines 1126-1205):
+
    ```typescript
    // After successful upload:
    await metadataCache.invalidateCache(target.providerId, target.accountKey)
    setRefreshKey((k) => k + 1)
    ```
+
 
 2. **Cache invalidation** (`web/lib/metadataCache.ts`):
    - `invalidateCache()` method properly clears IndexedDB entries
@@ -121,6 +123,7 @@ The `/api/health` route exists at `web/app/api/health/route.ts`:
 1. **Request**: `GET /api/health` (unauthenticated)
 
 2. **Response shape**:
+
    ```json
    {
      "status": "ok" | "error",
@@ -135,7 +138,9 @@ The `/api/health` route exists at `web/app/api/health/route.ts`:
    }
    ```
 
+
 3. **Error response** (502 Bad Gateway when backend unreachable):
+
    ```json
    {
      "status": "error",
@@ -143,6 +148,7 @@ The `/api/health` route exists at `web/app/api/health/route.ts`:
      "error": "Backend health service unavailable"
    }
    ```
+
 
 4. **Implementation**:
    - Proxies to `http://127.0.0.1:8100/health`

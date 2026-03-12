@@ -154,7 +154,7 @@ test('Phase 3 Verification: Interaction Reliability & System Feedback', async ({
     const dismissBtn = page.locator('[data-testid^="cf-transfer-queue-dismiss-"]').first()
     if (await dismissBtn.isVisible()) {
       await dismissBtn.click()
-      await expect(queuePanel).toHaveCount(0)
+      await expect(page.locator('[data-testid^="cf-transfer-queue-dismiss-"]')).toHaveCount(0)
     }
 
     results.performance.queue_first_paint = Date.now() - startQueue
