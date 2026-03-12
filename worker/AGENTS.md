@@ -9,3 +9,5 @@ Musts: graceful shutdown, idempotent tasks, strong logging, per-provider rate li
 Hot tasks: conflict-resolution, validation, maintenance cleanup; treat large transfers with chunked/resume logic.
 
 Avoid: holding locks long, blocking calls without timeout, in-memory-only state for transfers.
+
+Branch policy note: For the next batch onward, use `URM` issue prefix for new branches (e.g., `feat/URM-{issue-id}-{short-description}`); do not create new `LIN-*` branches.

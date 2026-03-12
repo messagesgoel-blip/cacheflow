@@ -100,7 +100,7 @@ async function createFolderUploadDelete(page: any, worker: number) {
   // Try delete uploaded file/folder if row exists
   const row = page.locator('tr', { hasText: folderName }).first()
   if (await row.count()) {
-    const cb = row.getByTestId('cf-row-checkbox').first()
+    const cb = row.getByRole('checkbox').first()
     if (await cb.count()) await cb.click({ force: true })
     const del = page.getByRole('button', { name: /^delete$/i }).first()
     if (await del.count()) {
@@ -125,7 +125,7 @@ async function copyMoveBetweenProviders(page: any, worker: number) {
   const firstRow = page.getByTestId('cf-file-row').first()
   if (!await firstRow.count()) return
 
-  const cb = firstRow.getByTestId('cf-row-checkbox').first()
+  const cb = firstRow.getByRole('checkbox').first()
   if (await cb.count()) await cb.click({ force: true })
 
   const copyBtn = page.getByRole('button', { name: /^copy$/i }).first()

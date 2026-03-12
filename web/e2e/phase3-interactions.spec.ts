@@ -122,6 +122,13 @@ test('Phase 3 Verification: Interaction Reliability & System Feedback', async ({
 
   try {
     await gotoFilesAndWait(page)
+    
+    // Open mobile sidebar if hidden (SPEC-02)
+    const dockToggle = page.getByTestId('cf-mobile-dock-toggle')
+    if (await dockToggle.isVisible()) {
+      await dockToggle.click()
+    }
+
     await expect(page.getByTestId('cf-sidebar-account-g1')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByTestId('cf-sidebar-account-d1')).toBeVisible({ timeout: 15_000 })
     results.sections.providerHealthStates = 'PASS'
@@ -141,7 +148,15 @@ test('Phase 3 Verification: Interaction Reliability & System Feedback', async ({
 
     const queuePanel = page.getByTestId('cf-transfer-queue-panel')
     await expect(queuePanel).toBeVisible({ timeout: 10_000 })
-    await expect(queuePanel).toContainText(/copying|completed/i, { timeout: 30_000 })
+    await expect(queuePanel).toContainText(/completed/i, { timeout: 30_000 })
+    
+    // Dismiss the completed transfer to prevent it from intercepting pointer events during subsequent hover (SPEC-10)
+    const dismissBtn = page.locator('[data-testid^="cf-transfer-queue-dismiss-"]').first()
+    if (await dismissBtn.isVisible()) {
+      await dismissBtn.click()
+      await expect(queuePanel).toHaveCount(0)
+    }
+
     results.performance.queue_first_paint = Date.now() - startQueue
     results.sections.dragDropTransfers = 'PASS'
     results.sections.transferQueuePersistence = 'PASS'

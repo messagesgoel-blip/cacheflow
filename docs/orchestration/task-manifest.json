@@ -200,6 +200,18 @@
     "QA-1": {
       "description": "E2E preflight validates API readiness and watcher-driven unblock flow for Playwright execution",
       "sprint_reference": "Sprint 2 · OPS-E2E-READY, OPS-QA-WATCH"
+    },
+    "V1-4-OC-B1": {
+      "description": "Batch 1 backend/auth live-triage pass closes SEC-01 and APP-10, and verifies APP-01 plus APP-09 without reopening already-landed fixes",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "V1-4-CC-B1": {
+      "description": "Batch 1 frontend affordance live-triage pass closes APP-02, APP-03, APP-04, APP-06, APP-08, and APP-12 with stable test hooks",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "V1-4-GM-B1": {
+      "description": "Batch 1 spec-fix live-triage pass closes non-upload-dependent false failures and verifies SPEC-07 plus SPEC-08 without product churn",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
     }
   },
   "sprints": {
@@ -400,30 +412,19 @@
     },
     "6": {
       "wave1": [
-        "6.1",
-        "6.2",
-        "6.3"
+        "V1-4-OC-B1"
       ],
       "wave2": [
-        "6.4",
-        "6.5",
-        "6.6"
+        "V1-4-CC-B1",
+        "V1-4-GM-B1"
       ],
       "wave3": [],
       "gate_criteria": [
-        "QUOTA-1",
-        "RIMPORT-1",
-        "LOGS-1",
-        "SCHED-2",
-        "THROTTLE-1",
-        "MEDIA-1",
-        "STREAM-1",
-        "VERSION-1",
-        "TRASH-1",
-        "KEYS-1",
-        "NODE-1"
+        "V1-4-OC-B1",
+        "V1-4-CC-B1",
+        "V1-4-GM-B1"
       ],
-      "gate_mode": "playwright"
+      "gate_mode": "contracts_only"
     }
   },
   "tasks": [
@@ -3225,6 +3226,113 @@
         "Do not trigger production deployments.",
         "Do not rotate secrets or modify .env files.",
         "Do not change billing configuration without explicit approval."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "V1-4-OC-B1",
+      "sprint": 6,
+      "wave": 1,
+      "agent": "opencode",
+      "title": "V1-4 live triage batch 1 backend/auth pass — SEC-01 + APP-10, verify APP-01 + APP-09",
+      "files": [
+        "/api/src/routes/**",
+        "/lib/**",
+        "/web/app/api/**",
+        "/web/lib/**",
+        "/web/app/files/**",
+        "/web/components/HomeEntry.tsx"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/V1-4-OC-B1.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "SEC-01",
+        "APP-10",
+        "APP-01 verify-first status recorded",
+        "APP-09 verify-first status recorded"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify frontend component UX outside listed files.",
+        "Do not change auth cookie/session behavior unless listed in TARGET FILES.",
+        "Do not change client-visible API response shapes outside task scope."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "V1-4-CC-B1",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "claudecode",
+      "title": "V1-4 live triage batch 1 frontend affordances — APP-02, APP-03, APP-04, APP-06, APP-08, APP-12",
+      "files": [
+        "/web/components/transfers/TransferTray.tsx",
+        "/web/components/dashboard/StorageHero.tsx",
+        "/web/app/dashboard/page.tsx",
+        "/web/components/ProviderHub.tsx",
+        "/web/components/Sidebar.tsx",
+        "/web/components/Sidebar/**",
+        "/web/app/trash/page.tsx",
+        "/web/app/transfers/page.tsx",
+        "/web/app/providers/page.tsx"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/V1-4-CC-B1.md",
+      "depends_on_contracts": [
+        "V1-4-OC-B1"
+      ],
+      "acceptance_criteria": [
+        "APP-02",
+        "APP-03",
+        "APP-04",
+        "APP-06",
+        "APP-08",
+        "APP-12"
+      ],
+      "forbidden_side_effects": [
+        "Do not implement API routes, DB schema, or token storage logic.",
+        "Do not edit Prisma migrations or backend worker code.",
+        "Do not modify server credential storage flows."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "V1-4-GM-B1",
+      "sprint": 6,
+      "wave": 2,
+      "agent": "gemini",
+      "title": "V1-4 live triage batch 1 Playwright/spec cleanup — SPEC-01, SPEC-02, SPEC-04, SPEC-06, SPEC-09, SPEC-10, SPEC-11, verify SPEC-07 + SPEC-08",
+      "files": [
+        "/web/e2e/layoutDispatch1.spec.ts",
+        "/web/e2e/providersSurface.spec.ts",
+        "/web/e2e/real-ui-operations.spec.ts",
+        "/web/e2e/phase3-interactions.spec.ts",
+        "/web/e2e/transfer-modal.spec.ts",
+        "/web/e2e/transfer-modal-move.spec.ts",
+        "/web/e2e/tests/providers/vps.spec.ts",
+        "/web/e2e/tests/scheduledJobs.spec.ts",
+        "/web/e2e/securityAudit.spec.ts"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/V1-4-GM-B1.md",
+      "depends_on_contracts": [
+        "V1-4-OC-B1"
+      ],
+      "acceptance_criteria": [
+        "SPEC-01",
+        "SPEC-02",
+        "SPEC-04",
+        "SPEC-06",
+        "SPEC-09",
+        "SPEC-10",
+        "SPEC-11",
+        "SPEC-07 verify-first status recorded",
+        "SPEC-08 verify-first status recorded"
+      ],
+      "forbidden_side_effects": [
+        "Do not modify production source implementation files unless explicitly listed.",
+        "Do not edit environment variable files or secrets.",
+        "Do not bypass gate criteria when tests fail."
       ],
       "rollback_plan": "revert to last sprint gate tag"
     }

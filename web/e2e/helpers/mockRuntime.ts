@@ -241,7 +241,10 @@ export async function installMockRuntime(
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(connections),
+      body: JSON.stringify({
+        success: true,
+        data: connections,
+      }),
     })
   })
 

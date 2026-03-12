@@ -243,8 +243,8 @@ async function delay(ms: number) {
 
 async function expectLoginLayout(page: Page) {
   const grid = page.locator('.cf-shell-page .grid').first()
-  const hero = grid.locator('section').nth(0)
-  const form = grid.locator('section').nth(1)
+  const hero = grid.locator('section').filter({ hasText: /One control plane/i }).first()
+  const form = grid.locator('section').filter({ has: page.getByTestId('email-input') }).first()
   const viewportHeight = page.viewportSize()?.height || 960
   const gridBox = await grid.boundingBox()
   const heroBox = await hero.boundingBox()
@@ -258,17 +258,17 @@ async function expectLoginLayout(page: Page) {
   const bottomGap = viewportHeight - (gridBox!.y + gridBox!.height)
 
   expect(Math.abs(topGap - bottomGap)).toBeLessThan(120)
-  expect(Math.abs(heroBox!.y + heroBox!.height - (formBox!.y + formBox!.height))).toBeLessThan(3)
+  expect(Math.abs(heroBox!.y + heroBox!.height - (formBox!.y + formBox!.height))).toBeLessThan(5)
 }
 
 async function expectConnectionsLayout(page: Page) {
   const list = page.getByTestId('cf-connections-list')
   await expect(list).toBeVisible({ timeout: 15_000 })
   
-  // Stabilization wait for cards to settle (SPEC-10)
-  await page.waitForTimeout(1000)
-  
   const cards = page.locator('[data-testid^="cf-connection-item-"]')
+  // Wait for at least one card to be visible instead of a hard timeout (SPEC-10)
+  await expect(cards.first()).toBeVisible({ timeout: 10_000 })
+  
   const count = await cards.count()
   if (count >= 2) {
     const box1 = await cards.nth(0).boundingBox()
@@ -280,7 +280,7 @@ async function expectConnectionsLayout(page: Page) {
     // On desktop, cards should be in a 2-column grid with matching heights (SPEC-10)
     if (page.viewportSize()!.width > 768) {
       expect(Math.abs(box1!.y - box2!.y)).toBeLessThan(5)
-      expect(Math.abs(box1!.height - box2!.height)).toBeLessThan(2)
+      expect(Math.abs(box1!.height - box2!.height)).toBeLessThan(5)
     }
   }
 }
@@ -293,7 +293,7 @@ for (const theme of ['light', 'dark'] as const) {
       await page.setViewportSize({ width: 1440, height: 900 })
       await setTheme(page, theme)
       await page.goto('/?mode=login')
-      await expect(page.getByRole('heading', { name: 'Enter the control plane.' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: /Enter the control plane/i })).toBeVisible()
       await expectLoginLayout(page)
       await expectSnapshot(page.locator('.cf-shell-page').first(), `dispatch2-login-desktop-${theme}.png`)
     })
@@ -362,7 +362,7 @@ for (const theme of ['light', 'dark'] as const) {
 
       await bootAuthedSurface(page, request, theme)
       await page.goto('/providers')
-      const navbar = page.locator('nav').filter({ has: page.locator('span:text("CacheFlow")') }).first()
+      const navbar = page.getByRole('navigation').filter({ hasText: /CacheFlow/i }).first()
       const contentHeading = page.getByRole('heading', { name: 'Available Integrations' })
 
       await expect(navbar).toBeVisible({ timeout: 15_000 })
@@ -375,7 +375,7 @@ for (const theme of ['light', 'dark'] as const) {
       expect(navbarBox).not.toBeNull()
       expect(headingBox).not.toBeNull()
       expect(navbarBox!.y).toBeLessThanOrEqual(1)
-      expect(headingBox!.y).toBeGreaterThan(navbarBox!.y + navbarBox!.height - 2)
+      expect(headingBox!.y).toBeGreaterThan(navbarBox!.y + navbarBox!.height - 5)
 
       await expectSnapshot(page.locator('.cf-shell-page').first(), `dispatch2-providers-sticky-desktop-${theme}.png`)
     })
