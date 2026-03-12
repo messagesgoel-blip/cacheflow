@@ -125,7 +125,11 @@ test('Phase 3 Verification: Interaction Reliability & System Feedback', async ({
     
     // Open mobile sidebar if hidden (SPEC-02)
     const dockToggle = page.getByTestId('cf-mobile-dock-toggle')
-    if (await dockToggle.isVisible()) {
+    const mobileDockVisible = await expect(dockToggle)
+      .toBeVisible({ timeout: 3_000 })
+      .then(() => true)
+      .catch(() => false)
+    if (mobileDockVisible) {
       await dockToggle.click()
     }
 
@@ -152,7 +156,11 @@ test('Phase 3 Verification: Interaction Reliability & System Feedback', async ({
     
     // Dismiss the completed transfer to prevent it from intercepting pointer events during subsequent hover (SPEC-10)
     const dismissBtn = page.locator('[data-testid^="cf-transfer-queue-dismiss-"]').first()
-    if (await dismissBtn.isVisible()) {
+    const dismissVisible = await expect(dismissBtn)
+      .toBeVisible({ timeout: 3_000 })
+      .then(() => true)
+      .catch(() => false)
+    if (dismissVisible) {
       await dismissBtn.click()
       await expect(page.locator('[data-testid^="cf-transfer-queue-dismiss-"]')).toHaveCount(0)
     }

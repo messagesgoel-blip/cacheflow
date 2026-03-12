@@ -276,6 +276,11 @@
     "V1-4-RERUN": {
       "description": "Execute the live V1-4 rerun with stable fixtures and record the reclassification of Version 1 features 6.1 through 6.6",
       "sprint_reference": "Version 1 · V1-4 live E2E triage hold"
+    },
+    "V1-4-RERUN-EXECUTED": {
+      "description": "Require the Sprint 6 gate to confirm the V1-4 rerun task actually reached done state before triage can close",
+      "sprint_reference": "Version 1 · V1-4 live E2E triage hold",
+      "requires_task_completion": "V1-4-RERUN"
     }
   },
   "sprints": {
@@ -485,7 +490,8 @@
       ],
       "wave3": [],
       "gate_criteria": [
-        "V1-4-RERUN"
+        "V1-4-RERUN",
+        "V1-4-RERUN-EXECUTED"
       ],
       "gate_mode": "contracts_only"
     }
@@ -3419,7 +3425,8 @@
         "V1-4-GM-B1"
       ],
       "acceptance_criteria": [
-        "V1-4-RERUN"
+        "V1-4-RERUN",
+        "V1-4-RERUN-EXECUTED"
       ],
       "forbidden_side_effects": [
         "Do not modify production source implementation files unless explicitly listed.",

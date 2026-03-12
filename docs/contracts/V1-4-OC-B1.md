@@ -4,7 +4,7 @@
 
 Batch 1 verification for the CacheFlow V1-4 live E2E triage hold.
 
-**Result**: All scoped items were found to be already implemented. No code changes were required.
+**Result**: All scoped items were already implemented for this verification pass. SEC-01 is closed here as a browser-visible storage cleanup, not as a full migration of provider secrets out of browser runtime memory.
 
 ## Scope
 
@@ -37,7 +37,7 @@ Batch 1 verification for the CacheFlow V1-4 live E2E triage hold.
 
 ## SEC-01: Browser-Visible Auth State
 
-**Status**: Already fixed (URM-64)
+**Status**: Browser-visible storage fixed (URM-64); browser runtime-memory caveat remains outside this verification batch
 
 ### Verification Findings
 
@@ -53,7 +53,7 @@ Batch 1 verification for the CacheFlow V1-4 live E2E triage hold.
 
 3. **Provider tokens**: Sanitized in `web/lib/tokenManager.ts`:
    - `sanitizePersistedStorage()` (line 471-498) strips `accessToken`/`refreshToken` from localStorage
-   - Secrets stored only in memory (`secretCache` Map)
+   - `secretCache` keeps provider OAuth secrets in tab memory only; those values are not persisted to browser-visible storage, but they are still browser-runtime state
    - Persisted data contains only metadata + `remoteId`
 
 4. **No reads from cf_token**: Grep confirmed no `localStorage.getItem('cf_token')` patterns exist for auth purposes.
@@ -166,7 +166,7 @@ The `/api/health` route exists at `web/app/api/health/route.ts`:
 
 ## Remaining Blockers
 
-None. All scoped items verified as complete.
+None for the Batch 1 storage/noise checks. A broader follow-up is still required if the project wants provider OAuth secrets removed from browser runtime memory and moved fully onto the server-backed vault path.
 
 ## Validation
 

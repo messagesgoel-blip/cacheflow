@@ -157,6 +157,20 @@ cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit
 # Result: No errors
 ```
 
+### Playwright Check
+
+```bash
+cd /opt/docker/apps/cacheflow/web && npx playwright test e2e/layoutDispatch1.spec.ts e2e/phase3-interactions.spec.ts e2e/providersSurface.spec.ts e2e/real-ui-operations.spec.ts e2e/securityAudit.spec.ts e2e/real-auth-relogin.spec.ts --reporter=line
+# Result: 3 passed, 14 skipped, 0 failed
+```
+
+- `layoutDispatch1.spec.ts`: skipped in this run after test discovery, no failures reported
+- `phase3-interactions.spec.ts`: passed
+- `providersSurface.spec.ts`: passed
+- `real-ui-operations.spec.ts`: skipped in this run, no failures reported
+- `securityAudit.spec.ts`: passed
+- `real-auth-relogin.spec.ts`: skipped in this run, no failures reported
+
 ### Repo Diff Review
 
 - Verified targeted edits in `layoutDispatch1.spec.ts`, `phase3-interactions.spec.ts`, `providersSurface.spec.ts`, `real-ui-operations.spec.ts`, and `helpers/mockRuntime.ts`

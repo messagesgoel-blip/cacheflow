@@ -1307,9 +1307,32 @@ async function evaluateContractsGate(
     };
   }
 
+  const state = await loadState(manifest);
+  const requiredTaskCompletions = naturalSort(
+    criteria
+      .map((criterion) => {
+        const criterionMeta = (manifest.criteria as Record<string, unknown>)[criterion];
+        if (!criterionMeta || typeof criterionMeta !== "object") {
+          return null;
+        }
+        const requiredTaskCompletion = (criterionMeta as Record<string, unknown>).requires_task_completion;
+        return typeof requiredTaskCompletion === "string" && requiredTaskCompletion.trim().length > 0
+          ? requiredTaskCompletion.trim()
+          : null;
+      })
+      .filter((value): value is string => Boolean(value)),
+  );
+  const incompleteTasks = requiredTaskCompletions.filter((taskId) => state.tasks[taskId] !== "done");
+  if (incompleteTasks.length > 0) {
+    return {
+      pass: false,
+      detail: `Contract gate (${modeLabel}) blocked; required task completion missing for ${incompleteTasks.join(", ")}; criteria=${criteria.join(", ")}`,
+    };
+  }
+
   return {
     pass: true,
-    detail: `Contract gate (${modeLabel}) passed; verified ${requiredContracts.length} contract file(s); criteria=${criteria.join(", ")}`,
+    detail: `Contract gate (${modeLabel}) passed; verified ${requiredContracts.length} contract file(s); executed_tasks=${requiredTaskCompletions.join(", ") || "none"}; criteria=${criteria.join(", ")}`,
   };
 }
 
