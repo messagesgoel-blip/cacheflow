@@ -51,6 +51,60 @@ if [ "${#staged[@]}" -eq 0 ]; then
   exit 0
 fi
 
+contains_conflict_markers() {
+  local file
+  for file in "$@"; do
+    [ -f "$file" ] || continue
+    if grep -nE '^(<<<<<<<|=======|>>>>>>>)' "$file" >/dev/null 2>&1; then
+      echo "pre-commit blocked: merge conflict markers in $file" >&2
+      return 0
+    fi
+  done
+  return 1
+}
+
+check_shell_syntax() {
+  local file
+  for file in "$@"; do
+    [[ "$file" == *.sh ]] || continue
+    [ -f "$file" ] || continue
+    if ! bash -n "$file"; then
+      echo "pre-commit blocked: bash syntax error in $file" >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
+check_python_syntax() {
+  local file
+  for file in "$@"; do
+    [[ "$file" == *.py ]] || continue
+    [ -f "$file" ] || continue
+    if ! python3 -m py_compile "$file"; then
+      echo "pre-commit blocked: python syntax error in $file" >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
+check_json_syntax() {
+  local file
+  if ! command -v jq >/dev/null 2>&1; then
+    return 0
+  fi
+  for file in "$@"; do
+    [[ "$file" == *.json ]] || continue
+    [ -f "$file" ] || continue
+    if ! jq -e . "$file" >/dev/null; then
+      echo "pre-commit blocked: invalid JSON in $file" >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
 forbidden=(
   "monitoring/cacheflow_metrics.yaml"
   "monitoring/cacheflow_task_state.yaml"
@@ -70,11 +124,37 @@ for file in "${staged[@]}"; do
 done
 
 if [ "${#violations[@]}" -eq 0 ]; then
-  exit 0
+  :
+else
+  echo "pre-commit blocked for non-Codex agent ($agent)." >&2
+  echo "Shared dashboard/metrics files are Codex-owned." >&2
+  printf '%s\n' "${violations[@]}" | sort -u | sed 's/^/ - /' >&2
+  echo "Use 'done-task <task_key> --commit \"...\"' (or finish_task.sh) and let Codex finalize metrics." >&2
+  exit 1
 fi
 
-echo "pre-commit blocked for non-Codex agent ($agent)." >&2
-echo "Shared dashboard/metrics files are Codex-owned." >&2
-printf '%s\n' "${violations[@]}" | sort -u | sed 's/^/ - /' >&2
-echo "Use 'done-task <task_key> --commit \"...\"' (or finish_task.sh) and let Codex finalize metrics." >&2
-exit 1
+if contains_conflict_markers "${staged[@]}"; then
+  exit 1
+fi
+
+check_shell_syntax "${staged[@]}"
+check_python_syntax "${staged[@]}"
+check_json_syntax "${staged[@]}"
+
+parallel_gate_script="$repo_root/scripts/review/parallel-agent-pass.sh"
+if [ -x "$parallel_gate_script" ]; then
+  "$parallel_gate_script"
+fi
+
+needs_web_tsc=0
+for file in "${staged[@]}"; do
+  if [[ "$file" == web/* ]] && [[ "$file" =~ \.(ts|tsx)$ ]]; then
+    needs_web_tsc=1
+    break
+  fi
+done
+
+if [ "$needs_web_tsc" -eq 1 ]; then
+  echo "Running web typecheck (staged TS/TSX changes detected)..." >&2
+  (cd web && npx tsc --noEmit)
+fi
