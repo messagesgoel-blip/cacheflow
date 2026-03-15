@@ -4,6 +4,12 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$repo_root"
 
+# Ensure temp files are cleaned up on exit
+cleanup_tmpfiles() {
+  :
+}
+trap cleanup_tmpfiles EXIT
+
 detect_agent_from_tty() {
   local map_dir="${CACHEFLOW_AGENT_TTY_MAP_DIR:-/tmp/cacheflow_agent_tty_map}"
   local tty_name tty_key map_file
@@ -70,9 +76,9 @@ check_shell_syntax() {
     case "$file" in *.sh) ;; *) continue ;; esac
     # Read staged content - bash -n requires a file, so use temp file
     tmpfile=$(mktemp)
+    trap "rm -f '$tmpfile'" EXIT
     if git show ":$file" > "$tmpfile" 2>/dev/null; then
-      bash -n "$tmpfile" || { rm -f "$tmpfile"; echo "pre-commit blocked: bash syntax error in $file" >&2; return 1; }
-      rm -f "$tmpfile"
+      bash -n "$tmpfile" || { echo "pre-commit blocked: bash syntax error in $file" >&2; return 1; }
     fi
   done
   return 0
@@ -84,9 +90,9 @@ check_python_syntax() {
     case "$file" in *.py) ;; *) continue ;; esac
     # Read staged content - py_compile requires a file, so use temp file
     tmpfile=$(mktemp)
+    trap "rm -f '$tmpfile'" EXIT
     if git show ":$file" > "$tmpfile" 2>/dev/null; then
-      python3 -m py_compile "$tmpfile" || { rm -f "$tmpfile"; echo "pre-commit blocked: python syntax error in $file" >&2; return 1; }
-      rm -f "$tmpfile"
+      python3 -m py_compile "$tmpfile" || { echo "pre-commit blocked: python syntax error in $file" >&2; return 1; }
     fi
   done
   return 0
