@@ -245,43 +245,6 @@ run_copilot_then_semgrep() {
   return 0
 }
 
-run_semgrep_then_ai() {
-  PASSED_COUNT=0
-  TOTAL_ATTEMPTS=0
-  local semgrep_script="$SCRIPT_DIR/semgrep-zero-pass.sh"
-
-  # Gate 1: Semgrep (mandatory deterministic blocker)
-  if [ ! -x "$semgrep_script" ]; then
-    echo "Error: mandatory Semgrep gate missing or not executable: $semgrep_script" | tee -a "$LOG_DIR/orchestrator-$TS.log"
-    exit 1
-  fi
-  TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
-  if ! run_gate "semgrep-zero-pass" "$TOTAL_ATTEMPTS"; then
-    echo ""
-    echo "✗ FAIL: Semgrep Gate failed. Commit blocked."
-    exit 1
-  fi
-
-  for gate in copilot-third-pass aider-first-pass gemini-second-pass pr-agent-second-pass coderabbit-second-pass; do
-    if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
-      echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
-      break
-    fi
-
-    TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
-    echo "Attempting gate $TOTAL_ATTEMPTS: $gate" | tee -a "$LOG_DIR/orchestrator-$TS.log"
-
-    if run_gate "$gate" "$TOTAL_ATTEMPTS"; then
-      PASSED_COUNT=$((PASSED_COUNT + 1))
-      PASSED+=("$gate")
-    else
-      FAILED+=("$gate")
-    fi
-  done
-
-  return 0
-}
-
 main() {
   # Load environment first so .env values influence configuration
   load_env
@@ -342,14 +305,8 @@ main() {
     local parallel_script="$SCRIPT_DIR/parallel-agent-pass.sh"
     if [ -x "$parallel_script" ]; then
       echo "Running parallel-agent pass..."
-      "$TIMEOUT_CMD" "${CODERO_GATE_TIMEOUT:-180}" env CODERO_REPO_PATH="$REPO_PATH" "$parallel_script" &
-      local parallel_pid=$!
       local parallel_exit=0
-      if wait "$parallel_pid"; then
-        parallel_exit=0
-      else
-        parallel_exit=$?
-      fi
+      "$TIMEOUT_CMD" "${CODERO_GATE_TIMEOUT:-180}" env CODERO_REPO_PATH="$REPO_PATH" "$parallel_script" || parallel_exit=$?
       if [ "$parallel_exit" -ne 0 ]; then
         echo "⚠ Parallel-agent pass completed with exit code $parallel_exit" >&2 | tee -a "$LOG_DIR/orchestrator-$TS.log"
       fi

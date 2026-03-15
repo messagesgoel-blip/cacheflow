@@ -95,22 +95,19 @@ load_litellm_key() {
 
 model_list_to_json() {
   local input="$1"
-  local item first=1 out="["
-  IFS=',' read -r -a items <<< "$input"
-  for item in "${items[@]}"; do
-    item="$(echo "$item" | xargs)"
-    [ -z "$item" ] && continue
-    if [ "$first" -eq 0 ]; then
-      out+=","
-    fi
-    out+="\"$item\""
-    first=0
-  done
-  out+="]"
-  printf '%s' "$out"
+  printf '%s' "$input" | jq -R -s -c '
+    split(",")
+    | map(gsub("^\\s+|\\s+$"; ""))
+    | map(select(length > 0))
+  '
 }
 
 main() {
+  if ! require_cmd jq; then
+    echo "Error: required command not found: jq" >&2
+    exit 1
+  fi
+
   if ! require_cmd "$PR_AGENT_BIN"; then
     echo "Error: pr-agent binary not found ($PR_AGENT_BIN)" >&2
     echo "Install with: pip install pr-agent" >&2

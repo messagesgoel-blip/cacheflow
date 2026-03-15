@@ -52,13 +52,10 @@ trap 'rm -rf "$SCAN_DIR"' EXIT
 
 TARGETS=()
 for f in "${STAGED_FILES[@]}"; do
-  # Extract staged content using git show :<path>
-  STAGED_CONTENT="$(git -C "$REPO_PATH" show ":$f" 2>/dev/null || true)"
-  if [ -n "$STAGED_CONTENT" ]; then
-    # Create same directory structure in temp
-    TARGET_PATH="$SCAN_DIR/$f"
-    mkdir -p "$(dirname "$TARGET_PATH")"
-    printf '%s' "$STAGED_CONTENT" > "$TARGET_PATH"
+  # Create same directory structure in temp and materialize staged bytes.
+  TARGET_PATH="$SCAN_DIR/$f"
+  mkdir -p "$(dirname "$TARGET_PATH")"
+  if git -C "$REPO_PATH" show ":$f" > "$TARGET_PATH" 2>/dev/null; then
     TARGETS+=("$TARGET_PATH")
   fi
 done
@@ -70,8 +67,8 @@ fi
 
 EXTRA_ARGS=()
 if [ -n "${CODERO_SEMGREP_EXTRA_ARGS:-}" ]; then
-  # shellcheck disable=SC2206
-  EXTRA_ARGS=( ${CODERO_SEMGREP_EXTRA_ARGS} )
+  # Space-delimited extra args; embed spaces via escaped whitespace.
+  read -r -a EXTRA_ARGS <<< "${CODERO_SEMGREP_EXTRA_ARGS}"
 fi
 
 echo "--- CODERO SEMGREP PASS (Gate 0) ---"

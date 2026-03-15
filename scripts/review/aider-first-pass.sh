@@ -269,28 +269,28 @@ $diff"
     minimax)
       aider_args+=(
         --openai-api-base "$base_url"
-        --openai-api-key "$api_key"
       )
+      export OPENAI_API_KEY="$api_key"
       ;;
     openrouter)
       aider_args+=(
         --openai-api-base "$base_url"
-        --openai-api-key "$api_key"
       )
+      export OPENAI_API_KEY="$api_key"
       export OPENROUTER_API_KEY="$api_key"
       ;;
     litellm)
       aider_args+=(
         --openai-api-base "$base_url"
-        --openai-api-key "$api_key"
       )
+      export OPENAI_API_KEY="$api_key"
       ;;
     gemini)
       export GEMINI_API_KEY="$api_key"
       ;;
   esac
   
-  exit_code=0
+  local exit_code=0
   "$TIMEOUT_CMD" "$TIMEOUT_SEC" aider "${aider_args[@]}" 2>&1 || exit_code=$?
   if [ $exit_code -ne 0 ]; then
     if [ $exit_code -eq 124 ]; then

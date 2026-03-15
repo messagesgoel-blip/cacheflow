@@ -178,8 +178,14 @@ probe_gate() {
     tmp_index="$(mktemp "${TMPDIR:-/tmp}/codero-health-index.XXXXXX")"
     rm -f "$tmp_index"
 
+    if git -C "$REPO_ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
+      GIT_INDEX_FILE="$tmp_index" git -C "$REPO_ROOT" read-tree HEAD
+    else
+      GIT_INDEX_FILE="$tmp_index" git -C "$REPO_ROOT" read-tree --empty
+    fi
+
     local output
-    output="$(GIT_INDEX_FILE="$tmp_index" "$TIMEOUT_CMD" 10 bash "$script" 2>&1 || true)"
+    output="$(GIT_INDEX_FILE="$tmp_index" CODERO_REPO_PATH="$REPO_ROOT" "$TIMEOUT_CMD" 10 bash "$script" 2>&1 || true)"
     rm -f "$tmp_index"
 
     if echo "$output" | grep -qiE "No uncommitted changes|No staged changes|No staged files|No changes|skipped|PASSED"; then

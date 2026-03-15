@@ -36,6 +36,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 export CODERO_REPO_PATH="$REPO_ROOT"
 export CODERO_MODEL_ALIAS="cacheflow_agent"
 export CODERO_ROOT="ACTUAL_CODERO_ROOT"
+export CODERO_ENV_FILE="${CODERO_ENV_FILE:-$CODERO_ROOT/.env}"
 
 # Prefer local scripts if available, fallback to global
 if [ -x "$REPO_ROOT/scripts/review/two-pass-review.sh" ]; then
@@ -48,8 +49,8 @@ else
 fi
 HOOK
 
-escaped_codero_root="$(printf '%s' "$CODERO_ROOT" | sed 's/[\/&]/\\&/g')"
-sed "s/ACTUAL_CODERO_ROOT/${escaped_codero_root}/g" "$HOOK_PATH" > "${HOOK_PATH}.tmp"
+export CODERO_ROOT
+perl -0777 -pe 's/ACTUAL_CODERO_ROOT/\Q$ENV{CODERO_ROOT}\E/g' "$HOOK_PATH" > "${HOOK_PATH}.tmp"
 mv "${HOOK_PATH}.tmp" "$HOOK_PATH"
 
 chmod +x "$HOOK_PATH"
