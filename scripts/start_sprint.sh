@@ -17,7 +17,7 @@ Usage:
 
 Agents:
   ClaudeCode | OpenCode | Gemini | Codex
-  Shortcuts: claude|open|gemini|codex|ccli|oc|gcli
+  Shortcuts: claude|open|gemini|codex|cursor|ccli|oc|gcli|kc|kcli|cursorcli
 
 Options:
   --agent NAME  Explicit agent name (same values as positional agent)
@@ -29,7 +29,7 @@ Options:
 
 If agent is omitted, detection order is:
 1) CACHEFLOW_AGENT
-2) current TTY mapping written by CCLI/GCLI/OC/codex-a/codex-b/codex-c wrappers
+2) current TTY mapping written by CCLI/CURSORCLI/GCLI/OC/codex-a/codex-b/codex-c wrappers
 USAGE
 }
 
@@ -55,7 +55,7 @@ normalize_agent() {
     gemini|gcli)
       echo "Gemini"
       ;;
-    codex|master)
+    codex|master|cursor|kc|kcli|cursorcli)
       echo "Codex"
       ;;
     *)
