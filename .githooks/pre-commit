@@ -4,6 +4,12 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$repo_root"
 
+# Ensure temp files are cleaned up on exit
+cleanup_tmpfiles() {
+  :
+}
+trap cleanup_tmpfiles EXIT
+
 detect_agent_from_tty() {
   local map_dir="${CACHEFLOW_AGENT_TTY_MAP_DIR:-/tmp/cacheflow_agent_tty_map}"
   local tty_name tty_key map_file
@@ -51,6 +57,64 @@ if [ "${#staged[@]}" -eq 0 ]; then
   exit 0
 fi
 
+contains_conflict_markers() {
+  local file content
+  for file in "$@"; do
+    # Read staged content from index, not working tree
+    content="$(git show ":$file" 2>/dev/null)" || continue
+    if printf '%s' "$content" | grep -qE '^(<<<<<<<|=======|>>>>>>>)'; then
+      echo "pre-commit blocked: merge conflict markers in $file" >&2
+      return 0
+    fi
+  done
+  return 1
+}
+
+check_shell_syntax() {
+  local file tmpfile
+  for file in "$@"; do
+    case "$file" in *.sh) ;; *) continue ;; esac
+    # Read staged content - bash -n requires a file, so use temp file
+    tmpfile=$(mktemp)
+    trap "rm -f '$tmpfile'" EXIT
+    if git show ":$file" > "$tmpfile" 2>/dev/null; then
+      bash -n "$tmpfile" || { echo "pre-commit blocked: bash syntax error in $file" >&2; return 1; }
+    fi
+  done
+  return 0
+}
+
+check_python_syntax() {
+  local file tmpfile
+  for file in "$@"; do
+    case "$file" in *.py) ;; *) continue ;; esac
+    # Read staged content - py_compile requires a file, so use temp file
+    tmpfile=$(mktemp)
+    trap "rm -f '$tmpfile'" EXIT
+    if git show ":$file" > "$tmpfile" 2>/dev/null; then
+      python3 -m py_compile "$tmpfile" || { echo "pre-commit blocked: python syntax error in $file" >&2; return 1; }
+    fi
+  done
+  return 0
+}
+
+check_json_syntax() {
+  local file content
+  if ! command -v jq >/dev/null 2>&1; then
+    return 0
+  fi
+  for file in "$@"; do
+    [[ "$file" == *.json ]] || continue
+    # Read staged content from index
+    content="$(git show ":$file" 2>/dev/null)" || continue
+    if ! printf '%s' "$content" | jq -e . >/dev/null 2>&1; then
+      echo "pre-commit blocked: invalid JSON in $file" >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
 forbidden=(
   "monitoring/cacheflow_metrics.yaml"
   "monitoring/cacheflow_task_state.yaml"
@@ -70,11 +134,46 @@ for file in "${staged[@]}"; do
 done
 
 if [ "${#violations[@]}" -eq 0 ]; then
-  exit 0
+  :
+else
+  echo "pre-commit blocked for non-Codex agent ($agent)." >&2
+  echo "Shared dashboard/metrics files are Codex-owned." >&2
+  printf '%s\n' "${violations[@]}" | sort -u | sed 's/^/ - /' >&2
+  echo "Use 'done-task <task_key> --commit \"...\"' (or finish_task.sh) and let Codex finalize metrics." >&2
+  exit 1
 fi
 
-echo "pre-commit blocked for non-Codex agent ($agent)." >&2
-echo "Shared dashboard/metrics files are Codex-owned." >&2
-printf '%s\n' "${violations[@]}" | sort -u | sed 's/^/ - /' >&2
-echo "Use 'done-task <task_key> --commit \"...\"' (or finish_task.sh) and let Codex finalize metrics." >&2
-exit 1
+if contains_conflict_markers "${staged[@]}"; then
+  exit 1
+fi
+
+check_shell_syntax "${staged[@]}"
+check_python_syntax "${staged[@]}"
+check_json_syntax "${staged[@]}"
+
+parallel_gate_script="$repo_root/scripts/review/parallel-agent-pass.sh"
+if [ ! -f "$parallel_gate_script" ]; then
+  echo "pre-commit blocked: parallel gate script not found at $parallel_gate_script" >&2
+  echo "Please ensure scripts/review/parallel-agent-pass.sh exists before committing." >&2
+  exit 1
+fi
+if [ ! -x "$parallel_gate_script" ]; then
+  echo "pre-commit blocked: parallel gate script not executable: $parallel_gate_script" >&2
+  echo "Run: chmod +x $parallel_gate_script" >&2
+  exit 1
+fi
+# Execute parallel gate and propagate its exit code
+"$parallel_gate_script"
+
+needs_web_tsc=0
+for file in "${staged[@]}"; do
+  if [[ "$file" == web/* ]] && [[ "$file" =~ \.(ts|tsx)$ ]]; then
+    needs_web_tsc=1
+    break
+  fi
+done
+
+if [ "$needs_web_tsc" -eq 1 ]; then
+  echo "Running web typecheck (staged TS/TSX changes detected)..." >&2
+  (cd web && npx tsc --noEmit)
+fi
