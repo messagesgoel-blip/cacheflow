@@ -55,7 +55,7 @@ build_diff() {
     tracked="$(git -C "$REPO_PATH" diff HEAD || true)"
     untracked=""
     while IFS= read -r -d '' file; do
-      file_diff="$(git -C "$REPO_PATH" diff --no-index -- /dev/null "$file" || true)"
+      file_diff="$(git -C "$REPO_PATH" diff --no-index -- /dev/null "$file" || [ $? -eq 1 ])"
       untracked="${untracked}${file_diff}"
     done < <(git -C "$REPO_PATH" ls-files --others --exclude-standard -z)
     combined="${tracked}${untracked}"
@@ -164,35 +164,6 @@ run_with_litellm() {
   printf '%s\n' "$result"
 }
 
-run_semgrep() {
-  # Semgrep is mandatory - fail if not available
-  if ! command -v semgrep >/dev/null 2>&1; then
-    log "semgrep not found - cannot proceed"
-    return 1
-  fi
-
-  local semgrep_out semgrep_exit
-  # Run semgrep on the repo with default rules
-  semgrep_out=$(semgrep scan --config p/default --json "$REPO_PATH" 2>&1) || true
-  semgrep_exit=$?
-
-  # Exit code 0 = no findings = pass
-  # Exit code 1 = findings = fail
-  # Exit code other = error
-  if [ $semgrep_exit -eq 0 ]; then
-    log "semgrep pass: no findings"
-    return 0
-  elif [ $semgrep_exit -eq 1 ]; then
-    log "semgrep blocked: findings detected"
-    printf '%s\n' "$semgrep_out" >&2
-    return 1
-  else
-    log "semgrep error: exit code $semgrep_exit"
-    printf '%s\n' "$semgrep_out" >&2
-    return 1
-  fi
-}
-
 main() {
   local parallel_count diff prompt out
   parallel_count="$(count_parallel_agents)"
@@ -200,6 +171,11 @@ main() {
   if [ "${parallel_count:-0}" -lt "$PARALLEL_THRESHOLD" ]; then
     log "parallel-agent pass skipped: active_agents=$parallel_count threshold=$PARALLEL_THRESHOLD"
     exit 0
+  fi
+
+  if [ ! -d "$REPO_PATH" ] || ! git -C "$REPO_PATH" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    log "parallel-agent pass failed: invalid repo path '$REPO_PATH'"
+    exit 1
   fi
 
   diff="$(build_diff)"
@@ -211,7 +187,6 @@ main() {
   prompt="$(build_prompt "$diff")"
   log "parallel-agent pass active: active_agents=$parallel_count model_pref=$COPILOT_MODEL fallback=$LITELLM_MODEL"
 
-  # First pass: Copilot or LiteLLM
   if out="$(run_with_copilot "$prompt")"; then
     printf '%s\n' "$out"
   else
@@ -221,13 +196,6 @@ main() {
       exit 1
     }
     printf '%s\n' "$out"
-  fi
-
-  # Second pass: Mandatory Semgrep - must pass regardless of first pass result
-  log "running mandatory semgrep pass..."
-  if ! run_semgrep; then
-    log "parallel-agent pass blocked by semgrep"
-    exit 1
   fi
 
   if printf '%s' "$out" | grep -q '^PARALLEL_GATE:PASS'; then

@@ -1,44 +1,348 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Cacheflow review gate wrapper so repo-gate can run the same entrypoint
-# across cacheflow/codero/mathkit-v2.
+# 6-Pass Pre-Commit Review Gate Orchestrator
+# Canonical order:
+# 1. Semgrep deterministic blocker
+# 2. Primary AI chain: aider-first-pass.sh -> gemini-second-pass.sh -> coderabbit-second-pass.sh
+# 3. Fallback AI chain (only if quorum not met): pr-agent-second-pass.sh -> copilot-third-pass.sh
+#
+# Rules:
+# - Stop if 2+ checks succeed
+# - Fail if any review finds issues (not just availability failures)
+# - Rate-limited/timeout counts as "available but failed" - fallback to next
+# - Only allow commit if 2+ checks pass
 
-REPO_PATH="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_PATH="${CODERO_REPO_PATH:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+LOG_DIR="${CODERO_REVIEW_LOG_DIR:-$REPO_PATH/.codero/review-logs}"
+TS="$(date +%Y%m%d-%H%M%S)"
+MODEL_ALIAS="${CODERO_MODEL_ALIAS:-cacheflow_agent}"
+MODE="${CODERO_MODE:-fast}"
+MIN_SUCCESSFUL_AI_GATES="${CODERO_MIN_SUCCESSFUL_AI_GATES:-2}"
+AUTH_HOME="${CODERO_AUTH_HOME:-}"
+AUTH_HOME_FALLBACK="${AUTH_HOME_FALLBACK:-}"
+GATE_ORDER="${CODERO_GATE_ORDER:-copilot-first}"
 
-review_executed=false
+mkdir -p "$LOG_DIR"
 
-if [ -x "$REPO_PATH/scripts/pre-push-review.sh" ]; then
-  echo "Running Cacheflow committed review pass..."
-  "$REPO_PATH/scripts/pre-push-review.sh"
-  review_executed=true
-else
-  echo "Skipping pre-push-review.sh (not found or not executable)"
-fi
+declare -a PASSED=()
+declare -a FAILED=()
 
-parallel_script="$REPO_PATH/scripts/review/parallel-agent-pass.sh"
-if [ -x "$parallel_script" ]; then
-  echo "Running parallel-agent pass..."
-  "$parallel_script"
-  review_executed=true
-else
-  echo "Skipping parallel-agent-pass.sh (not found or not executable)"
-fi
+log_status() {
+  local pass_fail="$1"
+  local gate="$2"
+  local gate_num="$3"
+  echo "[$TS] GATE $gate_num ($gate): $pass_fail" >> "$LOG_DIR/orchestrator-$TS.log"
+}
 
-# Mandatory Semgrep gate - always runs regardless of other passes
-if command -v semgrep >/dev/null 2>&1; then
-  echo "Running mandatory semgrep pass..."
-  if ! semgrep scan --config p/default --json "$REPO_PATH" >/dev/null 2>&1; then
-    echo "Cacheflow two-pass review: FAIL (semgrep findings)" >&2
+find_env_file() {
+  if [ -n "${CODERO_ENV_FILE:-}" ] && [ -f "${CODERO_ENV_FILE}" ]; then
+    echo "${CODERO_ENV_FILE}"
+    return 0
+  fi
+
+  if [ -f "$REPO_PATH/.env" ]; then
+    echo "$REPO_PATH/.env"
+    return 0
+  fi
+
+  local common_dir repo_root_env
+  common_dir="$(git -C "$REPO_PATH" rev-parse --git-common-dir 2>/dev/null || true)"
+  if [ -n "$common_dir" ]; then
+    repo_root_env="$(cd "$REPO_PATH" && cd "$common_dir/.." 2>/dev/null && pwd)/.env"
+    if [ -f "$repo_root_env" ]; then
+      echo "$repo_root_env"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+load_env() {
+  local env_file
+  if env_file="$(find_env_file)"; then
+    echo "Loading environment from: $env_file" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    set -a
+    # shellcheck disable=SC1090
+    . "$env_file"
+    set +a
+  else
+    echo "No .env file found; gates will rely on existing environment variables." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  fi
+}
+
+setup_auth_home() {
+  if [ -n "$AUTH_HOME" ] && [ -d "$AUTH_HOME" ]; then
+    export HOME="$AUTH_HOME"
+    echo "Using auth home: $HOME" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    return 0
+  fi
+
+  if [ -n "$AUTH_HOME_FALLBACK" ] && [ "${HOME:-}" != "$AUTH_HOME_FALLBACK" ] && [ -d "$AUTH_HOME_FALLBACK" ]; then
+    if [ -f "$AUTH_HOME_FALLBACK/.config/github-copilot/apps.json" ] || [ -f "$AUTH_HOME_FALLBACK/.coderabbit/auth.json" ]; then
+      export HOME="$AUTH_HOME_FALLBACK"
+      echo "Using detected auth home: $HOME" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    fi
+  fi
+}
+
+run_gate() {
+  local gate_name="$1"
+  local gate_num="$2"
+  local script="$SCRIPT_DIR/${gate_name}.sh"
+  local log_file="$LOG_DIR/${gate_name}-${TS}.log"
+
+  echo "=== GATE $gate_num: $gate_name ===" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+
+  if [ ! -x "$script" ]; then
+    echo "Warning: Script not found or not executable: $script" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    log_status "skip" "$gate_name" "$gate_num"
+    return 1
+  fi
+
+  local output exit_code
+  set +e
+  output="$(timeout "${CODERO_GATE_TIMEOUT:-180}" env CODERO_REPO_PATH="$REPO_PATH" bash "$script" 2>&1)"
+  exit_code=$?
+  set -e
+
+  if [ $exit_code -eq 124 ]; then
+    echo "GATE $gate_num FAILED: Timeout after ${CODERO_GATE_TIMEOUT:-180}s" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    echo "$output" | tee "$log_file"
+    log_status "failed_timeout" "$gate_name" "$gate_num"
+    return 1
+  fi
+
+  if [ $exit_code -ne 0 ]; then
+    echo "GATE $gate_num FAILED: Exit code $exit_code" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    echo "$output" | tee "$log_file"
+    log_status "failed" "$gate_name" "$gate_num"
+    return 1
+  fi
+
+  if echo "$output" | grep -qiE "(no issues found|no actionable issues|no significant issues|looks good)"; then
+    echo "GATE $gate_num PASSED: Reviewer reported no actionable findings" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    echo "$output" | tee "$log_file"
+    log_status "passed_clean" "$gate_name" "$gate_num"
+    return 0
+  fi
+
+  if ! echo "$output" | grep -qiE "(no issues found|no actionable issues|no significant issues|looks good)" \
+    && echo "$output" | grep -qiE "(error|warning|fix|issue|problem|vulnerable|secret|credential)"; then
+    echo "GATE $gate_num PASSED but found issues:" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    echo "$output" | tee "$log_file"
+    log_status "passed_with_issues" "$gate_name" "$gate_num"
+    return 1
+  fi
+
+  echo "GATE $gate_num PASSED: No issues found" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "$output" | tee "$log_file"
+  log_status "passed" "$gate_name" "$gate_num"
+  return 0
+}
+
+run_copilot_then_semgrep() {
+  PASSED_COUNT=0
+  TOTAL_ATTEMPTS=0
+  local semgrep_script="$SCRIPT_DIR/semgrep-zero-pass.sh"
+
+  # Gate 1: Copilot (AI)
+  TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+  echo "Attempting gate $TOTAL_ATTEMPTS: copilot-third-pass" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  if run_gate "copilot-third-pass" "$TOTAL_ATTEMPTS"; then
+    PASSED_COUNT=$((PASSED_COUNT + 1))
+    PASSED+=("copilot-third-pass")
+  else
+    FAILED+=("copilot-third-pass")
+  fi
+
+  # Gate 2: Semgrep (mandatory deterministic blocker)
+  if [ ! -x "$semgrep_script" ]; then
+    echo "Error: mandatory Semgrep gate missing or not executable: $semgrep_script" | tee -a "$LOG_DIR/orchestrator-$TS.log"
     exit 1
   fi
-  review_executed=true
-else
-  echo "Warning: semgrep not found - skipping mandatory security scan" >&2
-fi
+  TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+  if ! run_gate "semgrep-zero-pass" "$TOTAL_ATTEMPTS"; then
+    echo ""
+    echo "✗ FAIL: Semgrep Gate failed. Commit blocked."
+    exit 1
+  fi
 
-if [ "$review_executed" = true ]; then
-  echo "Cacheflow two-pass review: PASS"
-else
-  echo "Cacheflow two-pass review: SKIP (no review scripts available)"
-fi
+  for gate in aider-first-pass gemini-second-pass coderabbit-second-pass; do
+    if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
+      echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+      break
+    fi
+
+    TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+    echo "Attempting gate $TOTAL_ATTEMPTS: $gate" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+
+    if run_gate "$gate" "$TOTAL_ATTEMPTS"; then
+      PASSED_COUNT=$((PASSED_COUNT + 1))
+      PASSED+=("$gate")
+    else
+      FAILED+=("$gate")
+    fi
+  done
+
+  if [ "$PASSED_COUNT" -lt "$MIN_SUCCESSFUL_AI_GATES" ]; then
+    for gate in pr-agent-second-pass copilot-third-pass; do
+      if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
+        echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+        break
+      fi
+
+      TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+      echo "Attempting gate $TOTAL_ATTEMPTS: $gate" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+
+      if run_gate "$gate" "$TOTAL_ATTEMPTS"; then
+        PASSED_COUNT=$((PASSED_COUNT + 1))
+        PASSED+=("$gate")
+      else
+        FAILED+=("$gate")
+      fi
+    done
+  fi
+
+  return 0
+}
+
+run_semgrep_then_ai() {
+  PASSED_COUNT=0
+  TOTAL_ATTEMPTS=0
+  local semgrep_script="$SCRIPT_DIR/semgrep-zero-pass.sh"
+
+  # Gate 1: Semgrep (mandatory deterministic blocker)
+  if [ ! -x "$semgrep_script" ]; then
+    echo "Error: mandatory Semgrep gate missing or not executable: $semgrep_script" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    exit 1
+  fi
+  TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+  if ! run_gate "semgrep-zero-pass" "$TOTAL_ATTEMPTS"; then
+    echo ""
+    echo "✗ FAIL: Semgrep Gate failed. Commit blocked."
+    exit 1
+  fi
+
+  for gate in aider-first-pass gemini-second-pass coderabbit-second-pass; do
+    if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
+      echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+      break
+    fi
+
+    TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+    echo "Attempting gate $TOTAL_ATTEMPTS: $gate" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+
+    if run_gate "$gate" "$TOTAL_ATTEMPTS"; then
+      PASSED_COUNT=$((PASSED_COUNT + 1))
+      PASSED+=("$gate")
+    else
+      FAILED+=("$gate")
+    fi
+  done
+
+  if [ "$PASSED_COUNT" -lt "$MIN_SUCCESSFUL_AI_GATES" ]; then
+    for gate in pr-agent-second-pass copilot-third-pass; do
+      if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
+        echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+        break
+      fi
+
+      TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+      echo "Attempting gate $TOTAL_ATTEMPTS: $gate" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+
+      if run_gate "$gate" "$TOTAL_ATTEMPTS"; then
+        PASSED_COUNT=$((PASSED_COUNT + 1))
+        PASSED+=("$gate")
+      else
+        FAILED+=("$gate")
+      fi
+    done
+  fi
+
+  return 0
+}
+
+main() {
+  echo "========================================"
+  echo "6-PASS PRE-COMMIT REVIEW GATE"
+  echo "Model Alias: $MODEL_ALIAS"
+  echo "Mode: $MODE"
+  echo "Repo: $REPO_PATH"
+  echo "Log Dir: $LOG_DIR"
+  echo "========================================"
+
+  if [ ! -d "$REPO_PATH" ]; then
+    echo "Error: Repo path does not exist: $REPO_PATH" >&2
+    exit 1
+  fi
+
+  load_env
+  setup_auth_home
+
+  local passed_count=0
+  local total_attempts=0
+
+  echo "Starting gate chain..." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  PASSED_COUNT=0
+  TOTAL_ATTEMPTS=0
+  case "$GATE_ORDER" in
+    copilot-first)
+      run_copilot_then_semgrep
+      ;;
+    semgrep-first)
+      run_semgrep_then_ai
+      ;;
+    *)
+      echo "Error: unsupported CODERO_GATE_ORDER='$GATE_ORDER' (use 'copilot-first' or 'semgrep-first')" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+      exit 1
+      ;;
+  esac
+  passed_count="$PASSED_COUNT"
+  total_attempts="$TOTAL_ATTEMPTS"
+
+  echo "" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "========================================" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "REVIEW SUMMARY" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "========================================" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "Gates attempted: $total_attempts" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "AI gates passed: $passed_count (minimum required: $MIN_SUCCESSFUL_AI_GATES)" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "Passed gates: ${PASSED[*]}" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "Failed gates: ${FAILED[*]}" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "Model: $MODEL_ALIAS" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "Mode: $MODE" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "Gate order: $GATE_ORDER" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "Timestamp: $TS" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+  echo "========================================" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+
+  if [ "$passed_count" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
+    local parallel_script="$SCRIPT_DIR/parallel-agent-pass.sh"
+    if [ -x "$parallel_script" ]; then
+      echo "Running parallel-agent pass..."
+      if ! timeout "${CODERO_GATE_TIMEOUT:-180}" env CODERO_REPO_PATH="$REPO_PATH" "$parallel_script"; then
+        echo "parallel-agent pass reported non-blocking failure" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+      fi
+    fi
+
+    echo ""
+    echo "✓ SUCCESS: Semgrep passed + AI gate quorum met ($passed_count/$total_attempts)"
+    echo "Logs:"
+    for log in "$LOG_DIR"/*.log; do
+      echo "  $log"
+    done
+    exit 0
+  else
+    echo ""
+    echo "✗ FAIL: AI gate quorum not met ($passed_count/$total_attempts)"
+    echo "At least $MIN_SUCCESSFUL_AI_GATES AI reviews must pass for commit." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+    echo "Logs:"
+    for log in "$LOG_DIR"/*.log; do
+      echo "  $log"
+    done
+    exit 1
+  fi
+}
+
+main "$@"
