@@ -14,6 +14,7 @@ echo ""
 
 passes=0
 failures=0
+MIN_SUCCESSFUL_AI_GATES="${CODERO_MIN_SUCCESSFUL_AI_GATES:-2}"
 
 # Check tool availability
 echo "=== Tool Availability ==="
@@ -81,10 +82,16 @@ echo "=== API Keys ==="
 # Backend/provider credentials (any one required)
 provider_keys=(CODERO_AIDER_GEMINI_API_KEY CODERO_GEMINI_SECOND_PASS_API_KEY GEMINI_API_KEY OPENROUTER_API_KEY MINIMAX_API_KEY LITELLM_MASTER_KEY LITELLM_API_KEY OPENAI_API_KEY)
 provider_found=false
+openai_or_litellm_found=false
 for key in "${provider_keys[@]}"; do
   if [ -n "${!key-}" ]; then
     echo "✓ $key: set (via environment)"
     provider_found=true
+    case "$key" in
+      LITELLM_MASTER_KEY|LITELLM_API_KEY|OPENAI_API_KEY)
+        openai_or_litellm_found=true
+        ;;
+    esac
     continue
   fi
   if [ -n "$env_file" ] && [ -f "$env_file" ]; then
@@ -92,6 +99,11 @@ for key in "${provider_keys[@]}"; do
     if [ -n "$file_val" ]; then
       echo "✓ $key: set (${#file_val} chars)"
       provider_found=true
+      case "$key" in
+        LITELLM_MASTER_KEY|LITELLM_API_KEY|OPENAI_API_KEY)
+          openai_or_litellm_found=true
+          ;;
+      esac
       continue
     fi
   fi
@@ -124,6 +136,44 @@ if [ "$provider_found" = false ]; then
 fi
 if [ "$github_found" = false ]; then
   echo "✗ No GitHub auth keys found"
+  failures=$((failures + 1))
+fi
+
+viable_ai_gates=0
+declare -a viable_ai_gate_names=()
+
+# Copilot gate can run with either Copilot CLI or OpenAI CLI + backend key.
+if has_tool copilot || { has_tool openai && [ "$openai_or_litellm_found" = true ]; }; then
+  viable_ai_gates=$((viable_ai_gates + 1))
+  viable_ai_gate_names+=("copilot-third-pass")
+fi
+
+if has_tool aider && [ "$provider_found" = true ]; then
+  viable_ai_gates=$((viable_ai_gates + 1))
+  viable_ai_gate_names+=("aider-first-pass")
+fi
+
+if [ "$provider_found" = true ]; then
+  viable_ai_gates=$((viable_ai_gates + 1))
+  viable_ai_gate_names+=("gemini-second-pass")
+fi
+
+if has_tool pr-agent && [ "$github_found" = true ] && [ "$openai_or_litellm_found" = true ]; then
+  viable_ai_gates=$((viable_ai_gates + 1))
+  viable_ai_gate_names+=("pr-agent-second-pass")
+fi
+
+if has_tool coderabbit && [ "$github_found" = true ]; then
+  viable_ai_gates=$((viable_ai_gates + 1))
+  viable_ai_gate_names+=("coderabbit-second-pass")
+fi
+
+echo "AI gates potentially runnable: $viable_ai_gates (required minimum: $MIN_SUCCESSFUL_AI_GATES)"
+if [ "${#viable_ai_gate_names[@]}" -gt 0 ]; then
+  echo "AI gate set: ${viable_ai_gate_names[*]}"
+fi
+if [ "$viable_ai_gates" -lt "$MIN_SUCCESSFUL_AI_GATES" ]; then
+  echo "✗ AI quorum impossible with current tool/auth setup"
   failures=$((failures + 1))
 fi
 echo ""
@@ -172,6 +222,17 @@ probe_gate() {
         echo "⚠ $name gate probe skipped: optional tool '$tool' is missing"
       fi
       return
+    fi
+
+    if [ "$name" = "coderabbit" ]; then
+      if ! git -C "$REPO_ROOT" diff --name-only --exit-code >/dev/null 2>&1; then
+        echo "⚠ $name gate probe skipped: unstaged changes present"
+        return
+      fi
+      if [ -n "$(git -C "$REPO_ROOT" ls-files --others --exclude-standard)" ]; then
+        echo "⚠ $name gate probe skipped: untracked files present"
+        return
+      fi
     fi
 
     local tmp_index

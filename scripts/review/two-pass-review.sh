@@ -92,7 +92,14 @@ load_env() {
       esac
 
       if [[ ! "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
-        echo "Skipping unsupported env line: $line" >> "$LOG_DIR/orchestrator-$TS.log"
+        local redacted_key
+        redacted_key="${line#export }"
+        redacted_key="${redacted_key%%=*}"
+        if [[ "$redacted_key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+          echo "Skipping unsupported env key: $redacted_key" >> "$LOG_DIR/orchestrator-$TS.log"
+        else
+          echo "Skipping unsupported env line (content redacted)" >> "$LOG_DIR/orchestrator-$TS.log"
+        fi
         continue
       fi
 

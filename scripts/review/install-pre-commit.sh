@@ -20,10 +20,9 @@ fi
 
 CODERO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-HOOKS_DIR="$(git -C "$REPO_PATH" rev-parse --git-common-dir)/hooks"
+HOOK_PATH="$(git -C "$REPO_PATH" rev-parse --path-format=absolute --git-path hooks/pre-commit)"
+HOOKS_DIR="$(dirname "$HOOK_PATH")"
 mkdir -p "$HOOKS_DIR"
-
-HOOK_PATH="$HOOKS_DIR/pre-commit"
 RENDER_PATH="${HOOK_PATH}.render.$(date +%s)"
 FINAL_PATH="${HOOK_PATH}.tmp.$(date +%s)"
 
