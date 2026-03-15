@@ -150,27 +150,15 @@ main() {
   echo "Fallback models: $fallback_json"
 
   local result exit_code=0
-  if [ -n "$TIMEOUT_CMD" ]; then
-    result=$("$TIMEOUT_CMD" "$TIMEOUT_SEC" sh -c "
-      cd '$REPO_PATH' &&
-      OPENAI__API_BASE='$litellm_base' \
-      OPENAI__KEY='$litellm_key' \
-      CONFIG__MODEL='$PRIMARY_MODEL' \
-      CONFIG__FALLBACK_MODELS='$fallback_json' \
-      GITHUB__USER_TOKEN='$github_token' \
-      $PR_AGENT_BIN review --local 2>&1
-    " 2>&1) || exit_code=$?
-  else
-    result=$(sh -c "
-      cd '$REPO_PATH' &&
-      OPENAI__API_BASE='$litellm_base' \
-      OPENAI__KEY='$litellm_key' \
-      CONFIG__MODEL='$PRIMARY_MODEL' \
-      CONFIG__FALLBACK_MODELS='$fallback_json' \
-      GITHUB__USER_TOKEN='$github_token' \
-      $PR_AGENT_BIN review --local 2>&1
-    " 2>&1) || exit_code=$?
-  fi
+  result="$(
+    cd "$REPO_PATH" &&
+      OPENAI__API_BASE="$litellm_base" \
+      OPENAI__KEY="$litellm_key" \
+      CONFIG__MODEL="$PRIMARY_MODEL" \
+      CONFIG__FALLBACK_MODELS="$fallback_json" \
+      GITHUB__USER_TOKEN="$github_token" \
+      "$TIMEOUT_CMD" "$TIMEOUT_SEC" "$PR_AGENT_BIN" review --local 2>&1
+  )" || exit_code=$?
   if [ $exit_code -ne 0 ]; then
     if [ $exit_code -eq 124 ]; then
       echo "Error: PR-Agent review timed out after ${TIMEOUT_SEC}s"

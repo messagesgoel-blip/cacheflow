@@ -32,7 +32,14 @@ fi
 
 cd "$REPO_PATH"
 
-mapfile -t STAGED_FILES < <(git diff --cached --name-only --diff-filter=ACMR)
+STAGED_FILES=()
+if type mapfile >/dev/null 2>&1; then
+  mapfile -t STAGED_FILES < <(git diff --cached --name-only --diff-filter=ACMR)
+else
+  while IFS= read -r staged_file; do
+    [ -n "$staged_file" ] && STAGED_FILES+=("$staged_file")
+  done < <(git diff --cached --name-only --diff-filter=ACMR)
+fi
 if [ "${#STAGED_FILES[@]}" -eq 0 ]; then
   echo "No staged files. Semgrep gate skipped."
   exit 0

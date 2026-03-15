@@ -2,4 +2,9 @@
 set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 export CODERO_REPO_PATH="$REPO_ROOT"
-exec "$REPO_ROOT/scripts/review/two-pass-review.sh"
+ORCHESTRATOR="$REPO_ROOT/scripts/review/two-pass-review.sh"
+if [ ! -x "$ORCHESTRATOR" ]; then
+  echo "Error: pre-commit orchestrator missing or not executable: $ORCHESTRATOR" >&2
+  exit 1
+fi
+exec "$ORCHESTRATOR"
