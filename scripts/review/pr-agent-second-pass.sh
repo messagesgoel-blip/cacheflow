@@ -34,6 +34,23 @@ build_diff() {
   git -C "$REPO_PATH" diff --cached --no-ext-diff --binary -- .
 }
 
+strip_quotes() {
+  local raw="${1:-}"
+  raw="${raw%\"}"
+  raw="${raw#\"}"
+  raw="${raw%\'}"
+  raw="${raw#\'}"
+  printf '%s' "$raw"
+}
+
+read_key_from_file() {
+  local key="$1"
+  local env_file="$2"
+  local raw
+  raw="$(grep -E "^${key}=" "$env_file" 2>/dev/null | head -n 1 | cut -d= -f2- || true)"
+  strip_quotes "$raw"
+}
+
 load_litellm_key() {
   if [ -n "${LITELLM_MASTER_KEY:-}" ]; then
     echo "$LITELLM_MASTER_KEY"
@@ -43,52 +60,53 @@ load_litellm_key() {
     echo "$LITELLM_API_KEY"
     return 0
   fi
-  local key raw
+  local key raw env_file common_dir repo_root_env
+  local env_candidates=()
+
+  if [ -n "${CODERO_ENV_FILE:-}" ] && [ -f "${CODERO_ENV_FILE}" ]; then
+    env_candidates+=("${CODERO_ENV_FILE}")
+  fi
 
   if [ -f "$REPO_PATH/.env" ]; then
-    for key in LITELLM_MASTER_KEY LITELLM_API_KEY; do
-      raw="$(grep -E "^${key}=" "$REPO_PATH/.env" | head -n 1 | cut -d'=' -f2- || true)"
-      raw="${raw%\"}"
-      raw="${raw#\"}"
-      raw="${raw%\'}"
-      raw="${raw#\'}"
-      if [ -n "$raw" ]; then
-        echo "$raw"
-        return 0
-      fi
-    done
+    env_candidates+=("$REPO_PATH/.env")
   fi
 
   if [ -f /opt/docker/apps/litellm/.env ]; then
+    env_candidates+=("/opt/docker/apps/litellm/.env")
+  fi
+
+  common_dir="$(git -C "$REPO_PATH" rev-parse --git-common-dir 2>/dev/null || true)"
+  if [ -n "$common_dir" ]; then
+    repo_root_env="$(cd "$REPO_PATH" && cd "$common_dir/.." 2>/dev/null && pwd)/.env"
+    if [ -f "$repo_root_env" ]; then
+      env_candidates+=("$repo_root_env")
+    fi
+  fi
+
+  for env_file in "${env_candidates[@]}"; do
+    [ -f "$env_file" ] || continue
     for key in LITELLM_MASTER_KEY LITELLM_API_KEY; do
-      raw="$(grep -E "^${key}=" /opt/docker/apps/litellm/.env | head -n 1 | cut -d= -f2- || true)"
-      raw="${raw%\"}"
-      raw="${raw#\"}"
-      raw="${raw%\'}"
-      raw="${raw#\'}"
+      raw="$(read_key_from_file "$key" "$env_file")"
       if [ -n "$raw" ]; then
         echo "$raw"
         return 0
       fi
     done
-  fi
+  done
 
   if [ -n "${OPENAI_API_KEY:-}" ]; then
     echo "$OPENAI_API_KEY"
     return 0
   fi
 
-  if [ -f "$REPO_PATH/.env" ]; then
-    raw="$(grep -E '^OPENAI_API_KEY=' "$REPO_PATH/.env" | head -n 1 | cut -d'=' -f2- || true)"
-    raw="${raw%\"}"
-    raw="${raw#\"}"
-    raw="${raw%\'}"
-    raw="${raw#\'}"
+  for env_file in "${env_candidates[@]}"; do
+    [ -f "$env_file" ] || continue
+    raw="$(read_key_from_file "OPENAI_API_KEY" "$env_file")"
     if [ -n "$raw" ]; then
       echo "$raw"
       return 0
     fi
-  fi
+  done
 
   return 1
 }

@@ -24,25 +24,32 @@ HOOKS_DIR="$(git -C "$REPO_PATH" rev-parse --git-common-dir)/hooks"
 mkdir -p "$HOOKS_DIR"
 
 HOOK_PATH="$HOOKS_DIR/pre-commit"
+RENDER_PATH="${HOOK_PATH}.render.$(date +%s)"
+FINAL_PATH="${HOOK_PATH}.tmp.$(date +%s)"
 
 if [ -f "$HOOK_PATH" ]; then
   cp "$HOOK_PATH" "$HOOK_PATH.bak.$(date +%Y%m%d-%H%M%S)"
 fi
 
-cat > "$HOOK_PATH" <<'HOOK'
+cat > "$RENDER_PATH" <<'HOOK'
 #!/usr/bin/env bash
 set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 export CODERO_REPO_PATH="$REPO_ROOT"
 export CODERO_MODEL_ALIAS="cacheflow_agent"
 export CODERO_ROOT="ACTUAL_CODERO_ROOT"
-export CODERO_ENV_FILE="${CODERO_ENV_FILE:-$CODERO_ROOT/.env}"
+
+if [ -f "$REPO_ROOT/.env" ]; then
+  export CODERO_ENV_FILE="${CODERO_ENV_FILE:-$REPO_ROOT/.env}"
+elif [ -f "$CODERO_ROOT/.env" ]; then
+  export CODERO_ENV_FILE="${CODERO_ENV_FILE:-$CODERO_ROOT/.env}"
+fi
 
 # Prefer local scripts if available, fallback to global
-if [ -x "$REPO_ROOT/scripts/review/two-pass-review.sh" ]; then
-  exec "$REPO_ROOT/scripts/review/two-pass-review.sh"
-elif [ -x "$CODERO_ROOT/scripts/review/two-pass-review.sh" ]; then
-  exec "$CODERO_ROOT/scripts/review/two-pass-review.sh"
+if [ -r "$REPO_ROOT/scripts/review/two-pass-review.sh" ]; then
+  exec bash "$REPO_ROOT/scripts/review/two-pass-review.sh"
+elif [ -r "$CODERO_ROOT/scripts/review/two-pass-review.sh" ]; then
+  exec bash "$CODERO_ROOT/scripts/review/two-pass-review.sh"
 else
   echo "Error: two-pass-review.sh not found in repo or CODERO_ROOT ($CODERO_ROOT)" >&2
   exit 1
@@ -50,10 +57,10 @@ fi
 HOOK
 
 export CODERO_ROOT
-perl -0777 -pe 's/ACTUAL_CODERO_ROOT/\Q$ENV{CODERO_ROOT}\E/g' "$HOOK_PATH" > "${HOOK_PATH}.tmp"
-mv "${HOOK_PATH}.tmp" "$HOOK_PATH"
-
-chmod +x "$HOOK_PATH"
+perl -0777 -pe 's/ACTUAL_CODERO_ROOT/\Q$ENV{CODERO_ROOT}\E/g' "$RENDER_PATH" > "$FINAL_PATH"
+chmod +x "$FINAL_PATH"
+mv "$FINAL_PATH" "$HOOK_PATH"
+rm -f "$RENDER_PATH"
 
 echo "Installed Codero 6-pass pre-commit hook: $HOOK_PATH"
 echo "  Model alias: cacheflow_agent"

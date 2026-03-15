@@ -17,7 +17,7 @@ failures=0
 
 # Check tool availability
 echo "=== Tool Availability ==="
-required_tools=(semgrep openai)
+required_tools=(semgrep)
 checked_tools=(semgrep openai aider copilot pr-agent coderabbit)
 
 is_required_tool() {

@@ -164,7 +164,7 @@ run_gate() {
         echo "GATE $gate_num FAILED with issues ($findings findings): see log" | tee -a "$LOG_DIR/orchestrator-$TS.log"
         echo "$output" | tee "$log_file"
         log_status "failed_with_issues" "$gate_name" "$gate_num"
-        return 1
+        return 2
       fi
     fi
     echo "GATE $gate_num PASSED: No issues found" | tee -a "$LOG_DIR/orchestrator-$TS.log"
@@ -187,6 +187,7 @@ run_gate() {
       echo "GATE $gate_num FAILED with issues ($findings findings): see log" | tee -a "$LOG_DIR/orchestrator-$TS.log"
       echo "$output" | tee "$log_file"
       log_status "failed_with_issues" "$gate_name" "$gate_num"
+      return 2
     fi
   fi
 
@@ -201,6 +202,7 @@ run_gate() {
 run_copilot_then_semgrep() {
   PASSED_COUNT=0
   TOTAL_ATTEMPTS=0
+  local gate_status=0
   local semgrep_script="$SCRIPT_DIR/semgrep-zero-pass.sh"
 
   # Gate 1: Copilot (AI)
@@ -210,6 +212,11 @@ run_copilot_then_semgrep() {
     PASSED_COUNT=$((PASSED_COUNT + 1))
     PASSED+=("copilot-third-pass")
   else
+    gate_status=$?
+    if [ "$gate_status" -eq 2 ]; then
+      echo "✗ FAIL: gate copilot-third-pass reported issues. Commit blocked." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+      exit 1
+    fi
     FAILED+=("copilot-third-pass")
   fi
 
@@ -238,6 +245,11 @@ run_copilot_then_semgrep() {
       PASSED_COUNT=$((PASSED_COUNT + 1))
       PASSED+=("$gate")
     else
+      gate_status=$?
+      if [ "$gate_status" -eq 2 ]; then
+        echo "✗ FAIL: gate $gate reported issues. Commit blocked." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+        exit 1
+      fi
       FAILED+=("$gate")
     fi
   done
@@ -308,7 +320,7 @@ main() {
       local parallel_exit=0
       "$TIMEOUT_CMD" "${CODERO_GATE_TIMEOUT:-180}" env CODERO_REPO_PATH="$REPO_PATH" "$parallel_script" || parallel_exit=$?
       if [ "$parallel_exit" -ne 0 ]; then
-        echo "⚠ Parallel-agent pass completed with exit code $parallel_exit" >&2 | tee -a "$LOG_DIR/orchestrator-$TS.log"
+        echo "⚠ Parallel-agent pass completed with exit code $parallel_exit" | tee -a "$LOG_DIR/orchestrator-$TS.log" >&2
       fi
     fi
 
