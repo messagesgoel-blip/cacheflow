@@ -12,22 +12,23 @@ Sprints & contracts: see logs/orchestrator-state.json and docs/orchestration/tas
 
 Tests: Playwright in web/e2e (run from web/). Gate command: SPRINT_LIMIT=N npx ts-node scripts/orchestrate.ts --gate-only --sprint N.
 
-Commits: git commit --no-verify; do not commit .next/, node_modules/, coverage/, monitoring/*.yaml.
+Commits: pre-commit hook must pass before commit; `git commit --no-verify` is prohibited except emergencies tagged `[EMERGENCY]` with immediate follow-up fix; do not commit .next/, node_modules/, coverage/, monitoring/*.yaml.
 
 Definition of done: no change is considered done until it is tested, committed, and deployed from a clean git worktree in `/opt/docker/apps/cacheflow`. Do not treat uncommitted local changes or dirty-tree builds as done for live.
+Worktree rule: each active agent must run in its own dedicated git worktree path.
 
 ## Branch Naming
-All feature branches must follow: `feat/URM-{issue-id}-{short-description}`
-Example: `feat/URM-42-oauth-token-fix`
+All feature branches must follow: `feat/CAC-{issue-id}-{short-description}`
+Example: `feat/CAC-42-oauth-token-fix`
 This enables issue auto-tracking of commits against issues.
-Effective immediately for the next batch onward: use `URM` as the issue prefix and do not create new `LIN-*` branches.
+Effective immediately for the next batch onward: use `CAC` as the issue prefix and do not create new `LIN-*` branches.
 
 ## Pull Requests
 
 ## PR Policy
-- All work must be on a branch following `feat/URM-{id}-{description}`.
+- All work must be on a branch following `feat/CAC-{id}-{description}`.
 - A PR must be opened before any task is marked complete.
-- Every PR branch must follow `feat/URM-{issue-id}-{short-description}` so the issue tracker can associate commits with the issue.
+- Every PR branch must follow `feat/CAC-{issue-id}-{short-description}` so the issue tracker can associate commits with the issue.
 - PR title should include the issue key when applicable.
 - PR description must include:
   - linked issue

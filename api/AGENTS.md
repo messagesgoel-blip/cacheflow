@@ -10,4 +10,5 @@ Standards: Prisma for DB; express-validator for inputs; JWT refresh + access; ra
 
 Rules: keep handlers short and non-blocking; use structured errors; never store secrets/plaintext or leak vault data; prefer service layer over route logic.
 
-Branch policy note: For the next batch onward, use `URM` issue prefix for new branches (e.g., `feat/URM-{issue-id}-{short-description}`); do not create new `LIN-*` branches.
+Branch policy note: For the next batch onward, use `CAC` issue prefix for new branches (e.g., `feat/CAC-{issue-id}-{short-description}`); do not create new `LIN-*` branches.
+Worktree rule: each agent must use a dedicated git worktree path and never share the same worktree with another agent.

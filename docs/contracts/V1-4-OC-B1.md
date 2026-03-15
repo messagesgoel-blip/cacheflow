@@ -37,7 +37,7 @@ Batch 1 verification for the CacheFlow V1-4 live E2E triage hold.
 
 ## SEC-01: Browser-Visible Auth State
 
-**Status**: Browser-visible storage fixed (URM-64); browser runtime-memory caveat remains outside this verification batch
+**Status**: Browser-visible storage fixed (CAC-64); browser runtime-memory caveat remains outside this verification batch
 
 ### Verification Findings
 
@@ -60,7 +60,7 @@ Batch 1 verification for the CacheFlow V1-4 live E2E triage hold.
 
 ## APP-10: Auth Noise Reduction
 
-**Status**: Already fixed (URM-69)
+**Status**: Already fixed (CAC-69)
 
 ### Verification Findings
 
@@ -114,7 +114,7 @@ The upload flow in `web/components/UnifiedFileBrowser.tsx` properly invalidates 
 
 ## APP-09: Health Endpoint (Verify-Only)
 
-**Status**: Already fixed (URM-65)
+**Status**: Already fixed (CAC-65)
 
 ### Verification Findings
 
@@ -177,7 +177,7 @@ cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit
 
 ## References
 
-- `docs/contracts/URM-64.md` - SEC-01 implementation
-- `docs/contracts/URM-65.md` - APP-09 implementation
-- `docs/contracts/URM-69.md` - APP-10 implementation
+- `docs/contracts/CAC-64.md` - SEC-01 implementation
+- `docs/contracts/CAC-65.md` - APP-09 implementation
+- `docs/contracts/CAC-69.md` - APP-10 implementation
 - `docs/live-e2e-triage-matrix.md` - Triage tracking
