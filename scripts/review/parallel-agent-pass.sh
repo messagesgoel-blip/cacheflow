@@ -55,7 +55,7 @@ build_diff() {
     tracked="$(git -C "$REPO_PATH" diff HEAD || true)"
     untracked=""
     while IFS= read -r -d '' file; do
-      file_diff="$(git -C "$REPO_PATH" diff --no-index -- /dev/null "$file" || [ $? -eq 1 ])"
+      file_diff="$(git -C "$REPO_PATH" diff --no-index -- /dev/null "$file" || true)"
       untracked="${untracked}${file_diff}"
     done < <(git -C "$REPO_PATH" ls-files --others --exclude-standard -z)
     combined="${tracked}${untracked}"
