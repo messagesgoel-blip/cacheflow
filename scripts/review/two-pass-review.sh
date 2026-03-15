@@ -12,6 +12,8 @@ if [ -x "$REPO_PATH/scripts/pre-push-review.sh" ]; then
   echo "Running Cacheflow committed review pass..."
   "$REPO_PATH/scripts/pre-push-review.sh"
   review_executed=true
+else
+  echo "Skipping pre-push-review.sh (not found or not executable)"
 fi
 
 parallel_script="$REPO_PATH/scripts/review/parallel-agent-pass.sh"
@@ -19,6 +21,8 @@ if [ -x "$parallel_script" ]; then
   echo "Running parallel-agent pass..."
   "$parallel_script"
   review_executed=true
+else
+  echo "Skipping parallel-agent-pass.sh (not found or not executable)"
 fi
 
 # Mandatory Semgrep gate - always runs regardless of other passes
