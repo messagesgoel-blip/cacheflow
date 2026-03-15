@@ -52,10 +52,11 @@ if [ "${#staged[@]}" -eq 0 ]; then
 fi
 
 contains_conflict_markers() {
-  local file
+  local file content
   for file in "$@"; do
-    [ -f "$file" ] || continue
-    if grep -nE '^(<<<<<<<|=======|>>>>>>>)' "$file" >/dev/null 2>&1; then
+    # Read staged content from index, not working tree
+    content="$(git show ":$file" 2>/dev/null)" || continue
+    if printf '%s' "$content" | grep -qE '^(<<<<<<<|=======|>>>>>>>)'; then
       echo "pre-commit blocked: merge conflict markers in $file" >&2
       return 0
     fi
@@ -64,40 +65,43 @@ contains_conflict_markers() {
 }
 
 check_shell_syntax() {
-  local file
+  local file tmpfile
   for file in "$@"; do
-    [[ "$file" == *.sh ]] || continue
-    [ -f "$file" ] || continue
-    if ! bash -n "$file"; then
-      echo "pre-commit blocked: bash syntax error in $file" >&2
-      return 1
+    case "$file" in *.sh) ;; *) continue ;; esac
+    # Read staged content - bash -n requires a file, so use temp file
+    tmpfile=$(mktemp)
+    if git show ":$file" > "$tmpfile" 2>/dev/null; then
+      bash -n "$tmpfile" || { rm -f "$tmpfile"; echo "pre-commit blocked: bash syntax error in $file" >&2; return 1; }
+      rm -f "$tmpfile"
     fi
   done
   return 0
 }
 
 check_python_syntax() {
-  local file
+  local file tmpfile
   for file in "$@"; do
-    [[ "$file" == *.py ]] || continue
-    [ -f "$file" ] || continue
-    if ! python3 -m py_compile "$file"; then
-      echo "pre-commit blocked: python syntax error in $file" >&2
-      return 1
+    case "$file" in *.py) ;; *) continue ;; esac
+    # Read staged content - py_compile requires a file, so use temp file
+    tmpfile=$(mktemp)
+    if git show ":$file" > "$tmpfile" 2>/dev/null; then
+      python3 -m py_compile "$tmpfile" || { rm -f "$tmpfile"; echo "pre-commit blocked: python syntax error in $file" >&2; return 1; }
+      rm -f "$tmpfile"
     fi
   done
   return 0
 }
 
 check_json_syntax() {
-  local file
+  local file content
   if ! command -v jq >/dev/null 2>&1; then
     return 0
   fi
   for file in "$@"; do
     [[ "$file" == *.json ]] || continue
-    [ -f "$file" ] || continue
-    if ! jq -e . "$file" >/dev/null; then
+    # Read staged content from index
+    content="$(git show ":$file" 2>/dev/null)" || continue
+    if ! printf '%s' "$content" | jq -e . >/dev/null 2>&1; then
       echo "pre-commit blocked: invalid JSON in $file" >&2
       return 1
     fi
@@ -142,9 +146,18 @@ check_python_syntax "${staged[@]}"
 check_json_syntax "${staged[@]}"
 
 parallel_gate_script="$repo_root/scripts/review/parallel-agent-pass.sh"
-if [ -x "$parallel_gate_script" ]; then
-  "$parallel_gate_script"
+if [ ! -f "$parallel_gate_script" ]; then
+  echo "pre-commit blocked: parallel gate script not found at $parallel_gate_script" >&2
+  echo "Please ensure scripts/review/parallel-agent-pass.sh exists before committing." >&2
+  exit 1
 fi
+if [ ! -x "$parallel_gate_script" ]; then
+  echo "pre-commit blocked: parallel gate script not executable: $parallel_gate_script" >&2
+  echo "Run: chmod +x $parallel_gate_script" >&2
+  exit 1
+fi
+# Execute parallel gate and propagate its exit code
+"$parallel_gate_script"
 
 needs_web_tsc=0
 for file in "${staged[@]}"; do
