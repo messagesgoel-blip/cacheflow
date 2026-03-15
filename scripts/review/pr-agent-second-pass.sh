@@ -8,9 +8,20 @@ set -euo pipefail
 REPO_PATH="${CODERO_REPO_PATH:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 PR_AGENT_BIN="${CODERO_PR_AGENT_BIN:-pr-agent}"
 LITELLM_URL_RAW="${CODERO_LITELLM_URL:-${LITELLM_PROXY_URL:-http://localhost:4000/v1}}"
-PRIMARY_MODEL="${CODERO_PR_AGENT_MODEL:-${CODERO_SECOND_PASS_LITELLM_MODEL:-qwen3-coder-plus}}"
+PRIMARY_MODEL="${CODERO_PR_AGENT_MODEL:-${CODERO_SECOND_PASS_LITELLM_MODEL:-review}}"
 MODEL_SET_RAW="${CODERO_PR_AGENT_FALLBACK_MODELS:-${CODERO_SECOND_PASS_LITELLM_MODELS:-$PRIMARY_MODEL}}"
 TIMEOUT_SEC="${CODERO_PR_AGENT_TIMEOUT_SEC:-240}"
+
+# Portable timeout command (macOS uses gtimeout)
+TIMEOUT_CMD=""
+if command -v timeout >/dev/null 2>&1; then
+  TIMEOUT_CMD="timeout"
+elif command -v gtimeout >/dev/null 2>&1; then
+  TIMEOUT_CMD="gtimeout"
+else
+  echo "Error: timeout utility not found (install coreutils)" >&2
+  exit 1
+fi
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -19,11 +30,28 @@ require_cmd() {
   return 0
 }
 
+build_diff() {
+  git -C "$REPO_PATH" diff --cached --no-ext-diff --binary -- .
+}
+
+strip_quotes() {
+  local raw="${1:-}"
+  raw="${raw%\"}"
+  raw="${raw#\"}"
+  raw="${raw%\'}"
+  raw="${raw#\'}"
+  printf '%s' "$raw"
+}
+
+read_key_from_file() {
+  local key="$1"
+  local env_file="$2"
+  local raw
+  raw="$(grep -E "^${key}=" "$env_file" 2>/dev/null | head -n 1 | cut -d= -f2- || true)"
+  strip_quotes "$raw"
+}
+
 load_litellm_key() {
-  if [ -n "${CODERO_LITELLM_MASTER_KEY:-}" ]; then
-    echo "$CODERO_LITELLM_MASTER_KEY"
-    return 0
-  fi
   if [ -n "${LITELLM_MASTER_KEY:-}" ]; then
     echo "$LITELLM_MASTER_KEY"
     return 0
@@ -32,45 +60,72 @@ load_litellm_key() {
     echo "$LITELLM_API_KEY"
     return 0
   fi
+  local key raw env_file common_dir repo_root_env
+  local env_candidates=()
+
+  if [ -n "${CODERO_ENV_FILE:-}" ] && [ -f "${CODERO_ENV_FILE}" ]; then
+    env_candidates+=("${CODERO_ENV_FILE}")
+  fi
+
+  if [ -f "$REPO_PATH/.env" ]; then
+    env_candidates+=("$REPO_PATH/.env")
+  fi
+
+  if [ -f /opt/docker/apps/litellm/.env ]; then
+    env_candidates+=("/opt/docker/apps/litellm/.env")
+  fi
+
+  common_dir="$(git -C "$REPO_PATH" rev-parse --git-common-dir 2>/dev/null || true)"
+  if [ -n "$common_dir" ]; then
+    repo_root_env="$(cd "$REPO_PATH" && cd "$common_dir/.." 2>/dev/null && pwd)/.env"
+    if [ -f "$repo_root_env" ]; then
+      env_candidates+=("$repo_root_env")
+    fi
+  fi
+
+  for env_file in "${env_candidates[@]}"; do
+    [ -f "$env_file" ] || continue
+    for key in LITELLM_MASTER_KEY LITELLM_API_KEY; do
+      raw="$(read_key_from_file "$key" "$env_file")"
+      if [ -n "$raw" ]; then
+        echo "$raw"
+        return 0
+      fi
+    done
+  done
+
   if [ -n "${OPENAI_API_KEY:-}" ]; then
     echo "$OPENAI_API_KEY"
     return 0
   fi
 
-  if [ -f "$REPO_PATH/.env" ]; then
-    local raw
-    raw="$(grep -E '^(CODERO_LITELLM_MASTER_KEY|LITELLM_MASTER_KEY|LITELLM_API_KEY|OPENAI_API_KEY)=' "$REPO_PATH/.env" | head -n 1 | cut -d'=' -f2- || true)"
-    raw="${raw%\"}"
-    raw="${raw#\"}"
-    raw="${raw%\'}"
-    raw="${raw#\'}"
+  for env_file in "${env_candidates[@]}"; do
+    [ -f "$env_file" ] || continue
+    raw="$(read_key_from_file "OPENAI_API_KEY" "$env_file")"
     if [ -n "$raw" ]; then
       echo "$raw"
       return 0
     fi
-  fi
+  done
 
   return 1
 }
 
 model_list_to_json() {
   local input="$1"
-  local item first=1 out="["
-  IFS=',' read -r -a items <<< "$input"
-  for item in "${items[@]}"; do
-    item="$(echo "$item" | xargs)"
-    [ -z "$item" ] && continue
-    if [ "$first" -eq 0 ]; then
-      out+=" ,"
-    fi
-    out+="\"$item\""
-    first=0
-  done
-  out+="]"
-  printf '%s' "$out"
+  printf '%s' "$input" | jq -R -s -c '
+    split(",")
+    | map(gsub("^\\s+|\\s+$"; ""))
+    | map(select(length > 0))
+  '
 }
 
 main() {
+  if ! require_cmd jq; then
+    echo "Error: required command not found: jq" >&2
+    exit 1
+  fi
+
   if ! require_cmd "$PR_AGENT_BIN"; then
     echo "Error: pr-agent binary not found ($PR_AGENT_BIN)" >&2
     echo "Install with: pip install pr-agent" >&2
@@ -82,9 +137,16 @@ main() {
     exit 1
   fi
 
+  local diff
+  diff="$(build_diff)"
+  if [ -z "$diff" ]; then
+    echo "No staged changes to review."
+    exit 0
+  fi
+
   local litellm_key github_token fallback_json litellm_base
   if ! litellm_key="$(load_litellm_key)"; then
-    echo "Error: LiteLLM key not found. Set LITELLM_MASTER_KEY or add it in $REPO_PATH/.env" >&2
+    echo "Error: LiteLLM key not found. Set LITELLM_MASTER_KEY, LITELLM_API_KEY, or OPENAI_API_KEY in environment or $REPO_PATH/.env" >&2
     exit 1
   fi
 
@@ -102,27 +164,16 @@ main() {
   echo "Model: $PRIMARY_MODEL"
   echo "Fallback models: $fallback_json"
 
-  local pr_url result exit_code
-  pr_url="${CODERO_PR_URL:-${PR_URL:-}}"
-  if [ -z "$pr_url" ]; then
-    echo "Error: PR URL not found. Set CODERO_PR_URL or PR_URL for PR-Agent review." >&2
-    exit 1
-  fi
-
-  set +e
+  local result exit_code=0
   result="$(
-    timeout "$TIMEOUT_SEC" sh -c '
-      cd "$1" &&
-      OPENAI__API_BASE="$2" \
-      OPENAI__KEY="$3" \
-      CONFIG__MODEL="$4" \
-      CONFIG__FALLBACK_MODELS="$5" \
-      GITHUB__USER_TOKEN="$6" \
-      "$7" review --pr_url "$8" 2>&1
-    ' -- "$REPO_PATH" "$litellm_base" "$litellm_key" "$PRIMARY_MODEL" "$fallback_json" "$github_token" "$PR_AGENT_BIN" "$pr_url"
-  )"
-  exit_code=$?
-  set -e
+    cd "$REPO_PATH" &&
+      OPENAI__API_BASE="$litellm_base" \
+      OPENAI__KEY="$litellm_key" \
+      CONFIG__MODEL="$PRIMARY_MODEL" \
+      CONFIG__FALLBACK_MODELS="$fallback_json" \
+      GITHUB__USER_TOKEN="$github_token" \
+      "$TIMEOUT_CMD" "$TIMEOUT_SEC" "$PR_AGENT_BIN" review --local 2>&1
+  )" || exit_code=$?
   if [ $exit_code -ne 0 ]; then
     if [ $exit_code -eq 124 ]; then
       echo "Error: PR-Agent review timed out after ${TIMEOUT_SEC}s"
