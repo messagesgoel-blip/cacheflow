@@ -12,8 +12,8 @@ set -euo pipefail
 #
 # To set up multiple accounts:
 # 1. Authenticate with each account interactively
-# 2. Save the oauth_creds.json as oauth_creds.<email_prefix>.json
-#    e.g., oauth_creds.msg.goel.json, oauth_creds.messages.goel.json
+# 2. Save the oauth_creds.json as oauth_creds.<account>.json
+#    e.g., oauth_creds.primary.json, oauth_creds.secondary.json
 
 REPO_PATH="${CODERO_REPO_PATH:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 TIMEOUT_SEC="${CODERO_SECOND_PASS_TIMEOUT_SEC:-45}"
@@ -21,17 +21,20 @@ GEMINI_MODEL="${CODERO_GEMINI_MODEL:-gemini-2.5-flash-lite}"
 MAX_RETRIES="${CODERO_GEMINI_MAX_RETRIES:-3}"
 GEMINI_CONFIG_DIR="${HOME}/.gemini"
 
-# Available accounts (will rotate on rate limit)
-# These should match oauth_creds.<account>.json files
-GEMINI_ACCOUNTS=("msg.goel@gmail.com" "agussalahi551@gmail.com" "messages.goel@gmail.com")
-CURRENT_ACCOUNT_IDX=0
+# Account and alternate home configuration come from env.
+# GEMINI_ACCOUNTS should be comma-separated emails.
+# GEMINI_ALT_HOMES should be colon-separated directory paths.
+GEMINI_ACCOUNTS_RAW="${GEMINI_ACCOUNTS:-}"
+GEMINI_ALT_HOMES_RAW="${GEMINI_ALT_HOMES:-$HOME/.gemini}"
+CURRENT_ACCOUNT_IDX="${CURRENT_ACCOUNT_IDX:-0}"
+IFS=',' read -r -a GEMINI_ACCOUNTS <<< "$GEMINI_ACCOUNTS_RAW"
+IFS=':' read -r -a GEMINI_ALT_HOMES <<< "$GEMINI_ALT_HOMES_RAW"
 
-# Alternate Gemini config directories (for OAuth switching)
-GEMINI_ALT_HOMES=(
-  "$HOME/.gemini"
-  "$HOME/.gcli-b-home/.gemini"
-  "$HOME/.gcli-oci-noauth-home/.gemini"
-)
+if [ "${#GEMINI_ACCOUNTS[@]}" -eq 0 ] || [ -z "${GEMINI_ACCOUNTS[0]:-}" ]; then
+  if [ -f "$GEMINI_CONFIG_DIR/google_accounts.json" ] && command -v jq >/dev/null 2>&1; then
+    mapfile -t GEMINI_ACCOUNTS < <(jq -r '.accounts[]? | select(type=="string" and length>0)' "$GEMINI_CONFIG_DIR/google_accounts.json" 2>/dev/null || true)
+  fi
+fi
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -57,6 +60,7 @@ switch_gemini_account() {
   local target_account="$1"
   local accounts_file="$GEMINI_CONFIG_DIR/google_accounts.json"
   local creds_file="$GEMINI_CONFIG_DIR/oauth_creds.json"
+  local switched=false
   
   # Check if we have dedicated credentials for this account
   local dedicated_creds
@@ -66,6 +70,7 @@ switch_gemini_account() {
     # Copy dedicated creds to active
     cp "$dedicated_creds" "$creds_file"
     echo "Switched OAuth credentials to: $target_account"
+    switched=true
   else
     # Try alternate Gemini homes
     for alt_home in "${GEMINI_ALT_HOMES[@]}"; do
@@ -76,13 +81,20 @@ switch_gemini_account() {
           local alt_active
           alt_active=$(jq -r '.active' "$alt_accounts" 2>/dev/null || echo "")
           if [ "$alt_active" = "$target_account" ]; then
+            [ -f "$creds_file" ] && cp "$creds_file" "${creds_file}.bak"
             cp "$alt_creds" "$creds_file"
             echo "Switched OAuth credentials from $alt_home to: $target_account"
+            switched=true
             break
           fi
         fi
       fi
     done
+  fi
+
+  if [ "$switched" != "true" ]; then
+    echo "Error: no credentials found for account $target_account" >&2
+    return 1
   fi
   
   # Update google_accounts.json active field
@@ -94,6 +106,7 @@ switch_gemini_account() {
     fi
     echo "Updated active account to: $target_account"
   fi
+  return 0
 }
 
 build_diff() {
@@ -139,6 +152,10 @@ main() {
     echo "Error: repo path does not exist: $REPO_PATH" >&2
     exit 1
   fi
+  if [ "${#GEMINI_ACCOUNTS[@]}" -eq 0 ] || [ -z "${GEMINI_ACCOUNTS[0]:-}" ]; then
+    echo "Error: no Gemini accounts configured. Set GEMINI_ACCOUNTS (comma-separated)." >&2
+    exit 1
+  fi
 
   local diff
   diff="$(build_diff)"
@@ -169,7 +186,11 @@ main() {
     echo "Attempt $attempt/$MAX_RETRIES using account: $current_account"
     
     # Switch to the account we want to try
-    switch_gemini_account "$current_account"
+    if ! switch_gemini_account "$current_account"; then
+      rate_limited_accounts+=("$current_account")
+      CURRENT_ACCOUNT_IDX=$(( (CURRENT_ACCOUNT_IDX + 1) % ${#GEMINI_ACCOUNTS[@]} ))
+      continue
+    fi
     
     result="$(run_gemini_review "$diff")"
     exit_code=$?
@@ -192,6 +213,11 @@ main() {
     # Success or other error - don't retry
     break
   done
+
+  if [ "$attempt" -ge "$MAX_RETRIES" ] && is_rate_limited "$result"; then
+    echo "Error: All Gemini accounts rate-limited after $MAX_RETRIES attempts" >&2
+    exit 1
+  fi
 
   if [ $exit_code -ne 0 ] && [ $exit_code -ne 124 ]; then
     # Check if result contains actual review content despite error code

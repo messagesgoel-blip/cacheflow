@@ -38,8 +38,7 @@ fi
 
 EXTRA_ARGS=()
 if [ -n "${CODERO_SEMGREP_EXTRA_ARGS:-}" ]; then
-  # shellcheck disable=SC2206
-  EXTRA_ARGS=( ${CODERO_SEMGREP_EXTRA_ARGS} )
+  read -r -a EXTRA_ARGS <<< "$CODERO_SEMGREP_EXTRA_ARGS"
 fi
 
 echo "--- CODERO SEMGREP PASS (Gate 0) ---"

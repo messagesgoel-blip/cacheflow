@@ -76,16 +76,26 @@ load_api_config() {
   fi
   
   # Priority 4: LiteLLM proxy
-  if [ -f "$REPO_PATH/.env" ]; then
-    local litellm_key base_url
-    base_url="${LITELLM_URL:-http://localhost:4000/v1}"
+  local litellm_key base_url raw_base_url
+  litellm_key="${LITELLM_MASTER_KEY:-}"
+  base_url="${LITELLM_URL:-}"
+  if [ -z "$litellm_key" ] && [ -f "$REPO_PATH/.env" ]; then
     litellm_key="$(grep -E '^LITELLM_MASTER_KEY=' "$REPO_PATH/.env" 2>/dev/null | head -n 1 | cut -d'=' -f2- || true)"
     litellm_key="${litellm_key%\"}"
     litellm_key="${litellm_key#\"}"
-    if [ -n "$litellm_key" ]; then
-      echo "litellm|${base_url}|${litellm_key}"
-      return 0
-    fi
+  fi
+  if [ -z "$base_url" ] && [ -f "$REPO_PATH/.env" ]; then
+    raw_base_url="$(grep -E '^LITELLM_URL=' "$REPO_PATH/.env" 2>/dev/null | head -n 1 | cut -d'=' -f2- || true)"
+    raw_base_url="${raw_base_url%\"}"
+    raw_base_url="${raw_base_url#\"}"
+    base_url="${raw_base_url:-http://localhost:4000/v1}"
+  fi
+  base_url="${base_url:-http://localhost:4000/v1}"
+  base_url="${base_url%\"}"
+  base_url="${base_url#\"}"
+  if [ -n "$litellm_key" ]; then
+    echo "litellm|${base_url}|${litellm_key}"
+    return 0
   fi
   
   return 1
@@ -184,8 +194,12 @@ main() {
       ;;
   esac
   
-  if ! timeout "$TIMEOUT_SEC" aider "${aider_args[@]}" 2>&1; then
-    exit_code=$?
+  local exit_code
+  set +e
+  timeout "$TIMEOUT_SEC" aider "${aider_args[@]}" 2>&1
+  exit_code=$?
+  set -e
+  if [ $exit_code -ne 0 ]; then
     if [ $exit_code -eq 124 ]; then
       echo "Error: Aider review timed out after ${TIMEOUT_SEC}s"
       exit 1

@@ -14,7 +14,9 @@ if [ ! -f "$LIST_FILE" ]; then
 fi
 
 while IFS= read -r line; do
-  repo="$(echo "$line" | sed 's/#.*$//' | xargs)"
+  repo="${line%%#*}"
+  repo="${repo#"${repo%%[![:space:]]*}"}"
+  repo="${repo%"${repo##*[![:space:]]}"}"
   [ -z "$repo" ] && continue
   "$SCRIPT_DIR/install-pre-commit.sh" "$repo"
 done < "$LIST_FILE"

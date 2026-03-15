@@ -10,10 +10,10 @@
 |------|------|-------|----------|--------|
 | 1 | Copilot | `gpt-5-mini` | GitHub OAuth | ✅ Primary |
 | 2 | Semgrep | `p/default` | Semgrep OSS engine | 🔒 Mandatory |
-| 2 | Aider | `MiniMax-M2.5` | MiniMax API | ✅ Primary |
-| 3 | Gemini | `gemini-2.5-flash-lite` | Google OAuth | ✅ Primary |
-| 4 | PR-Agent | LiteLLM models | LiteLLM proxy | ⚡ Fallback |
-| 5 | CodeRabbit | - | CodeRabbit API | ⚡ Fallback |
+| 3 | Aider | `MiniMax-M2.5` | MiniMax API | ✅ Primary |
+| 4 | Gemini | `gemini-2.5-flash-lite` | Google OAuth | ✅ Primary |
+| 5 | PR-Agent | LiteLLM models | LiteLLM proxy | ⚡ Fallback |
+| 6 | CodeRabbit | - | CodeRabbit API | ⚡ Fallback |
 
 **Rules:**
 - Semgrep gate must pass
@@ -53,12 +53,12 @@ Supports multiple Gemini accounts with automatic switching on rate limit.
 ~/.gemini/
 
 # Alternate OAuth directories (for account switching)
-~/.gcli-b-home/.gemini/           # Alternate account
-~/.gcli-oci-noauth-home/.gemini/  # Another alternate
+~/.gcli-<ACCOUNT>-home/.gemini/            # Alternate account
+~/.gcli-<SECONDARY_ACCOUNT>-home/.gemini/  # Another alternate
 
 # Dedicated credential files
-~/.gemini/oauth_creds.msg.goel.json
-~/.gemini/oauth_creds.agussalahi.json
+~/.gemini/oauth_creds.<ACCOUNT>.json
+~/.gemini/oauth_creds.<SECONDARY_ACCOUNT>.json
 ```
 
 **Available Models:**
@@ -68,8 +68,8 @@ Supports multiple Gemini accounts with automatic switching on rate limit.
 
 ## Free Model Options
 
-### OpenRouter Free Models (Gate 2 fallback)
-```
+### OpenRouter Free Models (Gate 3 fallback)
+```text
 openrouter/qwen/qwen3-coder:free
 openrouter/mistralai/mistral-small-3.1-24b-instruct:free
 openrouter/google/gemini-2.0-flash-exp:free
@@ -89,7 +89,7 @@ CODERO_AIDER_MODEL=ollama/llama3
 
 ## File Structure
 
-```
+```text
 scripts/review/
 ├── two-pass-review.sh      # Orchestrator (runs all gates)
 ├── copilot-third-pass.sh   # Gate 1 - GitHub Copilot CLI
@@ -124,9 +124,11 @@ cp .env.example .env
 bash scripts/review/install-pre-commit.sh
 
 # 5. Test
+touch src/file.js
 echo "// test" >> src/file.js && git add src/file.js
 bash scripts/review/two-pass-review.sh
-git checkout -- src/file.js
+git reset -- src/file.js
+rm -f src/file.js
 ```
 
 ## Configuration Variables
@@ -199,7 +201,7 @@ pip install --break-system-packages -U semgrep
 bash scripts/review/semgrep-zero-pass.sh
 ```
 
-### Gate 2 (Aider) Issues
+### Gate 3 (Aider) Issues
 ```bash
 # Test API key
 curl -X POST https://api.minimax.chat/v1/chat/completions \
@@ -211,17 +213,17 @@ curl -X POST https://api.minimax.chat/v1/chat/completions \
 aider --version
 ```
 
-### Gate 3 (Gemini) Rate Limited
+### Gate 4 (Gemini) Rate Limited
 ```bash
 # Check available accounts
 cat ~/.gemini/google_accounts.json
 
 # Switch account manually
-jq '.active = "agussalahi551@gmail.com"' ~/.gemini/google_accounts.json > /tmp/accounts.json
+jq '.active = "user@example.com"' ~/.gemini/google_accounts.json > /tmp/accounts.json
 mv /tmp/accounts.json ~/.gemini/google_accounts.json
 ```
 
-### Gate 5 (CodeRabbit) Timeout
+### Gate 6 (CodeRabbit) Timeout
 ```bash
 # Increase timeout
 CODERO_CODERABBIT_TIMEOUT_SEC=300
@@ -233,7 +235,7 @@ coderabbit auth status
 ## Logs
 
 Review logs are stored in:
-```
+```text
 .codero/review-logs/
 ├── orchestrator-TIMESTAMP.log
 ├── semgrep-zero-pass-TIMESTAMP.log

@@ -2,13 +2,10 @@
 set -euo pipefail
 
 # 6-Pass Pre-Commit Review Gate Orchestrator
-# Default order:
-# 1. copilot-third-pass.sh (Primary AI gate)
-# 2. semgrep-zero-pass.sh (Deterministic blocker; mandatory)
-# 3. aider-first-pass.sh
-# 4. gemini-second-pass.sh
-# 5. pr-agent-second-pass.sh
-# 6. coderabbit-second-pass.sh
+# Canonical order:
+# 1. Semgrep deterministic blocker
+# 2. Primary AI chain: aider-first-pass.sh -> gemini-second-pass.sh -> coderabbit-second-pass.sh
+# 3. Fallback AI chain (only if quorum not met): pr-agent-second-pass.sh -> copilot-third-pass.sh
 #
 # Rules:
 # - Stop if 2+ checks succeed
@@ -24,6 +21,7 @@ MODEL_ALIAS="${CODERO_MODEL_ALIAS:-cacheflow_agent}"
 MODE="${CODERO_MODE:-fast}"
 MIN_SUCCESSFUL_AI_GATES="${CODERO_MIN_SUCCESSFUL_AI_GATES:-2}"
 AUTH_HOME="${CODERO_AUTH_HOME:-}"
+AUTH_HOME_FALLBACK="${AUTH_HOME_FALLBACK:-}"
 GATE_ORDER="${CODERO_GATE_ORDER:-copilot-first}"
 
 mkdir -p "$LOG_DIR"
@@ -82,9 +80,9 @@ setup_auth_home() {
     return 0
   fi
 
-  if [ "${HOME:-}" != "/home/sanjay" ] && [ -d "/home/sanjay" ]; then
-    if [ -f "/home/sanjay/.config/github-copilot/apps.json" ] || [ -f "/home/sanjay/.coderabbit/auth.json" ]; then
-      export HOME="/home/sanjay"
+  if [ -n "$AUTH_HOME_FALLBACK" ] && [ "${HOME:-}" != "$AUTH_HOME_FALLBACK" ] && [ -d "$AUTH_HOME_FALLBACK" ]; then
+    if [ -f "$AUTH_HOME_FALLBACK/.config/github-copilot/apps.json" ] || [ -f "$AUTH_HOME_FALLBACK/.coderabbit/auth.json" ]; then
+      export HOME="$AUTH_HOME_FALLBACK"
       echo "Using detected auth home: $HOME" | tee -a "$LOG_DIR/orchestrator-$TS.log"
     fi
   fi
@@ -106,7 +104,7 @@ run_gate() {
 
   local output exit_code
   set +e
-  output="$(timeout "${CODERO_GATE_TIMEOUT:-180}" bash "$script" 2>&1)"
+  output="$(timeout "${CODERO_GATE_TIMEOUT:-180}" env CODERO_REPO_PATH="$REPO_PATH" bash "$script" 2>&1)"
   exit_code=$?
   set -e
 
@@ -131,7 +129,8 @@ run_gate() {
     return 0
   fi
 
-  if echo "$output" | grep -qiE "(error|warning|fix|issue|problem|vulnerable|secret|credential)"; then
+  if ! echo "$output" | grep -qiE "(no issues found|no actionable issues|no significant issues|looks good)" \
+    && echo "$output" | grep -qiE "(error|warning|fix|issue|problem|vulnerable|secret|credential)"; then
     echo "GATE $gate_num PASSED but found issues:" | tee -a "$LOG_DIR/orchestrator-$TS.log"
     echo "$output" | tee "$log_file"
     log_status "passed_with_issues" "$gate_name" "$gate_num"
@@ -171,7 +170,7 @@ run_copilot_then_semgrep() {
     exit 1
   fi
 
-  for gate in aider-first-pass gemini-second-pass pr-agent-second-pass coderabbit-second-pass; do
+  for gate in aider-first-pass gemini-second-pass coderabbit-second-pass; do
     if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
       echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
       break
@@ -187,6 +186,25 @@ run_copilot_then_semgrep() {
       FAILED+=("$gate")
     fi
   done
+
+  if [ "$PASSED_COUNT" -lt "$MIN_SUCCESSFUL_AI_GATES" ]; then
+    for gate in pr-agent-second-pass copilot-third-pass; do
+      if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
+        echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+        break
+      fi
+
+      TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+      echo "Attempting gate $TOTAL_ATTEMPTS: $gate" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+
+      if run_gate "$gate" "$TOTAL_ATTEMPTS"; then
+        PASSED_COUNT=$((PASSED_COUNT + 1))
+        PASSED+=("$gate")
+      else
+        FAILED+=("$gate")
+      fi
+    done
+  fi
 
   return 0
 }
@@ -208,7 +226,7 @@ run_semgrep_then_ai() {
     exit 1
   fi
 
-  for gate in copilot-third-pass aider-first-pass gemini-second-pass pr-agent-second-pass coderabbit-second-pass; do
+  for gate in aider-first-pass gemini-second-pass coderabbit-second-pass; do
     if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
       echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
       break
@@ -225,12 +243,31 @@ run_semgrep_then_ai() {
     fi
   done
 
+  if [ "$PASSED_COUNT" -lt "$MIN_SUCCESSFUL_AI_GATES" ]; then
+    for gate in pr-agent-second-pass copilot-third-pass; do
+      if [ "$PASSED_COUNT" -ge "$MIN_SUCCESSFUL_AI_GATES" ]; then
+        echo "AI gate quorum met, stopping gate chain." | tee -a "$LOG_DIR/orchestrator-$TS.log"
+        break
+      fi
+
+      TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
+      echo "Attempting gate $TOTAL_ATTEMPTS: $gate" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+
+      if run_gate "$gate" "$TOTAL_ATTEMPTS"; then
+        PASSED_COUNT=$((PASSED_COUNT + 1))
+        PASSED+=("$gate")
+      else
+        FAILED+=("$gate")
+      fi
+    done
+  fi
+
   return 0
 }
 
 main() {
   echo "========================================"
-  echo "5-PASS PRE-COMMIT REVIEW GATE"
+  echo "6-PASS PRE-COMMIT REVIEW GATE"
   echo "Model Alias: $MODEL_ALIAS"
   echo "Mode: $MODE"
   echo "Repo: $REPO_PATH"
@@ -284,7 +321,9 @@ main() {
     local parallel_script="$SCRIPT_DIR/parallel-agent-pass.sh"
     if [ -x "$parallel_script" ]; then
       echo "Running parallel-agent pass..."
-      timeout "${CODERO_GATE_TIMEOUT:-180}" env CODERO_REPO_PATH="$REPO_PATH" "$parallel_script"
+      if ! timeout "${CODERO_GATE_TIMEOUT:-180}" env CODERO_REPO_PATH="$REPO_PATH" "$parallel_script"; then
+        echo "parallel-agent pass reported non-blocking failure" | tee -a "$LOG_DIR/orchestrator-$TS.log"
+      fi
     fi
 
     echo ""

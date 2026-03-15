@@ -27,9 +27,12 @@ main() {
   echo "--- CODERO CODERABBIT FALLBACK ($CODERABBIT_MODEL) ---"
   echo "Timeout: ${TIMEOUT_SEC}s"
 
-  local result
-  if ! result="$(timeout "$TIMEOUT_SEC" coderabbit review --type uncommitted --plain --no-color "$@" 2>&1)"; then
-    exit_code=$?
+  local result exit_code
+  set +e
+  result="$(cd "$REPO_PATH" && timeout "$TIMEOUT_SEC" coderabbit review --type uncommitted --plain --no-color "$@" 2>&1)"
+  exit_code=$?
+  set -e
+  if [ $exit_code -ne 0 ]; then
     if [ $exit_code -eq 124 ]; then
       echo "Error: CodeRabbit review timed out after ${TIMEOUT_SEC}s"
       exit 1

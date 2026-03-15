@@ -84,9 +84,12 @@ Return concise, prioritized findings with code locations.
 DIFF:
 $diff"
 
-  local result
-  if ! result="$(timeout "$TIMEOUT_SEC" copilot --model "$COPILOT_MODEL" -p "$prompt" 2>&1)"; then
-    exit_code=$?
+  local result exit_code
+  set +e
+  result="$(timeout "$TIMEOUT_SEC" copilot --model "$COPILOT_MODEL" -p "$prompt" 2>&1)"
+  exit_code=$?
+  set -e
+  if [ $exit_code -ne 0 ]; then
     if [ -n "$_saved_gh_token" ]; then
       export GH_TOKEN="$_saved_gh_token"
     fi
@@ -133,12 +136,15 @@ Return concise, prioritized findings with code locations.
 DIFF:
 $diff"
 
-  local result
-  if ! result="$(timeout "$TIMEOUT_SEC" OPENAI_API_KEY="$api_key" openai api chat.completions.create \
+  local result exit_code
+  set +e
+  result="$(timeout "$TIMEOUT_SEC" env OPENAI_API_KEY="$api_key" openai api chat.completions.create \
     -m "$OPENAI_MODEL" \
     -g system "You are a strict code reviewer. Focus on bugs, security, and best practices." \
-    -g user "$prompt" 2>&1)"; then
-    exit_code=$?
+    -g user "$prompt" 2>&1)"
+  exit_code=$?
+  set -e
+  if [ $exit_code -ne 0 ]; then
     if [ $exit_code -eq 124 ]; then
       echo "Error: OpenAI review timed out after ${TIMEOUT_SEC}s"
       return 1

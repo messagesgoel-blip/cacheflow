@@ -21,10 +21,22 @@ load_litellm_key() {
     echo "$LITELLM_MASTER_KEY"
     return 0
   fi
+  if [ -n "${CODERO_LITELLM_MASTER_KEY:-}" ]; then
+    echo "$CODERO_LITELLM_MASTER_KEY"
+    return 0
+  fi
+  if [ -n "${LITELLM_API_KEY:-}" ]; then
+    echo "$LITELLM_API_KEY"
+    return 0
+  fi
+  if [ -n "${OPENAI_API_KEY:-}" ]; then
+    echo "$OPENAI_API_KEY"
+    return 0
+  fi
 
   if [ -f "$REPO_PATH/.env" ]; then
     local raw
-    raw="$(grep -E '^(LITELLM_MASTER_KEY|LITELLM_API_KEY|OPENAI_API_KEY)=' "$REPO_PATH/.env" | head -n 1 | cut -d'=' -f2- || true)"
+    raw="$(grep -E '^(LITELLM_MASTER_KEY|CODERO_LITELLM_MASTER_KEY|LITELLM_API_KEY|OPENAI_API_KEY)=' "$REPO_PATH/.env" | head -n 1 | cut -d'=' -f2- || true)"
     raw="${raw%\"}"
     raw="${raw#\"}"
     raw="${raw%\'}"

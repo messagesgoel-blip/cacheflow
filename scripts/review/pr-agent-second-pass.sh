@@ -20,14 +20,26 @@ require_cmd() {
 }
 
 load_litellm_key() {
+  if [ -n "${CODERO_LITELLM_MASTER_KEY:-}" ]; then
+    echo "$CODERO_LITELLM_MASTER_KEY"
+    return 0
+  fi
   if [ -n "${LITELLM_MASTER_KEY:-}" ]; then
     echo "$LITELLM_MASTER_KEY"
+    return 0
+  fi
+  if [ -n "${LITELLM_API_KEY:-}" ]; then
+    echo "$LITELLM_API_KEY"
+    return 0
+  fi
+  if [ -n "${OPENAI_API_KEY:-}" ]; then
+    echo "$OPENAI_API_KEY"
     return 0
   fi
 
   if [ -f "$REPO_PATH/.env" ]; then
     local raw
-    raw="$(grep -E '^(LITELLM_MASTER_KEY|LITELLM_API_KEY|OPENAI_API_KEY)=' "$REPO_PATH/.env" | head -n 1 | cut -d'=' -f2- || true)"
+    raw="$(grep -E '^(CODERO_LITELLM_MASTER_KEY|LITELLM_MASTER_KEY|LITELLM_API_KEY|OPENAI_API_KEY)=' "$REPO_PATH/.env" | head -n 1 | cut -d'=' -f2- || true)"
     raw="${raw%\"}"
     raw="${raw#\"}"
     raw="${raw%\'}"
@@ -90,17 +102,28 @@ main() {
   echo "Model: $PRIMARY_MODEL"
   echo "Fallback models: $fallback_json"
 
-  local result
-  if ! result="$(timeout "$TIMEOUT_SEC" sh -c "
-    cd '$REPO_PATH' &&
-    OPENAI__API_BASE='$litellm_base' \
-    OPENAI__KEY='$litellm_key' \
-    CONFIG__MODEL='$PRIMARY_MODEL' \
-    CONFIG__FALLBACK_MODELS='$fallback_json' \
-    GITHUB__USER_TOKEN='$github_token' \
-    $PR_AGENT_BIN --help 2>&1
-  " 2>&1)"; then
-    exit_code=$?
+  local pr_url result exit_code
+  pr_url="${CODERO_PR_URL:-${PR_URL:-}}"
+  if [ -z "$pr_url" ]; then
+    echo "Error: PR URL not found. Set CODERO_PR_URL or PR_URL for PR-Agent review." >&2
+    exit 1
+  fi
+
+  set +e
+  result="$(
+    timeout "$TIMEOUT_SEC" sh -c '
+      cd "$1" &&
+      OPENAI__API_BASE="$2" \
+      OPENAI__KEY="$3" \
+      CONFIG__MODEL="$4" \
+      CONFIG__FALLBACK_MODELS="$5" \
+      GITHUB__USER_TOKEN="$6" \
+      "$7" review --pr_url "$8" 2>&1
+    ' -- "$REPO_PATH" "$litellm_base" "$litellm_key" "$PRIMARY_MODEL" "$fallback_json" "$github_token" "$PR_AGENT_BIN" "$pr_url"
+  )"
+  exit_code=$?
+  set -e
+  if [ $exit_code -ne 0 ]; then
     if [ $exit_code -eq 124 ]; then
       echo "Error: PR-Agent review timed out after ${TIMEOUT_SEC}s"
       exit 1

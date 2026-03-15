@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install Codero 4-pass review as pre-commit hook for a target repo.
+# Install Codero 6-pass review as pre-commit hook for a target repo.
 # Supports git worktrees via git rev-parse --git-common-dir.
 
 if [ "$#" -lt 1 ]; then
@@ -24,21 +24,28 @@ HOOKS_DIR="$(git -C "$REPO_PATH" rev-parse --git-common-dir)/hooks"
 mkdir -p "$HOOKS_DIR"
 
 HOOK_PATH="$HOOKS_DIR/pre-commit"
+TMP_HOOK="$(mktemp)"
+cat > "$TMP_HOOK" <<HOOK
+#!/usr/bin/env bash
+set -euo pipefail
+export CODERO_REPO_PATH="\$(git rev-parse --show-toplevel)"
+export CODERO_MODEL_ALIAS="cacheflow_agent"
+exec "$CODERO_ROOT/scripts/review/two-pass-review.sh"
+HOOK
+if [ -f "$HOOK_PATH" ] && cmp -s "$TMP_HOOK" "$HOOK_PATH"; then
+  rm -f "$TMP_HOOK"
+  echo "Pre-commit hook already up to date: $HOOK_PATH"
+  exit 0
+fi
 
 if [ -f "$HOOK_PATH" ]; then
   cp "$HOOK_PATH" "$HOOK_PATH.bak.$(date +%Y%m%d-%H%M%S)"
 fi
 
-cat > "$HOOK_PATH" <<'HOOK'
-#!/usr/bin/env bash
-set -euo pipefail
-export CODERO_REPO_PATH="$(git rev-parse --show-toplevel)"
-export CODERO_MODEL_ALIAS="cacheflow_agent"
-exec "$CODERO_ROOT/scripts/review/two-pass-review.sh"
-HOOK
+mv "$TMP_HOOK" "$HOOK_PATH"
 
 chmod +x "$HOOK_PATH"
 
-echo "Installed Codero 4-pass pre-commit hook: $HOOK_PATH"
+echo "Installed Codero 6-pass pre-commit hook: $HOOK_PATH"
 echo "  Model alias: cacheflow_agent"
 echo "  Mode: fast (default)"

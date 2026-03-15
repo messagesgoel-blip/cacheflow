@@ -173,6 +173,11 @@ main() {
     exit 0
   fi
 
+  if [ ! -d "$REPO_PATH" ] || ! git -C "$REPO_PATH" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    log "parallel-agent pass failed: invalid repo path '$REPO_PATH'"
+    exit 1
+  fi
+
   diff="$(build_diff)"
   if [ -z "$diff" ]; then
     log "parallel-agent pass skipped: no diff"
