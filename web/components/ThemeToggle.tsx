@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Button } from '@/components/ui/Button'
 
 export default function ThemeToggle() {
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -56,48 +57,29 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon"
         aria-label="Toggle dark mode"
         style={{
           width: '40px',
           height: '40px',
-          borderRadius: '10px',
-          backgroundColor: 'transparent',
-          border: '1px solid rgba(255,255,255,0.1)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease',
         }}
-      >
-        <div style={{ width: '20px', height: '20px' }} />
-      </button>
+      />
     )
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={toggleTheme}
-      type="button"
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={`Toggle dark mode (Ctrl+Shift+D)`}
+      title="Toggle dark mode (Ctrl+Shift+D)"
       style={{
         width: '40px',
         height: '40px',
-        borderRadius: '10px',
-        backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-        border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: 'scale(1)',
       }}
-      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
     >
       <div style={{ position: 'relative', width: '20px', height: '20px' }}>
         {/* Sun Icon */}
@@ -110,10 +92,10 @@ export default function ThemeToggle() {
             justifyContent: 'center',
             opacity: isDark ? 0 : 1,
             transform: isDark ? 'rotate(90deg) scale(0)' : 'rotate(0) scale(1)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: 'all var(--transition-base)',
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="5" />
             <line x1="12" y1="1" x2="12" y2="3" />
             <line x1="12" y1="21" x2="12" y2="23" />
@@ -136,14 +118,14 @@ export default function ThemeToggle() {
             justifyContent: 'center',
             opacity: isDark ? 1 : 0,
             transform: isDark ? 'rotate(0) scale(1)' : 'rotate(-90deg) scale(0)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: 'all var(--transition-base)',
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fcd34d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
           </svg>
         </div>
       </div>
-    </button>
+    </Button>
   )
 }
