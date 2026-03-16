@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './styles/theme.css';
+@import './styles/animations.css';
+
 :root,
 html.dark {
   --cf-bg0: #04060d;

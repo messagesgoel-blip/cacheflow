@@ -10,6 +10,7 @@
 'use client';
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/Card';
 
 interface EmptyStateProps {
   /** Icon emoji or component to display */
@@ -37,29 +38,31 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   'data-testid': testId,
 }) => {
   return (
-    <div
+    <Card
       data-testid={testId}
-      className="flex flex-col items-center justify-center py-16 px-4 text-center"
+      className="flex flex-col items-center justify-center py-12 px-6 text-center border-dashed"
     >
-      {icon && (
-        <div className="text-5xl mb-4 opacity-40">
-          {icon}
-        </div>
-      )}
-      <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {title}
-      </p>
-      {description && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          {description}
+      <CardContent className="flex flex-col items-center">
+        {icon && (
+          <div className="text-5xl mb-4 opacity-40">
+            {icon}
+          </div>
+        )}
+        <p className="text-lg font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+          {title}
         </p>
-      )}
-      {action && (
-        <div className="mt-4">
-          {action}
-        </div>
-      )}
-    </div>
+        {description && (
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {description}
+          </p>
+        )}
+        {action && (
+          <div className="mt-4">
+            {action}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
