@@ -19,8 +19,25 @@ interface TabsProps {
 }
 
 const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps) => {
-  const [activeTab, setActiveTab] = React.useState(defaultValue || tabs[0]?.value);
+  // Normalize to first enabled tab if defaultValue is not in tabs or is disabled
+  const getInitialValue = () => {
+    if (value !== undefined) return value;
+    if (defaultValue && tabs.some(t => t.value === defaultValue && !t.disabled)) return defaultValue;
+    return tabs.find(t => !t.disabled)?.value || tabs[0]?.value;
+  };
+
+  const [activeTab, setActiveTab] = React.useState(getInitialValue);
   const tabRefs = React.useRef<Map<string, HTMLButtonElement>>(new Map());
+
+  // Update activeTab if value/defaultValue changes to invalid
+  React.useEffect(() => {
+    if (value !== undefined) {
+      if (!tabs.some(t => t.value === value && !t.disabled)) {
+        const fallback = tabs.find(t => !t.disabled)?.value;
+        if (fallback) setActiveTab(fallback);
+      }
+    }
+  }, [value, tabs]);
 
   const currentValue = value !== undefined ? value : activeTab;
 
@@ -52,6 +69,14 @@ const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps
     tabRefs.current.get(nextTab.value)?.focus();
   };
 
+  const setTabRef = (value: string) => (el: HTMLButtonElement | null) => {
+    if (el) {
+      tabRefs.current.set(value, el);
+    } else {
+      tabRefs.current.delete(value);
+    }
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <div role="tablist" className="flex border-b border-[var(--border-subtle)]">
@@ -66,7 +91,7 @@ const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps
             aria-controls={`panel-${tab.value}`}
             aria-disabled={tab.disabled}
             tabIndex={tab.disabled ? -1 : (currentValue === tab.value ? 0 : -1)}
-            ref={(el) => { if (el) tabRefs.current.set(tab.value, el); }}
+            ref={setTabRef(tab.value)}
             onClick={() => !tab.disabled && handleTabClick(tab.value)}
             onKeyDown={(e) => !tab.disabled && handleKeyDown(e, tab.value)}
             disabled={tab.disabled}
