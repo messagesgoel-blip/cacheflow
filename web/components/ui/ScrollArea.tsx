@@ -7,10 +7,16 @@ interface ScrollAreaProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
   ({ className, children, orientation = "vertical", ...props }, ref) => {
+    const overflowStyles = {
+      vertical: "overflow-y-auto overflow-x-hidden",
+      horizontal: "overflow-x-auto overflow-y-hidden",
+      both: "overflow-auto",
+    };
+
     return (
       <div
         ref={ref}
-        className={cn("relative overflow-auto", className)}
+        className={cn("relative", overflowStyles[orientation], className)}
         {...props}
       >
         {children}

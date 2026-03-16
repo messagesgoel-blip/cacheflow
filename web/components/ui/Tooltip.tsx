@@ -13,12 +13,31 @@ interface TooltipProps {
 const Tooltip = ({ content, children, side = "top", delay = 300 }: TooltipProps) => {
   const [show, setShow] = React.useState(false);
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tooltipId = React.useId();
+
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const handleMouseEnter = () => {
     timeoutRef.current = setTimeout(() => setShow(true), delay);
   };
 
   const handleMouseLeave = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setShow(false);
+  };
+
+  const handleFocus = () => {
+    timeoutRef.current = setTimeout(() => setShow(true), delay);
+  };
+
+  const handleBlur = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setShow(false);
   };
@@ -31,10 +50,20 @@ const Tooltip = ({ content, children, side = "top", delay = 300 }: TooltipProps)
   };
 
   return (
-    <div className="relative inline-flex" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      {children}
+    <div
+      className="relative inline-flex"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    >
+      <div aria-describedby={show ? tooltipId : undefined}>
+        {children}
+      </div>
       {show && (
         <div
+          id={tooltipId}
+          role="tooltip"
           className={cn(
             "absolute z-[var(--z-toast)] whitespace-nowrap rounded-md bg-[var(--bg-surface-raised)] px-3 py-1.5 text-xs text-[var(--text-primary)] shadow-[var(--shadow-medium)] animate-fade-in",
             positions[side]

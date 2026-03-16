@@ -15,10 +15,11 @@ interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>
   placeholder?: string;
   label?: string;
   onChange?: (value: string) => void;
+  "data-testid"?: string;
 }
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, options, placeholder, label, id, onChange, ...props }, ref) => {
+  ({ className, options, placeholder, label, id, onChange, "data-testid": dataTestId, ...props }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       onChange?.(e.target.value);
     };
@@ -34,6 +35,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           <select
             id={id}
             ref={ref}
+            data-testid={dataTestId || `select-${id}`}
             className={cn(
               "h-9 w-full appearance-none rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface-raised)] px-3 py-1 pr-8 text-sm text-[var(--text-primary)]",
               "hover:border-[var(--border-strong)]",

@@ -1,7 +1,7 @@
 /* Cacheflow Animations - UI Refresh v2 */
 
 /* Keyframes */
-@keyframes slideInRight {
+@keyframes slide-in-right {
   from {
     transform: translateX(100%);
     opacity: 0;
@@ -12,7 +12,7 @@
   }
 }
 
-@keyframes slideInLeft {
+@keyframes slide-in-left {
   from {
     transform: translateX(-100%);
     opacity: 0;
@@ -23,7 +23,7 @@
   }
 }
 
-@keyframes slideInUp {
+@keyframes slide-in-up {
   from {
     transform: translateY(20px);
     opacity: 0;
@@ -34,7 +34,18 @@
   }
 }
 
-@keyframes fadeIn {
+@keyframes slide-in-down {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
   from {
     opacity: 0;
   }
@@ -43,7 +54,7 @@
   }
 }
 
-@keyframes scaleIn {
+@keyframes scale-in {
   from {
     transform: scale(0.95);
     opacity: 0;
@@ -74,23 +85,27 @@
 
 /* Utility Classes */
 .animate-slide-in-right {
-  animation: slideInRight var(--transition-drawer) var(--transition-drawer);
+  animation: slide-in-right var(--transition-drawer);
 }
 
 .animate-slide-in-left {
-  animation: slideInLeft var(--transition-base);
+  animation: slide-in-left var(--transition-base);
 }
 
 .animate-slide-in-up {
-  animation: slideInUp var(--transition-base);
+  animation: slide-in-up var(--transition-base);
+}
+
+.animate-slide-in-down {
+  animation: slide-in-down var(--transition-base);
 }
 
 .animate-fade-in {
-  animation: fadeIn var(--transition-base);
+  animation: fade-in var(--transition-base);
 }
 
 .animate-scale-in {
-  animation: scaleIn var(--transition-base);
+  animation: scale-in var(--transition-base);
 }
 
 /* Card styles */
@@ -214,7 +229,7 @@
 
 /* Stagger animation helper */
 .stagger-item {
-  animation: slideInUp var(--transition-base) backwards;
+  animation: slide-in-up var(--transition-base) backwards;
 }
 
 .stagger-item:nth-child(1) { animation-delay: 0ms; }

@@ -30,10 +30,17 @@ const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="flex border-b border-[var(--border-subtle)]">
+      <div role="tablist" className="flex border-b border-[var(--border-subtle)]">
         {tabs.map((tab) => (
           <button
             key={tab.value}
+            type="button"
+            role="tab"
+            id={`tab-${tab.value}`}
+            aria-selected={currentValue === tab.value}
+            aria-controls={`panel-${tab.value}`}
+            aria-disabled={tab.disabled}
+            tabIndex={tab.disabled ? -1 : 0}
             onClick={() => !tab.disabled && handleTabClick(tab.value)}
             disabled={tab.disabled}
             className={cn(
@@ -51,7 +58,18 @@ const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps
           </button>
         ))}
       </div>
-      <div className="py-4">{activeContent}</div>
+      {tabs.map((tab) => (
+        <div
+          key={tab.value}
+          role="tabpanel"
+          id={`panel-${tab.value}`}
+          aria-labelledby={`tab-${tab.value}`}
+          hidden={currentValue !== tab.value}
+          className={currentValue === tab.value ? "py-4" : "hidden"}
+        >
+          {currentValue === tab.value && activeContent}
+        </div>
+      ))}
     </div>
   );
 };

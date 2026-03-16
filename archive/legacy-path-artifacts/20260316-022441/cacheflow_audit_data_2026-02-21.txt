@@ -1,0 +1,81 @@
+Starting CacheFlow Comprehensive Audit Data Collection...
+
+=== 1. CODEBASE & INFRASTRUCTURE ===
+--- Docker Compose Config (Checking for Resource Limits) ---
+
+--- API Directory Contents (Checking for Python Stubs) ---
+total 104
+drwxrwxr-x   9 sanjay sanjay  4096 Feb 21 19:33 .
+drwxrwxr-x   9 sanjay sanjay  4096 Feb 21 20:15 ..
+-rw-r--r--   1 sanjay sanjay   278 Feb 21 19:33 Dockerfile
+-rw-rw-r--   1 sanjay sanjay     0 Feb 21 16:42 __init__.py
+drwxrwxr-x   2 sanjay sanjay  4096 Feb 21 16:42 core
+drwxrwxr-x   2 sanjay sanjay  4096 Feb 21 16:42 db
+-rw-rw-r--   1 sanjay sanjay     0 Feb 21 16:42 main.py
+drwxrwxr-x   2 sanjay sanjay  4096 Feb 21 16:42 models
+drwxrwxr-x 142 sanjay sanjay  4096 Feb 21 19:32 node_modules
+-rw-rw-r--   1 sanjay sanjay 59146 Feb 21 19:32 package-lock.json
+-rw-rw-r--   1 sanjay sanjay   608 Feb 21 19:30 package.json
+drwxrwxr-x   2 sanjay sanjay  4096 Feb 21 16:42 routers
+drwxrwxr-x   2 sanjay sanjay  4096 Feb 21 16:42 schemas
+drwxrwxr-x   6 sanjay sanjay  4096 Feb 21 16:44 src
+
+--- Sync Worker Stub Status ---
+console.log('CacheFlow sync worker started');
+require('dotenv').config();
+const pool = require('../db/client');
+pool.query('SELECT NOW()').then(r => console.log('DB connected:', r.rows[0]));
+
+=== 2. SECURITY & ACCESS CONTROLS ===
+--- /mnt/local Permissions ---
+drwxrwxrwx 3 sanjay sanjay 4096 Feb 21 19:45 /mnt/local
+
+--- MathKit Plaintext Secrets Check ---
+/opt/docker/apps/mathkit/docker-compose.yml:      CLOUDFLARE_API_KEY: ${CF_API_TOKEN}
+/opt/docker/apps/mathkit/docker-compose.yml:      GEMINI_API_KEY: ${GEMINI_API_KEY}
+/opt/docker/apps/mathkit/docker-compose.yml:      MISTRAL_API_KEY: ${MISTRAL_API_KEY}
+/opt/docker/apps/mathkit/docker-compose.yml:      GROQ_API_KEY: ${GROQ_API_KEY}
+/opt/docker/apps/mathkit/docker-compose.yml:      TOGETHERAI_API_KEY: ${TOGETHERAI_API_KEY}
+/opt/docker/apps/mathkit/docker-compose.yml:      TOGETHER_API_KEY: ${TOGETHERAI_API_KEY}
+/opt/docker/apps/mathkit/docker-compose.yml:      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY}
+/opt/docker/apps/mathkit/docker-compose.yml:      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+/opt/docker/apps/mathkit/docker-compose.yml:      - LITELLM_API_KEY=${LITELLM_MASTER_KEY}
+/opt/docker/apps/mathkit/docker-compose.yml:      - OPENAI_API_KEY=${LITELLM_MASTER_KEY}
+
+=== 3. OPERATIONAL STABILITY ===
+--- Sync Timer Errors (Last 7 Days) ---
+Feb 21 19:20:23 instance-20260108-1933 rclone[474608]: 2026/02/21 19:20:23 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:20:53 instance-20260108-1933 rclone[475673]: 2026/02/21 19:20:53 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:21:24 instance-20260108-1933 rclone[476771]: 2026/02/21 19:21:24 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:21:54 instance-20260108-1933 rclone[477824]: 2026/02/21 19:21:54 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:22:24 instance-20260108-1933 rclone[478914]: 2026/02/21 19:22:24 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:22:54 instance-20260108-1933 rclone[479945]: 2026/02/21 19:22:54 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:23:25 instance-20260108-1933 rclone[481040]: 2026/02/21 19:23:25 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:23:55 instance-20260108-1933 rclone[482036]: 2026/02/21 19:23:55 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:24:25 instance-20260108-1933 rclone[483151]: 2026/02/21 19:24:25 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:24:55 instance-20260108-1933 rclone[484174]: 2026/02/21 19:24:55 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:25:26 instance-20260108-1933 rclone[485711]: 2026/02/21 19:25:26 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:25:56 instance-20260108-1933 rclone[486904]: 2026/02/21 19:25:56 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:26:26 instance-20260108-1933 rclone[488002]: 2026/02/21 19:26:26 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:26:56 instance-20260108-1933 rclone[488998]: 2026/02/21 19:26:56 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:27:27 instance-20260108-1933 rclone[490097]: 2026/02/21 19:27:27 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:27:57 instance-20260108-1933 rclone[491103]: 2026/02/21 19:27:57 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:28:27 instance-20260108-1933 rclone[492211]: 2026/02/21 19:28:27 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:28:57 instance-20260108-1933 rclone[493222]: 2026/02/21 19:28:57 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:29:28 instance-20260108-1933 rclone[494343]: 2026/02/21 19:29:28 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+Feb 21 19:29:58 instance-20260108-1933 rclone[495363]: 2026/02/21 19:29:58 CRITICAL: Failed to open log file: open /opt/cacheflow/logs/rclone-sync.log: no such file or directory
+
+--- Rclone Sync Service Definition ---
+ExecStart=/usr/local/bin/rclone copy /mnt/local/ \
+
+--- Database Backups Check ---
+total 16K
+-rw-rw-r-- 1 sanjay sanjay 2.2K Feb 21 18:55 cacheflow_db_20260221_185524.sql.gz
+-rw-rw-r-- 1 sanjay sanjay  11K Feb 21 19:53 pre-migration-20260221_195324.sql
+
+=== 4. TECHNICAL DEBT & PORTS ===
+--- Port 8100 & 5433 Binding ---
+LISTEN 0      4096                       0.0.0.0:8100       0.0.0.0:*                                 
+LISTEN 0      4096                       0.0.0.0:5433       0.0.0.0:*                                 
+LISTEN 0      4096                          [::]:8100          [::]:*                                 
+LISTEN 0      4096                          [::]:5433          [::]:*                                 

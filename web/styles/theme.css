@@ -1,5 +1,4 @@
 /* Cacheflow Design Tokens - UI Refresh v2 */
-@custom-variant dark (&:is(.dark *));
 
 :root {
   /* Backgrounds */

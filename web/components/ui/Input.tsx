@@ -1,13 +1,16 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  "data-testid"?: string;
+}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, "data-testid": dataTestId, ...props }, ref) => {
     return (
       <input
         type={type}
+        data-testid={dataTestId || "input"}
         className={cn(
           "flex h-9 w-full rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface-raised)] px-3 py-1 text-sm text-[var(--text-primary)] shadow-sm transition-all",
           "file:border-0 file:bg-transparent file:text-sm file:font-medium",
