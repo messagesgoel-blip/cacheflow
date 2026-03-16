@@ -227,9 +227,15 @@ def main():
     if explicit:
         base = Path(explicit).resolve()
     else:
-        canonical = Path("/home/sanjay/cacheflow_work")
-        if (canonical / ".git").exists():
-            base = canonical.resolve()
+        candidates = (
+            Path("/home/sanjay/cacheflow"),
+            Path("/opt/docker/apps/cacheflow"),
+            Path("/home/sanjay/cacheflow_work"),
+        )
+        for candidate in candidates:
+            if (candidate / ".git").exists():
+                base = candidate.resolve()
+                break
         else:
             base = Path(__file__).resolve().parent.parent
     metrics_file = base / "monitoring" / "cacheflow_metrics.yaml"

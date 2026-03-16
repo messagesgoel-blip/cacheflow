@@ -1,12 +1,22 @@
 #!/usr/bin/env bash
-# Wrapper for shared script
 set -euo pipefail
-SHARED_SCRIPT="/srv/storage/shared/agent-toolkit/bin/install-pre-commit-all.sh"
 
-if [ ! -x "$SHARED_SCRIPT" ]; then
-    echo "Error: Shared script not found: $SHARED_SCRIPT" >&2
-    exit 1
+# Install pre-commit hook on all repos listed in a text file.
+# Default file: docs/managed-repos.txt
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CODERO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+LIST_FILE="${1:-$CODERO_ROOT/docs/managed-repos.txt}"
+
+if [ ! -f "$LIST_FILE" ]; then
+  echo "Error: repo list file not found: $LIST_FILE" >&2
+  exit 1
 fi
-export CODERO_REPO_PATH="${CODERO_REPO_PATH:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
-export CODERO_MODEL_ALIAS="${CODERO_MODEL_ALIAS:-cacheflow_agent}"
-exec "$SHARED_SCRIPT" "$@"
+
+while IFS= read -r line; do
+  repo="${line%%#*}"
+  repo="${repo#"${repo%%[![:space:]]*}"}"
+  repo="${repo%"${repo##*[![:space:]]}"}"
+  [ -z "$repo" ] && continue
+  "$SCRIPT_DIR/install-pre-commit.sh" "$repo"
+done < "$LIST_FILE"

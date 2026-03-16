@@ -8,4 +8,5 @@ Rules: enforce rate limiting/backoff on all outbound calls; OAuth2 with refresh 
 
 Avoid provider-specific logic outside adapters; keep new providers conformant to interfaces and registry.
 
-Branch policy note: For the next batch onward, use `URM` issue prefix for new branches (e.g., `feat/URM-{issue-id}-{short-description}`); do not create new `LIN-*` branches.
+Branch policy note: For the next batch onward, use `CAC` issue prefix for new branches (e.g., `feat/CAC-{issue-id}-{short-description}`); do not create new `LIN-*` branches.
+Worktree rule: each agent must use a dedicated git worktree path and never share the same worktree with another agent.
