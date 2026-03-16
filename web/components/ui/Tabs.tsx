@@ -37,11 +37,22 @@ const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps
             type="button"
             role="tab"
             id={`tab-${tab.value}`}
+            data-testid={`tab-${tab.value}`}
             aria-selected={currentValue === tab.value}
             aria-controls={`panel-${tab.value}`}
             aria-disabled={tab.disabled}
-            tabIndex={tab.disabled ? -1 : 0}
+            tabIndex={tab.disabled ? -1 : (currentValue === tab.value ? 0 : -1)}
             onClick={() => !tab.disabled && handleTabClick(tab.value)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                const enabledTabs = tabs.filter(t => !t.disabled);
+                const currentIndex = enabledTabs.findIndex(t => t.value === tab.value);
+                const nextIndex = e.key === "ArrowRight" 
+                  ? (currentIndex + 1) % enabledTabs.length
+                  : (currentIndex - 1 + enabledTabs.length) % enabledTabs.length;
+                handleTabClick(enabledTabs[nextIndex].value);
+              }
+            }}
             disabled={tab.disabled}
             className={cn(
               "px-4 py-2 text-sm font-medium transition-colors relative",

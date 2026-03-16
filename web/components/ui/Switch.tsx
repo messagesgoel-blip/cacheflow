@@ -5,10 +5,11 @@ import { cn } from "@/lib/utils";
 
 interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label?: string;
+  "data-testid"?: string;
 }
 
 const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
-  ({ className, label, id, checked, defaultChecked, onChange, ...props }, ref) => {
+  ({ className, label, id, checked, defaultChecked, onChange, "data-testid": dataTestId, ...props }, ref) => {
     const [isChecked, setIsChecked] = React.useState(defaultChecked || false);
 
     React.useEffect(() => {
@@ -29,6 +30,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             type="checkbox"
             id={id}
             ref={ref}
+            data-testid={dataTestId || `switch-${id}`}
             className="sr-only peer"
             checked={isChecked}
             onChange={handleChange}
@@ -40,15 +42,14 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
               "bg-[var(--border-strong)] peer-checked:bg-[var(--accent-blue)]",
               "peer-focus:ring-2 peer-focus:ring-[var(--accent-blue)] peer-focus:ring-offset-2"
             )}
-          >
-            <div
-              className={cn(
-                "absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm",
-                "transition-transform peer-checked:translate-x-5",
-                "flex items-center justify-center"
-              )}
-            />
-          </div>
+          />
+          <div
+            className={cn(
+              "absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm",
+              "transition-transform peer-checked:translate-x-5",
+              "pointer-events-none"
+            )}
+          />
         </div>
         {label && <span className="text-sm text-[var(--text-primary)]">{label}</span>}
       </label>
