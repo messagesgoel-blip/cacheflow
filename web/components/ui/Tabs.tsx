@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +20,7 @@ interface TabsProps {
 
 const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps) => {
   const [activeTab, setActiveTab] = React.useState(defaultValue || tabs[0]?.value);
+  const tabRefs = React.useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const currentValue = value !== undefined ? value : activeTab;
 
@@ -26,7 +29,28 @@ const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps
     onValueChange?.(tabValue);
   };
 
-  const activeContent = tabs.find((tab) => tab.value === currentValue)?.content;
+  const handleKeyDown = (e: React.KeyboardEvent, tabValue: string) => {
+    const enabledTabs = tabs.filter(t => !t.disabled);
+    const currentIndex = enabledTabs.findIndex(t => t.value === tabValue);
+    let nextIndex = currentIndex;
+
+    if (e.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % enabledTabs.length;
+    } else if (e.key === "ArrowLeft") {
+      nextIndex = (currentIndex - 1 + enabledTabs.length) % enabledTabs.length;
+    } else if (e.key === "Home") {
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      nextIndex = enabledTabs.length - 1;
+    } else {
+      return;
+    }
+
+    e.preventDefault();
+    const nextTab = enabledTabs[nextIndex];
+    handleTabClick(nextTab.value);
+    tabRefs.current.get(nextTab.value)?.focus();
+  };
 
   return (
     <div className={cn("w-full", className)}>
@@ -42,17 +66,9 @@ const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps
             aria-controls={`panel-${tab.value}`}
             aria-disabled={tab.disabled}
             tabIndex={tab.disabled ? -1 : (currentValue === tab.value ? 0 : -1)}
+            ref={(el) => { if (el) tabRefs.current.set(tab.value, el); }}
             onClick={() => !tab.disabled && handleTabClick(tab.value)}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-                const enabledTabs = tabs.filter(t => !t.disabled);
-                const currentIndex = enabledTabs.findIndex(t => t.value === tab.value);
-                const nextIndex = e.key === "ArrowRight" 
-                  ? (currentIndex + 1) % enabledTabs.length
-                  : (currentIndex - 1 + enabledTabs.length) % enabledTabs.length;
-                handleTabClick(enabledTabs[nextIndex].value);
-              }
-            }}
+            onKeyDown={(e) => !tab.disabled && handleKeyDown(e, tab.value)}
             disabled={tab.disabled}
             className={cn(
               "px-4 py-2 text-sm font-medium transition-colors relative",
@@ -78,7 +94,7 @@ const Tabs = ({ tabs, defaultValue, value, onValueChange, className }: TabsProps
           hidden={currentValue !== tab.value}
           className={currentValue === tab.value ? "py-4" : "hidden"}
         >
-          {currentValue === tab.value && activeContent}
+          {tab.content}
         </div>
       ))}
     </div>
