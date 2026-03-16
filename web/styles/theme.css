@@ -1,0 +1,112 @@
+/* Cacheflow Design Tokens - UI Refresh v2 */
+
+:root {
+  /* Backgrounds */
+  --bg-app: #f2f1ed;
+  --bg-surface: #faf9f7;
+  --bg-surface-raised: #ffffff;
+  --bg-selected: #eef3fb;
+  --bg-hover: #f0eeea;
+  --bg-soft: rgba(0, 0, 0, 0.02);
+
+  /* Borders */
+  --border-subtle: rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.14);
+  --border-interactive: rgba(45, 107, 228, 0.20);
+
+  /* Text */
+  --text-primary: #1a1916;
+  --text-secondary: #555350;
+  --text-muted: #8a8784;
+  --text-on-accent: #ffffff;
+
+  /* Accent */
+  --accent-blue: #2d6be4;
+  --accent-blue-soft: rgba(45, 107, 228, 0.10);
+  --accent-blue-hover: rgba(45, 107, 228, 0.16);
+  --accent-teal: #1a8a6e;
+  --accent-teal-soft: rgba(26, 138, 110, 0.10);
+  --accent-teal-hover: rgba(26, 138, 110, 0.16);
+  --accent-amber: #b07520;
+  --accent-amber-soft: rgba(176, 117, 32, 0.10);
+  --accent-amber-hover: rgba(176, 117, 32, 0.16);
+  --accent-red: #c0392b;
+  --accent-red-soft: rgba(192, 57, 43, 0.10);
+  --accent-red-hover: rgba(192, 57, 43, 0.16);
+
+  /* Shadows */
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-strong: 0 8px 16px rgba(0, 0, 0, 0.10), 0 4px 6px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 12px 24px rgba(0, 0, 0, 0.12), 0 6px 12px rgba(0, 0, 0, 0.06);
+  --shadow-interactive: 0 2px 8px rgba(45, 107, 228, 0.15), 0 1px 3px rgba(45, 107, 228, 0.10);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-control: 12px;
+  --radius-panel: 16px;
+  --radius-card: 18px;
+  --radius-drawer: 20px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+
+  /* Motion */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-drawer: 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  --transition-bounce: 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Elevation */
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-sticky: 100;
+  --z-overlay: 1000;
+  --z-modal: 2000;
+  --z-toast: 3000;
+}
+
+/* Dark mode */
+.dark {
+  --bg-app: #111110;
+  --bg-surface: #191918;
+  --bg-surface-raised: #1f1f1e;
+  --bg-selected: #1e2535;
+  --bg-hover: #242422;
+  --bg-soft: rgba(255, 255, 255, 0.04);
+
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --border-interactive: rgba(91, 141, 238, 0.28);
+
+  --text-primary: #e8e6de;
+  --text-secondary: #9e9c96;
+  --text-muted: #5e5c58;
+  --text-on-accent: #ffffff;
+
+  --accent-blue: #5b8dee;
+  --accent-blue-soft: rgba(91, 141, 238, 0.12);
+  --accent-blue-hover: rgba(91, 141, 238, 0.20);
+  --accent-teal: #2eaa88;
+  --accent-teal-soft: rgba(46, 170, 136, 0.12);
+  --accent-teal-hover: rgba(46, 170, 136, 0.20);
+  --accent-amber: #d4913a;
+  --accent-amber-soft: rgba(212, 145, 58, 0.12);
+  --accent-amber-hover: rgba(212, 145, 58, 0.20);
+  --accent-red: #e05a4a;
+  --accent-red-soft: rgba(224, 90, 74, 0.12);
+  --accent-red-hover: rgba(224, 90, 74, 0.20);
+
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.30);
+  --shadow-strong: 0 8px 16px rgba(0, 0, 0, 0.40);
+  --shadow-elevated: 0 12px 24px rgba(0, 0, 0, 0.50);
+  --shadow-interactive: 0 2px 8px rgba(91, 141, 238, 0.20), 0 1px 3px rgba(91, 141, 238, 0.12);
+}
