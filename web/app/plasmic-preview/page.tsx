@@ -8,8 +8,11 @@
  * - web/components/plasmic/blank_project/PlasmicHomepage.tsx
  * - web/components/plasmic/blank_project/PlasmicHomepageServer.tsx
  * 
+ * Code components are registered in:
+ * - web/lib/plasmic/registerCodeComponents.ts
+ * 
  * To sync with Plasmic Studio:
- *   cd web && HOME=/home/sanjay npm run plasmic:sync
+ *   cd web && npm run plasmic:sync
  */
 "use client";
 
@@ -19,6 +22,9 @@ import {
   PlasmicHomepage,
   DefaultHomepageProps
 } from "@/components/plasmic/blank_project/PlasmicHomepage";
+
+// Register code components BEFORE rendering
+import "@/lib/plasmic/registerCodeComponents";
 
 export default function PlasmicPreviewPage() {
   return (
