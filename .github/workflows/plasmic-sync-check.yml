@@ -1,0 +1,65 @@
+name: Plasmic Sync Check
+
+on:
+  pull_request:
+    paths:
+      - "web/plasmic.json"
+      - "web/components/plasmic/**"
+      - ".github/workflows/plasmic-sync-check.yml"
+  push:
+    branches: [ main ]
+    paths:
+      - "web/plasmic.json"
+      - "web/components/plasmic/**"
+      - ".github/workflows/plasmic-sync-check.yml"
+
+jobs:
+  plasmic-sync:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web deps
+        run: npm ci
+
+      - name: Materialize Plasmic auth (if configured)
+        env:
+          PLASMIC_AUTH_B64: ${{ secrets.PLASMIC_AUTH_B64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PLASMIC_AUTH_B64:-}" ]; then
+            echo "::warning::PLASMIC_AUTH_B64 not configured; skipping sync check."
+            echo "skip=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          echo "$PLASMIC_AUTH_B64" | base64 -d > .plasmic.auth
+          chmod 600 .plasmic.auth
+
+      - name: Run Plasmic sync
+        if: env.skip != 'true'
+        env:
+          PLASMIC_PROJECT_ID: ${{ secrets.PLASMIC_PROJECT_ID || 'dBrwTrDKiTkBShUoNHTaNj' }}
+        run: |
+          set -euo pipefail
+          if [ -n "${PLASMIC_PROJECT_ID:-}" ]; then
+            npm run plasmic:sync:project
+          else
+            npm run plasmic:sync
+          fi
+
+      - name: Verify no unstaged generated drift
+        if: env.skip != 'true'
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- web/plasmic.json web/components/plasmic
