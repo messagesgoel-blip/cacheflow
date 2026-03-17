@@ -108,3 +108,72 @@ cd web && npm run plasmic:sync
 ```
 
 Then review generated diffs before merging.
+
+## Registered Code Components (Phase 2)
+
+This section documents the UI components from Cacheflow's design system that are
+registered for use in Plasmic Studio.
+
+### Currently Registered Components
+
+| Component | Display Name | Import Path | Safe Props |
+|-----------|--------------|-------------|------------|
+| Button | Cacheflow Button | `@/components/ui/Button` | `variant`, `size`, `children`, `disabled`, `className` |
+| Badge | Cacheflow Badge | `@/components/ui/Badge` | `variant`, `children`, `className` |
+| Spinner | Cacheflow Spinner | `@/components/ui/Spinner` | `size`, `className` |
+
+### Registration File
+
+- **Location**: `web/lib/plasmic/registerCodeComponents.ts`
+- **Test**: `web/lib/plasmic/__tests__/registerCodeComponents.test.ts`
+
+### How to Add a New Component
+
+1. **Verify eligibility**: Component must meet these criteria:
+   - No auth/session/token dependencies
+   - No data-fetch side effects for basic render
+   - Stable, simple props
+   - Presentation-only (no business logic)
+
+2. **Identify safe props**: Document which props are safe to expose:
+   - ✅ Safe: `variant`, `size`, `className`, `children`, `disabled`
+   - ❌ Forbidden: `onClick` callbacks, `type` for forms, `value`, `name`, internal IDs
+
+3. **Add registration**: Create a `registerComponent()` call in `registerCodeComponents.ts`:
+   ```typescript
+   import { BooleanType, ChoiceType, StringType } from "@plasmicapp/host/registerComponent";
+   import { YourComponent } from "@/components/ui/YourComponent";
+
+   registerComponent(YourComponent, {
+     name: "CacheflowYourComponent",
+     displayName: "Cacheflow Your Component",
+     importPath: "@/components/ui/YourComponent",
+     props: {
+       variant: {
+         type: ChoiceType,
+         options: ["default", "secondary"],
+         defaultValue: "default",
+       },
+       // ... other safe props
+     },
+   });
+   ```
+
+4. **Add test**: Add test coverage in `__tests__/registerCodeComponents.test.ts`
+
+5. **Document**: Update this table with the new component
+
+### Explicitly Forbidden Props
+
+Never expose these to Plasmic:
+- Vault tokens, provider credentials
+- Session/user authentication state
+- Internal IDs tied to private infrastructure
+- Privileged callbacks (admin actions, data mutations)
+- API endpoints or internal URLs
+
+### Ownership
+
+- **Generated**: `web/components/plasmic/**` - DO NOT EDIT
+- **Registered**: `web/lib/plasmic/registerCodeComponents.ts` - REPO OWNED
+- **Tests**: `web/lib/plasmic/__tests__/` - REPO OWNED
