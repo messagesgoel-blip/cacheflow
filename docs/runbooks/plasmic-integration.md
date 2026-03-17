@@ -104,7 +104,7 @@ Only edit files in:
 
 When Plasmic content changes, regenerate via:
 ```bash
-cd web && HOME=/home/sanjay npm run plasmic:sync
+cd web && npm run plasmic:sync
 ```
 
 Then review generated diffs before merging.
