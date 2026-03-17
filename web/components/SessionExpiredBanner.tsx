@@ -1,5 +1,8 @@
 'use client'
 
+import { Button } from '@/components/ui/Button'
+import { Alert, AlertDescription } from '@/components/ui/Alert'
+
 interface SessionExpiredBannerProps {
   accountName: string
   email?: string
@@ -16,9 +19,17 @@ export default function SessionExpiredBanner({
   return (
     <div className="relative z-50 px-3 pt-3 md:px-4">
       <div className="mx-auto max-w-[1600px]">
-        <div className="cf-panel flex flex-col gap-3 rounded-[24px] border border-[rgba(255,179,92,0.34)] bg-[linear-gradient(135deg,rgba(255,145,67,0.2),rgba(255,118,118,0.14))] px-4 py-3 text-[var(--cf-text-0)] shadow-[0_24px_60px_rgba(143,67,14,0.18)] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <Alert variant="warning" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.26)] bg-[rgba(255,255,255,0.18)] text-[var(--cf-amber)]">
+            <div 
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+              style={{ 
+                backgroundColor: 'var(--accent-amber-soft)',
+                borderColor: 'var(--accent-amber)',
+                borderWidth: '1px',
+                color: 'var(--accent-amber)'
+              }}
+            >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -29,17 +40,16 @@ export default function SessionExpiredBanner({
               </svg>
             </div>
             <div className="min-w-0">
-              <p className="cf-kicker text-[rgba(97,46,7,0.72)] dark:text-[rgba(255,236,214,0.74)]">Session attention required</p>
-              <p className="mt-1 text-base font-semibold text-[var(--cf-text-0)]">Provider session expired</p>
-              <p className="mt-1 text-sm text-[var(--cf-text-1)]">{email || accountName}</p>
+              <AlertDescription style={{ color: 'var(--text-primary)' }}>
+                Session attention required
+              </AlertDescription>
+              <p style={{ color: 'var(--text-primary)' }} className="mt-1 text-base font-semibold">Provider session expired</p>
+              <p style={{ color: 'var(--text-secondary)' }} className="mt-1 text-sm">{email || accountName}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto">
-            <button
-              onClick={onReauth}
-              className="inline-flex items-center gap-2 rounded-2xl border border-[rgba(255,255,255,0.4)] bg-[rgba(255,255,255,0.82)] px-4 py-2 text-sm font-semibold text-[#9a4900] shadow-sm transition hover:bg-white"
-            >
+            <Button variant="secondary" size="sm" onClick={onReauth}>
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -49,20 +59,15 @@ export default function SessionExpiredBanner({
                 />
               </svg>
               Re-authenticate
-            </button>
+            </Button>
 
-            <button
-              onClick={onDismiss}
-              className="rounded-2xl p-2 text-[rgba(97,46,7,0.72)] transition hover:bg-[rgba(255,255,255,0.18)] hover:text-[var(--cf-text-0)] dark:text-[rgba(255,236,214,0.74)]"
-              aria-label="Dismiss"
-              title="Dismiss for now"
-            >
+            <Button variant="ghost" size="icon" onClick={onDismiss} aria-label="Dismiss" title="Dismiss for now">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </Button>
           </div>
-        </div>
+        </Alert>
       </div>
     </div>
   )

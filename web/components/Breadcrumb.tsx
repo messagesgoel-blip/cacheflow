@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui/Button'
+
 interface BreadcrumbProps {
   path?: string
   onSegmentClick?: (path: string) => void
@@ -30,7 +32,7 @@ export default function Breadcrumb({ path = '/', onSegmentClick }: BreadcrumbPro
   }
 
   return (
-    <div className="text-sm text-gray-500 mb-4 flex items-center flex-wrap">
+    <div className="text-sm mb-4 flex items-center flex-wrap" style={{ color: 'var(--text-secondary)' }}>
       {breadcrumbSegments.map((segment, index) => {
         const isLast = index === breadcrumbSegments.length - 1
         const isClickable = onSegmentClick && !isLast
@@ -39,14 +41,20 @@ export default function Breadcrumb({ path = '/', onSegmentClick }: BreadcrumbPro
           <div key={index} className="flex items-center">
             {index > 0 && <span className="mx-2">/</span>}
             {isClickable ? (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleClick(segment.path)}
-                className="text-blue-600 hover:text-blue-800 hover:underline"
+                className="h-auto p-0 text-sm"
+                style={{ color: 'var(--accent-blue)' }}
               >
                 {segment.name}
-              </button>
+              </Button>
             ) : (
-              <span className={isLast ? 'font-medium text-gray-700' : ''}>
+              <span style={{ 
+                color: isLast ? 'var(--text-primary)' : 'var(--text-secondary)',
+                fontWeight: isLast ? 500 : 400
+              }}>
                 {segment.name}
               </span>
             )}
