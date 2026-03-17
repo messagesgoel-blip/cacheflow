@@ -28,9 +28,14 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 
-// Type helpers for Plasmic component registration
-// Using 'any' for type system since this is a blackbox integration
-type PlasmicPropType = any;
+// Guard against duplicate registration (HMR, SSR, etc.)
+const REGISTER_FLAG = "__CACHEFLOW_PLASMIC_REGISTERED__";
+if ((globalThis as any)[REGISTER_FLAG]) {
+  // Already registered in this process
+} else {
+  // Type helpers for Plasmic component registration
+  // Using 'any' for type system since this is a blackbox integration
+  type PlasmicPropType = any;
 
 /**
  * Button component registration
@@ -112,4 +117,11 @@ registerComponent(Spinner, {
   },
 });
 
-console.log("[Plasmic] Registered code components: CacheflowButton, CacheflowBadge, CacheflowSpinner");
+  // Mark as registered to prevent duplicate registration
+  (globalThis as any)[REGISTER_FLAG] = true;
+
+  // Only log in non-production
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[Plasmic] Registered code components: CacheflowButton, CacheflowBadge, CacheflowSpinner");
+  }
+}

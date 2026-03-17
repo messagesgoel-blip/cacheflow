@@ -140,7 +140,8 @@ registered for use in Plasmic Studio.
    - ❌ Forbidden: `onClick` callbacks, `type` for forms, `value`, `name`, internal IDs
 
 3. **Add registration**: Create a `registerComponent()` call in `registerCodeComponents.ts`:
-   ```typescript
+
+```typescript
    import { BooleanType, ChoiceType, StringType } from "@plasmicapp/host/registerComponent";
    import { YourComponent } from "@/components/ui/YourComponent";
 
