@@ -76,3 +76,35 @@ If `PLASMIC_AUTH_B64` is absent, the workflow exits cleanly with a warning.
   - `cd web && npm run plasmic:sync`
   - `cd web && npm run test`
   - `cd web && npm run build`
+
+## Preview Route
+
+A dedicated preview route is available for testing Plasmic content without affecting production:
+
+- **Route**: `/plasmic-preview`
+- **File**: `web/app/plasmic-preview/page.tsx`
+- **Purpose**: Preview generated Plasmic components in a safe, isolated route
+
+This route:
+- Does NOT replace the production homepage
+- Uses client-side rendering for hot-reload compatibility
+- Is intended for development/preview only
+
+## Generated Code Boundaries
+
+The following directories contain generated code and should NOT be hand-edited:
+
+- `web/components/plasmic/**` - All Plasmic-generated components
+- `web/components/plasmic/blank_project/**` - Generated page components
+- `web/components/app/page.tsx` - Generated app wrapper (if applicable)
+
+Only edit files in:
+- `web/app/plasmic-preview/` - Preview route (repo-owned)
+- `web/components/app/` - Repo-owned wrappers that can be modified
+
+When Plasmic content changes, regenerate via:
+```bash
+cd web && HOME=/home/sanjay npm run plasmic:sync
+```
+
+Then review generated diffs before merging.
