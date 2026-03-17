@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { Spinner } from '@/components/ui/Spinner'
 
 interface StorageData {
   name: string
@@ -14,10 +15,8 @@ export default function StorageChart() {
   const [loading, setLoading] = useState(true)
   const [totalGB, setTotalGB] = useState(0)
 
-  // Calculate percentage once and reuse
   const getPercent = (value: number) => totalGB > 0 ? ((value / totalGB) * 100).toFixed(1) + '%' : '0%'
 
-  // Store calculated percentages for consistency
   const percentages = data.reduce((acc, item) => {
     acc[item.name] = totalGB > 0 ? ((item.value / totalGB) * 100).toFixed(1) : '0.0'
     return acc
@@ -35,14 +34,7 @@ export default function StorageChart() {
         credentials: 'include',
       })
 
-      if (res.status === 404) {
-        // Use mock data if API not implemented
-        generateMockData()
-        return
-      }
-
-      if (res.status === 403) {
-        // Expected for non-admin users
+      if (res.status === 404 || res.status === 403) {
         generateMockData()
         return
       }
@@ -53,8 +45,7 @@ export default function StorageChart() {
 
       const apiData = await res.json()
       processApiData(apiData)
-    } catch (err) {
-      // Avoid console spam for expected admin restrictions
+    } catch {
       generateMockData()
     } finally {
       setLoading(false)
@@ -65,31 +56,18 @@ export default function StorageChart() {
     const processedData: StorageData[] = []
     let total = 0
 
-    // Map API data to chart format
     if (apiData.synced !== undefined) {
-      processedData.push({
-        name: 'Synced',
-        value: apiData.synced,
-        color: '#10b981' // green
-      })
+      processedData.push({ name: 'Synced', value: apiData.synced, color: 'var(--accent-teal)' })
       total += apiData.synced
     }
 
     if (apiData.pending !== undefined) {
-      processedData.push({
-        name: 'Pending',
-        value: apiData.pending,
-        color: '#f59e0b' // yellow
-      })
+      processedData.push({ name: 'Pending', value: apiData.pending, color: 'var(--accent-amber)' })
       total += apiData.pending
     }
 
     if (apiData.error !== undefined) {
-      processedData.push({
-        name: 'Error',
-        value: apiData.error,
-        color: '#ef4444' // red
-      })
+      processedData.push({ name: 'Error', value: apiData.error, color: 'var(--accent-red)' })
       total += apiData.error
     }
 
@@ -99,19 +77,19 @@ export default function StorageChart() {
 
   function generateMockData() {
     const mockData: StorageData[] = [
-      { name: 'Synced', value: 45, color: '#10b981' },
-      { name: 'Pending', value: 5, color: '#f59e0b' },
-      { name: 'Error', value: 2, color: '#ef4444' }
+      { name: 'Synced', value: 45, color: 'var(--accent-teal)' },
+      { name: 'Pending', value: 5, color: 'var(--accent-amber)' },
+      { name: 'Error', value: 2, color: 'var(--accent-red)' }
     ]
 
     setData(mockData)
-    setTotalGB(52) // 45 + 5 + 2
+    setTotalGB(52)
   }
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <Spinner size="lg" />
       </div>
     )
   }
@@ -119,8 +97,8 @@ export default function StorageChart() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-gray-800">Storage by Status</h3>
-        <div className="text-sm text-gray-500">
+        <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Storage by Status</h3>
+        <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           Total: <span className="font-medium">{totalGB.toFixed(1)} GB</span>
         </div>
       </div>
@@ -144,6 +122,11 @@ export default function StorageChart() {
             </Pie>
             <Tooltip
               formatter={(value) => [`${value} GB`, 'Storage']}
+              contentStyle={{ 
+                backgroundColor: 'var(--bg-surface)', 
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-panel)'
+              }}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -157,22 +140,13 @@ export default function StorageChart() {
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: item.color }}
               ></div>
-              <span className="text-gray-700">{item.name}</span>
+              <span style={{ color: 'var(--text-primary)' }}>{item.name}</span>
             </div>
-            <div className="text-gray-600">
+            <span style={{ color: 'var(--text-secondary)' }}>
               {item.value.toFixed(1)} GB ({percentages[item.name] || '0.0'}%)
-            </div>
+            </span>
           </div>
         ))}
-      </div>
-
-      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
-        <span className="font-medium text-blue-700">Status breakdown:</span>
-        <ul className="mt-1 text-blue-600 space-y-1">
-          <li>• <strong>Synced:</strong> Files successfully synchronized</li>
-          <li>• <strong>Pending:</strong> Files waiting for sync</li>
-          <li>• <strong>Error:</strong> Files with sync errors</li>
-        </ul>
       </div>
     </div>
   )

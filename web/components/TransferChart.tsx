@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { Progress } from '@/components/ui/Progress'
+import { Spinner } from '@/components/ui/Spinner'
+import { Alert, AlertDescription } from '@/components/ui/Alert'
 
 interface TransferData {
   date: string
@@ -27,13 +30,11 @@ export default function TransferChart() {
       })
 
       if (res.status === 404) {
-        // Use mock data if API not implemented
         generateMockData()
         return
       }
 
       if (res.status === 403) {
-        // Expected for non-admin users
         setIsMockData(true)
         setData([])
         setTodayTransfer(0)
@@ -47,8 +48,7 @@ export default function TransferChart() {
       const apiData = await res.json()
       setData(apiData.data || apiData || [])
       calculateTodayTransfer(apiData.data || apiData || [])
-    } catch (err) {
-      // Avoid console spam for expected admin restrictions
+    } catch {
       generateMockData()
     } finally {
       setLoading(false)
@@ -64,7 +64,7 @@ export default function TransferChart() {
       const date = new Date(today)
       date.setDate(date.getDate() - i)
       const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      const transferGB = Math.random() * 200 // Random value between 0-200 GB
+      const transferGB = Math.random() * 200
 
       mockData.push({
         date: dateStr,
@@ -89,7 +89,7 @@ export default function TransferChart() {
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <Spinner size="lg" />
       </div>
     )
   }
@@ -97,8 +97,8 @@ export default function TransferChart() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-gray-800">Daily Transfer (last 7 days)</h3>
-        <div className="text-sm text-gray-500">
+        <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Daily Transfer (last 7 days)</h3>
+        <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           Limit: <span className="font-medium">750 GB</span>
         </div>
       </div>
@@ -106,21 +106,26 @@ export default function TransferChart() {
       <div className="h-64 mb-4 relative">
         {isMockData && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 z-10">
-            <span className="text-4xl font-bold text-gray-500 -rotate-[30deg]">SAMPLE DATA</span>
+            <span className="text-4xl font-bold" style={{ color: 'var(--text-muted)', transform: 'rotate(-30deg)' }}>SAMPLE DATA</span>
           </div>
         )}
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <XAxis dataKey="date" />
-            <YAxis label={{ value: 'GB', angle: -90, position: 'insideLeft' }} />
+            <XAxis dataKey="date" tick={{ fill: 'var(--text-secondary)' }} />
+            <YAxis tick={{ fill: 'var(--text-secondary)' }} label={{ value: 'GB', angle: -90, position: 'insideLeft', fill: 'var(--text-secondary)' }} />
             <Tooltip
               formatter={(value) => [`${value} GB`, 'Transfer']}
               labelFormatter={(label) => `Date: ${label}`}
+              contentStyle={{ 
+                backgroundColor: 'var(--bg-surface)', 
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-panel)'
+              }}
             />
-            <ReferenceLine y={750} stroke="red" strokeDasharray="3 3" label="Limit" />
+            <ReferenceLine y={750} stroke="var(--accent-red)" strokeDasharray="3 3" label="Limit" />
             <Bar
               dataKey="transfer_gb"
-              fill={todayTransfer > 500 ? '#ef4444' : '#3b82f6'}
+              fill={todayTransfer > 500 ? 'var(--accent-red)' : 'var(--accent-blue)'}
               radius={[2, 2, 0, 0]}
             />
           </BarChart>
@@ -130,21 +135,18 @@ export default function TransferChart() {
       <div className="space-y-3">
         <div>
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-600">Today: {todayTransfer.toFixed(1)} GB / 750 GB</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Today: {todayTransfer.toFixed(1)} GB / 750 GB</span>
             <span className="font-medium">{todayPercentage.toFixed(1)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className={`h-2 rounded-full ${todayPercentage > 90 ? 'bg-red-500' : todayPercentage > 70 ? 'bg-yellow-500' : 'bg-green-500'}`}
-              style={{ width: `${Math.min(todayPercentage, 100)}%` }}
-            ></div>
-          </div>
+          <Progress value={todayTransfer} max={750} />
         </div>
 
         {todayTransfer > 500 && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded text-sm">
-            <span className="font-medium text-red-700">High usage alert:</span> Today's transfer is above 500 GB. Consider monitoring user activity.
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>
+              <span className="font-medium">High usage alert:</span> Today's transfer is above 500 GB. Consider monitoring user activity.
+            </AlertDescription>
+          </Alert>
         )}
       </div>
     </div>
