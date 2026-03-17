@@ -10,8 +10,14 @@ interface SheetProps {
   children: React.ReactNode;
 }
 
-const Sheet = ({ open, onOpenChange, children }: SheetProps) => {
-  return <>{children}</>;
+const SheetContext = React.createContext<{ open: boolean; onOpenChange?: (open: boolean) => void }>({ open: false });
+
+const Sheet = ({ open = false, onOpenChange, children }: SheetProps) => {
+  return (
+    <SheetContext.Provider value={{ open, onOpenChange }}>
+      {children}
+    </SheetContext.Provider>
+  );
 };
 
 interface SheetContentProps {
@@ -23,6 +29,30 @@ interface SheetContentProps {
 
 const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
   ({ className, side = "right", children, onClose }, ref) => {
+    const { open, onOpenChange } = React.useContext(SheetContext);
+    const sheetId = React.useId();
+
+    React.useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape" && open) {
+          onClose?.();
+          onOpenChange?.(false);
+        }
+      };
+
+      if (open) {
+        document.addEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = "hidden";
+      }
+
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = "";
+      };
+    }, [open, onClose, onOpenChange]);
+
+    if (!open) return null;
+
     const sides = {
       top: "top-0 left-0 right-0 w-full animate-slide-in-up",
       bottom: "bottom-0 left-0 right-0 w-full animate-slide-in-down",
@@ -35,9 +65,15 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
         <div
           className="fixed inset-0 z-[var(--z-overlay)] bg-black/50 animate-fade-in"
           onClick={onClose}
+          role="button"
+          tabIndex={0}
+          aria-label="Close sheet"
         />
         <div
           ref={ref}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Sheet"
           className={cn(
             "fixed z-[var(--z-modal)] bg-[var(--bg-surface)] shadow-[var(--shadow-elevated)]",
             sides[side],
@@ -84,18 +120,32 @@ function SheetFooter({ className, children, ...props }: React.HTMLAttributes<HTM
   );
 }
 
-function SheetClose(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+const SheetTrigger = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
+  const { onOpenChange } = React.useContext(SheetContext);
   return (
-    <button className={cn("absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)] focus:ring-offset-2 disabled:pointer-events-none", props.className)} {...props}>
+    <button {...props} onClick={(e) => {
+      props.onClick?.(e);
+      onOpenChange?.(true);
+    }} />
+  );
+};
+
+function SheetClose(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const { onOpenChange } = React.useContext(SheetContext);
+  return (
+    <button 
+      className={cn("absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)] focus:ring-offset-2 disabled:pointer-events-none", props.className)} 
+      {...props}
+      onClick={(e) => {
+        props.onClick?.(e);
+        onOpenChange?.(false);
+      }}
+    >
       <X className="h-4 w-4" />
       <span className="sr-only">Close</span>
     </button>
   );
 }
-
-const SheetTrigger = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
-  return <button {...props} />;
-};
 
 export {
   Sheet,
