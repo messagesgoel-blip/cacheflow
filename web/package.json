@@ -6,9 +6,15 @@
     "dev": "next dev -p 3010",
     "build": "next build",
     "start": "next start -p 3010",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "plasmic:init": "npx @plasmicapp/cli init --enable-skip-auth --platform nextjs --code-lang ts --code-scheme blackbox --src-dir . --plasmic-dir ./plasmic --yes",
+    "plasmic:status": "bash -lc 'npx @plasmicapp/cli status --config \"$PWD/plasmic.json\"'",
+    "plasmic:sync": "bash -lc 'npx @plasmicapp/cli sync --config \"$PWD/plasmic.json\" --yes'",
+    "plasmic:watch": "bash -lc 'npx @plasmicapp/cli watch --config \"$PWD/plasmic.json\"'",
+    "plasmic:sync:project": "bash -lc 'PROJECT_ID=\"${PLASMIC_PROJECT_ID:-dBrwTrDKiTkBShUoNHTaNj}\"; npx @plasmicapp/cli sync --config \"$PWD/plasmic.json\" --projects \"$PROJECT_ID\" --yes'"
   },
   "dependencies": {
+    "@plasmicapp/react-web": "^0.2.426",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ssh2": "^1.15.5",
     "jsonwebtoken": "^9.0.3",
