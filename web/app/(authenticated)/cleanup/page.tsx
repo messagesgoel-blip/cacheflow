@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import DuplicateGroup from '@/components/cleanup/DuplicateGroup'
 import StaleFileList from '@/components/cleanup/StaleFileList'
+import { formatFileSize } from '@/lib/utils/format'
 import { useClientSession } from '@/lib/auth/clientSession'
 
-interface DuplicateGroup {
+interface DuplicateGroupItem {
   signature: string
   fileName: string
   fileSize: number
@@ -27,7 +28,7 @@ type TabType = 'duplicates' | 'stale'
 export default function CleanupPage() {
   const { authenticated, email, loading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
   const [activeTab, setActiveTab] = useState<TabType>('duplicates')
-  const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([])
+  const [duplicates, setDuplicates] = useState<DuplicateGroupItem[]>([])
   const [duplicatesLoading, setDuplicatesLoading] = useState(true)
   const [duplicatesError, setDuplicatesError] = useState<string | null>(null)
   const [scanOptions, setScanOptions] = useState({
@@ -108,12 +109,7 @@ export default function CleanupPage() {
     )
   }
 
-  function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B'
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
-  }
+
 
   const totalWastedSpace = duplicates.reduce((total, group) => {
     return total + (group.files.length - 1) * group.fileSize

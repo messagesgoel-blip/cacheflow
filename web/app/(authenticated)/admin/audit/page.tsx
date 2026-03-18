@@ -17,6 +17,7 @@ export default function AuditLogPage() {
   const { authenticated, email, loading: sessionLoading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
   const [logs, setLogs] = useState<AuditLogEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [forbidden, setForbidden] = useState(false)
   const [filterAction, setFilterAction] = useState<string>('all')
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
@@ -37,6 +38,11 @@ export default function AuditLogPage() {
         credentials: 'include',
       })
 
+      if (res.status === 403) {
+        setForbidden(true)
+        return
+      }
+
       if (res.status === 404) {
         // Use mock data if API not implemented
         generateMockData()
@@ -49,9 +55,13 @@ export default function AuditLogPage() {
 
       const data = await res.json()
       setLogs(data.logs || data || [])
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load audit logs:', err)
-      generateMockData()
+      if (err?.message?.includes('403')) {
+        setForbidden(true)
+      } else {
+        generateMockData()
+      }
     } finally {
       setLoading(false)
     }
@@ -98,7 +108,7 @@ export default function AuditLogPage() {
         log.user_email,
         log.action,
         log.resource_type,
-        `"${log.details}"`
+        `"${log.details.replace(/"/g, '""')}"`
       ].join(','))
     ].join('\n')
 
@@ -168,6 +178,19 @@ export default function AuditLogPage() {
       quota_change: 'bg-pink-100 text-pink-700'
     }
     return colors[action] || 'bg-gray-100 text-gray-700'
+  }
+
+  if (forbidden) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🚫</div>
+          <h2 className="text-xl font-semibold text-gray-800">Access Denied</h2>
+          <p className="mt-2 text-gray-600">You do not have permission to view audit logs.</p>
+          <a href="/" className="mt-4 inline-block text-blue-600 hover:underline">Return to Home</a>
+        </div>
+      </div>
+    )
   }
 
   if (sessionLoading || !authenticated) {

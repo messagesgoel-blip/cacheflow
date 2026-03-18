@@ -2,7 +2,7 @@
 
 import { Search, Upload, Plus, Bell, User } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 
 interface CommandBarProps {
@@ -11,6 +11,11 @@ interface CommandBarProps {
 
 export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
   const pathname = usePathname() || "/";
+  const [isMac, setIsMac] = useState(true);
+
+  useEffect(() => {
+    setIsMac(typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -70,7 +75,7 @@ export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
               borderColor: 'var(--border-subtle)',
             }}
           >
-            ⌘K
+            {isMac ? '⌘K' : 'Ctrl+K'}
           </kbd>
         </button>
       </div>

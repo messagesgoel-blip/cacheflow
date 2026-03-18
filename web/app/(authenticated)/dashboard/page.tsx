@@ -7,7 +7,6 @@ import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel'
 import RecentActivityPanel from '@/components/dashboard/RecentActivityPanel'
 import RecentTransfersPanel from '@/components/dashboard/RecentTransfersPanel'
 import { useClientSession } from '@/lib/auth/clientSession'
-import { tokenManager } from '@/lib/tokenManager'
 import { ProviderId } from '@/lib/providers/types'
 import apiClient from '@/lib/apiClient'
 
@@ -24,33 +23,23 @@ export default function DashboardPage() {
     if (!authenticated) return
 
     const loadConnections = async () => {
-      const providerIds: ProviderId[] = ['google', 'onedrive', 'dropbox', 'box', 'pcloud', 'filen', 'yandex', 'vps', 'webdav', 'local']
-      const connected: typeof connectedProviders = []
-
-      for (const pid of providerIds) {
-        const tokens = tokenManager.getTokens(pid).filter(t => !t.disabled)
-        tokens.forEach((t) => {
-          if (t && (t.accessToken || (t as any).remoteId)) {
-            connected.push({
-              providerId: pid,
-              accountEmail: t.accountEmail || '',
-              displayName: t.displayName || pid,
-              quota: (t as any).quota
-            })
-          }
-        })
-      }
-
       try {
         const result = await apiClient.getConnections()
         if (result.success && result.data) {
-          // Connections already processed by tokenManager + server fetch logic
+          const connected = result.data.map((conn: any) => ({
+            providerId: conn.provider_id,
+            accountEmail: conn.account_email || '',
+            displayName: conn.display_name || conn.provider_id,
+            quota: conn.quota_total ? { used: conn.quota_used || 0, total: conn.quota_total } : undefined
+          }))
+          setConnectedProviders(connected)
+        } else {
+          setConnectedProviders([])
         }
       } catch (err) {
         console.warn('Failed to fetch server connections:', err)
+        setConnectedProviders([])
       }
-
-      setConnectedProviders(connected)
     }
 
     void loadConnections()

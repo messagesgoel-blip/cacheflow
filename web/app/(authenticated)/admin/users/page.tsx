@@ -51,8 +51,8 @@ export default function UserManagementPage() {
 
       const data = await res.json()
       setUsers(data.users || data || [])
-    } catch (err: any) {
-      setError(err.message || 'Failed to load users')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load users')
     } finally {
       setLoading(false)
     }
@@ -64,7 +64,7 @@ export default function UserManagementPage() {
     setQuotaLoading(userId)
 
     try {
-      const quotaBytes = parseFloat(newQuota) * 1024 * 1024 * 1024
+      const quotaBytes = Math.floor(parseFloat(newQuota) * 1024 * 1024 * 1024)
 
       const res = await fetch(`/api/backend/admin/users/${userId}/quota`, {
         method: 'PATCH',
@@ -92,8 +92,8 @@ export default function UserManagementPage() {
       setEditingQuota(null)
       setNewQuota('')
       actions.notify({ kind: 'success', title: 'Quota updated' })
-    } catch (err: any) {
-      actions.notify({ kind: 'error', title: 'Error', message: err.message })
+    } catch (err: unknown) {
+      actions.notify({ kind: 'error', title: 'Error', message: err instanceof Error ? err.message : 'Unknown error' })
     } finally {
       setQuotaLoading(null)
     }
@@ -130,8 +130,8 @@ export default function UserManagementPage() {
       ))
 
       actions.notify({ kind: 'success', title: 'User deactivated', message: userEmail })
-    } catch (err: any) {
-      actions.notify({ kind: 'error', title: 'Error', message: err.message })
+    } catch (err: unknown) {
+      actions.notify({ kind: 'error', title: 'Error', message: err instanceof Error ? err.message : 'Unknown error' })
     }
   }
 

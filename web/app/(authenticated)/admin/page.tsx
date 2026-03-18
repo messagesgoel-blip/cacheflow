@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import TransferChart from '@/components/TransferChart'
 import StorageChart from '@/components/StorageChart'
 import { useClientSession } from '@/lib/auth/clientSession'
+import { formatFileSize } from '@/lib/utils/format'
 
 interface AdminStats {
   total_users?: number
@@ -17,6 +18,7 @@ export default function AdminPage() {
   const [stats, setStats] = useState<AdminStats>({})
   const [loading, setLoading] = useState(true)
   const [apiAvailable, setApiAvailable] = useState(true)
+  const [forbidden, setForbidden] = useState(false)
   const [showAdminBanner, setShowAdminBanner] = useState(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('admin_banner_dismissed')
@@ -45,9 +47,7 @@ export default function AdminPage() {
       }
 
       if (res.status === 403) {
-        // Expected for non-admin users; keep UI clean and avoid console spam
-        setApiAvailable(false)
-        setStats({})
+        setForbidden(true)
         return
       }
 
@@ -66,17 +66,17 @@ export default function AdminPage() {
     }
   }
 
-  function formatBytes(bytes: number | undefined): string {
-    if (!bytes) return '—'
-    if (bytes < 1024) return bytes + ' B'
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
-  }
-
-  function formatGB(bytes: number | undefined): string {
-    if (!bytes) return 'N/A'
-    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
+  if (forbidden) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🚫</div>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Access Denied</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">You do not have administrative privileges.</p>
+          <a href="/" className="mt-4 inline-block text-blue-600 dark:text-blue-400 hover:underline">Return to Home</a>
+        </div>
+      </div>
+    )
   }
 
   if (sessionLoading || !authenticated) {
@@ -158,7 +158,7 @@ export default function AdminPage() {
               <div className="text-purple-500">💾</div>
             </div>
             <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-              {loading ? '...' : (stats.storage_used_bytes ? formatGB(stats.storage_used_bytes) : 'N/A')}
+              {loading ? '...' : (stats.storage_used_bytes ? formatFileSize(stats.storage_used_bytes) : 'N/A')}
             </div>
             {stats.storage_used_bytes ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Total storage consumed</p>
@@ -173,7 +173,7 @@ export default function AdminPage() {
               <div className="text-orange-500">📤</div>
             </div>
             <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-              {loading ? '...' : (stats.daily_transfer_bytes ? formatGB(stats.daily_transfer_bytes) : 'N/A')}
+              {loading ? '...' : (stats.daily_transfer_bytes ? formatFileSize(stats.daily_transfer_bytes) : 'N/A')}
             </div>
             {stats.daily_transfer_bytes ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Today's data transfer</p>

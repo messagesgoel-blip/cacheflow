@@ -63,6 +63,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
         className="w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden"
         style={{
           background: 'var(--bg-surface-raised)',
@@ -74,6 +76,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         <div className="flex items-center gap-3 p-4 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
           <Search className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
           <input
+            data-testid="command-palette-input"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -97,6 +100,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   {quickActions.map((action) => (
                     <button
                       key={action.label}
+                      data-testid={`quick-action-${action.label.replace(/\s+/g, '-').toLowerCase()}`}
+                      onClick={() => { console.log(action.label); onClose(); }}
                       className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
                       style={{ color: 'var(--text-primary)' }}
                     >
@@ -121,6 +126,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   {jumpTo.map((item) => (
                     <button
                       key={item.path}
+                      data-testid={`jump-to-${item.label.replace(/\s+/g, '-').toLowerCase()}`}
                       onClick={() => handleJumpTo(item.path)}
                       className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
                       style={{ color: 'var(--text-primary)' }}
