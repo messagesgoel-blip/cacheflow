@@ -1,6 +1,8 @@
-/* Cacheflow Animations - UI Refresh v2 */
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
 
-/* Keyframes */
+/* Animations */
 @keyframes slide-in-right {
   from {
     transform: translateX(100%);
@@ -26,17 +28,6 @@
 @keyframes slide-in-up {
   from {
     transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-in-down {
-  from {
-    transform: translateY(-20px);
     opacity: 0;
   }
   to {
@@ -85,7 +76,7 @@
 
 /* Utility Classes */
 .animate-slide-in-right {
-  animation: slide-in-right var(--transition-drawer);
+  animation: slide-in-right var(--transition-base);
 }
 
 .animate-slide-in-left {
@@ -94,10 +85,6 @@
 
 .animate-slide-in-up {
   animation: slide-in-up var(--transition-base);
-}
-
-.animate-slide-in-down {
-  animation: slide-in-down var(--transition-base);
 }
 
 .animate-fade-in {
@@ -240,33 +227,3 @@
 .stagger-item:nth-child(6) { animation-delay: 250ms; }
 .stagger-item:nth-child(7) { animation-delay: 300ms; }
 .stagger-item:nth-child(8) { animation-delay: 350ms; }
-
-/* Micro-interactions */
-.btn-lift {
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.btn-lift:hover {
-  transform: translateY(-1px);
-}
-
-.btn-lift:active {
-  transform: translateY(0) scale(0.98);
-}
-
-/* Focus states */
-.focus-ring:focus-visible {
-  outline: 2px solid var(--accent-blue);
-  outline-offset: 2px;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}

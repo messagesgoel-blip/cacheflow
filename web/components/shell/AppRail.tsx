@@ -1,0 +1,200 @@
+"use client";
+
+import { 
+  Home, 
+  Library, 
+  Users, 
+  ArrowLeftRight, 
+  Zap, 
+  Link as LinkIcon, 
+  Activity, 
+  ChevronLeft, 
+  ChevronRight, 
+  UserPlus 
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+/**
+ * Props for the AppRail component.
+ */
+interface AppRailProps {
+  /** Whether the sidebar rail is expanded to show labels. */
+  isExpanded: boolean;
+  /** Callback triggered when the expansion state is toggled. */
+  onToggleExpanded: () => void;
+}
+
+const navItems = [
+  { icon: Home, label: "Home", path: "/" },
+  { icon: Library, label: "Library", path: "/library" },
+  { icon: Users, label: "Spaces", path: "/spaces" },
+  { icon: ArrowLeftRight, label: "Transfers", path: "/transfers" },
+  { icon: Zap, label: "Automations", path: "/automations" },
+  { icon: LinkIcon, label: "Connections", path: "/connections" },
+  { icon: Activity, label: "Activity", path: "/activity" },
+];
+
+const pinnedSpaces = [
+  { label: "Family", emoji: "👨‍👩‍👧‍👦" },
+  { label: "Photos", emoji: "📸" },
+  { label: "Travel", emoji: "✈️" },
+  { label: "Archive", emoji: "📦" },
+];
+
+/**
+ * Primary navigation sidebar for the application. 
+ * Supports both collapsed and expanded states and handles 
+ * navigation links, pinned spaces, and storage indicators.
+ */
+export function AppRail({ isExpanded, onToggleExpanded }: AppRailProps) {
+  const pathname = usePathname();
+  const width = isExpanded ? "272px" : "64px";
+
+  return (
+    <div
+      className="h-full flex flex-col border-r transition-all animate-slide-in-left"
+      style={{
+        width,
+        background: 'var(--bg-surface)',
+        borderColor: 'var(--border-subtle)',
+        transitionDuration: 'var(--transition-base)',
+      }}
+    >
+      {/* Header with household switcher */}
+      <div className="p-3 border-b border-[var(--border-subtle)]">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-105 bg-[var(--accent-blue)] shadow-[var(--shadow-soft)]"
+          >
+            <span className="text-white font-semibold">HP</span>
+          </div>
+          {isExpanded && (
+            <div className="flex-1 min-w-0 animate-fade-in">
+              <div className="font-medium truncate text-[var(--text-primary)]">
+                Homeport
+              </div>
+              <div className="text-xs truncate text-[var(--text-muted)]">
+                Your shared file home
+              </div>
+            </div>
+          )}
+          {isExpanded && (
+            <button
+              onClick={onToggleExpanded}
+              aria-label="Collapse sidebar"
+              className="w-6 h-6 rounded flex items-center justify-center shrink-0 transition-all hover:scale-110 bg-[var(--bg-hover)]"
+            >
+              <ChevronLeft className="w-4 h-4 text-[var(--text-secondary)]" />
+            </button>
+          )}
+        </div>
+        {!isExpanded && (
+          <button
+            onClick={onToggleExpanded}
+            aria-label="Expand sidebar"
+            className="w-full mt-2 h-6 rounded flex items-center justify-center transition-all hover:bg-[var(--bg-hover)]"
+          >
+            <ChevronRight className="w-4 h-4 text-[var(--text-secondary)]" />
+          </button>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <div className="flex-1 overflow-y-auto p-2">
+        {/* Workspace section */}
+        {isExpanded && (
+          <div className="px-3 py-2 text-xs font-medium tracking-wide uppercase animate-fade-in text-[var(--text-muted)]">
+            Workspace
+          </div>
+        )}
+        
+        <div className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.path || (item.path !== "/" && pathname?.startsWith(item.path));
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                data-testid={`nav-link-${item.label.toLowerCase()}`}
+                className={`flex items-center gap-3 rounded-xl transition-all hover:translate-x-0.5 ${
+                  isActive ? 'active-nav-item' : ''
+                } ${isExpanded ? 'px-3 py-2' : 'px-0 py-2 justify-center'} ${isActive ? 'bg-[var(--bg-selected)] text-[var(--accent-blue)]' : 'bg-transparent text-[var(--text-secondary)]'} ${isActive && isExpanded ? 'border-l-2 border-[var(--accent-blue)]' : 'border-l-2 border-transparent'}`}
+                title={!isExpanded ? item.label : undefined}
+              >
+                <item.icon className="w-5 h-5 shrink-0" />
+                {isExpanded && <span className="truncate">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Pinned Spaces */}
+        {isExpanded && (
+          <>
+            <div className="px-3 py-2 mt-6 text-xs font-medium tracking-wide uppercase animate-fade-in text-[var(--text-muted)]">
+              Pinned Spaces
+            </div>
+            <div className="space-y-1">
+              {pinnedSpaces.map((space) => (
+                <button
+                  key={space.label}
+                  data-testid={`pinned-space-${space.label}`}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all hover:bg-[var(--bg-hover)] hover:translate-x-0.5 text-left group text-[var(--text-secondary)]"
+                >
+                  <span className="text-base shrink-0 transition-transform group-hover:scale-110">{space.emoji}</span>
+                  <span className="truncate">{space.label}</span>
+                </button>
+              ))}
+              <button
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all hover:bg-[var(--bg-hover)] text-left text-sm text-[var(--text-muted)]"
+              >
+                <span className="text-lg shrink-0">+</span>
+                <span className="truncate">Pin a space</span>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Bottom section */}
+      <div className="p-3 border-t space-y-3 border-[var(--border-subtle)]">
+        {isExpanded && (
+          <>
+            {/* Storage bar */}
+            <div className="space-y-2 animate-fade-in">
+              <div className="flex justify-between text-xs text-[var(--text-muted)]">
+                <span>4.2 TB of 6.7 TB</span>
+                <span>63%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden bg-[var(--bg-hover)]">
+                <div 
+                  className="h-full rounded-full transition-all w-[63%] bg-[var(--accent-blue)]" 
+                />
+              </div>
+            </div>
+
+            {/* Invite button */}
+            <button
+              data-testid="invite-member-button-expanded"
+              className="btn-secondary w-full h-10 flex items-center justify-center gap-2 rounded-xl text-sm"
+            >
+              <UserPlus className="w-4 h-4" />
+              Invite member
+            </button>
+          </>
+        )}
+        
+        {!isExpanded && (
+          <button
+            data-testid="invite-member-button-collapsed"
+            className="w-full h-10 flex items-center justify-center rounded-xl transition-all hover:bg-[var(--bg-hover)] border border-[var(--border-strong)] text-[var(--text-primary)]"
+            title="Invite member"
+          >
+            <UserPlus className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { formatFileSize } from '@/lib/utils/format'
 
 interface DuplicateFile {
   id: string
@@ -35,16 +36,8 @@ export default function DuplicateGroup({ group, onDelete, onKeep }: DuplicateGro
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
-    })
-  }
-
-  function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B'
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
-  }
+      })
+      }
 
   function getProviderIcon(providerId: string): string {
     const icons: Record<string, string> = {
