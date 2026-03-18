@@ -1,7 +1,13 @@
 import SettingsPanel from '@/components/SettingsPanel'
+import { getServerSession } from '@/lib/auth/serverSession'
+import { redirect } from 'next/navigation'
 
-export default function SettingsPage() {
-  const email = 'user@example.com' // Placeholder for server component
+export default async function SettingsPage() {
+  const session = await getServerSession()
+  
+  if (!session) {
+    redirect('/login')
+  }
 
   return (
     <div>
@@ -33,7 +39,7 @@ export default function SettingsPage() {
               <div className="mt-4 space-y-3">
                 <div className="rounded-[24px] border border-[var(--cf-border)] bg-[var(--cf-panel-soft)] p-4">
                   <div className="text-xs uppercase tracking-[0.16em] text-[var(--cf-text-2)]">Session Email</div>
-                  <div className="mt-2 text-sm font-medium text-[var(--cf-text-0)]">{email}</div>
+                  <div className="mt-2 text-sm font-medium text-[var(--cf-text-0)]">{session.user?.email || 'Unknown'}</div>
                   <p className="mt-2 text-xs leading-5 text-[var(--cf-text-1)]">Authenticated via the current cookie-backed session.</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

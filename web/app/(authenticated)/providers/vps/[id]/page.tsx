@@ -230,8 +230,8 @@ export default function VpsBrowserPage() {
                         try {
                           await navigator.clipboard.writeText(publicKey)
                           actions.notify({ kind: 'success', title: 'Copied', message: 'Public key copied to clipboard' })
-                        } catch (err) {
-                          actions.notify({ kind: 'error', title: 'Copy failed', message: 'Could not copy to clipboard' })
+                        } catch (err: any) {
+                          actions.notify({ kind: 'error', title: 'Copy failed', message: err?.message || 'Could not copy to clipboard' })
                         }
                       }}
                       className="text-[10px] font-bold text-[var(--cf-blue)] uppercase hover:underline"

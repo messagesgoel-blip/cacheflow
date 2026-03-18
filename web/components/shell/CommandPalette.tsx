@@ -53,6 +53,14 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   useEffect(() => {
     if (!isOpen) {
       setQuery("");
+    } else if (isOpen) {
+      // Focus the input when the palette opens
+      setTimeout(() => {
+        const inputElement = document.querySelector('input[data-testid="command-palette-input"]') as HTMLInputElement;
+        if (inputElement) {
+          inputElement.focus();
+        }
+      }, 0);
     }
   }, [isOpen]);
 
@@ -79,6 +87,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       className="fixed inset-0 z-50 flex items-start justify-center pt-32"
       style={{ background: 'rgba(0, 0, 0, 0.5)' }}
       onClick={onClose}
+      aria-hidden="true"
     >
       <div
         role="dialog"

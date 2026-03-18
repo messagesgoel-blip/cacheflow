@@ -1,8 +1,16 @@
 import { Suspense } from 'react'
 import FilesBrowserShell from './FilesBrowserShell'
 import MissionControl from '@/components/MissionControl'
+import { getServerSession } from '@/lib/auth/serverSession'
+import { redirect } from 'next/navigation'
 
-export default function FilesPage() {
+export default async function FilesPage() {
+  const session = await getServerSession()
+  
+  if (!session) {
+    redirect('/login')
+  }
+
   return (
     <div>
       <main className="mx-auto max-w-[1600px] p-4 md:p-6">
@@ -14,7 +22,7 @@ export default function FilesPage() {
             </div>
           }
         >
-          <FilesBrowserShell token="" />
+          <FilesBrowserShell token={session.accessToken || ""} />
         </Suspense>
       </main>
     </div>

@@ -82,6 +82,7 @@ export function AppRail({ isExpanded, onToggleExpanded }: AppRailProps) {
           {isExpanded && (
             <button
               onClick={onToggleExpanded}
+              aria-label="Collapse sidebar"
               className="w-6 h-6 rounded flex items-center justify-center shrink-0 transition-all hover:scale-110 bg-[var(--bg-hover)]"
             >
               <ChevronLeft className="w-4 h-4 text-[var(--text-secondary)]" />
@@ -91,6 +92,7 @@ export function AppRail({ isExpanded, onToggleExpanded }: AppRailProps) {
         {!isExpanded && (
           <button
             onClick={onToggleExpanded}
+            aria-label="Expand sidebar"
             className="w-full mt-2 h-6 rounded flex items-center justify-center transition-all hover:bg-[var(--bg-hover)]"
           >
             <ChevronRight className="w-4 h-4 text-[var(--text-secondary)]" />

@@ -4,8 +4,16 @@ import { IntegrationProvider } from '@/context/IntegrationContext'
 import ConnectProviderModal from '@/components/modals/ConnectProviderModal'
 import WebDAVModal from '@/components/modals/WebDAVModal'
 import VPSModal from '@/components/modals/VPSModal'
+import { getServerSession } from '@/lib/auth/serverSession'
+import { redirect } from 'next/navigation'
 
-export default function ProvidersPage() {
+export default async function ProvidersPage() {
+  const session = await getServerSession()
+  
+  if (!session) {
+    redirect('/login')
+  }
+
   return (
     <IntegrationProvider>
       <div className="relative z-0 overflow-auto">
