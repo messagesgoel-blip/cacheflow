@@ -1,7 +1,9 @@
-/* Cacheflow Animations - UI Refresh v2 */
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
 
-/* Keyframes */
-@keyframes slide-in-right {
+/* Animations */
+@keyframes slideInRight {
   from {
     transform: translateX(100%);
     opacity: 0;
@@ -12,7 +14,7 @@
   }
 }
 
-@keyframes slide-in-left {
+@keyframes slideInLeft {
   from {
     transform: translateX(-100%);
     opacity: 0;
@@ -23,7 +25,7 @@
   }
 }
 
-@keyframes slide-in-up {
+@keyframes slideInUp {
   from {
     transform: translateY(20px);
     opacity: 0;
@@ -34,18 +36,7 @@
   }
 }
 
-@keyframes slide-in-down {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
+@keyframes fadeIn {
   from {
     opacity: 0;
   }
@@ -54,7 +45,7 @@
   }
 }
 
-@keyframes scale-in {
+@keyframes scaleIn {
   from {
     transform: scale(0.95);
     opacity: 0;
@@ -85,27 +76,23 @@
 
 /* Utility Classes */
 .animate-slide-in-right {
-  animation: slide-in-right var(--transition-drawer);
+  animation: slideInRight var(--transition-drawer) var(--transition-drawer);
 }
 
 .animate-slide-in-left {
-  animation: slide-in-left var(--transition-base);
+  animation: slideInLeft var(--transition-base);
 }
 
 .animate-slide-in-up {
-  animation: slide-in-up var(--transition-base);
-}
-
-.animate-slide-in-down {
-  animation: slide-in-down var(--transition-base);
+  animation: slideInUp var(--transition-base);
 }
 
 .animate-fade-in {
-  animation: fade-in var(--transition-base);
+  animation: fadeIn var(--transition-base);
 }
 
 .animate-scale-in {
-  animation: scale-in var(--transition-base);
+  animation: scaleIn var(--transition-base);
 }
 
 /* Card styles */
@@ -229,7 +216,7 @@
 
 /* Stagger animation helper */
 .stagger-item {
-  animation: slide-in-up var(--transition-base) backwards;
+  animation: slideInUp var(--transition-base) backwards;
 }
 
 .stagger-item:nth-child(1) { animation-delay: 0ms; }
@@ -240,33 +227,3 @@
 .stagger-item:nth-child(6) { animation-delay: 250ms; }
 .stagger-item:nth-child(7) { animation-delay: 300ms; }
 .stagger-item:nth-child(8) { animation-delay: 350ms; }
-
-/* Micro-interactions */
-.btn-lift {
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.btn-lift:hover {
-  transform: translateY(-1px);
-}
-
-.btn-lift:active {
-  transform: translateY(0) scale(0.98);
-}
-
-/* Focus states */
-.focus-ring:focus-visible {
-  outline: 2px solid var(--accent-blue);
-  outline-offset: 2px;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}

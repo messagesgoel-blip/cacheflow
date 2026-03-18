@@ -1051,8 +1051,15 @@ worker/                       # Keep for background sync
 - Existing work may continue only if it directly fixes items in this plan.
 
 ### Restart Marker
-- **RESTART-AFTER-UI-2026-03-02**: Resume standard roadmap execution only after all Phase 1/2/3 UI tasks are marked done.
+- **RESTART-AFTER-UI-2026-03-02**: Resume standard roadmap execution only after all Phase 0/1/2/3 UI tasks are marked done.
 - Resume point after completion: continue from next pending non-UI item in main roadmap sequence.
+
+### Phase 0: UI Refresh & AppShell Migration (Architectural Prerequisite)
+- **UI-P0-T01**: Migrate existing structural UI to Next.js App Router using the new AppShell layout pattern.
+- **UI-P0-T02**: Integrate new design tokens, glassmorphism utilities, and staggered animations into `globals.css` / Tailwind configuration.
+- **UI-P0-T03**: Refactor authenticated page routes into a single `(authenticated)` route group wrapped by the global `AppShell`.
+- **UI-P0-T04**: Remove redundant per-page Navigation/Sidebar components to prevent layout duplication.
+- **UI-P0-T05**: Ensure mobile responsiveness and navigation logic across the new `AppRail` and `MobileNav`.
 
 ### Phase 1: Blocking Reliability (P0)
 
@@ -1084,7 +1091,7 @@ worker/                       # Keep for background sync
 ### Phase Completion Rule
 - Track each task by ID and complete them one-by-one.
 - Do not parallelize unrelated feature work while this hold is active.
-- UI phase is complete only when all `UI-P1-*`, `UI-P2-*`, and `UI-P3-*` items are explicitly marked done.
+- UI phase is complete only when all `UI-P0-*`, `UI-P1-*`, `UI-P2-*`, and `UI-P3-*` items are explicitly marked done.
 
 ---
 
