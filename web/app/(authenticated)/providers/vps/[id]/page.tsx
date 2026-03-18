@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useActionCenter } from '@/components/ActionCenterProvider'
+import { normalizePath, joinPath } from '@/lib/utils/path'
 
 interface VpsItem {
   name: string
@@ -30,16 +31,6 @@ function formatVpsDate(value?: string | null): string {
     hour: 'numeric',
     minute: '2-digit',
   })
-}
-
-function normalizePath(raw: string): string {
-  if (!raw) return '/'
-  return raw.startsWith('/') ? raw : `/${raw}`
-}
-
-function joinPath(base: string, name: string): string {
-  if (base === '/') return `/${name}`
-  return `${base.replace(/\/+$/, '')}/${name}`
 }
 
 function parentPath(input: string): string {
@@ -83,6 +74,14 @@ export default function VpsBrowserPage() {
     setLoading(true)
     setError(null)
     const normalized = normalizePath(targetPath)
+    
+    // Safe-path check: ensure path is within root
+    if (!normalized.startsWith('/')) {
+      setError('Invalid path: must start with /')
+      setLoading(false)
+      return
+    }
+
     try {
       const response = await fetch(
         `/api/providers/vps/${id}/files?path=${encodeURIComponent(normalized)}`,
@@ -227,9 +226,13 @@ export default function VpsBrowserPage() {
                   <div className="flex items-center justify-between">
                     <div className="cf-kicker text-[10px] text-[var(--cf-blue)] uppercase">Public Key (authorized_keys)</div>
                     <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(publicKey)
-                        actions.notify({ kind: 'success', title: 'Copied', message: 'Public key copied to clipboard' })
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(publicKey)
+                          actions.notify({ kind: 'success', title: 'Copied', message: 'Public key copied to clipboard' })
+                        } catch (err) {
+                          actions.notify({ kind: 'error', title: 'Copy failed', message: 'Could not copy to clipboard' })
+                        }
                       }}
                       className="text-[10px] font-bold text-[var(--cf-blue)] uppercase hover:underline"
                     >
@@ -284,7 +287,9 @@ export default function VpsBrowserPage() {
               </div>
               <div className="cf-toolbar-card flex flex-wrap items-center gap-2 rounded-[20px] px-2 py-2">
                 <span className="cf-micro-label px-2">Create</span>
+                <label htmlFor="vps-file-upload" className="sr-only">Upload file</label>
                 <input
+                  id="vps-file-upload"
                   type="file"
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                   className="max-w-[220px] text-sm text-[var(--cf-text-1)]"
@@ -297,7 +302,9 @@ export default function VpsBrowserPage() {
                 >
                   Upload
                 </button>
+                <label htmlFor="vps-new-folder" className="sr-only">New folder name</label>
                 <input
+                  id="vps-new-folder"
                   value={mkdirName}
                   onChange={(e) => setMkdirName(e.target.value)}
                   placeholder="New folder"

@@ -104,6 +104,7 @@ export function AppRail({ isExpanded, onToggleExpanded }: AppRailProps) {
               <Link
                 key={item.path}
                 href={item.path}
+                data-testid={`nav-link-${item.label.toLowerCase()}`}
                 className={`flex items-center gap-3 rounded-xl transition-all hover:translate-x-0.5 ${
                   isActive ? 'active-nav-item' : ''
                 } ${isExpanded ? 'px-3 py-2' : 'px-0 py-2 justify-center'} ${isActive ? 'bg-[var(--bg-selected)] text-[var(--accent-blue)]' : 'bg-transparent text-[var(--text-secondary)]'} ${isActive && isExpanded ? 'border-l-2 border-[var(--accent-blue)]' : 'border-l-2 border-transparent'}`}
@@ -126,6 +127,7 @@ export function AppRail({ isExpanded, onToggleExpanded }: AppRailProps) {
               {pinnedSpaces.map((space) => (
                 <button
                   key={space.label}
+                  data-testid={`pinned-space-${space.label}`}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all hover:bg-[var(--bg-hover)] hover:translate-x-0.5 text-left group text-[var(--text-secondary)]"
                 >
                   <span className="text-base shrink-0 transition-transform group-hover:scale-110">{space.emoji}</span>
@@ -162,6 +164,7 @@ export function AppRail({ isExpanded, onToggleExpanded }: AppRailProps) {
 
             {/* Invite button */}
             <button
+              data-testid="invite-member-button-expanded"
               className="btn-secondary w-full h-10 flex items-center justify-center gap-2 rounded-xl text-sm"
             >
               <UserPlus className="w-4 h-4" />
@@ -172,6 +175,7 @@ export function AppRail({ isExpanded, onToggleExpanded }: AppRailProps) {
         
         {!isExpanded && (
           <button
+            data-testid="invite-member-button-collapsed"
             className="w-full h-10 flex items-center justify-center rounded-xl transition-all hover:bg-[var(--bg-hover)] border border-[var(--border-strong)] text-[var(--text-primary)]"
             title="Invite member"
           >

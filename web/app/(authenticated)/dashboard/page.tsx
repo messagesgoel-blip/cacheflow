@@ -26,11 +26,11 @@ export default function DashboardPage() {
       try {
         const result = await apiClient.getConnections()
         if (result.success && result.data) {
-          const connected = result.data.map((conn: any) => ({
-            providerId: conn.provider_id,
-            accountEmail: conn.account_email || '',
-            displayName: conn.display_name || conn.provider_id,
-            quota: conn.quota_total ? { used: conn.quota_used || 0, total: conn.quota_total } : undefined
+          const connected = result.data.map((item: any) => ({
+            providerId: item.provider_id,
+            displayName: item.display_name,
+            accountEmail: item.account_email,
+            quota: { used: item.quota_used, total: item.quota_total }
           }))
           setConnectedProviders(connected)
         } else {

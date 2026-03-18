@@ -9,3 +9,7 @@ export function normalizePath(...parts: string[]): string {
   
   return normalized === '' ? '/' : normalized
 }
+
+export function joinPath(...parts: string[]): string {
+  return normalizePath(...parts)
+}

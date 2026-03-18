@@ -47,6 +47,7 @@ Effective immediately for the next batch onward: use `CAC` as the issue prefix a
 Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.
 
 ## Gate Surface Parity (Mandatory)
+
 - Cacheflow does not implement its own gate engine/status-model stack.
 - Authoritative staged gate implementation lives in Codero and is consumed by Cacheflow.
 - For Cacheflow changes, integrate and display Codero gate outputs; do not fork/duplicate gate-engine logic locally.

@@ -9,13 +9,6 @@ interface CommandPaletteProps {
   onClose: () => void;
 }
 
-const quickActions = [
-  { icon: Upload, label: "Upload files", shortcut: "⌘U" },
-  { icon: FolderPlus, label: "Create folder", shortcut: "⌘⇧N" },
-  { icon: Link2, label: "Connect provider", shortcut: "" },
-  { icon: RefreshCw, label: "Retry failed transfers", shortcut: "" },
-];
-
 const jumpTo = [
   { label: "Library", shortcut: "G L", path: "/library" },
   { label: "Spaces", shortcut: "G S", path: "/spaces" },
@@ -25,7 +18,12 @@ const jumpTo = [
 
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
+  const [isMac, setIsMac] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsMac(typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,6 +54,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     onClose();
   };
 
+  const quickActions = [
+    { icon: Upload, label: "Upload files", shortcut: isMac ? "⌘U" : "Ctrl+U" },
+    { icon: FolderPlus, label: "Create folder", shortcut: isMac ? "⌘⇧N" : "Ctrl+Shift+N" },
+    { icon: Link2, label: "Connect provider", shortcut: "" },
+    { icon: RefreshCw, label: "Retry failed transfers", shortcut: "" },
+  ];
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-32"
@@ -65,6 +70,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       <div
         role="dialog"
         aria-modal="true"
+        aria-labelledby="command-palette-title"
         className="w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden"
         style={{
           background: 'var(--bg-surface-raised)',
@@ -72,6 +78,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        <h2 id="command-palette-title" className="sr-only">Command palette</h2>
         {/* Search input */}
         <div className="flex items-center gap-3 p-4 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
           <Search className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />

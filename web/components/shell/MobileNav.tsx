@@ -9,20 +9,15 @@ export function MobileNav() {
 
   return (
     <div
-      className="h-14 border-t flex items-center justify-around px-2 safe-area-inset-bottom"
-      style={{
-        background: 'var(--bg-surface)',
-        borderColor: 'var(--border-subtle)',
-      }}
+      className="h-14 border-t flex items-center justify-around px-2 safe-area-inset-bottom bg-[var(--bg-surface)] border-[var(--border-subtle)]"
     >
       <Link
         href="/"
         data-testid="nav-home"
         aria-label="Home"
-        className="flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0"
-        style={{
-          color: pathname === '/' ? 'var(--accent-blue)' : 'var(--text-secondary)',
-        }}
+        className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0 ${
+          pathname === '/' ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)]'
+        }`}
       >
         <Home className="w-5 h-5" />
         <span className="text-xs">Home</span>
@@ -32,10 +27,9 @@ export function MobileNav() {
         href="/library"
         data-testid="nav-library"
         aria-label="Library"
-        className="flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0"
-        style={{
-          color: pathname?.startsWith('/library') ? 'var(--accent-blue)' : 'var(--text-secondary)',
-        }}
+        className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0 ${
+          pathname?.startsWith('/library') ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)]'
+        }`}
       >
         <Library className="w-5 h-5" />
         <span className="text-xs">Library</span>
@@ -44,9 +38,8 @@ export function MobileNav() {
       <button
         data-testid="nav-search"
         aria-label="Search"
-        className="flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0"
+        className="flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0 text-[var(--text-secondary)] opacity-50"
         disabled
-        style={{ color: 'var(--text-secondary)', opacity: 0.5 }}
       >
         <Search className="w-5 h-5" />
         <span className="text-xs">Search</span>
@@ -56,10 +49,9 @@ export function MobileNav() {
         href="/activity"
         data-testid="nav-activity"
         aria-label="Activity"
-        className="flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0"
-        style={{
-          color: pathname?.startsWith('/activity') ? 'var(--accent-blue)' : 'var(--text-secondary)',
-        }}
+        className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0 ${
+          pathname?.startsWith('/activity') ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)]'
+        }`}
       >
         <Activity className="w-5 h-5" />
         <span className="text-xs">Activity</span>
@@ -68,9 +60,8 @@ export function MobileNav() {
       <button
         data-testid="nav-more"
         aria-label="More"
-        className="flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0"
+        className="flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg min-w-0 text-[var(--text-secondary)] opacity-50"
         disabled
-        style={{ color: 'var(--text-secondary)', opacity: 0.5 }}
       >
         <MoreHorizontal className="w-5 h-5" />
         <span className="text-xs">More</span>

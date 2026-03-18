@@ -76,7 +76,7 @@
 
 /* Utility Classes */
 .animate-slide-in-right {
-  animation: slide-in-right var(--transition-drawer) var(--transition-drawer);
+  animation: slide-in-right var(--transition-base);
 }
 
 .animate-slide-in-left {

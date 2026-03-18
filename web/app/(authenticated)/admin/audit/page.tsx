@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useClientSession } from '@/lib/auth/clientSession'
 
 interface AuditLogEntry {
@@ -187,7 +188,7 @@ export default function AuditLogPage() {
           <div className="text-4xl mb-4">🚫</div>
           <h2 className="text-xl font-semibold text-gray-800">Access Denied</h2>
           <p className="mt-2 text-gray-600">You do not have permission to view audit logs.</p>
-          <a href="/" className="mt-4 inline-block text-blue-600 hover:underline">Return to Home</a>
+          <Link href="/" className="mt-4 inline-block text-blue-600 hover:underline">Return to Home</Link>
         </div>
       </div>
     )
@@ -320,7 +321,7 @@ export default function AuditLogPage() {
                   </thead>
                   <tbody>
                     {paginatedLogs.map(log => (
-                      <tr key={log.id} className="border-b hover:">
+                      <tr key={log.id} className="border-b hover:bg-gray-50">
                         <td className="py-3 px-4">
                           <div className="text-gray-600">{formatDate(log.timestamp)}</div>
                         </td>

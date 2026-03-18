@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import TransferChart from '@/components/TransferChart'
 import StorageChart from '@/components/StorageChart'
 import { useClientSession } from '@/lib/auth/clientSession'
@@ -73,7 +74,7 @@ export default function AdminPage() {
           <div className="text-4xl mb-4">🚫</div>
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Access Denied</h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">You do not have administrative privileges.</p>
-          <a href="/" className="mt-4 inline-block text-blue-600 dark:text-blue-400 hover:underline">Return to Home</a>
+          <Link href="/" className="mt-4 inline-block text-blue-600 dark:text-blue-400 hover:underline">Return to Home</Link>
         </div>
       </div>
     )
@@ -268,7 +269,7 @@ export default function AdminPage() {
               </div>
             </div>
           </a>
-          <div className="dark:bg-gray-800 rounded-xl shadow p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
             <div className="flex items-center gap-3">
               <div className="text-gray-400 text-xl">⚙️</div>
               <div>

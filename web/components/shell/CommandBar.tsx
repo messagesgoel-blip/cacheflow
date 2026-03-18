@@ -59,6 +59,8 @@ export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
       <div className="flex-1 max-w-md mx-6">
         <button
           onClick={onOpenCommandPalette}
+          data-testid="search-trigger"
+          aria-label="Search"
           className="w-full h-8 px-3 flex items-center gap-2 rounded-lg transition-all hover:shadow-md"
           style={{
             background: 'var(--bg-app)',
@@ -84,6 +86,8 @@ export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
       <div className="flex items-center gap-2">
         <Tooltip content="Upload files" side="bottom">
           <button
+            data-testid="upload-button"
+            aria-label="Upload files"
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-[var(--bg-hover)]"
             style={{
               border: '1px solid var(--border-strong)',
@@ -96,6 +100,8 @@ export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
 
         <Tooltip content="New space" side="bottom">
           <button
+            data-testid="new-space-button"
+            aria-label="New space"
             className="btn-primary w-8 h-8 rounded-lg flex items-center justify-center"
           >
             <Plus className="w-4 h-4" />
@@ -104,6 +110,8 @@ export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
 
         <Tooltip content="Notifications" side="bottom">
           <button
+            data-testid="notifications-button"
+            aria-label="Notifications"
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-[var(--bg-hover)] relative"
             style={{ background: 'transparent' }}
           >
@@ -117,6 +125,8 @@ export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
 
         <Tooltip content="Account settings" side="bottom">
           <button
+            data-testid="account-settings-button"
+            aria-label="Account settings"
             className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:shadow-md hover:scale-105"
             style={{ background: 'var(--accent-blue)' }}
           >
