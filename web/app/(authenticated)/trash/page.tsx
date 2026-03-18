@@ -151,7 +151,7 @@ export default function TrashPage() {
           />
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm font-medium">
@@ -163,7 +163,7 @@ export default function TrashPage() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {files.map((file) => (
-                <tr key={file.id} className="hover: dark:hover:bg-gray-800/50 transition-colors">
+                <tr key={file.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">

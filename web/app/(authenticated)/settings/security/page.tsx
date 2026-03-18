@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import TwoFAPanel from '@/components/settings/TwoFAPanel'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 export default function SecuritySettingsPage() {
   const { authenticated, email, loading } = useClientSession()
@@ -14,12 +15,12 @@ export default function SecuritySettingsPage() {
           <div className="cf-kicker">Security Access</div>
           <h1 className="mt-3 text-2xl font-semibold text-[var(--cf-text-0)]">Session required</h1>
           <p className="mt-3 text-sm text-[var(--cf-text-1)]">Please log in to manage security settings.</p>
-          <a
+          <Link
             href="/login"
             className="mt-6 inline-flex rounded-2xl border border-[rgba(74,158,255,0.28)] bg-[rgba(74,158,255,0.14)] px-4 py-2 text-sm font-semibold text-[var(--cf-blue)] transition hover:bg-[rgba(74,158,255,0.2)]"
           >
             Log In
-          </a>
+          </Link>
         </div>
       </div>
     )

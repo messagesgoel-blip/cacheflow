@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import TransferChart from '@/components/TransferChart'
 import StorageChart from '@/components/StorageChart'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 interface AdminStats {
   total_users?: number
@@ -213,31 +213,31 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b hover: dark:hover:bg-gray-700/50">
+                <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="py-3 pr-4">2026-02-23 14:30</td>
                   <td className="py-3 pr-4">user@example.com</td>
                   <td className="py-3 pr-4"><span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">Upload</span></td>
                   <td className="py-3">report.pdf</td>
                 </tr>
-                <tr className="border-b hover: dark:hover:bg-gray-700/50">
+                <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="py-3 pr-4">2026-02-23 13:15</td>
                   <td className="py-3 pr-4">admin@cacheflow.com</td>
                   <td className="py-3 pr-4"><span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs">Login</span></td>
                   <td className="py-3">—</td>
                 </tr>
-                <tr className="border-b hover: dark:hover:bg-gray-700/50">
+                <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="py-3 pr-4">2026-02-23 12:45</td>
                   <td className="py-3 pr-4">user2@example.com</td>
                   <td className="py-3 pr-4"><span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded text-xs">Share</span></td>
                   <td className="py-3">presentation.pptx</td>
                 </tr>
-                <tr className="border-b hover: dark:hover:bg-gray-700/50">
+                <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="py-3 pr-4">2026-02-23 11:20</td>
                   <td className="py-3 pr-4">user@example.com</td>
                   <td className="py-3 pr-4"><span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded text-xs">Delete</span></td>
                   <td className="py-3">old-doc.txt</td>
                 </tr>
-                <tr className="hover: dark:hover:bg-gray-700/50">
+                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="py-3 pr-4">2026-02-23 10:05</td>
                   <td className="py-3 pr-4">user3@example.com</td>
                   <td className="py-3 pr-4"><span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded text-xs">Rename</span></td>

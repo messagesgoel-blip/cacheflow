@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import SettingsPanel from '@/components/SettingsPanel'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 export default function SettingsPage() {
   const { authenticated, email, loading } = useClientSession()

@@ -7,7 +7,7 @@ import { IntegrationProvider } from '@/context/IntegrationContext'
 import ConnectProviderModal from '@/components/modals/ConnectProviderModal'
 import WebDAVModal from '@/components/modals/WebDAVModal'
 import VPSModal from '@/components/modals/VPSModal'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 export default function ProvidersPage() {
   const { authenticated, email, loading } = useClientSession({ redirectTo: '/login?reason=session_expired' })

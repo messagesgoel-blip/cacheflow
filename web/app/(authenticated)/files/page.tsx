@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import UnifiedFileBrowser from '@/components/UnifiedFileBrowser'
 import MissionControl from '@/components/MissionControl'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 function FilesBrowserShell({ token }: { token: string }) {
   const searchParams = useSearchParams()

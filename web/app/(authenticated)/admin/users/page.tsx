@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useActionCenter } from '@/components/ActionCenterProvider'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 interface User {
   id: string
@@ -217,7 +217,7 @@ export default function UserManagementPage() {
                 </thead>
                 <tbody>
                   {users.map(user => (
-                    <tr key={user.id} className="border-b hover:">
+                    <tr key={user.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/50">
                       <td className="py-3 px-4">
                         <div className="font-medium">{user.email}</div>
                       </td>
@@ -274,7 +274,7 @@ export default function UserManagementPage() {
                       <td className="py-3 px-4">
                         <div className="font-medium">{formatBytesToGB(user.used_bytes)} GB</div>
                         <div className="text-xs text-gray-500">
-                          {((user.used_bytes / user.quota_bytes) * 100).toFixed(1)}% used
+                          {user.quota_bytes > 0 ? ((user.used_bytes / user.quota_bytes) * 100).toFixed(1) : '0.0'}% used
                         </div>
                       </td>
                       <td className="py-3 px-4 text-gray-600">

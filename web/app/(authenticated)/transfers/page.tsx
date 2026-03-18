@@ -158,7 +158,7 @@ export default function TransfersPage() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Active Transfers ({activeTransfers.length})
               </h2>
-              <div className="bg-white rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm font-medium">
@@ -171,7 +171,7 @@ export default function TransfersPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {activeTransfers.map((transfer) => (
-                      <tr key={transfer.jobId} className="hover: dark:hover:bg-gray-800/50 transition-colors">
+                      <tr key={transfer.jobId} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="font-medium text-gray-900 dark:text-white truncate max-w-xs">
                             {transfer.fileName}
@@ -217,7 +217,7 @@ export default function TransfersPage() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Completed ({completedTransfers.filter(t => t.status === 'completed').length}) / Failed ({completedTransfers.filter(t => t.status === 'failed').length})
               </h2>
-              <div className="bg-white rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm font-medium">
@@ -231,7 +231,7 @@ export default function TransfersPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {completedTransfers.map((transfer) => (
-                      <tr key={transfer.jobId} className="hover: dark:hover:bg-gray-800/50 transition-colors">
+                      <tr key={transfer.jobId} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="font-medium text-gray-900 dark:text-white truncate max-w-xs">
                             {transfer.fileName}

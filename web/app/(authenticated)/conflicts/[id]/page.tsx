@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import ConflictViewer from '@/components/ConflictViewer'
 import { resolveConflict } from '@/lib/api'
 import { useActionCenter } from '@/components/ActionCenterProvider'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 interface Conflict {
   id: string
@@ -129,12 +130,12 @@ export default function ConflictDetailPage() {
               <div className="text-red-500 text-4xl mb-4">⚠️</div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Error</h3>
               <p className="text-gray-600 mb-4">{error || 'Conflict not found'}</p>
-              <a
+              <Link
                 href="/conflicts"
                 className="text-blue-600 hover:text-blue-800 text-sm"
               >
                 ← Back to Conflicts
-              </a>
+              </Link>
             </div>
           </div>
         </main>
@@ -152,12 +153,12 @@ export default function ConflictDetailPage() {
               <h1 className="text-xl font-semibold text-gray-800">Conflict Resolution</h1>
               <p className="text-gray-600 text-sm mt-1">Resolve differences between file versions</p>
             </div>
-            <a
+            <Link
               href="/conflicts"
               className="text-sm text-blue-600 hover:underline"
             >
               ← Back to Conflicts
-            </a>
+            </Link>
           </div>
 
           <ConflictViewer

@@ -6,7 +6,7 @@ import JobCard from '@/components/schedules/JobCard'
 import CreateJobModal from '@/components/schedules/CreateJobModal'
 import ScheduleTransferSnapshot from '@/components/schedules/ScheduleTransferSnapshot'
 import type { ScheduledJob } from '@/lib/jobs/types'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 const JOB_TYPE_LABELS: Record<string, string> = {
   'sync-file': 'File Sync',
@@ -230,7 +230,7 @@ export default function SchedulesPage() {
           <ScheduleTransferSnapshot />
         </div>
 
-        <div className="cf-panel rounded-[300px] overflow-hidden">
+        <div className="cf-panel rounded-[30px] overflow-hidden">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--cf-border)] px-5 py-4 sm:px-6">
             <div>
               <div className="cf-kicker mb-2">Queue</div>

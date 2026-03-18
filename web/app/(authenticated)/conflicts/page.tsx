@@ -1,7 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import ConflictList from '@/components/ConflictList'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 export default function ConflictsPage() {
   const { authenticated, email, loading } = useClientSession({ redirectTo: '/login?reason=session_expired' })
@@ -28,12 +29,12 @@ export default function ConflictsPage() {
               <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Conflict Resolution</h1>
               <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Resolve conflicts between local and cloud versions of your files</p>
             </div>
-            <a
+            <Link
               href="/"
               className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
             >
               ← Back to Files
-            </a>
+            </Link>
           </div>
 
           <ConflictList />

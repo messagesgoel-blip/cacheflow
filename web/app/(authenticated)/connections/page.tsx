@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ProviderId, ConnectedProvider } from '@/lib/providers/types'
 import '@/styles/layout.css'
 
@@ -62,7 +63,6 @@ export default function ConnectionsPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedProvider, setSelectedProvider] = useState<ProviderId | 'all' | 'recent' | 'starred' | 'activity'>('all')
   const [activeAccountKey, setActiveAccountKey] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const fetchConnections = useCallback(async () => {
     setLoading(true)
@@ -111,16 +111,7 @@ export default function ConnectionsPage() {
     <div className="flex flex-col">
       
 
-      {/* Mobile menu button */}
-      <button
-        className="show-mobile-only fixed left-4 top-16 z-30 rounded-xl border border-[var(--cf-border)] bg-[var(--cf-panel-bg)] p-2 shadow-[var(--cf-shadow-elev)]"
-        onClick={() => setSidebarOpen(true)}
-        aria-label="Open menu"
-      >
-        <svg className="h-6 w-6 text-[var(--cf-text-1)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+
 
       {/* Mobile sidebar */}
       <div className="md:hidden">
@@ -170,12 +161,12 @@ export default function ConnectionsPage() {
                 className="cf-panel rounded-[24px] py-12 text-center"
               >
                 <p className="mb-3 text-[var(--cf-text-1)]">No provider connections found</p>
-                <a
+                <Link
                   href="/providers"
                   className="text-sm text-[var(--cf-blue)] hover:underline"
                 >
                   Add your first provider →
-                </a>
+                </Link>
               </div>
             ) : (
               <div

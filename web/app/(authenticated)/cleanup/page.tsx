@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import DuplicateGroup from '@/components/cleanup/DuplicateGroup'
 import StaleFileList from '@/components/cleanup/StaleFileList'
-import { logoutClientSession, useClientSession } from '@/lib/auth/clientSession'
+import { useClientSession } from '@/lib/auth/clientSession'
 
 interface DuplicateGroup {
   signature: string
