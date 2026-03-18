@@ -3,12 +3,21 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
+/**
+ * Props for the DetailDrawer component.
+ */
 interface DetailDrawerProps {
+  /** Whether the drawer is currently open. */
   isOpen: boolean;
+  /** Callback triggered when the drawer should be closed. */
   onClose: () => void;
+  /** The item (file, folder, etc.) to show details for. */
   item: any;
 }
 
+/**
+ * A slide-out panel that displays metadata and details for a selected item.
+ */
 export function DetailDrawer({ isOpen, onClose, item }: DetailDrawerProps) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

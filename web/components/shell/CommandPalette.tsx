@@ -4,8 +4,13 @@ import { Search, Upload, FolderPlus, Link2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+/**
+ * Props for the CommandPalette component.
+ */
 interface CommandPaletteProps {
+  /** Whether the command palette is currently visible. */
   isOpen: boolean;
+  /** Callback triggered when the palette should be closed. */
   onClose: () => void;
 }
 
@@ -16,6 +21,10 @@ const jumpTo = [
   { label: "Connections", shortcut: "G C", path: "/connections" },
 ];
 
+/**
+ * Global command palette that provides quick access to search, 
+ * navigation "jump to" links, and common actions via keyboard or mouse.
+ */
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const [isMac, setIsMac] = useState(true);
@@ -49,6 +58,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   if (!isOpen) return null;
 
+  /**
+   * Navigates to a specific path and closes the palette.
+   * @param path - The application route to navigate to.
+   */
   const handleJumpTo = (path: string) => {
     router.push(path);
     onClose();

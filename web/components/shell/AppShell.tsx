@@ -7,21 +7,37 @@ import { MobileNav } from "./MobileNav";
 import { DetailDrawer } from "./DetailDrawer";
 import { CommandPalette } from "./CommandPalette";
 
+/**
+ * Props for the AppShell component.
+ */
 interface AppShellProps {
+  /** The main content to be rendered within the shell. */
   children: ReactNode;
 }
 
+/**
+ * Global application shell that provides the core layout structure, 
+ * including the navigation rail, command bar, and detail drawer.
+ * It manages the state for expanded navigation and side panels.
+ */
 export function AppShell({ children }: AppShellProps) {
   const [isRailExpanded, setIsRailExpanded] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
+  /**
+   * Opens the detail drawer for a specific item.
+   * @param item - The file or space item to show details for.
+   */
   const handleOpenDrawer = (item: any) => {
     setSelectedItem(item);
     setIsDrawerOpen(true);
   };
 
+  /**
+   * Closes the detail drawer and clears the selected item.
+   */
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false);
     setSelectedItem(null);

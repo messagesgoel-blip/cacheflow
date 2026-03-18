@@ -4,6 +4,10 @@ import { Home, Library, Search, Activity, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+/**
+ * Bottom navigation bar optimized for mobile devices.
+ * Provides quick access to main sections like Home, Library, and Activity.
+ */
 export function MobileNav() {
   const pathname = usePathname();
 

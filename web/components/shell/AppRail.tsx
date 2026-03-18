@@ -15,8 +15,13 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+/**
+ * Props for the AppRail component.
+ */
 interface AppRailProps {
+  /** Whether the sidebar rail is expanded to show labels. */
   isExpanded: boolean;
+  /** Callback triggered when the expansion state is toggled. */
   onToggleExpanded: () => void;
 }
 
@@ -37,6 +42,11 @@ const pinnedSpaces = [
   { label: "Archive", emoji: "📦" },
 ];
 
+/**
+ * Primary navigation sidebar for the application. 
+ * Supports both collapsed and expanded states and handles 
+ * navigation links, pinned spaces, and storage indicators.
+ */
 export function AppRail({ isExpanded, onToggleExpanded }: AppRailProps) {
   const pathname = usePathname();
   const width = isExpanded ? "272px" : "64px";

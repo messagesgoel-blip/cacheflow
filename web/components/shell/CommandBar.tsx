@@ -5,10 +5,18 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Tooltip } from "../ui/Tooltip";
 
+/**
+ * Props for the CommandBar component.
+ */
 interface CommandBarProps {
+  /** Callback triggered when the search/command palette should be opened. */
   onOpenCommandPalette: () => void;
 }
 
+/**
+ * Top command bar that provides page navigation context, 
+ * global search trigger, and quick action buttons.
+ */
 export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
   const pathname = usePathname() || "/";
   const [isMac, setIsMac] = useState(true);
@@ -29,6 +37,10 @@ export function CommandBar({ onOpenCommandPalette }: CommandBarProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onOpenCommandPalette]);
 
+  /**
+   * Returns a user-friendly label for the current page based on the pathname.
+   * @returns {string} The display name of the current section.
+   */
   const getPageLabel = () => {
     if (pathname === "/") return "Home";
     if (pathname.startsWith("/library")) return "Library";
