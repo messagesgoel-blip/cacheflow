@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 
+import { formatFileSize } from '@/lib/utils/format'
+
 interface StaleFile {
   id: string
   name: string
@@ -60,19 +62,10 @@ export default function StaleFileList() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
     })
   }
 
-  function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B'
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
-  }
-
-  function getStatusBadge(status: StaleFile['status']) {
-    const styles = {
+  function getStatusBadge(status: StaleFile['status']) {    const styles = {
       stale: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
       error: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
       orphan: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'

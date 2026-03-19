@@ -1051,8 +1051,20 @@ worker/                       # Keep for background sync
 - Existing work may continue only if it directly fixes items in this plan.
 
 ### Restart Marker
-- **RESTART-AFTER-UI-2026-03-02**: Resume standard roadmap execution only after all Phase 1/2/3 UI tasks are marked done.
+- **RESTART-AFTER-UI-2026-03-02**: Resume standard roadmap execution only after all Phase 0/1/2/3 UI tasks are marked done.
 - Resume point after completion: continue from next pending non-UI item in main roadmap sequence.
+
+### Phase 0: UI Refresh & AppShell Migration (Architectural Prerequisite)
+- **UI-P0-T01**: Migrate existing structural UI to Next.js App Router using the new AppShell layout pattern.
+- **UI-P0-T02**: Integrate new design tokens, glassmorphism utilities, and staggered animations into `globals.css` / Tailwind configuration.
+- **UI-P0-T03**: Refactor authenticated page routes into a single `(authenticated)` route group wrapped by the global `AppShell`.
+- **UI-P0-T04**: Remove redundant per-page Navigation/Sidebar components to prevent layout duplication.
+- **UI-P0-T05**: Ensure mobile responsiveness and navigation logic across the new `AppRail` and `MobileNav`.
+- **UI-P0-T06**: Create standardized page templates based on successful transfers page implementation.
+- **UI-P0-T07**: Document component composition patterns for rapid page development.
+- **UI-P0-T08**: Establish consistent data fetching and state management patterns.
+- **UI-P0-T09**: Migrate Connections page using transfers page as reference implementation.
+- **UI-P0-T10**: Migrate Spaces page with similar file explorer patterns.
 
 ### Phase 1: Blocking Reliability (P0)
 
@@ -1067,10 +1079,13 @@ worker/                       # Keep for background sync
 
 - **UI-P2-T01**: Ensure upload/create actions are always discoverable in main file view.
 - **UI-P2-T02**: Validate end-to-end file lifecycle on two real drives: upload(2 files), rename, move, copy, preview, download, delete.
-- **UI-P2-T03**: Ensure transfer queue provides persistent status with retry/dismiss for failed operations.
+- **UI-P2-T03**: Ensure transfer queue provides persistent status with retry/dismiss for failed operations. (COMPLETED - implemented in transfers page)
 - **UI-P2-T04**: Normalize operation entry points across row overflow, preview panel, and selection toolbar.
 - **UI-P2-T05**: Improve Cloud Drives account visibility (provider + account + health + last sync summary).
 - **UI-P2-T06**: Add regression tests for production auth/session drift and remotes sync/favorites fetch failures.
+- **UI-P2-T07**: Implement transfer resumption after interruption/reconnection.
+- **UI-P2-T08**: Add automatic retry with exponential backoff for failed transfers.
+- **UI-P2-T09**: Implement basic scheduling capabilities for recurring transfers.
 
 ### Phase 3: UX Alignment (P2)
 
@@ -1081,10 +1096,48 @@ worker/                       # Keep for background sync
 - **UI-P3-T05**: Define and enforce UI consistency checklist (action placement, labels, states, recovery paths).
 - **UI-P3-T06**: Run final production UX signoff pass with evidence screenshots + closure report.
 
+### Phase 4: Design Alignment (P1)
+
+- **ALIGN-P4-T01**: Implement glassmorphism effects based on Whimsy Panel Suite reference application.
+- **ALIGN-P4-T02**: Add CameraPlainVariable font system with proper fallbacks from reference.
+- **ALIGN-P4-T03**: Implement sophisticated shadow systems from reference application.
+- **ALIGN-P4-T04**: Add cubic-bezier transition timing from reference application.
+- **ALIGN-P4-T05**: Enhance color palette with --lovable-primary and refined values from reference.
+- **ALIGN-P4-T06**: Implement refined focus states and accessibility features from reference.
+- **ALIGN-P4-T07**: Enhance card components with layered depth effects from reference.
+- **ALIGN-P4-T08**: Update button styles with focus management from reference application.
+- **ALIGN-P4-T09**: Implement badge component based on reference application design.
+- **ALIGN-P4-T10**: Enhance form elements with proper focus states from reference.
+- **ALIGN-P4-T11**: Add skeleton loaders and improved loading states.
+- **ALIGN-P4-T12**: Implement high contrast and reduced motion support from reference.
+
+### Phase 5: Advanced Features (P1)
+
+- **ADV-P5-T01**: Implement end-to-end encryption for transfers.
+- **ADV-P5-T02**: Add temporary transfer links with expiration.
+- **ADV-P5-T03**: Implement advanced two-factor authentication for sensitive operations.
+- **ADV-P5-T04**: Add granular permission controls for shared transfers.
+- **ADV-P5-T05**: Create comprehensive audit logs for compliance requirements.
+- **ADV-P5-T06**: Develop shared transfer spaces for teams.
+- **ADV-P5-T07**: Implement real-time collaboration on file transfers.
+- **ADV-P5-T08**: Add commenting and annotation on transfer items.
+- **ADV-P5-T09**: Implement role-based access controls for enterprise users.
+- **ADV-P5-T10**: Add detailed transfer analytics and reporting.
+- **ADV-P5-T11**: Implement predictive transfer time estimates.
+- **ADV-P5-T12**: Add storage optimization recommendations.
+- **ADV-P5-T13**: Create usage patterns and cost analysis features.
+- **ADV-P5-T14**: Develop performance dashboards with insights.
+- **ADV-P5-T15**: Implement bandwidth throttling options for off-peak transfers.
+- **ADV-P5-T16**: Add automated cleanup of old files after successful transfers.
+- **ADV-P5-T17**: Implement conditional transfers based on specified conditions.
+- **ADV-P5-T18**: Add recurring transfer schedules (weekly backups, monthly syncs).
+
 ### Phase Completion Rule
 - Track each task by ID and complete them one-by-one.
 - Do not parallelize unrelated feature work while this hold is active.
-- UI phase is complete only when all `UI-P1-*`, `UI-P2-*`, and `UI-P3-*` items are explicitly marked done.
+- UI phase is complete only when all `UI-P0-*`, `UI-P1-*`, `UI-P2-*`, and `UI-P3-*` items are explicitly marked done.
+- Design Alignment phase is complete when all `ALIGN-P4-*` items are completed.
+- Advanced Features phase is complete when all `ADV-P5-*` items are completed.
 
 ---
 

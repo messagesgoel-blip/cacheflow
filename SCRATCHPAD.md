@@ -31,3 +31,13 @@ Open Questions: (agent fills this before calling)
 Summary: Created a full Cacheflow UI redesign package in /srv/storage/local/Cacheflow/UI redesign with a complete spec, responsive mock UI, and exported PNG mock boards focused on a calmer file-first family-group product shell.
 Pending: (agent fills this before calling)
 Open Questions: (agent fills this before calling)
+
+## Handoff — 2026-03-17T17:47:38Z
+Summary: Configured wrappers: PI/CCLI/CURSORCLI/Vibe; removed cline; enabled cursor alibaba fallback.
+Pending: (agent fills this before calling)
+Open Questions: (agent fills this before calling)
+
+## Handoff — 2026-03-17T17:55:10Z
+Summary: Reinstalled cline wrapper (no OAuth/LiteLLM injection), added vibe wrapper, smoke-tested agents across repos.
+Pending: (agent fills this before calling)
+Open Questions: (agent fills this before calling)

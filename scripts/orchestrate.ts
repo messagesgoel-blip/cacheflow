@@ -97,6 +97,8 @@ const AGENT_CLI_CANDIDATES: Record<Agent, string[]> = {
   claudecode: ["CCLI", "claude"],
   gemini: ["GCLI", "gemini"],
   codex: ["codex"],
+  alibaba: ["ACLI", "alibaba", "ali-coding"],
+  minimax: ["MCLI", "minimax", "mm-coding"],
 };
 
 function isGeminiRerouteToCodexBEnabled(): boolean {
@@ -794,6 +796,12 @@ function commandForTask(task: Task, prompt: string): { command: string; args: st
     case "codex":
       // ASSUMPTION: codex CLI is available for codex-owned implementation tasks.
       return { command: resolvedCommand, args: ["exec", prompt] };
+    case "alibaba":
+      // Alibaba Coding Plan CLI - follows similar pattern to other coding agents
+      return { command: resolvedCommand, args: ["--execute", prompt] };
+    case "minimax":
+      // Minimax Coding Plan CLI - follows similar pattern to other coding agents
+      return { command: resolvedCommand, args: ["--run", prompt] };
     default:
       return { command: AGENT_CLI_CANDIDATES.opencode[0], args: ["run", prompt] };
   }

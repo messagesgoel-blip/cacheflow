@@ -31,12 +31,17 @@ Contract placeholder for the Sprint 6 post-batch live validation rerun. This tas
 - `docs/contracts/V1-4-CC-B1.md`
 - `docs/contracts/V1-4-GM-B1.md`
 - `web/playwright.live.config.ts`
+- `scripts/setup-live-env.sh`
+- `scripts/seed-live-fixtures.sh`
+- `scripts/verify-live-baseline.sh`
 
 ## Validation Requirements
 
+- **Prerequisite Checks**: Before running the rerun, verify `ENV-01`, `ENV-02`, and `ENV-03` using `scripts/verify-live-baseline.sh`. You must have `.env.live` securely loaded and all fixtures correctly seeded in the live account.
 - Run the live rerun from `web/` with the applicable Playwright live configuration.
 - Capture pass/fail/skip counts and any blocking failures.
 - Record the final classification for `VERIFY-01` through `VERIFY-06`.
+- Treat `web/.env.live` as the local-only secret source for `CF_TOTP_SECRET`.
 
 ## Rollout Notes
 
