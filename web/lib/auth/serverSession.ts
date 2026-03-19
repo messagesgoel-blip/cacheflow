@@ -18,6 +18,10 @@ export interface ServerSession {
   user: SessionUser | null
 }
 
+export interface ServerSessionWithToken extends ServerSession {
+  accessToken: string
+}
+
 function parseUserCookie(raw: string | undefined): SessionUser | null {
   if (!raw) return null
   try {
@@ -83,4 +87,18 @@ export async function resolveServerSession(): Promise<ServerSession> {
   }
 
   return { authenticated: false, user: null }
+}
+
+export async function getServerSession(): Promise<ServerSessionWithToken | null> {
+  const cookieStore = await cookies()
+  const session = await resolveServerSession()
+
+  if (!session.authenticated) {
+    return null
+  }
+
+  return {
+    ...session,
+    accessToken: cookieStore.get('accessToken')?.value ?? '',
+  }
 }

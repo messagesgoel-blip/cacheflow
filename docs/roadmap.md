@@ -4,6 +4,7 @@ Canonical roadmap for product planning and orchestration.
 
 - Canonical since: `2026-03-07`
 - Replaces: `docs/roadmap-v4.3.md`, the legacy launch-only Sprint 6 plan, and the external duplicate roadmap JSX snapshots as live planning sources
+- Non-canonical legacy roadmap file: `CACHEFLOW_ROADMAP.md`
 - Scope split:
   - `Version 1`: merged Phase 1 + Phase 1.5
   - `Version 2`: former Phase 2 roadmap only
@@ -15,6 +16,7 @@ Canonical roadmap for product planning and orchestration.
 2. `Version 2` does not begin until `Version 1` is fully green.
 3. No new Version 1 stage begins until the prior stage exit gate is green.
 4. GTM / Commercial work is explicitly outside the Version 1 and Version 2 product sequence.
+5. Whimsy Panel Suite is the canonical end-state UI spec, but it is integrated into `cacheflow/web` rather than shipped as a separate frontend runtime.
 
 ## Current Status
 
@@ -24,6 +26,7 @@ Canonical roadmap for product planning and orchestration.
 - Draft Sprint 7 decomposition is documented in `docs/sprints/sprint-7.md` and `docs/contracts/7.1.md`.
 - Sprint 7 manifest activation remains paused until the live-triage queue returns the repo to a low-drift base state.
 - Orchestration runtime state is `idle` with `current_sprint: 6` for the active triage batch.
+- Whimsy UI migration planning is now tracked as a pre-Version-2 gate so route structure and page ownership are settled before Version 2 execution begins.
 - Version 1 completion baseline: `f7f14d3`
 - Last full-suite artifact: `/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737`
 - Latest external live green-run signal (`2026-03-10T23:45:38Z`):
@@ -197,13 +200,66 @@ Exit gate:
 - rerun executed with 2FA secret and stable fixtures
 - Version `6.1` through `6.6` explicitly reclassified after rerun
 
+## V2-0 Whimsy UI Migration Gate
+
+Goal: adopt Whimsy Panel Suite as the canonical UI inside CacheFlow's existing Next.js frontend without forking auth, routing, or backend integration.
+
+Status:
+- planning-only as of `2026-03-18`
+- activates only after `V1-4` is cleared
+- gate contract: `docs/contracts/WHIMSY-UI-MIGRATION-GATE.md`
+- canonical mapping: `docs/whimsy-ui-migration-map.md`
+
+Core decisions:
+
+- `cacheflow/web` remains the only production frontend runtime.
+- Whimsy is the visual and information-architecture source of truth for end-state Version 2 surfaces.
+- `react-router-dom`, Supabase auth, and Vite app bootstrapping from Whimsy are not adopted in production CacheFlow.
+- Common pages already represented by existing product capability do not create duplicate roadmap items.
+- Missing Whimsy-only surfaces are mapped onto the existing roadmap, GTM backlog, or internal-only work instead of creating parallel UI-only epics.
+
+Whimsy surface mapping:
+
+| Whimsy surface | CacheFlow destination | Roadmap handling |
+| --- | --- | --- |
+| `Home` | `/dashboard` | Common surface, no new roadmap item |
+| `Library` | `/files` (optionally alias `/library`) | Common surface, no new roadmap item |
+| `Connections` | `/connections` | Common surface, no new roadmap item |
+| `Transfers` | `/transfers` | Common surface, no new roadmap item |
+| `Activity` | `/activity` | Common surface, no new roadmap item |
+| `Security` | `/security` | Common surface, no new roadmap item |
+| `Settings` | `/settings` | Common surface, no new roadmap item |
+| `Spaces` | future team/workspace surface | maps to Sprint 10 `MCP + Team Workspaces` |
+| `Integrations` | integrations hub | maps to Sprint 10 `MCP + Team Workspaces` and Sprint 13 `Webhooks` |
+| `Automations` | schedules / rule engine surface | maps to Version `6.3` plus Sprint 12 `Sync Engine + Rule Engine + Smart Dedup` |
+| `Analytics` | analytics / cost / health surface | maps to Sprint 9 `AI FinOps`, Sprint 15 `Storage Heatmap`, Sprint 16 `Uptime Dashboard`, Sprint 20 `Carbon + Energy Tracking` |
+| `Organization` | smart organization surface | maps to Sprint 18 `AI-Powered File Organisation` |
+| `Pricing` | pricing / packaging surface | GTM / Commercial backlog only |
+| `Design System` | internal-only reference | implementation aid, not a customer roadmap stage |
+
+Entry gate:
+
+- `V1-4` live-triage hold cleared
+- Whimsy-to-CacheFlow route and feature mapping documented
+- migration tracker aligned with the canonical roadmap
+- no active plan depends on launching a second production frontend
+
+Exit gate:
+
+- `MIGRATE-UI-1`: Whimsy shell is ported into `cacheflow/web` across authenticated routes
+- `MIGRATE-UI-2`: common routes (`dashboard/files/connections/transfers/activity/security/settings`) use live CacheFlow data under the Whimsy shell
+- `MIGRATE-UI-3`: production CacheFlow frontend contains no runtime dependency on Supabase auth or `react-router-dom`
+- `MIGRATE-UI-4`: duplicate UI-only roadmap entries are removed; every missing Whimsy surface is mapped to an existing roadmap stage, GTM backlog, or internal-only scope
+- `MIGRATE-UI-5`: route placeholders exist for mapped-but-unbuilt future surfaces so IA does not drift from the roadmap
+- `MIGRATE-UI-6`: migration evidence is captured in the roadmap, migration map, and gate contract before Version 2 execution starts
+
 ## Version 2
 
 Version 2 starts after Version 1 is green and complete.
 
 Current status:
-- entry gate satisfied
-- Sprint 7 is the active planning sprint only after the V1-4 live-triage hold is cleared
+- entry gate is not yet green because `V1-4` remains open and `V2-0` is planning-only
+- Sprint 7 is the active planning sprint only after the `V1-4` live-triage hold is cleared and the `V2-0` migration gate is green
 - draft task decomposition is documented
 - executable manifest activation remains intentionally paused
 
@@ -213,7 +269,7 @@ Current status:
 - Sprint 8: NAS Bridge + Advanced PWA
 - Sprint 9: AI FinOps
 - Sprint 10: MCP + Team Workspaces
-- Sprint 11: Design Refresh + Observability
+- Sprint 11: Observability + post-migration UI completion polish
 
 ### V2-B Easy Wins
 
@@ -237,15 +293,31 @@ Current status:
 
 - The old launch-only Sprint 6 is retired as a product roadmap.
 - Old `6.8A` is merged into `V1-3 / 6.5`.
+- Whimsy common surfaces (`Home`, `Library`, `Connections`, `Transfers`, `Activity`, `Security`, `Settings`) do not create duplicate roadmap items when they are visual migrations of existing product capability.
+- Whimsy `Pricing` remains GTM / Commercial scope, not Version 1 or Version 2 product scope.
+- Whimsy `Design System` remains internal enablement, not a customer-facing roadmap stage.
+- Sprint 11 no longer owns a standalone design-refresh epic; that work is absorbed by `V2-0` plus incremental polish inside feature sprints.
 - PWA, SEO landing, billing, tiering, and affiliate work move to the GTM / Commercial backlog.
 - External roadmap snapshots under `/srv/storage/local/Cacheflow/Roadmap/` are treated as historical source inputs, not live orchestration sources.
 
 ## Canonical Files
 
 - Product roadmap: `docs/roadmap.md`
+- Whimsy migration gate: `docs/contracts/WHIMSY-UI-MIGRATION-GATE.md`
+- Whimsy migration map: `docs/whimsy-ui-migration-map.md`
 - Live E2E triage matrix: `docs/live-e2e-triage-matrix.md`
 - GTM / Commercial backlog: `docs/gtm-commercial-backlog.md`
 - Sprint specs: `docs/sprints/`
 - Orchestration manifest: `docs/orchestration/task-manifest.json`
 - Dashboard: `docs/sprints-task-dashboard.md`
 - Runtime state: `logs/orchestrator-state.json`
+
+## Non-Canonical Intake
+
+- Ideas notepad: `docs/IDEAS_NOTEPAD.md`
+
+Rules:
+
+- items in the ideas notepad are not roadmap commitments
+- nothing in the ideas notepad is considered approved until orchestrator agreement is reflected in `docs/roadmap.md`
+- agents may read ideas from the notepad, but must not treat them as executable roadmap scope without canonical promotion

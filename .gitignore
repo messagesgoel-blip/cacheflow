@@ -15,6 +15,7 @@ worker/rclone
 web/tsconfig.tsbuildinfo
 web/test-results/
 web/playwright-report/
+web/.env.live
 webdav/webdav.htpasswd
 
 # Roadmap docs

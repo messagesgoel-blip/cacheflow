@@ -7,17 +7,7 @@ import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel'
 import RecentActivityPanel from '@/components/dashboard/RecentActivityPanel'
 import RecentTransfersPanel from '@/components/dashboard/RecentTransfersPanel'
 import { useClientSession } from '@/lib/auth/clientSession'
-import { ProviderId } from '@/lib/providers/types'
-import apiClient from '@/lib/apiClient'
-
-// Define the expected shape of the API response
-interface ConnectionApiResponse {
-  provider_id: string;
-  display_name: string;
-  account_email: string;
-  quota_used: number;
-  quota_total: number;
-}
+import apiClient, { type ProviderConnection } from '@/lib/apiClient'
 
 export default function DashboardPage() {
   const { authenticated, email, loading: readyLoading } = useClientSession()
@@ -35,15 +25,10 @@ export default function DashboardPage() {
       try {
         const result = await apiClient.getConnections()
         if (result.success && result.data) {
-          // Type-safe mapping of snake_case API response to camelCase
-          const connected = (result.data as ConnectionApiResponse[]).map((item) => ({
-            providerId: item.provider_id,
-            displayName: item.display_name,
-            accountEmail: item.account_email,
-            quota: { 
-              used: typeof item.quota_used === 'number' ? item.quota_used : 0,
-              total: typeof item.quota_total === 'number' ? item.quota_total : 0
-            }
+          const connected = (result.data as ProviderConnection[]).map((item) => ({
+            providerId: item.provider,
+            displayName: item.accountLabel || item.accountName || item.accountEmail || item.provider,
+            accountEmail: item.accountEmail || '',
           }))
           setConnectedProviders(connected)
         } else {

@@ -1,4 +1,4 @@
-export type Agent = "opencode" | "claudecode" | "gemini" | "codex";
+export type Agent = "opencode" | "claudecode" | "gemini" | "codex" | "alibaba" | "minimax";
 
 export interface Task {
   id: string;
