@@ -11,6 +11,10 @@ const ROLE_TEXT: Record<Agent, string> = {
     "You are Gemini (QA/tests/infra). You must not touch production source logic outside explicitly listed test/workflow scope.",
   codex:
     "You are Codex (master orchestrator implementation tasks). You must not deploy to production or rotate secrets.",
+  alibaba:
+    "You are Alibaba (backend/API/DB). You must stay within the assigned scope and avoid unrelated client-visible API changes.",
+  minimax:
+    "You are Minimax (backend/API/DB). You must stay within the assigned scope and avoid unrelated client-visible API changes.",
 };
 
 function normalizePromptPath(value: string): string {

@@ -26,13 +26,13 @@ Important deployment note:
 - This release also changes `api`, so a safe manual rollout must rebuild/recreate both `api` and `web`.
 
 Pre-deploy checks:
-- Confirm `/opt/docker/apps/cacheflow` is on `main` and clean.
+- Confirm `/srv/storage/repo/cacheflow` is on `main` and clean.
 - Confirm the database already has `vps_connections.last_tested_at` and `vps_connections.last_host_fingerprint`.
 - If those columns are missing, apply the idempotent SQL in `migrations/009_vps_last_verified.sql` before restarting `api`.
 
 Suggested deploy sequence:
 ```bash
-cd /opt/docker/apps/cacheflow
+cd /srv/storage/repo/cacheflow
 git fetch origin
 git checkout main
 git pull --ff-only origin main
@@ -59,7 +59,7 @@ CACHEFLOW_IMAGE="$IMAGE" docker compose -f infra/docker-compose.yml up -d --forc
 
 Post-deploy checks:
 ```bash
-cd /opt/docker/apps/cacheflow
+cd /srv/storage/repo/cacheflow
 docker compose -f infra/docker-compose.yml ps
 docker logs --tail 100 cacheflow-api
 docker logs --tail 100 cacheflow-web

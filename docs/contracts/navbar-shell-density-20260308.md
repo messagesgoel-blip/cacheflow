@@ -13,5 +13,5 @@ Behavior:
 - this is a visual density pass only
 
 Verification:
-- `cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit`
+- `cd /srv/storage/repo/cacheflow/web && npx tsc --noEmit`
 - `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3036 npx playwright test e2e/commandPalette.spec.ts --project=chromium`

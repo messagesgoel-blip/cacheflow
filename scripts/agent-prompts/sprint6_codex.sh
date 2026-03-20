@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat <<'PROMPT'
-Sprint 6 — Codex (Cross-agent) — /home/sanjay/cacheflow_work
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 
-Startup: git pull --rebase; run `agent-preflight`; read AGENTS.md, STATUS.md, docs/roadmap.md, docs/sprints/sprint-6.md, and docs/sprints-task-dashboard.md; sync the running queue before dispatch.
+prompt="$(cat <<'PROMPT'
+Sprint 6 — Codex (Cross-agent) — __REPO_ROOT__
+
+Startup: cd "__REPO_ROOT__"; git pull --rebase; run `agent-preflight cacheflow`; read AGENTS.md, STATUS.md, docs/roadmap.md, docs/sprints/sprint-6.md, and docs/sprints-task-dashboard.md; sync the running queue before dispatch.
 
 Sprint 6 umbrella task keys:
 - 6.1@QUOTA-1+RIMPORT-1
@@ -23,3 +26,7 @@ Codex responsibilities:
 
 Finish per task key: run validations, `python3 scripts/update_cacheflow_metrics.py --complete <task_key>`, `./scripts/refresh_cacheflow_metrics.sh`, then release the lock after merge/verification.
 PROMPT
+)"
+
+prompt="${prompt//__REPO_ROOT__/$repo_root}"
+printf '%s\n' "$prompt"

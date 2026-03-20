@@ -9,17 +9,7 @@ explicit_base = os.environ.get("CACHEFLOW_BASE")
 if explicit_base:
     CACHEFLOW_BASE = Path(explicit_base).resolve()
 else:
-    candidates = (
-        Path("/home/sanjay/cacheflow"),
-        Path("/opt/docker/apps/cacheflow"),
-        Path("/home/sanjay/cacheflow_work"),
-    )
-    for candidate in candidates:
-        if (candidate / ".git").exists():
-            CACHEFLOW_BASE = candidate.resolve()
-            break
-    else:
-        CACHEFLOW_BASE = Path(__file__).resolve().parent.parent
+    CACHEFLOW_BASE = Path(__file__).resolve().parent.parent
 HISTORY_FILE = CACHEFLOW_BASE / 'monitoring' / 'task_history.yaml'
 METRICS_FILE = CACHEFLOW_BASE / 'monitoring' / 'cacheflow_metrics.yaml'
 PUSHGATEWAY = os.environ.get('PUSHGATEWAY','http://localhost:9091')

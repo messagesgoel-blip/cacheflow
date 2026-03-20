@@ -5,7 +5,7 @@ Use these scripts to print the active Sprint 6 startup prompts per agent.
 ## Usage
 
 ```bash
-cd /home/sanjay/cacheflow_work
+cd "$(git rev-parse --show-toplevel)"
 bash scripts/agent-prompts/sprint6_claude.sh
 bash scripts/agent-prompts/sprint6_opencode.sh
 bash scripts/agent-prompts/sprint6_gemini.sh
@@ -18,7 +18,7 @@ Active references:
 - `docs/prompts/sprint-6-startup-all-agents.md`
 
 Each script uses a compact startup flow:
-- `agent-preflight` + task claim first
+- `agent-preflight cacheflow` + task claim first
 - `STATUS.md` and recent git log are mandatory
 - `.context/*` files are loaded lazily when relevant to touched scope
 - lock + session-close workflow remains explicit

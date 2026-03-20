@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat <<'PROMPT'
-Sprint 6 — ClaudeCode — /home/sanjay/cacheflow_work
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 
-Startup: git pull --rebase; run `agent-preflight`; read AGENTS.md, STATUS.md, docs/roadmap.md, and docs/sprints/sprint-6.md; coordinate with Codex before touching files under Sprint 6 umbrella tasks.
+prompt="$(cat <<'PROMPT'
+Sprint 6 — ClaudeCode — __REPO_ROOT__
+
+Startup: cd "__REPO_ROOT__"; git pull --rebase; run `agent-preflight cacheflow`; read AGENTS.md, STATUS.md, docs/roadmap.md, and docs/sprints/sprint-6.md; coordinate with Codex before touching files under Sprint 6 umbrella tasks.
 
 Primary Sprint 6 frontend scopes:
 - 6.1 UI surfaces: quota alert banners, provider-capacity messaging, remote import UX polish
@@ -22,3 +25,7 @@ Rules:
 
 Finish per assigned scope: run targeted UI/Playwright validation, stage only relevant files, then use `done-task <task_key> --test "<targeted test>" --commit "<message>"` when operating on a claimed task key.
 PROMPT
+)"
+
+prompt="${prompt//__REPO_ROOT__/$repo_root}"
+printf '%s\n' "$prompt"

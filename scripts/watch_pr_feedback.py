@@ -25,7 +25,7 @@ WATCH_DIR = ROOT / ".context" / "cache_state" / "pr_feedback_watch"
 AGENT_INBOX_DIR = ROOT / ".context" / "cache_state" / "agent_notifications"
 ACTIVE_TTY_DIR = ROOT / ".context" / "cache_state" / "active_agent_tty"
 MONITORING_DIR = ROOT / "monitoring"
-TTY_MAP_DIR = Path(os.environ.get("CACHEFLOW_AGENT_TTY_MAP_DIR", "/tmp/cacheflow_agent_tty_map"))
+TTY_MAP_DIR = Path(os.environ.get("AGENT_TTY_MAP_DIR", "/tmp/agent_tty_map"))
 
 
 @dataclass

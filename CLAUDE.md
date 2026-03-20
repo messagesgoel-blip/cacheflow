@@ -5,7 +5,7 @@ Context: container `claude-code-web` runs as root and has `/var/run/docker.sock`
 Essentials:
 - Set git safe directories for /workspace/cacheflow and /workspace/cacheflow-qa.
 - Prefer small diffs; avoid destructive Docker commands; check ports/processes before restarts.
-- Use `docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml` for builds and `up -d` deploys.
+- Use `docker compose -f /srv/storage/repo/cacheflow/infra/docker-compose.yml` for builds and `up -d` deploys.
 - Use `rclone copy` (never sync). Parse BIGINTs with `parseInt`; Redis counters with atomic `INCRBY/DECRBY`.
 - Inside container 127.0.0.1 refers to container; use compose service names or host checks with `ss -ltnp`.
 

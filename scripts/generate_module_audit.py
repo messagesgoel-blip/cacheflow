@@ -19,14 +19,6 @@ def resolve_base() -> Path:
     explicit = os.environ.get("CACHEFLOW_BASE")
     if explicit:
         return Path(explicit).resolve()
-    candidates = (
-        Path("/home/sanjay/cacheflow"),
-        Path("/opt/docker/apps/cacheflow"),
-        Path("/home/sanjay/cacheflow_work"),
-    )
-    for candidate in candidates:
-        if (candidate / ".git").exists():
-            return candidate.resolve()
     return Path(__file__).resolve().parent.parent
 
 

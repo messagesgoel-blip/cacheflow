@@ -39,7 +39,7 @@ Hold for later batch:
 You are working Batch 1 of the CacheFlow V1-4 live E2E triage hold.
 
 Repo:
-- /opt/docker/apps/cacheflow
+- __REPO_ROOT__
 
 Source docs:
 - docs/live-e2e-triage-matrix.md
@@ -90,7 +90,7 @@ Report back with:
 You are working Batch 1 of the CacheFlow V1-4 live E2E triage hold.
 
 Repo:
-- /opt/docker/apps/cacheflow
+- __REPO_ROOT__
 
 Source docs:
 - docs/live-e2e-triage-matrix.md
@@ -156,7 +156,7 @@ Report back with:
 You are working Batch 1 of the CacheFlow V1-4 live E2E triage hold.
 
 Repo:
-- /opt/docker/apps/cacheflow
+- __REPO_ROOT__
 
 Source docs:
 - docs/live-e2e-triage-matrix.md

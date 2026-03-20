@@ -22,7 +22,7 @@ USAGE
 }
 
 detect_agent_from_tty() {
-  local map_dir="${CACHEFLOW_AGENT_TTY_MAP_DIR:-/tmp/cacheflow_agent_tty_map}"
+  local map_dir="${AGENT_TTY_MAP_DIR:-/tmp/agent_tty_map}"
   local tty_name tty_key map_file
   tty_name="$(tty 2>/dev/null || true)"
   [[ "$tty_name" == /dev/* ]] || return 1
@@ -50,7 +50,7 @@ mark_active_tty() {
 normalize_agent() {
   local raw="${1,,}"
   case "$raw" in
-    codex|codexa|codexb|master)
+    codex|codex-a|codex-b|codex-c|codex-d|codex-e|codex-f|codexa|codexb|master)
       echo "Codex"
       ;;
     claude|claudecode|ccli)
@@ -59,7 +59,7 @@ normalize_agent() {
     open|opencode|oc)
       echo "OpenCode"
       ;;
-    gemini|gcli)
+    gemini|gcli|gcli-a|gcli-b)
       echo "Gemini"
       ;;
     *)
@@ -134,7 +134,7 @@ if [ "$#" -gt 0 ] && [[ "${1:-}" != -* ]]; then
 fi
 
 if [ -z "$task_key" ]; then
-  agent="${CACHEFLOW_AGENT:-}"
+  agent="${AGENT_NAME:-}"
   if [ -z "$agent" ]; then
     agent="$(detect_agent_from_tty 2>/dev/null || true)"
   fi
@@ -143,4 +143,4 @@ if [ -z "$task_key" ]; then
   task_key="$(auto_task_for_agent "$agent")" || exit $?
 fi
 
-exec "$repo_root/scripts/finish_task.sh" "$task_key" "$@"
+exec env SUPPRESS_ENTRYPOINT_DEPRECATION=1 "$repo_root/scripts/finish_task.sh" "$task_key" "$@"

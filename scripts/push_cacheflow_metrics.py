@@ -227,17 +227,7 @@ def main():
     if explicit:
         base = Path(explicit).resolve()
     else:
-        candidates = (
-            Path("/home/sanjay/cacheflow"),
-            Path("/opt/docker/apps/cacheflow"),
-            Path("/home/sanjay/cacheflow_work"),
-        )
-        for candidate in candidates:
-            if (candidate / ".git").exists():
-                base = candidate.resolve()
-                break
-        else:
-            base = Path(__file__).resolve().parent.parent
+        base = Path(__file__).resolve().parent.parent
     metrics_file = base / "monitoring" / "cacheflow_metrics.yaml"
     if not metrics_file.exists():
         raise SystemExit("metrics file missing")

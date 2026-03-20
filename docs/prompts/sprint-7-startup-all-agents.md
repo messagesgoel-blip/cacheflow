@@ -10,7 +10,7 @@ Task board source: `docs/sprints-task-dashboard.md`
 ```text
 You are starting Sprint 7 planning for CacheFlow.
 
-CACHEFLOW_ROOT=/opt/docker/apps/cacheflow
+CACHEFLOW_ROOT="$(git rev-parse --show-toplevel)"
 
 Before coding:
 1) cd "$CACHEFLOW_ROOT"

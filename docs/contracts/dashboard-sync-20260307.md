@@ -16,8 +16,8 @@
 ## Deployment Path
 
 - Source generator: `scripts/generate_cacheflow_grafana_dashboards.py`
-- Provisioned Grafana path: `/opt/docker/apps/grafana/dashboards`
-- Provisioning config: `/opt/docker/apps/grafana/provisioning/dashboards/default.yml`
+- Provisioned Grafana path: `/srv/storage/shared/apps/grafana/dashboards`
+- Provisioning config: `/srv/storage/shared/apps/grafana/provisioning/dashboards/default.yml`
 
 ## Notes
 

@@ -193,6 +193,10 @@
       "description": "VPS bridge supports custom ports and configurable keep-alive behavior for strict environments",
       "sprint_reference": "Version 1 · 6.6"
     },
+    "GENERIC-1": {
+      "description": "Gemini task wrappers and launcher plumbing are repo-agnostic, use generic agent env names, avoid CacheFlow-specific fallbacks, and can include /opt and /srv roots for workspace access",
+      "sprint_reference": "Operations · Gemini portability smoke"
+    },
     "HOLD-UI-2026-03-02": {
       "description": "Phase 1 UI stabilization tasks block non-UI feature work until complete",
       "sprint_reference": "Sprint 2 · UI-P1-T01-UI-P1-T06"
@@ -3432,6 +3436,33 @@
         "Do not modify production source implementation files unless explicitly listed.",
         "Do not edit environment variable files or secrets.",
         "Do not bypass gate criteria when tests fail."
+      ],
+      "rollback_plan": "revert to last sprint gate tag"
+    },
+    {
+      "id": "GEMINI-PORT-1",
+      "sprint": 6,
+      "wave": 3,
+      "agent": "gemini",
+      "title": "Gemini launcher portability smoke — verify generic task routing outside CacheFlow assumptions",
+      "files": [
+        "/scripts/start_sprint.sh",
+        "/scripts/finish_task.sh",
+        "/scripts/done_task.sh",
+        "/scripts/watch_pr_feedback.py",
+        "/scripts/spring_startup.sh",
+        "/docs/contracts/GEMINI-PORT-1.md"
+      ],
+      "produces_contract": true,
+      "contract_path": "/docs/contracts/GEMINI-PORT-1.md",
+      "depends_on_contracts": [],
+      "acceptance_criteria": [
+        "GENERIC-1"
+      ],
+      "forbidden_side_effects": [
+        "Do not reintroduce CacheFlow-specific launcher env names or workdir defaults.",
+        "Do not modify production source implementation files outside the listed scripts.",
+        "Do not edit environment variable files or secrets."
       ],
       "rollback_plan": "revert to last sprint gate tag"
     }

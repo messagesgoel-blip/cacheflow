@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat <<'PROMPT'
-Sprint 6 — Gemini (QA) — /home/sanjay/cacheflow_work
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 
-Startup: git pull --rebase; run `agent-preflight`; read AGENTS.md, STATUS.md, docs/roadmap.md, and docs/sprints/sprint-6.md; wait for Codex to assign the exact Sprint 6 validation scope before claiming a task lock.
+prompt="$(cat <<'PROMPT'
+Sprint 6 — Gemini (QA) — __REPO_ROOT__
+
+Startup: cd "__REPO_ROOT__"; git pull --rebase; run `agent-preflight cacheflow`; read AGENTS.md, STATUS.md, docs/roadmap.md, and docs/sprints/sprint-6.md; wait for Codex to assign the exact Sprint 6 validation scope before claiming a task lock.
 
 Primary Sprint 6 QA scopes:
 - 6.1: quota-alert deterministic coverage and remote URL import streaming validation
@@ -22,3 +25,7 @@ Rules:
 
 Finish per assigned scope: `done-task <task_key> --test "<targeted test>" --commit "<message>"` when operating on a claimed task key, and hand Codex the exact pass/fail evidence for gate updates.
 PROMPT
+)"
+
+prompt="${prompt//__REPO_ROOT__/$repo_root}"
+printf '%s\n' "$prompt"

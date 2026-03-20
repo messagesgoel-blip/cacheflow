@@ -4,7 +4,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WEB_URL="${CACHEFLOW_WEB_URL:-${PLAYWRIGHT_BASE_URL:-https://cacheflow.goels.in}}"
+WEB_URL="${CACHEFLOW_WEB_URL:-${PLAYWRIGHT_BASE_URL:-http://127.0.0.1:3010}}"
 API_URL="${CACHEFLOW_API_URL:-${NEXT_PUBLIC_API_URL:-http://127.0.0.1:8100}}"
 TOKEN_SOURCE="${CACHEFLOW_ACCESS_TOKEN:-${ACCESS_TOKEN:-${1:-}}}"
 COOKIE_SOURCE="${CACHEFLOW_COOKIE_HEADER:-${COOKIE_HEADER:-${SESSION_COOKIE:-${2:-}}}}"
@@ -19,7 +19,7 @@ Usage:
   scripts/verify-live-baseline.sh <access-token>
 
 The script verifies:
-- live session is accepted by the web app
+- the repo-owned bootstrap session is accepted by the web app
 - /api/health is reachable
 - at least one provider is connected and healthy
 - the root directory contains the expected fixture files
@@ -76,9 +76,7 @@ if [ -z "$TOKEN_SOURCE" ]; then
 fi
 
 if [ -z "$TOKEN_SOURCE" ]; then
-  usage >&2
-  echo "Error: an access token or cookie header is required." >&2
-  exit 1
+  TOKEN_SOURCE="$("$REPO_ROOT/scripts/bootstrap-dev-auth.sh")"
 fi
 
 if [ ! -d "$FIXTURES_DIR" ]; then
@@ -127,8 +125,26 @@ else
   fail "Connected provider data available"
 fi
 
+connected_vps_ids=""
+if [ -n "${connections_response:-}" ]; then
+  connected_vps_ids="$(printf '%s' "$connections_response" | json_eval '(payload.data || []).filter((entry) => entry && entry.provider === "vps" && entry.status === "connected").map((entry) => entry.id)')"
+fi
+
 if connections_health_response="$(curl -fsS -H "Cookie: accessToken=$TOKEN_SOURCE" "$WEB_URL/api/connections/health")"; then
   healthy_count="$(printf '%s' "$connections_health_response" | json_eval '(payload.connections || []).filter((entry) => entry && entry.probe && entry.probe.status === "healthy").length')"
+  if [ "$healthy_count" -lt 1 ] && [ -n "$connected_vps_ids" ]; then
+    vps_test_ok=0
+    for vps_id in $connected_vps_ids; do
+      if vps_test_response="$(curl -fsS -X POST -H "Cookie: accessToken=$TOKEN_SOURCE" "$WEB_URL/api/providers/vps/$vps_id/test")"; then
+        if [ "$(printf '%s' "$vps_test_response" | json_eval 'Boolean(payload.success)')" = "true" ]; then
+          vps_test_ok=1
+          break
+        fi
+      fi
+    done
+    healthy_count="$vps_test_ok"
+  fi
+
   if [ "$healthy_count" -ge 1 ]; then
     pass "At least one provider is healthy"
   else
@@ -179,8 +195,15 @@ else
 fi
 
 if [ "${REQUIRE_VPS_CONNECTION:-false}" = "true" ]; then
-  if vps_response="$(curl -fsS -H "Cookie: accessToken=$TOKEN_SOURCE" "$WEB_URL/api/connections/health")"; then
-    vps_count="$(printf '%s' "$vps_response" | json_eval '(payload.connections || []).filter((entry) => entry && entry.provider === "vps" && entry.probe && entry.probe.status === "healthy").length')"
+  if [ -n "$connected_vps_ids" ]; then
+    vps_count=0
+    for vps_id in $connected_vps_ids; do
+      if vps_test_response="$(curl -fsS -X POST -H "Cookie: accessToken=$TOKEN_SOURCE" "$WEB_URL/api/providers/vps/$vps_id/test")"; then
+        if [ "$(printf '%s' "$vps_test_response" | json_eval 'Boolean(payload.success)')" = "true" ]; then
+          vps_count=$((vps_count + 1))
+        fi
+      fi
+    done
     if [ "$vps_count" -ge 1 ]; then
       pass "VPS provider is healthy"
     else

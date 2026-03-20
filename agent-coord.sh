@@ -21,15 +21,11 @@ shift || true
 
 now_utc() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-default_root="/home/sanjay/cacheflow_work"
+repo_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null || echo "$script_dir")"
 if [ -n "${CACHEFLOW_COORD_ROOT:-}" ]; then
   coord_root="$(cd "${CACHEFLOW_COORD_ROOT}" 2>/dev/null && pwd || echo "${CACHEFLOW_COORD_ROOT}")"
-elif [ -d "$default_root/.git" ]; then
-  coord_root="$default_root"
-elif git rev-parse --show-toplevel >/dev/null 2>&1; then
-  coord_root="$(git rev-parse --show-toplevel)"
 else
-  coord_root="$script_dir"
+  coord_root="$repo_root"
 fi
 repo_name() { basename "$coord_root"; }
 branch_name() { git -C "$coord_root" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"; }

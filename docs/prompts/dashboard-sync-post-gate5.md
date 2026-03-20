@@ -1,6 +1,6 @@
 # Dashboard Sync Prompt — Post-Gate Version 1
 
-Historical note: this prompt records a completed sync from the earlier `/home/sanjay/cacheflow_work` workspace. The active working and deploy repo later moved to `/opt/docker/apps/cacheflow`.
+Historical note: this prompt records a completed sync from an earlier cacheflow workspace. The active working and deploy repo later moved to the current CacheFlow repo root.
 
 This prompt is now historical reference for the dashboard/reporting sync completed on 2026-03-07.
 
@@ -8,17 +8,17 @@ This prompt is now historical reference for the dashboard/reporting sync complet
 Update only dashboard/status artifacts and orchestration visibility docs. Do not modify runtime app/API logic.
 
 ## Historical Source of Truth
-- Repo: `/home/sanjay/cacheflow_work`
+- Repo: `/srv/storage/repo/cacheflow`
 - Current commit: `f7f14d3`
-- Canonical roadmap doc: `/home/sanjay/cacheflow_work/docs/roadmap.md`
-- GTM backlog doc: `/home/sanjay/cacheflow_work/docs/gtm-commercial-backlog.md`
+- Canonical roadmap doc: `/srv/storage/repo/cacheflow/docs/roadmap.md`
+- GTM backlog doc: `/srv/storage/repo/cacheflow/docs/gtm-commercial-backlog.md`
 - Historical roadmap snapshot folder: `/srv/storage/local/Cacheflow/Roadmap/`
 - Latest archived full-suite artifact: `/srv/storage/local/green run/20260306-203737/full-suite-20260306-203737`
 
 ## Current Repo Note
-- Active working repo: `/opt/docker/apps/cacheflow`
-- Canonical deploy checkout: `/opt/docker/apps/cacheflow`
-- Do not reuse the historical `/home/sanjay/cacheflow_work` paths in current runbooks.
+- Active working repo: `__REPO_ROOT__`
+- Canonical deploy checkout: `__REPO_ROOT__`
+- Do not reuse the historical workspace paths in current runbooks.
 
 ## Facts to Reflect
 - Version 1 is the merged Phase 1 + Phase 1.5 roadmap.

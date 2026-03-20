@@ -8,13 +8,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import jwt from 'jsonwebtoken'
+import { resolveServerSession } from '@/lib/auth/serverSession'
 import { probeProvider } from '@/lib/providers/healthCheck'
 import type { HealthProbeResult } from '@/lib/providers/healthCheck'
-
-interface JwtPayload {
-  id: string
-}
 
 interface BackendRemote {
   id: string
@@ -64,23 +60,10 @@ function resolveApiBase(): string {
   return (nonLoopback ?? candidates[0] ?? DEFAULT_API_BASE).replace(/\/+$/, '')
 }
 
-async function extractUserId(request: NextRequest): Promise<string | null> {
-  const cookieStore = await cookies()
-  const tokenFromCookie = cookieStore.get('accessToken')?.value
-  const authHeader = request.headers.get('authorization')
-  const tokenFromHeader = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-  const token = tokenFromCookie ?? tokenFromHeader
-
-  if (!token) return null
-
-  try {
-    const secret = process.env.JWT_SECRET
-    if (!secret) return null
-    const decoded = jwt.verify(token, secret) as JwtPayload
-    return decoded.id ?? null
-  } catch {
-    return null
-  }
+async function extractUserId(): Promise<string | null> {
+  const session = await resolveServerSession()
+  if (!session.authenticated || !session.user) return null
+  return session.user.id !== null && session.user.id !== undefined ? String(session.user.id) : null
 }
 
 async function fetchRemotes(request: NextRequest): Promise<BackendRemote[]> {
@@ -169,7 +152,7 @@ function httpStatusToProbe(httpStatus: number, checkedAt: string, latencyMs: num
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse<HealthResponse | { success: false; error: string }>> {
-  const userId = await extractUserId(request)
+  const userId = await extractUserId()
   if (!userId) {
     return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 })
   }

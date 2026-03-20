@@ -9,11 +9,11 @@ Date: 2026-03-08
 
 ## Reason
 
-- `/opt/docker/apps/cacheflow` is the canonical deploy checkout
+- `/srv/storage/repo/cacheflow` is the canonical deploy checkout
 - local `pull.rebase` settings can still make `git pull --ff-only origin main` fail even when the repo is clean
 - deploys should not depend on per-host pull behavior
 
 ## Verification
 
 - `bash -n deploy.sh`
-- rerun `./deploy.sh` from a clean `/opt/docker/apps/cacheflow` checkout
+- rerun `./deploy.sh` from a clean `/srv/storage/repo/cacheflow` checkout

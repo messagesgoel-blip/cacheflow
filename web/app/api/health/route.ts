@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { resolveServerApiBase } from '@/lib/auth/serverApiBase';
 
 interface HealthData {
   status: 'ok' | 'error';
@@ -21,18 +22,25 @@ export async function GET() {
     timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
     // Proxy the request to the backend health endpoint
-    const backendResponse = await fetch('http://127.0.0.1:8100/health', {
+    const apiBase = resolveServerApiBase();
+    const backendResponse = await fetch(`${apiBase}/health`, {
       signal: controller.signal
     });
     
-    if (backendResponse.ok) {
-      const backendData = await backendResponse.json();
-      return NextResponse.json(backendData, { status: backendResponse.status });
-    } else {
-      // If backend returns an error status, return that response
-      const backendData = await backendResponse.json().catch(() => ({}));
-      return NextResponse.json(backendData, { status: backendResponse.status });
-    }
+    const backendData = await backendResponse.json().catch(() => ({}));
+    const data = backendData?.data && typeof backendData.data === 'object' ? backendData.data : backendData;
+    const status = data?.status || (backendResponse.ok ? 'ok' : 'error');
+    const timestamp = data?.timestamp || data?.ts || new Date().toISOString();
+
+    return NextResponse.json(
+      {
+        status,
+        timestamp,
+        memory: data?.memory ?? null,
+        uptime: data?.uptime ?? null,
+      },
+      { status: backendResponse.ok ? 200 : backendResponse.status }
+    );
   } catch (error) {
     // Check if the error was due to timeout/abort
     if (error instanceof Error && error.name === 'AbortError') {

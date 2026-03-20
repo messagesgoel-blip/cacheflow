@@ -79,9 +79,9 @@ These should stay visible so reruns are comparable.
 
 | ID | Gap | Effect | Next action | Status |
 |---|---|---|---|---|
-| `ENV-01` | `CF_TOTP_SECRET` missing | all `2FA-1` cases skipped | Provide secret for rerun. | `open` |
-| `ENV-02` | fixture files missing in live account | preview/document tests skip or become non-diagnostic | Seed `.pdf`, `.txt`, `.docx`, and image fixtures before rerun. | `open` |
-| `ENV-03` | live provider/data state not guaranteed | duplicate/share/VPS/version/trash checks become skip-heavy or misleading | Define and seed a stable live test fixture account before rerun. | `open` |
+| `ENV-01` | repo-owned bootstrap `CF_TOTP_SECRET` not generated yet | all `2FA-1` cases skipped | Run `scripts/setup-live-env.sh` before rerun. | `open` |
+| `ENV-02` | bootstrap fixture files not seeded | preview/document tests skip or become non-diagnostic | Run `scripts/seed-live-fixtures.sh` before rerun. | `open` |
+| `ENV-03` | bootstrap provider/data state not guaranteed | duplicate/share/VPS/version/trash checks become skip-heavy or misleading | Run `scripts/verify-live-baseline.sh` and seed a stable bootstrap test account before rerun. | `open` |
 
 ## Ordered Task Queue
 
@@ -102,7 +102,7 @@ Follow this queue in order to avoid inconsistency and false classification. If a
 7. `SPEC-03`, `SPEC-05`, `APP-13` — Gemini, Gemini, OpenCode
    Finish upload-dependent selector fixes and re-verify rename/version/trash only after `APP-01`.
 8. `ENV-01`, `ENV-02`, `ENV-03` — QA / Gemini support
-   Provide TOTP secret and stable live fixtures/accounts before the verification rerun.
+   Provide repo-owned bootstrap secret and stable seeded fixtures/account before the verification rerun.
 9. `VERIFY-01`, `VERIFY-02`, `VERIFY-03`, `VERIFY-04`, `VERIFY-05`, `VERIFY-06`
    Re-run and explicitly reclassify live failures for Version `6.1` through `6.6`.
 
@@ -123,5 +123,5 @@ Use this matrix as closed only when all of the following are true:
 - No primary-route background request produces avoidable console `401` noise.
 - Transfer tray, provider health attributes, vault PIN gate, empty states, and VPS sidebar all re-verified.
 - Spec-side false failures are removed from the suite.
-- Rerun is executed with `CF_TOTP_SECRET` and stable fixture files/accounts.
+- Rerun is executed with the repo-owned bootstrap `CF_TOTP_SECRET` and stable fixture files/account.
 - Version `6.1` through `6.6` are explicitly reclassified as `green`, `real regression`, or `fixture/spec issue`.

@@ -56,7 +56,7 @@
 
 ### TypeScript Check
 ```
-$ cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit
+$ cd /srv/storage/repo/cacheflow/web && npx tsc --noEmit
 # No errors found
 ```
 
@@ -67,7 +67,7 @@ $ cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit
 
 ### Dry Run of Build
 ```
-$ docker compose -f /opt/docker/apps/cacheflow/infra/docker-compose.yml build web
+$ docker compose -f /srv/storage/repo/cacheflow/infra/docker-compose.yml build web
 # Build successful
 ```
 

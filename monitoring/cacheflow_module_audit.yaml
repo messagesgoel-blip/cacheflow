@@ -19,7 +19,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.1.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.1.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -31,8 +31,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Codex
   assigned_agent: Codex
-  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/ProviderAdapter.interface.ts;
-    /home/sanjay/cacheflow_work/lib/providers/types.ts; /home/sanjay/cacheflow_work/web/lib/providers/types.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/providers/ProviderAdapter.interface.ts;
+    /srv/storage/repo/cacheflow/lib/providers/types.ts; /srv/storage/repo/cacheflow/web/lib/providers/types.ts
   git_file_locations: lib/providers/ProviderAdapter.interface.ts; lib/providers/types.ts;
     web/lib/providers/types.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/ProviderAdapter.interface.ts;
@@ -66,7 +66,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.2.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.2.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -79,7 +79,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/errors/AppError.ts; /home/sanjay/cacheflow_work/lib/errors/ErrorCode.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/errors/AppError.ts; /srv/storage/repo/cacheflow/lib/errors/ErrorCode.ts
   git_file_locations: lib/errors/AppError.ts; lib/errors/ErrorCode.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/errors/AppError.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/errors/ErrorCode.ts
@@ -109,7 +109,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.3.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.3.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -122,7 +122,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/prisma/schema.prisma; /home/sanjay/cacheflow_work/docs/architecture/data-model.md
+  local_file_locations: /srv/storage/repo/cacheflow/prisma/schema.prisma; /srv/storage/repo/cacheflow/docs/architecture/data-model.md
   git_file_locations: prisma/schema.prisma; docs/architecture/data-model.md
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/schema.prisma;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/data-model.md
@@ -153,7 +153,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.4.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.4.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -166,8 +166,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/docs/architecture/redis-namespaces.md;
-    /home/sanjay/cacheflow_work/lib/redis/client.ts
+  local_file_locations: /srv/storage/repo/cacheflow/docs/architecture/redis-namespaces.md;
+    /srv/storage/repo/cacheflow/lib/redis/client.ts
   git_file_locations: docs/architecture/redis-namespaces.md; lib/redis/client.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/redis-namespaces.md;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/redis/client.ts
@@ -198,7 +198,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.4a.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.4a.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -211,7 +211,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/docs/contracts/errorcode-ui-actions.md
+  local_file_locations: /srv/storage/repo/cacheflow/docs/contracts/errorcode-ui-actions.md
   git_file_locations: docs/contracts/errorcode-ui-actions.md
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/contracts/errorcode-ui-actions.md
   file_checks:
@@ -235,7 +235,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.5.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.5.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -248,8 +248,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/streamPipeline.ts;
-    /home/sanjay/cacheflow_work/tests/unit/streamPipeline.test.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/transfers/streamPipeline.ts;
+    /srv/storage/repo/cacheflow/tests/unit/streamPipeline.test.ts
   git_file_locations: lib/transfers/streamPipeline.ts; tests/unit/streamPipeline.test.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/streamPipeline.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/tests/unit/streamPipeline.test.ts
@@ -280,7 +280,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.6.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.6.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -293,8 +293,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/auth/refreshGuard.ts; /home/sanjay/cacheflow_work/docs/architecture/auth-patterns.md;
-    /home/sanjay/cacheflow_work/tests/unit/refreshGuard.test.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/auth/refreshGuard.ts; /srv/storage/repo/cacheflow/docs/architecture/auth-patterns.md;
+    /srv/storage/repo/cacheflow/tests/unit/refreshGuard.test.ts
   git_file_locations: lib/auth/refreshGuard.ts; docs/architecture/auth-patterns.md;
     tests/unit/refreshGuard.test.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/auth/refreshGuard.ts;
@@ -330,7 +330,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.7.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.7.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -343,8 +343,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/progressBridge.ts;
-    /home/sanjay/cacheflow_work/docs/architecture/sse-pattern.md
+  local_file_locations: /srv/storage/repo/cacheflow/lib/transfers/progressBridge.ts;
+    /srv/storage/repo/cacheflow/docs/architecture/sse-pattern.md
   git_file_locations: lib/transfers/progressBridge.ts; docs/architecture/sse-pattern.md
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/progressBridge.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/sse-pattern.md
@@ -374,7 +374,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/0.9.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/0.9.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -387,8 +387,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: Codex
-  local_file_locations: /home/sanjay/cacheflow_work/docs/architecture/deployment-constraints.md;
-    /home/sanjay/cacheflow_work/scripts/check-deployment-target.sh; /home/sanjay/cacheflow_work/.env.example
+  local_file_locations: /srv/storage/repo/cacheflow/docs/architecture/deployment-constraints.md;
+    /srv/storage/repo/cacheflow/scripts/check-deployment-target.sh; /srv/storage/repo/cacheflow/.env.example
   git_file_locations: docs/architecture/deployment-constraints.md; scripts/check-deployment-target.sh;
     .env.example
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/architecture/deployment-constraints.md;
@@ -425,7 +425,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.1.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.1.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -437,8 +437,8 @@ modules:
   committed_by: Sanjay Goel
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/apiClient.ts; /home/sanjay/cacheflow_work/web/lib/apiClient.ts;
-    /home/sanjay/cacheflow_work/lib/interceptors/authInterceptor.ts; /home/sanjay/cacheflow_work/web/lib/interceptors/authInterceptor.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/apiClient.ts; /srv/storage/repo/cacheflow/web/lib/apiClient.ts;
+    /srv/storage/repo/cacheflow/lib/interceptors/authInterceptor.ts; /srv/storage/repo/cacheflow/web/lib/interceptors/authInterceptor.ts
   git_file_locations: lib/apiClient.ts; web/lib/apiClient.ts; lib/interceptors/authInterceptor.ts;
     web/lib/interceptors/authInterceptor.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/apiClient.ts;
@@ -473,7 +473,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.2.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.2.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -485,7 +485,7 @@ modules:
   committed_by: Sanjay Goel
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/auth/refresh/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/api/auth/refresh/route.ts
   git_file_locations: web/app/api/auth/refresh/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/auth/refresh/route.ts
   file_checks:
@@ -508,7 +508,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.3.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.3.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -520,7 +520,7 @@ modules:
   committed_by: Sanjay Goel
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/lib/tokenManager.ts; /home/sanjay/cacheflow_work/web/lib/auth/cookieAuth.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/lib/tokenManager.ts; /srv/storage/repo/cacheflow/web/lib/auth/cookieAuth.ts
   git_file_locations: web/lib/tokenManager.ts; web/lib/auth/cookieAuth.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/tokenManager.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/auth/cookieAuth.ts
@@ -549,7 +549,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.4.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.4.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -561,8 +561,8 @@ modules:
   committed_by: Sanjay Goel
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/vault/tokenVault.ts; /home/sanjay/cacheflow_work/web/lib/vault/tokenVault.ts;
-    /home/sanjay/cacheflow_work/prisma/migrations/001_token_vault
+  local_file_locations: /srv/storage/repo/cacheflow/lib/vault/tokenVault.ts; /srv/storage/repo/cacheflow/web/lib/vault/tokenVault.ts;
+    /srv/storage/repo/cacheflow/prisma/migrations/001_token_vault
   git_file_locations: lib/vault/tokenVault.ts; web/lib/vault/tokenVault.ts; prisma/migrations/001_token_vault
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/tokenVault.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/vault/tokenVault.ts;
@@ -594,7 +594,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.5.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.5.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -606,8 +606,8 @@ modules:
   committed_by: Sanjay Goel
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/prisma/migrations/002_multi_account;
-    /home/sanjay/cacheflow_work/lib/vault/tokenVault.ts; /home/sanjay/cacheflow_work/web/lib/vault/tokenVault.ts
+  local_file_locations: /srv/storage/repo/cacheflow/prisma/migrations/002_multi_account;
+    /srv/storage/repo/cacheflow/lib/vault/tokenVault.ts; /srv/storage/repo/cacheflow/web/lib/vault/tokenVault.ts
   git_file_locations: prisma/migrations/002_multi_account; lib/vault/tokenVault.ts;
     web/lib/vault/tokenVault.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/002_multi_account;
@@ -639,7 +639,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.6.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.6.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -652,8 +652,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/lib/apiClient.ts; /home/sanjay/cacheflow_work/web/components/Sidebar.tsx;
-    /home/sanjay/cacheflow_work/web/app/page.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/lib/apiClient.ts; /srv/storage/repo/cacheflow/web/components/Sidebar.tsx;
+    /srv/storage/repo/cacheflow/web/app/page.tsx
   git_file_locations: web/lib/apiClient.ts; web/components/Sidebar.tsx; web/app/page.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/apiClient.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx;
@@ -688,7 +688,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.7.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.7.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -701,7 +701,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/tokenExpiry.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/e2e/tests/tokenExpiry.spec.ts
   git_file_locations: e2e/tests/tokenExpiry.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/tokenExpiry.spec.ts
   file_checks:
@@ -724,7 +724,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.8.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.8.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -737,8 +737,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/context/IntegrationContext.tsx;
-    /home/sanjay/cacheflow_work/web/components/modals/ConnectProviderModal.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/context/IntegrationContext.tsx;
+    /srv/storage/repo/cacheflow/web/components/modals/ConnectProviderModal.tsx
   git_file_locations: web/context/IntegrationContext.tsx; web/components/modals/ConnectProviderModal.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/context/IntegrationContext.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/modals/ConnectProviderModal.tsx
@@ -767,7 +767,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.9.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.9.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -780,8 +780,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/modals/WebDAVModal.tsx;
-    /home/sanjay/cacheflow_work/web/components/modals/VPSModal.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/modals/WebDAVModal.tsx;
+    /srv/storage/repo/cacheflow/web/components/modals/VPSModal.tsx
   git_file_locations: web/components/modals/WebDAVModal.tsx; web/components/modals/VPSModal.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/modals/WebDAVModal.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/modals/VPSModal.tsx
@@ -810,7 +810,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.10.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.10.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -823,8 +823,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/context/IntegrationContext.tsx;
-    /home/sanjay/cacheflow_work/web/components/modals/ConnectProviderModal.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/context/IntegrationContext.tsx;
+    /srv/storage/repo/cacheflow/web/components/modals/ConnectProviderModal.tsx
   git_file_locations: web/context/IntegrationContext.tsx; web/components/modals/ConnectProviderModal.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/context/IntegrationContext.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/modals/ConnectProviderModal.tsx
@@ -853,7 +853,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.11.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.11.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -866,7 +866,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/providerModals.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/e2e/tests/providerModals.spec.ts
   git_file_locations: e2e/tests/providerModals.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/providerModals.spec.ts
   file_checks:
@@ -889,7 +889,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.12.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.12.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -902,12 +902,12 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: Codex
-  local_file_locations: /home/sanjay/cacheflow_work/api/remotes; /home/sanjay/cacheflow_work/lib/providers;
-    /home/sanjay/cacheflow_work/lib/providers/dropbox; /home/sanjay/cacheflow_work/lib/providers/onedrive;
-    /home/sanjay/cacheflow_work/lib/providers/vps; /home/sanjay/cacheflow_work/lib/providers/pcloud;
-    /home/sanjay/cacheflow_work/lib/providers/box; /home/sanjay/cacheflow_work/lib/providers/yandex;
-    /home/sanjay/cacheflow_work/lib/providers/googleDrive; /home/sanjay/cacheflow_work/web/lib/providers;
-    /home/sanjay/cacheflow_work/web/lib/providers/__tests__; /home/sanjay/cacheflow_work/lib/uploads
+  local_file_locations: /srv/storage/repo/cacheflow/api/remotes; /srv/storage/repo/cacheflow/lib/providers;
+    /srv/storage/repo/cacheflow/lib/providers/dropbox; /srv/storage/repo/cacheflow/lib/providers/onedrive;
+    /srv/storage/repo/cacheflow/lib/providers/vps; /srv/storage/repo/cacheflow/lib/providers/pcloud;
+    /srv/storage/repo/cacheflow/lib/providers/box; /srv/storage/repo/cacheflow/lib/providers/yandex;
+    /srv/storage/repo/cacheflow/lib/providers/googleDrive; /srv/storage/repo/cacheflow/web/lib/providers;
+    /srv/storage/repo/cacheflow/web/lib/providers/__tests__; /srv/storage/repo/cacheflow/lib/uploads
   git_file_locations: api/remotes; lib/providers; lib/providers/dropbox; lib/providers/onedrive;
     lib/providers/vps; lib/providers/pcloud; lib/providers/box; lib/providers/yandex;
     lib/providers/googleDrive; web/lib/providers; web/lib/providers/__tests__; lib/uploads
@@ -958,7 +958,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.13.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.13.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -971,10 +971,10 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/googleDrive.ts;
-    /home/sanjay/cacheflow_work/web/lib/providers/googleDrive.ts; /home/sanjay/cacheflow_work/lib/providers/onedrive.ts;
-    /home/sanjay/cacheflow_work/lib/providers/dropbox.ts; /home/sanjay/cacheflow_work/web/lib/providers/dropbox.ts;
-    /home/sanjay/cacheflow_work/lib/uploads/uploadManager.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/providers/googleDrive.ts;
+    /srv/storage/repo/cacheflow/web/lib/providers/googleDrive.ts; /srv/storage/repo/cacheflow/lib/providers/onedrive.ts;
+    /srv/storage/repo/cacheflow/lib/providers/dropbox.ts; /srv/storage/repo/cacheflow/web/lib/providers/dropbox.ts;
+    /srv/storage/repo/cacheflow/lib/uploads/uploadManager.ts
   git_file_locations: lib/providers/googleDrive.ts; web/lib/providers/googleDrive.ts;
     lib/providers/onedrive.ts; lib/providers/dropbox.ts; web/lib/providers/dropbox.ts;
     lib/uploads/uploadManager.ts
@@ -1021,7 +1021,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.14.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.14.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -1034,7 +1034,7 @@ modules:
   committed_by: Sanjay Goel
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/scripts/migrate-files-no-uuid.js
+  local_file_locations: /srv/storage/repo/cacheflow/scripts/migrate-files-no-uuid.js
   git_file_locations: scripts/migrate-files-no-uuid.js
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/scripts/migrate-files-no-uuid.js
   file_checks:
@@ -1057,7 +1057,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.15.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.15.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -1070,7 +1070,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Codex
   assigned_agent: Codex
-  local_file_locations: /home/sanjay/cacheflow_work/scripts/migrate-files-no-uuid.js
+  local_file_locations: /srv/storage/repo/cacheflow/scripts/migrate-files-no-uuid.js
   git_file_locations: scripts/migrate-files-no-uuid.js
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/scripts/migrate-files-no-uuid.js
   file_checks:
@@ -1093,7 +1093,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.16.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.16.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -1106,8 +1106,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/connections/route.ts;
-    /home/sanjay/cacheflow_work/web/components/Sidebar.tsx; /home/sanjay/cacheflow_work/web/app/connections/page.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/api/connections/route.ts;
+    /srv/storage/repo/cacheflow/web/components/Sidebar.tsx; /srv/storage/repo/cacheflow/web/app/connections/page.tsx
   git_file_locations: web/app/api/connections/route.ts; web/components/Sidebar.tsx;
     web/app/connections/page.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/connections/route.ts;
@@ -1143,7 +1143,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.17.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.17.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1156,8 +1156,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/SessionExpiredBanner.tsx;
-    /home/sanjay/cacheflow_work/web/components/Sidebar/AccountRow.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/SessionExpiredBanner.tsx;
+    /srv/storage/repo/cacheflow/web/components/Sidebar/AccountRow.tsx
   git_file_locations: web/components/SessionExpiredBanner.tsx; web/components/Sidebar/AccountRow.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/SessionExpiredBanner.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar/AccountRow.tsx
@@ -1186,7 +1186,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.18.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.18.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -1199,29 +1199,29 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/auth; /home/sanjay/cacheflow_work/web/lib/auth;
-    /home/sanjay/cacheflow_work/web/lib/auth/__tests__; /home/sanjay/cacheflow_work/app/api/search/route.ts;
-    /home/sanjay/cacheflow_work/app/api/share/route.ts; /home/sanjay/cacheflow_work/app/api/jobs/route.ts;
-    /home/sanjay/cacheflow_work/app/api/vault/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy/route.ts;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/delete/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/move/route.ts;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download/route.ts;
-    /home/sanjay/cacheflow_work/app/api/share/[id]/revoke/route.ts; /home/sanjay/cacheflow_work/app/api/transfers/[id]/chunks/route.ts;
-    /home/sanjay/cacheflow_work/app/api/transfers/[id]/progress/route.ts; /home/sanjay/cacheflow_work/app/api/connections/vps/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/remotes/route.ts; /home/sanjay/cacheflow_work/web/app/api/remote-upload/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/rate-limits/route.ts; /home/sanjay/cacheflow_work/web/app/api/favorites/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/transfers/route.ts; /home/sanjay/cacheflow_work/web/app/api/connections/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/jobs/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/health/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/providers/[id]/route.ts; /home/sanjay/cacheflow_work/web/app/api/providers/vps/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/providers/vps/[id]/route.ts; /home/sanjay/cacheflow_work/web/app/api/providers/vps/test/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/providers/vps/[id]/[...segments]/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/favorites/[id]/route.ts; /home/sanjay/cacheflow_work/web/app/api/cleanup/duplicates/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/transfers/chunk/route.ts; /home/sanjay/cacheflow_work/web/app/api/connections/health/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/vault/[id]/unlock/route.ts; /home/sanjay/cacheflow_work/web/app/api/files/download/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/auth/login/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/refresh/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/auth/session/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/status/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/disable/route.ts; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/verify/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/setup/route.ts; /home/sanjay/cacheflow_work/web/middleware.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/auth; /srv/storage/repo/cacheflow/web/lib/auth;
+    /srv/storage/repo/cacheflow/web/lib/auth/__tests__; /srv/storage/repo/cacheflow/app/api/search/route.ts;
+    /srv/storage/repo/cacheflow/app/api/share/route.ts; /srv/storage/repo/cacheflow/app/api/jobs/route.ts;
+    /srv/storage/repo/cacheflow/app/api/vault/route.ts; /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/proxy/route.ts;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/delete/route.ts; /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/move/route.ts;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/rename/route.ts; /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/download/route.ts;
+    /srv/storage/repo/cacheflow/app/api/share/[id]/revoke/route.ts; /srv/storage/repo/cacheflow/app/api/transfers/[id]/chunks/route.ts;
+    /srv/storage/repo/cacheflow/app/api/transfers/[id]/progress/route.ts; /srv/storage/repo/cacheflow/app/api/connections/vps/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/remotes/route.ts; /srv/storage/repo/cacheflow/web/app/api/remote-upload/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/rate-limits/route.ts; /srv/storage/repo/cacheflow/web/app/api/favorites/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/transfers/route.ts; /srv/storage/repo/cacheflow/web/app/api/connections/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/jobs/route.ts; /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/upload/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/health/route.ts; /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/proxy/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/providers/[id]/route.ts; /srv/storage/repo/cacheflow/web/app/api/providers/vps/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/providers/vps/[id]/route.ts; /srv/storage/repo/cacheflow/web/app/api/providers/vps/test/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/providers/vps/[id]/[...segments]/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/favorites/[id]/route.ts; /srv/storage/repo/cacheflow/web/app/api/cleanup/duplicates/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/transfers/chunk/route.ts; /srv/storage/repo/cacheflow/web/app/api/connections/health/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/vault/[id]/unlock/route.ts; /srv/storage/repo/cacheflow/web/app/api/files/download/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/auth/login/route.ts; /srv/storage/repo/cacheflow/web/app/api/auth/refresh/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/auth/session/route.ts; /srv/storage/repo/cacheflow/web/app/api/auth/2fa/status/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/auth/2fa/disable/route.ts; /srv/storage/repo/cacheflow/web/app/api/auth/2fa/verify/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/auth/2fa/setup/route.ts; /srv/storage/repo/cacheflow/web/middleware.ts
   git_file_locations: lib/auth; web/lib/auth; web/lib/auth/__tests__; app/api/search/route.ts;
     app/api/share/route.ts; app/api/jobs/route.ts; app/api/vault/route.ts; app/api/remotes/[uuid]/proxy/route.ts;
     app/api/remotes/[uuid]/actions/delete/route.ts; app/api/remotes/[uuid]/actions/move/route.ts;
@@ -1356,7 +1356,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/1.19.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/1.19.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1369,7 +1369,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/securityAudit.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/e2e/tests/securityAudit.spec.ts
   git_file_locations: e2e/tests/securityAudit.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/securityAudit.spec.ts
   file_checks:
@@ -1392,7 +1392,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.1.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.1.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1405,7 +1405,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/files/page.tsx; /home/sanjay/cacheflow_work/web/components/files/ActionBar.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/files/page.tsx; /srv/storage/repo/cacheflow/web/components/files/ActionBar.tsx
   git_file_locations: web/app/files/page.tsx; web/components/files/ActionBar.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/files/page.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/ActionBar.tsx
@@ -1434,7 +1434,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.2.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.2.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -1447,8 +1447,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts;
-    /home/sanjay/cacheflow_work/lib/uploads/uploadManager.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/upload/route.ts;
+    /srv/storage/repo/cacheflow/lib/uploads/uploadManager.ts
   git_file_locations: web/app/api/remotes/[uuid]/upload/route.ts; lib/uploads/uploadManager.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remotes/[uuid]/upload/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/uploads/uploadManager.ts
@@ -1477,7 +1477,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.3.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.3.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1490,8 +1490,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/files/FileTable.tsx;
-    /home/sanjay/cacheflow_work/web/components/files/FileDetailPanel.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/files/FileTable.tsx;
+    /srv/storage/repo/cacheflow/web/components/files/FileDetailPanel.tsx
   git_file_locations: web/components/files/FileTable.tsx; web/components/files/FileDetailPanel.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/FileTable.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/FileDetailPanel.tsx
@@ -1520,7 +1520,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.4.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.4.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1533,8 +1533,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/files/FileContextMenu.tsx;
-    /home/sanjay/cacheflow_work/web/components/files/MultiSelectToolbar.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/files/FileContextMenu.tsx;
+    /srv/storage/repo/cacheflow/web/components/files/MultiSelectToolbar.tsx
   git_file_locations: web/components/files/FileContextMenu.tsx; web/components/files/MultiSelectToolbar.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/FileContextMenu.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/MultiSelectToolbar.tsx
@@ -1563,7 +1563,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.5.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.5.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1576,7 +1576,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/fileActions.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/e2e/tests/fileActions.spec.ts
   git_file_locations: e2e/tests/fileActions.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/fileActions.spec.ts
   file_checks:
@@ -1601,7 +1601,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.6.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.6.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1614,8 +1614,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/PreviewPanel.tsx;
-    /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/PreviewPanel.tsx;
+    /srv/storage/repo/cacheflow/web/components/UnifiedFileBrowser.tsx
   git_file_locations: web/components/PreviewPanel.tsx; web/components/UnifiedFileBrowser.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/PreviewPanel.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx
@@ -1645,7 +1645,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.7.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.7.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1658,8 +1658,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/PreviewPanel.tsx;
-    /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/PreviewPanel.tsx;
+    /srv/storage/repo/cacheflow/web/components/UnifiedFileBrowser.tsx
   git_file_locations: web/components/PreviewPanel.tsx; web/components/UnifiedFileBrowser.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/PreviewPanel.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx
@@ -1688,7 +1688,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.8.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.8.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1701,7 +1701,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/filePreview.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/e2e/tests/filePreview.spec.ts
   git_file_locations: e2e/tests/filePreview.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/filePreview.spec.ts
   file_checks:
@@ -1724,7 +1724,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.9.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.9.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1737,8 +1737,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/connections/page.tsx;
-    /home/sanjay/cacheflow_work/web/components/Sidebar.tsx; /home/sanjay/cacheflow_work/web/components/ProviderHub.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/connections/page.tsx;
+    /srv/storage/repo/cacheflow/web/components/Sidebar.tsx; /srv/storage/repo/cacheflow/web/components/ProviderHub.tsx
   git_file_locations: web/app/connections/page.tsx; web/components/Sidebar.tsx; web/components/ProviderHub.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/connections/page.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx;
@@ -1773,7 +1773,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.10.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.10.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1786,8 +1786,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/files/FileTable.tsx;
-    /home/sanjay/cacheflow_work/web/components/Sidebar/AccountRow.tsx; /home/sanjay/cacheflow_work/web/styles/files.css
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/files/FileTable.tsx;
+    /srv/storage/repo/cacheflow/web/components/Sidebar/AccountRow.tsx; /srv/storage/repo/cacheflow/web/styles/files.css
   git_file_locations: web/components/files/FileTable.tsx; web/components/Sidebar/AccountRow.tsx;
     web/styles/files.css
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/FileTable.tsx;
@@ -1823,7 +1823,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.11.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.11.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1836,7 +1836,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/Sidebar/ProviderGroup.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/Sidebar/ProviderGroup.tsx
   git_file_locations: web/components/Sidebar/ProviderGroup.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar/ProviderGroup.tsx
   file_checks:
@@ -1859,7 +1859,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.12.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.12.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1872,8 +1872,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/Sidebar; /home/sanjay/cacheflow_work/web/app/files/page.tsx;
-    /home/sanjay/cacheflow_work/web/app/connections/page.tsx; /home/sanjay/cacheflow_work/web/styles/layout.css
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/Sidebar; /srv/storage/repo/cacheflow/web/app/files/page.tsx;
+    /srv/storage/repo/cacheflow/web/app/connections/page.tsx; /srv/storage/repo/cacheflow/web/styles/layout.css
   git_file_locations: web/components/Sidebar; web/app/files/page.tsx; web/app/connections/page.tsx;
     web/styles/layout.css
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar;
@@ -1915,7 +1915,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.13.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.13.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -1928,11 +1928,11 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/app/api/auth/2fa; /home/sanjay/cacheflow_work/web/app/api/auth/2fa;
-    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/status; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/disable;
-    /home/sanjay/cacheflow_work/web/app/api/auth/2fa/verify; /home/sanjay/cacheflow_work/web/app/api/auth/2fa/setup;
-    /home/sanjay/cacheflow_work/lib/auth/totp.ts; /home/sanjay/cacheflow_work/web/lib/auth/totp.ts;
-    /home/sanjay/cacheflow_work/prisma/migrations/003_2fa
+  local_file_locations: /srv/storage/repo/cacheflow/app/api/auth/2fa; /srv/storage/repo/cacheflow/web/app/api/auth/2fa;
+    /srv/storage/repo/cacheflow/web/app/api/auth/2fa/status; /srv/storage/repo/cacheflow/web/app/api/auth/2fa/disable;
+    /srv/storage/repo/cacheflow/web/app/api/auth/2fa/verify; /srv/storage/repo/cacheflow/web/app/api/auth/2fa/setup;
+    /srv/storage/repo/cacheflow/lib/auth/totp.ts; /srv/storage/repo/cacheflow/web/lib/auth/totp.ts;
+    /srv/storage/repo/cacheflow/prisma/migrations/003_2fa
   git_file_locations: app/api/auth/2fa; web/app/api/auth/2fa; web/app/api/auth/2fa/status;
     web/app/api/auth/2fa/disable; web/app/api/auth/2fa/verify; web/app/api/auth/2fa/setup;
     lib/auth/totp.ts; web/lib/auth/totp.ts; prisma/migrations/003_2fa
@@ -1980,7 +1980,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.14.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.14.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -1993,8 +1993,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/auth/2fa-challenge/page.tsx;
-    /home/sanjay/cacheflow_work/web/components/auth/TOTPInput.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/auth/2fa-challenge/page.tsx;
+    /srv/storage/repo/cacheflow/web/components/auth/TOTPInput.tsx
   git_file_locations: web/app/auth/2fa-challenge/page.tsx; web/components/auth/TOTPInput.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/auth/2fa-challenge/page.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/auth/TOTPInput.tsx
@@ -2023,7 +2023,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.15.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.15.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2036,8 +2036,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/settings/security/page.tsx;
-    /home/sanjay/cacheflow_work/web/components/settings/TwoFAPanel.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/settings/security/page.tsx;
+    /srv/storage/repo/cacheflow/web/components/settings/TwoFAPanel.tsx
   git_file_locations: web/app/settings/security/page.tsx; web/components/settings/TwoFAPanel.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/settings/security/page.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/settings/TwoFAPanel.tsx
@@ -2066,7 +2066,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/2.16.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/2.16.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2079,7 +2079,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/e2e/tests/twoFA.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/e2e/tests/twoFA.spec.ts
   git_file_locations: e2e/tests/twoFA.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/e2e/tests/twoFA.spec.ts
   file_checks:
@@ -2102,7 +2102,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/OPS-E2E-READY.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/OPS-E2E-READY.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2115,8 +2115,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/playwright.config.ts; /home/sanjay/cacheflow_work/web/e2e/fixtures/global-setup.ts;
-    /home/sanjay/cacheflow_work/web/e2e/fixtures/global-teardown.ts; /home/sanjay/cacheflow_work/web/e2e/fixtures/README.md
+  local_file_locations: /srv/storage/repo/cacheflow/web/playwright.config.ts; /srv/storage/repo/cacheflow/web/e2e/fixtures/global-setup.ts;
+    /srv/storage/repo/cacheflow/web/e2e/fixtures/global-teardown.ts; /srv/storage/repo/cacheflow/web/e2e/fixtures/README.md
   git_file_locations: web/playwright.config.ts; web/e2e/fixtures/global-setup.ts;
     web/e2e/fixtures/global-teardown.ts; web/e2e/fixtures/README.md
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/playwright.config.ts;
@@ -2159,7 +2159,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/OPS-QA-WATCH.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/OPS-QA-WATCH.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2172,10 +2172,10 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e; /home/sanjay/cacheflow_work/web/e2e/tests;
-    /home/sanjay/cacheflow_work/web/e2e/helpers; /home/sanjay/cacheflow_work/web/e2e/fixtures;
-    /home/sanjay/cacheflow_work/web/e2e/tests/providers; /home/sanjay/cacheflow_work/monitoring/task_history.yaml;
-    /home/sanjay/cacheflow_work/docs/prompts; /home/sanjay/cacheflow_work/BLOCKER_QA_SEED.md
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e; /srv/storage/repo/cacheflow/web/e2e/tests;
+    /srv/storage/repo/cacheflow/web/e2e/helpers; /srv/storage/repo/cacheflow/web/e2e/fixtures;
+    /srv/storage/repo/cacheflow/web/e2e/tests/providers; /srv/storage/repo/cacheflow/monitoring/task_history.yaml;
+    /srv/storage/repo/cacheflow/docs/prompts; /srv/storage/repo/cacheflow/BLOCKER_QA_SEED.md
   git_file_locations: web/e2e; web/e2e/tests; web/e2e/helpers; web/e2e/fixtures; web/e2e/tests/providers;
     monitoring/task_history.yaml; docs/prompts; BLOCKER_QA_SEED.md
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests;
@@ -2222,7 +2222,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T01.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/UI-P1-T01.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2235,8 +2235,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/Sidebar.tsx; /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx;
-    /home/sanjay/cacheflow_work/web/app/connections/page.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/Sidebar.tsx; /srv/storage/repo/cacheflow/web/components/UnifiedFileBrowser.tsx;
+    /srv/storage/repo/cacheflow/web/app/connections/page.tsx
   git_file_locations: web/components/Sidebar.tsx; web/components/UnifiedFileBrowser.tsx;
     web/app/connections/page.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx;
@@ -2272,7 +2272,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T02.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/UI-P1-T02.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2285,10 +2285,10 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts; /home/sanjay/cacheflow_work/lib/apiClient.ts;
-    /home/sanjay/cacheflow_work/web/lib/apiClient.ts; /home/sanjay/cacheflow_work/lib/interceptors/authInterceptor.ts;
-    /home/sanjay/cacheflow_work/web/lib/interceptors/authInterceptor.ts
+  local_file_locations: /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/proxy/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/proxy/route.ts; /srv/storage/repo/cacheflow/lib/apiClient.ts;
+    /srv/storage/repo/cacheflow/web/lib/apiClient.ts; /srv/storage/repo/cacheflow/lib/interceptors/authInterceptor.ts;
+    /srv/storage/repo/cacheflow/web/lib/interceptors/authInterceptor.ts
   git_file_locations: app/api/remotes/[uuid]/proxy/route.ts; web/app/api/remotes/[uuid]/proxy/route.ts;
     lib/apiClient.ts; web/lib/apiClient.ts; lib/interceptors/authInterceptor.ts; web/lib/interceptors/authInterceptor.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/remotes/[uuid]/proxy/route.ts;
@@ -2329,7 +2329,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T03.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/UI-P1-T03.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2342,8 +2342,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/PreviewPanel.tsx;
-    /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/PreviewPanel.tsx;
+    /srv/storage/repo/cacheflow/web/components/UnifiedFileBrowser.tsx
   git_file_locations: web/components/PreviewPanel.tsx; web/components/UnifiedFileBrowser.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/PreviewPanel.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx
@@ -2373,7 +2373,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T04.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/UI-P1-T04.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2386,13 +2386,13 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/delete;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/move; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid];
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/health;
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/UnifiedFileBrowser.tsx;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]; /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/proxy; /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/delete;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/move; /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/rename;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/download; /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid];
+    /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/upload; /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/health;
+    /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/proxy
   git_file_locations: web/components/UnifiedFileBrowser.tsx; app/api/remotes/[uuid];
     app/api/remotes/[uuid]/actions; app/api/remotes/[uuid]/proxy; app/api/remotes/[uuid]/actions/delete;
     app/api/remotes/[uuid]/actions/move; app/api/remotes/[uuid]/actions/rename; app/api/remotes/[uuid]/actions/download;
@@ -2445,7 +2445,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T05.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/UI-P1-T05.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2458,8 +2458,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx;
-    /home/sanjay/cacheflow_work/web/lib/ui/toast.ts; /home/sanjay/cacheflow_work/web/app/api/connections/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/UnifiedFileBrowser.tsx;
+    /srv/storage/repo/cacheflow/web/lib/ui/toast.ts; /srv/storage/repo/cacheflow/web/app/api/connections/route.ts
   git_file_locations: web/components/UnifiedFileBrowser.tsx; web/lib/ui/toast.ts;
     web/app/api/connections/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx;
@@ -2495,7 +2495,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/UI-P1-T06.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/UI-P1-T06.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2508,8 +2508,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/UnifiedFileBrowser.tsx;
-    /home/sanjay/cacheflow_work/web/components/Sidebar.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/UnifiedFileBrowser.tsx;
+    /srv/storage/repo/cacheflow/web/components/Sidebar.tsx
   git_file_locations: web/components/UnifiedFileBrowser.tsx; web/components/Sidebar.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/UnifiedFileBrowser.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar.tsx
@@ -2538,7 +2538,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.1.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.1.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2550,8 +2550,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/transfers/TransferTray.tsx;
-    /home/sanjay/cacheflow_work/web/components/transfers/TransferItem.tsx; /home/sanjay/cacheflow_work/web/context/TransferContext.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/transfers/TransferTray.tsx;
+    /srv/storage/repo/cacheflow/web/components/transfers/TransferItem.tsx; /srv/storage/repo/cacheflow/web/context/TransferContext.tsx
   git_file_locations: web/components/transfers/TransferTray.tsx; web/components/transfers/TransferItem.tsx;
     web/context/TransferContext.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/transfers/TransferTray.tsx;
@@ -2587,7 +2587,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.2.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.2.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2599,8 +2599,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/app/api/transfers/[id]/progress/route.ts;
-    /home/sanjay/cacheflow_work/lib/transfers/progressEmitter.ts
+  local_file_locations: /srv/storage/repo/cacheflow/app/api/transfers/[id]/progress/route.ts;
+    /srv/storage/repo/cacheflow/lib/transfers/progressEmitter.ts
   git_file_locations: app/api/transfers/[id]/progress/route.ts; lib/transfers/progressEmitter.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/transfers/[id]/progress/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/progressEmitter.ts
@@ -2629,7 +2629,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.3.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.3.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2641,12 +2641,12 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/transferRegistry.ts;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/proxy/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/delete/route.ts;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/move/route.ts; /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/rename/route.ts;
-    /home/sanjay/cacheflow_work/app/api/remotes/[uuid]/actions/download/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/upload/route.ts; /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/health/route.ts;
-    /home/sanjay/cacheflow_work/web/app/api/remotes/[uuid]/proxy/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/transfers/transferRegistry.ts;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/proxy/route.ts; /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/delete/route.ts;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/move/route.ts; /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/rename/route.ts;
+    /srv/storage/repo/cacheflow/app/api/remotes/[uuid]/actions/download/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/upload/route.ts; /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/health/route.ts;
+    /srv/storage/repo/cacheflow/web/app/api/remotes/[uuid]/proxy/route.ts
   git_file_locations: lib/transfers/transferRegistry.ts; app/api/remotes/[uuid]/proxy/route.ts;
     app/api/remotes/[uuid]/actions/delete/route.ts; app/api/remotes/[uuid]/actions/move/route.ts;
     app/api/remotes/[uuid]/actions/rename/route.ts; app/api/remotes/[uuid]/actions/download/route.ts;
@@ -2693,7 +2693,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.4.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.4.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2705,7 +2705,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/transferTray.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/transferTray.spec.ts
   git_file_locations: web/e2e/tests/transferTray.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/transferTray.spec.ts
   file_checks:
@@ -2728,7 +2728,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.5.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.5.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2740,8 +2740,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/googleDrive/chunkedUpload.ts;
-    /home/sanjay/cacheflow_work/lib/providers/onedrive/chunkedUpload.ts; /home/sanjay/cacheflow_work/lib/providers/dropbox/chunkedUpload.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/providers/googleDrive/chunkedUpload.ts;
+    /srv/storage/repo/cacheflow/lib/providers/onedrive/chunkedUpload.ts; /srv/storage/repo/cacheflow/lib/providers/dropbox/chunkedUpload.ts
   git_file_locations: lib/providers/googleDrive/chunkedUpload.ts; lib/providers/onedrive/chunkedUpload.ts;
     lib/providers/dropbox/chunkedUpload.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/googleDrive/chunkedUpload.ts;
@@ -2777,7 +2777,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.6.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.6.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2789,8 +2789,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/app/api/transfers/[id]/chunks/route.ts;
-    /home/sanjay/cacheflow_work/lib/transfers/chunkStateManager.ts
+  local_file_locations: /srv/storage/repo/cacheflow/app/api/transfers/[id]/chunks/route.ts;
+    /srv/storage/repo/cacheflow/lib/transfers/chunkStateManager.ts
   git_file_locations: app/api/transfers/[id]/chunks/route.ts; lib/transfers/chunkStateManager.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/transfers/[id]/chunks/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/chunkStateManager.ts
@@ -2819,7 +2819,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.7.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.7.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2831,7 +2831,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/transfers/TransferItem.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/transfers/TransferItem.tsx
   git_file_locations: web/components/transfers/TransferItem.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/transfers/TransferItem.tsx
   file_checks:
@@ -2854,7 +2854,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.8.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.8.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2866,7 +2866,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/chunkedResume.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/chunkedResume.spec.ts
   git_file_locations: web/e2e/tests/chunkedResume.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/chunkedResume.spec.ts
   file_checks:
@@ -2889,7 +2889,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.9.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.9.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2901,7 +2901,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/transfers/streamTransfer.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/transfers/streamTransfer.ts
   git_file_locations: lib/transfers/streamTransfer.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/transfers/streamTransfer.ts
   file_checks:
@@ -2924,7 +2924,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.10.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.10.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -2936,7 +2936,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/queue/transferQueue.ts; /home/sanjay/cacheflow_work/lib/queue/workers/transferWorker.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/queue/transferQueue.ts; /srv/storage/repo/cacheflow/lib/queue/workers/transferWorker.ts
   git_file_locations: lib/queue/transferQueue.ts; lib/queue/workers/transferWorker.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/queue/transferQueue.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/queue/workers/transferWorker.ts
@@ -2966,7 +2966,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.11.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.11.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -2978,7 +2978,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/transfers/ConflictResolutionModal.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/transfers/ConflictResolutionModal.tsx
   git_file_locations: web/components/transfers/ConflictResolutionModal.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/transfers/ConflictResolutionModal.tsx
   file_checks:
@@ -3001,7 +3001,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.12.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.12.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3013,7 +3013,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/zeroDiskTransfer.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/zeroDiskTransfer.spec.ts
   git_file_locations: web/e2e/tests/zeroDiskTransfer.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/zeroDiskTransfer.spec.ts
   file_checks:
@@ -3036,7 +3036,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.13.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.13.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3048,8 +3048,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/dashboard/page.tsx; /home/sanjay/cacheflow_work/web/components/dashboard/StorageHero.tsx;
-    /home/sanjay/cacheflow_work/web/components/dashboard/ProviderCapacityBar.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/dashboard/page.tsx; /srv/storage/repo/cacheflow/web/components/dashboard/StorageHero.tsx;
+    /srv/storage/repo/cacheflow/web/components/dashboard/ProviderCapacityBar.tsx
   git_file_locations: web/app/dashboard/page.tsx; web/components/dashboard/StorageHero.tsx;
     web/components/dashboard/ProviderCapacityBar.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/dashboard/page.tsx;
@@ -3085,7 +3085,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.14.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.14.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3097,8 +3097,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/healthCheck.ts;
-    /home/sanjay/cacheflow_work/web/lib/providers/healthCheck.ts; /home/sanjay/cacheflow_work/web/app/api/connections/health/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/providers/healthCheck.ts;
+    /srv/storage/repo/cacheflow/web/lib/providers/healthCheck.ts; /srv/storage/repo/cacheflow/web/app/api/connections/health/route.ts
   git_file_locations: lib/providers/healthCheck.ts; web/lib/providers/healthCheck.ts;
     web/app/api/connections/health/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/healthCheck.ts;
@@ -3130,7 +3130,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.15.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.15.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3142,8 +3142,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/rateLimitQueue.ts;
-    /home/sanjay/cacheflow_work/lib/apiClient.ts; /home/sanjay/cacheflow_work/web/lib/apiClient.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/providers/rateLimitQueue.ts;
+    /srv/storage/repo/cacheflow/lib/apiClient.ts; /srv/storage/repo/cacheflow/web/lib/apiClient.ts
   git_file_locations: lib/providers/rateLimitQueue.ts; lib/apiClient.ts; web/lib/apiClient.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/rateLimitQueue.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/apiClient.ts; https://github.com/messagesgoel-blip/cacheflow/blob/main/web/lib/apiClient.ts
@@ -3173,7 +3173,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/3.16.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/3.16.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3185,7 +3185,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/storageDashboard.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/storageDashboard.spec.ts
   git_file_locations: web/e2e/tests/storageDashboard.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/storageDashboard.spec.ts
   file_checks:
@@ -3208,7 +3208,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.1.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.1.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3220,7 +3220,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Codex
   assigned_agent: Codex
-  local_file_locations: /home/sanjay/cacheflow_work/docs/provider-parity.md; /home/sanjay/cacheflow_work/lib/providers/ProviderAdapter.interface.ts
+  local_file_locations: /srv/storage/repo/cacheflow/docs/provider-parity.md; /srv/storage/repo/cacheflow/lib/providers/ProviderAdapter.interface.ts
   git_file_locations: docs/provider-parity.md; lib/providers/ProviderAdapter.interface.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/docs/provider-parity.md;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/ProviderAdapter.interface.ts
@@ -3249,7 +3249,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.2.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.2.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3261,8 +3261,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/box; /home/sanjay/cacheflow_work/lib/providers/pcloud;
-    /home/sanjay/cacheflow_work/lib/providers/yandex
+  local_file_locations: /srv/storage/repo/cacheflow/lib/providers/box; /srv/storage/repo/cacheflow/lib/providers/pcloud;
+    /srv/storage/repo/cacheflow/lib/providers/yandex
   git_file_locations: lib/providers/box; lib/providers/pcloud; lib/providers/yandex
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/box;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/pcloud;
@@ -3297,7 +3297,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.3.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.3.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3309,8 +3309,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/providers/box.spec.ts;
-    /home/sanjay/cacheflow_work/web/e2e/tests/providers/pcloud.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/providers/box.spec.ts;
+    /srv/storage/repo/cacheflow/web/e2e/tests/providers/pcloud.spec.ts
   git_file_locations: web/e2e/tests/providers/box.spec.ts; web/e2e/tests/providers/pcloud.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers/box.spec.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers/pcloud.spec.ts
@@ -3339,7 +3339,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.4.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.4.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3351,8 +3351,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/providers/vps/sshConnectionManager.ts;
-    /home/sanjay/cacheflow_work/lib/providers/vps/VPSAdapter.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/providers/vps/sshConnectionManager.ts;
+    /srv/storage/repo/cacheflow/lib/providers/vps/VPSAdapter.ts
   git_file_locations: lib/providers/vps/sshConnectionManager.ts; lib/providers/vps/VPSAdapter.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/vps/sshConnectionManager.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/providers/vps/VPSAdapter.ts
@@ -3381,7 +3381,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.5.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.5.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3393,8 +3393,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/vault/credentialVault.ts;
-    /home/sanjay/cacheflow_work/app/api/connections/vps/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/vault/credentialVault.ts;
+    /srv/storage/repo/cacheflow/app/api/connections/vps/route.ts
   git_file_locations: lib/vault/credentialVault.ts; app/api/connections/vps/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/vault/credentialVault.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/connections/vps/route.ts
@@ -3423,7 +3423,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.6.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.6.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3435,7 +3435,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/providers/vps.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/providers/vps.spec.ts
   git_file_locations: web/e2e/tests/providers/vps.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/providers/vps.spec.ts
   file_checks:
@@ -3459,7 +3459,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.7.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.7.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3471,7 +3471,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/app/api/share/route.ts; /home/sanjay/cacheflow_work/lib/share/shareLinkService.ts
+  local_file_locations: /srv/storage/repo/cacheflow/app/api/share/route.ts; /srv/storage/repo/cacheflow/lib/share/shareLinkService.ts
   git_file_locations: app/api/share/route.ts; lib/share/shareLinkService.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/share/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/share/shareLinkService.ts
@@ -3501,7 +3501,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.8.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.8.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3513,7 +3513,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/app/s/[linkId]/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/app/s/[linkId]/route.ts
   git_file_locations: app/s/[linkId]/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/s/[linkId]/route.ts
   file_checks:
@@ -3536,7 +3536,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.9.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.9.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3548,7 +3548,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/share/abuseControls.ts; /home/sanjay/cacheflow_work/app/api/share/[id]/revoke/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/share/abuseControls.ts; /srv/storage/repo/cacheflow/app/api/share/[id]/revoke/route.ts
   git_file_locations: lib/share/abuseControls.ts; app/api/share/[id]/revoke/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/share/abuseControls.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/share/[id]/revoke/route.ts
@@ -3578,7 +3578,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.10.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.10.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3590,8 +3590,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/share/ShareLinkPanel.tsx;
-    /home/sanjay/cacheflow_work/web/components/share/ShareLinkList.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/share/ShareLinkPanel.tsx;
+    /srv/storage/repo/cacheflow/web/components/share/ShareLinkList.tsx
   git_file_locations: web/components/share/ShareLinkPanel.tsx; web/components/share/ShareLinkList.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/share/ShareLinkPanel.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/share/ShareLinkList.tsx
@@ -3621,7 +3621,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.11.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.11.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3633,7 +3633,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/shareLinks.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/shareLinks.spec.ts
   git_file_locations: web/e2e/tests/shareLinks.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/shareLinks.spec.ts
   file_checks:
@@ -3656,7 +3656,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.12.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.12.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3668,8 +3668,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/remote-upload/route.ts;
-    /home/sanjay/cacheflow_work/lib/transfers/remoteUpload.ts; /home/sanjay/cacheflow_work/web/lib/transfers/remoteUpload.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/api/remote-upload/route.ts;
+    /srv/storage/repo/cacheflow/lib/transfers/remoteUpload.ts; /srv/storage/repo/cacheflow/web/lib/transfers/remoteUpload.ts
   git_file_locations: web/app/api/remote-upload/route.ts; lib/transfers/remoteUpload.ts;
     web/lib/transfers/remoteUpload.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/remote-upload/route.ts;
@@ -3701,7 +3701,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.13.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.13.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3713,7 +3713,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/placement/autoPlacementEngine.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/placement/autoPlacementEngine.ts
   git_file_locations: lib/placement/autoPlacementEngine.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/placement/autoPlacementEngine.ts
   file_checks:
@@ -3736,7 +3736,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.14.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.14.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3748,8 +3748,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/files/ActionBar.tsx;
-    /home/sanjay/cacheflow_work/web/components/files/RemoteUploadModal.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/files/ActionBar.tsx;
+    /srv/storage/repo/cacheflow/web/components/files/RemoteUploadModal.tsx
   git_file_locations: web/components/files/ActionBar.tsx; web/components/files/RemoteUploadModal.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/ActionBar.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/files/RemoteUploadModal.tsx
@@ -3778,7 +3778,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/4.15.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/4.15.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3790,7 +3790,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/remoteUpload.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/remoteUpload.spec.ts
   git_file_locations: web/e2e/tests/remoteUpload.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/remoteUpload.spec.ts
   file_checks:
@@ -3813,7 +3813,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.1.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.1.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3825,9 +3825,9 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/prisma/migrations/004_scheduled_jobs;
-    /home/sanjay/cacheflow_work/app/api/jobs/route.ts; /home/sanjay/cacheflow_work/web/app/api/jobs/route.ts;
-    /home/sanjay/cacheflow_work/lib/jobs/scheduledJobService.ts; /home/sanjay/cacheflow_work/web/lib/jobs/scheduledJobService.ts
+  local_file_locations: /srv/storage/repo/cacheflow/prisma/migrations/004_scheduled_jobs;
+    /srv/storage/repo/cacheflow/app/api/jobs/route.ts; /srv/storage/repo/cacheflow/web/app/api/jobs/route.ts;
+    /srv/storage/repo/cacheflow/lib/jobs/scheduledJobService.ts; /srv/storage/repo/cacheflow/web/lib/jobs/scheduledJobService.ts
   git_file_locations: prisma/migrations/004_scheduled_jobs; app/api/jobs/route.ts;
     web/app/api/jobs/route.ts; lib/jobs/scheduledJobService.ts; web/lib/jobs/scheduledJobService.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/004_scheduled_jobs;
@@ -3867,7 +3867,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.2.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.2.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -3879,8 +3879,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/queue/workers/scheduledJobWorker.ts;
-    /home/sanjay/cacheflow_work/lib/jobs/jobEngine.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/queue/workers/scheduledJobWorker.ts;
+    /srv/storage/repo/cacheflow/lib/jobs/jobEngine.ts
   git_file_locations: lib/queue/workers/scheduledJobWorker.ts; lib/jobs/jobEngine.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/queue/workers/scheduledJobWorker.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/jobs/jobEngine.ts
@@ -3909,7 +3909,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.3.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.3.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3921,8 +3921,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/schedules/page.tsx; /home/sanjay/cacheflow_work/web/components/schedules/JobCard.tsx;
-    /home/sanjay/cacheflow_work/web/components/schedules/CreateJobModal.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/schedules/page.tsx; /srv/storage/repo/cacheflow/web/components/schedules/JobCard.tsx;
+    /srv/storage/repo/cacheflow/web/components/schedules/CreateJobModal.tsx
   git_file_locations: web/app/schedules/page.tsx; web/components/schedules/JobCard.tsx;
     web/components/schedules/CreateJobModal.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/schedules/page.tsx;
@@ -3958,7 +3958,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.4.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.4.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -3970,7 +3970,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/scheduledJobs.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/scheduledJobs.spec.ts
   git_file_locations: web/e2e/tests/scheduledJobs.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/scheduledJobs.spec.ts
   file_checks:
@@ -3993,7 +3993,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.5.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.5.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -4005,7 +4005,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/prisma/migrations/005_vault; /home/sanjay/cacheflow_work/app/api/vault/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/prisma/migrations/005_vault; /srv/storage/repo/cacheflow/app/api/vault/route.ts
   git_file_locations: prisma/migrations/005_vault; app/api/vault/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/prisma/migrations/005_vault;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/vault/route.ts
@@ -4034,7 +4034,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.6.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.6.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -4046,8 +4046,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/api/vault/[id]/unlock/route.ts;
-    /home/sanjay/cacheflow_work/lib/vault/vaultSession.ts; /home/sanjay/cacheflow_work/web/lib/vault/vaultSession.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/api/vault/[id]/unlock/route.ts;
+    /srv/storage/repo/cacheflow/lib/vault/vaultSession.ts; /srv/storage/repo/cacheflow/web/lib/vault/vaultSession.ts
   git_file_locations: web/app/api/vault/[id]/unlock/route.ts; lib/vault/vaultSession.ts;
     web/lib/vault/vaultSession.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/vault/[id]/unlock/route.ts;
@@ -4081,7 +4081,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.7.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.7.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -4093,8 +4093,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/Sidebar/VaultFolderRow.tsx;
-    /home/sanjay/cacheflow_work/web/components/vault/UnlockVaultModal.tsx; /home/sanjay/cacheflow_work/web/app/files/page.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/Sidebar/VaultFolderRow.tsx;
+    /srv/storage/repo/cacheflow/web/components/vault/UnlockVaultModal.tsx; /srv/storage/repo/cacheflow/web/app/files/page.tsx
   git_file_locations: web/components/Sidebar/VaultFolderRow.tsx; web/components/vault/UnlockVaultModal.tsx;
     web/app/files/page.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/Sidebar/VaultFolderRow.tsx;
@@ -4130,7 +4130,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.8.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.8.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -4142,7 +4142,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/vault.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/vault.spec.ts
   git_file_locations: web/e2e/tests/vault.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/vault.spec.ts
   file_checks:
@@ -4165,7 +4165,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.9.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.9.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -4177,8 +4177,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/lib/cleanup/duplicateDetector.ts;
-    /home/sanjay/cacheflow_work/web/app/api/cleanup/duplicates/route.ts
+  local_file_locations: /srv/storage/repo/cacheflow/lib/cleanup/duplicateDetector.ts;
+    /srv/storage/repo/cacheflow/web/app/api/cleanup/duplicates/route.ts
   git_file_locations: lib/cleanup/duplicateDetector.ts; web/app/api/cleanup/duplicates/route.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/cleanup/duplicateDetector.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/api/cleanup/duplicates/route.ts
@@ -4207,7 +4207,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.10.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.10.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -4219,8 +4219,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/app/cleanup/page.tsx; /home/sanjay/cacheflow_work/web/components/cleanup/DuplicateGroup.tsx;
-    /home/sanjay/cacheflow_work/web/components/cleanup/StaleFileList.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/app/cleanup/page.tsx; /srv/storage/repo/cacheflow/web/components/cleanup/DuplicateGroup.tsx;
+    /srv/storage/repo/cacheflow/web/components/cleanup/StaleFileList.tsx
   git_file_locations: web/app/cleanup/page.tsx; web/components/cleanup/DuplicateGroup.tsx;
     web/components/cleanup/StaleFileList.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/app/cleanup/page.tsx;
@@ -4256,7 +4256,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: true
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.11.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.11.md
   contract_exists: true
   contract_ok: true
   done_logged: true
@@ -4268,7 +4268,7 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: OpenCode
   assigned_agent: OpenCode
-  local_file_locations: /home/sanjay/cacheflow_work/app/api/search/route.ts; /home/sanjay/cacheflow_work/lib/search/crossProviderSearch.ts
+  local_file_locations: /srv/storage/repo/cacheflow/app/api/search/route.ts; /srv/storage/repo/cacheflow/lib/search/crossProviderSearch.ts
   git_file_locations: app/api/search/route.ts; lib/search/crossProviderSearch.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/app/api/search/route.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/lib/search/crossProviderSearch.ts
@@ -4297,7 +4297,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.12.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.12.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -4309,8 +4309,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: ClaudeCode
   assigned_agent: ClaudeCode
-  local_file_locations: /home/sanjay/cacheflow_work/web/components/search/GlobalSearchBar.tsx;
-    /home/sanjay/cacheflow_work/web/components/search/SearchResults.tsx
+  local_file_locations: /srv/storage/repo/cacheflow/web/components/search/GlobalSearchBar.tsx;
+    /srv/storage/repo/cacheflow/web/components/search/SearchResults.tsx
   git_file_locations: web/components/search/GlobalSearchBar.tsx; web/components/search/SearchResults.tsx
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/search/GlobalSearchBar.tsx;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/components/search/SearchResults.tsx
@@ -4339,7 +4339,7 @@ modules:
   files_ok: true
   files_score: 100.0
   contract_required: false
-  contract_path: /home/sanjay/cacheflow_work/docs/contracts/5.13.md
+  contract_path: /srv/storage/repo/cacheflow/docs/contracts/5.13.md
   contract_exists: false
   contract_ok: true
   done_logged: true
@@ -4351,8 +4351,8 @@ modules:
   committed_by: messagesgoel-blip
   worked_by: Gemini
   assigned_agent: Gemini
-  local_file_locations: /home/sanjay/cacheflow_work/web/e2e/tests/search.spec.ts;
-    /home/sanjay/cacheflow_work/web/e2e/tests/duplicateCleanup.spec.ts
+  local_file_locations: /srv/storage/repo/cacheflow/web/e2e/tests/search.spec.ts;
+    /srv/storage/repo/cacheflow/web/e2e/tests/duplicateCleanup.spec.ts
   git_file_locations: web/e2e/tests/search.spec.ts; web/e2e/tests/duplicateCleanup.spec.ts
   git_urls: https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/search.spec.ts;
     https://github.com/messagesgoel-blip/cacheflow/blob/main/web/e2e/tests/duplicateCleanup.spec.ts

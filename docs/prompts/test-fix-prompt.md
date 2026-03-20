@@ -15,6 +15,11 @@ Test suite run on commit `a0300b2` produced failures across 3 suites:
 
 Artifacts at: `/srv/storage/local/test/20260306-101037/`
 
+Set the repo root once before running the commands below:
+```bash
+CACHEFLOW_ROOT="$(git rev-parse --show-toplevel)"
+```
+
 ---
 
 ## Task 1: Fix Jest TextEncoder Issue (CRITICAL)
@@ -53,7 +58,7 @@ global.TextDecoder = TextDecoder
 
 ### Verification
 ```bash
-cd /opt/docker/apps/cacheflow/web
+cd "$CACHEFLOW_ROOT/web"
 npm test -- tokenVault.test.ts
 ```
 Expected: All 7 tokenVault tests PASS
@@ -76,7 +81,7 @@ error TS7006: Parameter 'err' implicitly has an 'any' type
 
 **Fix:**
 ```bash
-cd /opt/docker/apps/cacheflow/web
+cd "$CACHEFLOW_ROOT/web"
 npm install ssh2 @types/ssh2
 ```
 
@@ -182,7 +187,7 @@ const mockFile: AggregatedFileItem = {
 
 ### Verification
 ```bash
-cd /opt/docker/apps/cacheflow/web
+cd "$CACHEFLOW_ROOT/web"
 npx tsc --noEmit
 ```
 Expected: ZERO errors
@@ -246,7 +251,7 @@ timeout: 60000,  // Increase from default
 
 ### Verification
 ```bash
-cd /opt/docker/apps/cacheflow/web
+cd "$CACHEFLOW_ROOT/web"
 npx playwright test --project=chromium --grep "localhost login"
 ```
 Expected: Test completes without 401/500 errors
@@ -266,7 +271,7 @@ Expected: Test completes without 401/500 errors
 
 ```bash
 # All must pass:
-cd /opt/docker/apps/cacheflow/web
+cd "$CACHEFLOW_ROOT/web"
 
 # 1. Jest tests
 npm test  # 0 failures

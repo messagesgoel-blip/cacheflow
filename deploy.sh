@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO_DIR="/opt/docker/apps/cacheflow"
+REPO_DIR="/srv/storage/repo/cacheflow"
 COMPOSE_FILE="infra/docker-compose.yml"
 APP_SERVICES=(api worker web)
 OPTIONAL_COMPOSE_FILE_SERVICES=(

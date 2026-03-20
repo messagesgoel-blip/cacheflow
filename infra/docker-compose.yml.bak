@@ -27,10 +27,10 @@ services:
 
   api:
     build:
-      context: /opt/docker/apps/cacheflow/api
+      context: /srv/storage/repo/cacheflow/api
       dockerfile: Dockerfile
     container_name: cacheflow-api
-    env_file: /opt/docker/apps/cacheflow/.env
+    env_file: /srv/storage/repo/cacheflow/.env
     ports:
       - "127.0.0.1:8100:8100"
     volumes:

@@ -6,6 +6,9 @@ usage() {
 Usage:
   ./scripts/finish_task.sh <task_key> [options]
 
+Deprecated:
+  Use ./scripts/done_task.sh instead. This shim remains for compatibility.
+
 Options:
   --commit "message"   Commit message (default: chore(task): complete <task_key>)
   --test "command"     Run one test command before commit/push (repeatable)
@@ -29,7 +32,7 @@ repo_root="$(cd "$script_dir/.." && pwd)"
 cd "$repo_root"
 
 detect_agent_from_tty() {
-  local map_dir="${CACHEFLOW_AGENT_TTY_MAP_DIR:-/tmp/cacheflow_agent_tty_map}"
+  local map_dir="${AGENT_TTY_MAP_DIR:-/tmp/agent_tty_map}"
   local tty_name tty_key map_file
   tty_name="$(tty 2>/dev/null || true)"
   [[ "$tty_name" == /dev/* ]] || return 1
@@ -57,7 +60,7 @@ mark_active_tty() {
 normalize_agent() {
   local raw="${1,,}"
   case "$raw" in
-    codex|codexa|codexb|master)
+    codex|codex-a|codex-b|codex-c|codex-d|codex-e|codex-f|codexa|codexb|master)
       echo "Codex"
       ;;
     claude|claudecode|ccli)
@@ -66,7 +69,7 @@ normalize_agent() {
     open|opencode|oc)
       echo "OpenCode"
       ;;
-    gemini|gcli)
+    gemini|gcli|gcli-a|gcli-b)
       echo "Gemini"
       ;;
     *)
@@ -136,6 +139,10 @@ done
   exit 1
 }
 
+if [ "${SUPPRESS_ENTRYPOINT_DEPRECATION:-0}" != "1" ]; then
+  echo "DEPRECATED: use ./scripts/done_task.sh instead of ./scripts/finish_task.sh" >&2
+fi
+
 if [ ! -d .git ]; then
   echo "Not a git repository: $repo_root" >&2
   exit 1
@@ -146,7 +153,7 @@ git config core.hooksPath .githooks >/dev/null
 [ ! -f .githooks/pre-commit ] || chmod +x .githooks/pre-commit
 [ ! -f .githooks/post-merge ] || chmod +x .githooks/post-merge
 
-agent="${CACHEFLOW_AGENT:-}"
+agent="${AGENT_NAME:-}"
 if [ -z "$agent" ]; then
   agent="$(detect_agent_from_tty 2>/dev/null || true)"
 fi

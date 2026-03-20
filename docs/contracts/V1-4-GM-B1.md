@@ -153,14 +153,14 @@ None. The remaining open items in the triage matrix are outside this batch (`SPE
 ### TypeScript Check
 
 ```bash
-cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit
+cd /srv/storage/repo/cacheflow/web && npx tsc --noEmit
 # Result: No errors
 ```
 
 ### Playwright Check
 
 ```bash
-cd /opt/docker/apps/cacheflow/web && npx playwright test e2e/layoutDispatch1.spec.ts e2e/phase3-interactions.spec.ts e2e/providersSurface.spec.ts e2e/real-ui-operations.spec.ts e2e/securityAudit.spec.ts e2e/real-auth-relogin.spec.ts --reporter=line
+cd /srv/storage/repo/cacheflow/web && npx playwright test e2e/layoutDispatch1.spec.ts e2e/phase3-interactions.spec.ts e2e/providersSurface.spec.ts e2e/real-ui-operations.spec.ts e2e/securityAudit.spec.ts e2e/real-auth-relogin.spec.ts --reporter=line
 # Result: 3 passed, 14 skipped, 0 failed
 ```
 

@@ -10,5 +10,5 @@ Dashboard stat cards and provider summary density polish.
 
 ## Validation
 
-- `cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit`
-- `cd /opt/docker/apps/cacheflow/web && PLAYWRIGHT_BASE_URL=http://127.0.0.1:3049 npx playwright test e2e/dashboardHero.spec.ts`
+- `cd /srv/storage/repo/cacheflow/web && npx tsc --noEmit`
+- `cd /srv/storage/repo/cacheflow/web && PLAYWRIGHT_BASE_URL=http://127.0.0.1:3049 npx playwright test e2e/dashboardHero.spec.ts`

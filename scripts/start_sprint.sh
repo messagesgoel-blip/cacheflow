@@ -15,9 +15,12 @@ usage() {
 Usage:
   start_sprint.sh [agent] [--sprint N] [--all|--first|--list]
 
+Deprecated:
+  Use ./scripts/spring_startup.sh instead. This shim remains for compatibility.
+
 Agents:
   ClaudeCode | OpenCode | Gemini | Codex
-  Shortcuts: claude|open|gemini|codex|cursor|ccli|oc|gcli|kc|kcli|cursorcli
+  Shortcuts: claude|open|gemini|codex|cursor|ccli|oc|gcli|gcli-a|gcli-b|kc|kcli|cursorcli|codex-a|codex-b|codex-c|codex-d|codex-e|codex-f
 
 Options:
   --agent NAME  Explicit agent name (same values as positional agent)
@@ -28,12 +31,16 @@ Options:
   -h, --help   Show this help
 
 If agent is omitted, detection order is:
-1) CACHEFLOW_AGENT
-2) current TTY mapping written by CCLI/CURSORCLI/GCLI/OC/codex-a/codex-b/codex-c wrappers
+1) AGENT_NAME
+2) current TTY mapping written by CCLI/CURSORCLI/GCLI/GCLI-A/GCLI-B/OC/codex-a/codex-b/codex-c/codex-d/codex-e/codex-f wrappers
 USAGE
 }
 
 enable_protocol_guards
+
+if [ "${SUPPRESS_ENTRYPOINT_DEPRECATION:-0}" != "1" ]; then
+  echo "DEPRECATED: use ./scripts/spring_startup.sh instead of ./scripts/start_sprint.sh" >&2
+fi
 
 print_finish_instructions() {
   echo "done-task command:"
@@ -52,10 +59,10 @@ normalize_agent() {
     open|opencode|oc)
       echo "OpenCode"
       ;;
-    gemini|gcli)
+    gemini|gcli|gcli-a|gcli-b)
       echo "Gemini"
       ;;
-    codex|master|cursor|kc|kcli|cursorcli)
+    codex|codex-a|codex-b|codex-c|codex-d|codex-e|codex-f|master|cursor|kc|kcli|cursorcli)
       echo "Codex"
       ;;
     *)
@@ -65,7 +72,7 @@ normalize_agent() {
 }
 
 detect_agent_from_tty() {
-  local map_dir="${CACHEFLOW_AGENT_TTY_MAP_DIR:-/tmp/cacheflow_agent_tty_map}"
+  local map_dir="${AGENT_TTY_MAP_DIR:-/tmp/agent_tty_map}"
   local tty_name tty_key map_file
   tty_name="$(tty 2>/dev/null || true)"
   [[ "$tty_name" == /dev/* ]] || return 1
@@ -139,8 +146,8 @@ while [ "$#" -gt 0 ]; do
 
 done
 
-if [ -z "$agent_input" ] && [ -n "${CACHEFLOW_AGENT:-}" ]; then
-  agent_input="$CACHEFLOW_AGENT"
+if [ -z "$agent_input" ] && [ -n "${AGENT_NAME:-}" ]; then
+  agent_input="$AGENT_NAME"
 fi
 if [ -z "$agent_input" ]; then
   agent_input="$(detect_agent_from_tty 2>/dev/null || true)"

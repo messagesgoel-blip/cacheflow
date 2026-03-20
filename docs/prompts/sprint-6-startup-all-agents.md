@@ -32,7 +32,7 @@ Execution rules:
 - Worker agents only claim Sprint 6 task keys after Codex dispatches the exact scope.
 - Write/update contracts for producer tasks before dependent work.
 - Keep commits scoped to the assigned Sprint 6 task key whenever possible.
-- No change is considered done until it is tested, committed, and deployed from a clean git worktree in `/opt/docker/apps/cacheflow`.
+- No change is considered done until it is tested, committed, and deployed from a clean git worktree in `__REPO_ROOT__`.
 - Do not treat dirty-tree builds, uncommitted local changes, or dev-only verification as done for live.
 - On completion of each task key:
   - run tests relevant to changed files
@@ -56,7 +56,7 @@ Use the Shared Startup Block first.
 
 Agent: OpenCode
 Sprint: 6
-Repo: /opt/docker/apps/cacheflow
+Repo: __REPO_ROOT__
 
 Primary ownership:
 - Backend/API/DB work for 6.1, 6.3, and 6.6
@@ -74,7 +74,7 @@ Use the Shared Startup Block first.
 
 Agent: ClaudeCode
 Sprint: 6
-Repo: /opt/docker/apps/cacheflow
+Repo: __REPO_ROOT__
 
 Primary ownership:
 - UI/UX work for 6.1 through 6.6
@@ -90,7 +90,7 @@ Use the Shared Startup Block first.
 
 Agent: Gemini
 Sprint: 6
-Repo: /opt/docker/apps/cacheflow
+Repo: __REPO_ROOT__
 
 Primary ownership:
 - Deterministic Playwright and targeted QA for each Sprint 6 task
@@ -106,7 +106,7 @@ Use the Shared Startup Block first.
 
 Agent: Codex
 Sprint: 6
-Repo: /opt/docker/apps/cacheflow
+Repo: __REPO_ROOT__
 
 Owned task keys:
 - 6.1@QUOTA-1+RIMPORT-1

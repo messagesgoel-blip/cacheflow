@@ -95,8 +95,21 @@ let nextGlobalPromptPrefix: string | null = null;
 const AGENT_CLI_CANDIDATES: Record<Agent, string[]> = {
   opencode: ["OC", "opencode"],
   claudecode: ["CCLI", "claude"],
-  gemini: ["GCLI", "gemini"],
-  codex: ["codex"],
+  gemini: ["GCLI", "GCLI-A", "GCLI-B", "gemini", "gcli-a", "gcli-b"],
+  codex: [
+    "codex",
+    "codex-a",
+    "codex-b",
+    "codex-c",
+    "codex-d",
+    "codex-e",
+    "codex-f",
+    "master",
+    "cursor",
+    "kc",
+    "kcli",
+    "cursorcli",
+  ],
   alibaba: ["ACLI", "alibaba", "ali-coding"],
   minimax: ["MCLI", "minimax", "mm-coding"],
 };

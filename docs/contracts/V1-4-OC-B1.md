@@ -171,7 +171,7 @@ None for the Batch 1 storage/noise checks. A broader follow-up is still required
 ## Validation
 
 ```bash
-cd /opt/docker/apps/cacheflow/web && npx tsc --noEmit
+cd /srv/storage/repo/cacheflow/web && npx tsc --noEmit
 # Result: No errors
 ```
 

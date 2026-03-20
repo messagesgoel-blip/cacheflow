@@ -17,6 +17,9 @@ Usage:
   CACHEFLOW_COOKIE_HEADER='accessToken=<jwt>; ...' scripts/seed-live-fixtures.sh
   scripts/seed-live-fixtures.sh <access-token>
 
+If no token is provided, the script mints one from the repo-owned bootstrap
+credentials stored in web/.env.live.
+
 The script skips files that already exist at the root and uploads only the missing ones.
 EOF
 }
@@ -53,19 +56,19 @@ process.stdout.write(names.join("\n"))
 
 json_remote_size() {
   local file_name="${1:-}"
-  node - "$file_name" <<'NODE'
-const fs = require('node:fs')
-const target = process.argv[2] || ''
-const payload = JSON.parse(fs.readFileSync(0, 'utf8'))
+  node -e '
+const fs = require("node:fs")
+const target = process.argv[1] || ""
+const payload = JSON.parse(fs.readFileSync(0, "utf8"))
 const entries = [...(payload.files || []), ...(payload.folders || [])]
 const entry = entries.find((item) => item && item.name === target)
 if (!entry) {
-  process.stdout.write('')
+  process.stdout.write("")
 } else {
-  const size = entry.size_bytes ?? entry.size ?? entry.sizeBytes ?? ''
+  const size = entry.size_bytes ?? entry.size ?? entry.sizeBytes ?? ""
   process.stdout.write(String(size))
 }
-NODE
+' "$file_name"
 }
 
 TOKEN_SOURCE="$(extract_access_token "$TOKEN_SOURCE")"
@@ -74,9 +77,7 @@ if [ -z "$TOKEN_SOURCE" ]; then
 fi
 
 if [ -z "$TOKEN_SOURCE" ]; then
-  usage >&2
-  echo "Error: an access token or cookie header is required." >&2
-  exit 1
+  TOKEN_SOURCE="$("$REPO_ROOT/scripts/bootstrap-dev-auth.sh")"
 fi
 
 if [ ! -d "$FIXTURES_DIR" ]; then

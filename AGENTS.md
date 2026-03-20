@@ -12,9 +12,9 @@ Sprints & contracts: see logs/orchestrator-state.json and docs/orchestration/tas
 
 Tests: Playwright in web/e2e (run from web/). Gate command: SPRINT_LIMIT=N npx ts-node scripts/orchestrate.ts --gate-only --sprint N.
 
-Commits: pre-commit hook must pass before commit; `git commit --no-verify` is prohibited except emergencies tagged `[EMERGENCY]` with immediate follow-up fix; do not commit .next/, node_modules/, coverage/, monitoring/*.yaml.
+Commits: pre-commit hook must pass before commit; `git commit --no-verify` is prohibited, no exceptions. If the gate is blocking incorrectly, fix the gate issue — do not bypass it. Do not commit .next/, node_modules/, coverage/, monitoring/*.yaml.
 
-Definition of done: no change is considered done until it is tested, committed, and deployed from a clean git worktree in `/opt/docker/apps/cacheflow`. Do not treat uncommitted local changes or dirty-tree builds as done for live.
+Definition of done: no change is considered done until it is tested, committed, and deployed from a clean git worktree in `/srv/storage/repo/cacheflow`. Do not treat uncommitted local changes or dirty-tree builds as done for live.
 Worktree rule: each active agent must run in its own dedicated git worktree path.
 
 ## Branch Naming
@@ -42,7 +42,7 @@ Effective immediately for the next batch onward: use `CAC` as the issue prefix a
 - Codex must not merge a branch with unresolved CodeRabbit blocking comments.
 - After requesting CodeRabbit review, lock all other follow-up work on that change until review is complete and findings are resolved or triaged.
 - If behavior changes, update affected tests in the same PR.
-- Do not treat a branch as done at PR open time; it is only done after tests pass, the change is committed, and it is deployed from a clean git worktree in `/opt/docker/apps/cacheflow`.
+- Do not treat a branch as done at PR open time; it is only done after tests pass, the change is committed, and it is deployed from a clean git worktree in `/srv/storage/repo/cacheflow`.
 
 Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.
 
@@ -55,7 +55,7 @@ Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → t
 
 ## Orchestration Automation Compliance
 
-- Canonical repo for live orchestration: `/opt/docker/apps/cacheflow` (do not run from stale copies).
+- Canonical repo for live orchestration: `/srv/storage/repo/cacheflow` (do not run from stale copies).
 - Start/stop/status commands:
   - `npm run orch:start`
   - `npm run orch:stop`
@@ -77,3 +77,32 @@ Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → t
   - `GITHUB_WEBHOOK_SECRET`
   - `LINEAR_TEAM_KEY`
   - `GH_TOKEN`
+
+## Codero Integration (Mandatory)
+
+Codero is the orchestration control plane for this repo. It handles commit → review → merge.
+`scripts/orchestrate.ts` is superseded by `codero-finish.sh` for the finish loop.
+
+**Required env vars** (set in shell or `.env` before running):
+```bash
+CODERO_GITHUB_TOKEN=        # same as GH_TOKEN — GitHub PAT with repo + checks:write
+CODERO_GITHUB_REPO=messagesgoel-blip/cacheflow
+CODERO_LITELLM_URL=http://localhost:4000/v1/chat/completions
+CODERO_LITELLM_MASTER_KEY=  # from LiteLLM config
+CODERO_TASK_ID=             # set to current task ID before calling agent-finish-task
+```
+
+**Submit flow:**
+```bash
+# At the end of any agent task — replaces agent-finish-task manual commit flow
+CODERO_TASK_ID=CAC-123 \
+  /srv/storage/shared/agent-toolkit/bin/codero-finish.sh "feat(CAC-123): short description"
+```
+
+Exit codes: 0=merged, 1=CodeRabbit feedback (read .codero/finish-feedback.md), 2=CI fail, 3=gate blocked.
+
+**Hook status:** Pre-commit hook requires `install-hooks` to replace the local `scripts/review/two-pass-review.sh`
+wrapper (INT-002 — see codero task board). Until then, run `install-hooks` before your first commit:
+```bash
+/srv/storage/shared/agent-toolkit/bin/install-hooks
+```

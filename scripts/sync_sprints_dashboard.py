@@ -12,17 +12,7 @@ explicit_base = os.environ.get("CACHEFLOW_BASE")
 if explicit_base:
     BASE = Path(explicit_base).resolve()
 else:
-    candidates = (
-        Path("/home/sanjay/cacheflow"),
-        Path("/opt/docker/apps/cacheflow"),
-        Path("/home/sanjay/cacheflow_work"),
-    )
-    for candidate in candidates:
-        if (candidate / ".git").exists():
-            BASE = candidate.resolve()
-            break
-    else:
-        BASE = Path(__file__).resolve().parent.parent
+    BASE = Path(__file__).resolve().parent.parent
 
 DASHBOARD = BASE / "docs" / "sprints-task-dashboard.md"
 STATE_FILE = BASE / "monitoring" / "cacheflow_task_state.yaml"

@@ -3,11 +3,11 @@
 ## Scope
 - Task: `1.12@UUID-1` (audit upload pipeline for UUID injection)
 - Task: `1.15@UUID-1` (validate migration readiness and execution path)
-- Repo: `/opt/docker/apps/cacheflow`
+- Repo: `/srv/storage/repo/cacheflow`
 
 ## Commands Run
 ```bash
-cd /opt/docker/apps/cacheflow
+cd /srv/storage/repo/cacheflow
 rg -n "uuid|randomUUID|crypto\\.random|nanoid|upload" web/lib api/src scripts -g '*.ts' -g '*.js'
 sed -n '280,380p' web/lib/providers/googleDrive.ts
 sed -n '250,360p' web/lib/providers/dropbox.ts
@@ -35,9 +35,9 @@ sed -n '1,180p' api/src/routes/files.js
 Dry-run executed against the active local CacheFlow Postgres endpoint:
 
 ```bash
-cd /opt/docker/apps/cacheflow
+cd /srv/storage/repo/cacheflow
 DATABASE_URL='postgresql://cacheflow:changeme123@127.0.0.1:5433/cacheflow' \
-NODE_PATH=/opt/docker/apps/cacheflow/api/node_modules \
+NODE_PATH=/srv/storage/repo/cacheflow/api/node_modules \
 node scripts/migrate-files-no-uuid.js --dry-run
 ```
 

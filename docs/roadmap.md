@@ -174,7 +174,7 @@ Scope:
 - fix the `AUTH-3` browser-storage security bug
 - close the normalized app-bug matrix from `docs/live-e2e-triage-matrix.md`
 - close the normalized spec-bug matrix from `docs/live-e2e-triage-matrix.md`
-- rerun with `CF_TOTP_SECRET` and stable live fixtures/accounts
+- rerun with the repo-owned bootstrap `CF_TOTP_SECRET` and stable seeded fixtures/account
 - reclassify Version `6.1` through `6.6` live failures as shipped regression, fixture gap, or stale spec issue
 
 Ordered task queue:

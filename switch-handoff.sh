@@ -1,12 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null || echo "$script_dir")"
+cd "$repo_root"
+
 if [ ! -f STATUS.md ]; then
-  echo "STATUS.md not found in $(pwd)"
+  echo "STATUS.md not found in $repo_root"
   exit 1
 fi
 
-echo "=== Switch Handoff: $(basename "$(pwd)") ==="
+echo "=== Switch Handoff: $(basename "$repo_root") ==="
 echo ""
 echo "1) STATUS.md checklist"
 echo "- Active is current and complete (task/machine/agent/started)"

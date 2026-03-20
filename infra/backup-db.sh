@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Default backup directory - can be overridden with BACKUP_DIR env var
-BACKUP_DIR="${BACKUP_DIR:-/opt/docker/apps/cacheflow/backups}"
+BACKUP_DIR="${BACKUP_DIR:-/srv/storage/repo/cacheflow/backups}"
 mkdir -p "$BACKUP_DIR"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 

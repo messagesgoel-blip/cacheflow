@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat <<'PROMPT'
-Sprint 6 — OpenCode — /home/sanjay/cacheflow_work
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "$script_dir/../.." && pwd)"
 
-Startup: git pull --rebase; run `agent-preflight`; read AGENTS.md, STATUS.md, docs/roadmap.md, and docs/sprints/sprint-6.md; coordinate with Codex before touching files under Sprint 6 umbrella tasks.
+prompt="$(cat <<'PROMPT'
+Sprint 6 — OpenCode — __REPO_ROOT__
+
+Startup: cd "__REPO_ROOT__"; git pull --rebase; run `agent-preflight cacheflow`; read AGENTS.md, STATUS.md, docs/roadmap.md, and docs/sprints/sprint-6.md; coordinate with Codex before touching files under Sprint 6 umbrella tasks.
 
 Primary Sprint 6 backend scopes:
 - 6.1 backend: quota thresholds/notification plumbing and streaming remote import
@@ -22,3 +25,7 @@ Rules:
 
 Finish per assigned scope: run targeted backend/test validation, stage only relevant files, then use `done-task <task_key> --test "<targeted test>" --commit "<message>"` when operating on a claimed task key.
 PROMPT
+)"
+
+prompt="${prompt//__REPO_ROOT__/$repo_root}"
+printf '%s\n' "$prompt"
