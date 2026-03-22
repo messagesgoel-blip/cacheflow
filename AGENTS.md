@@ -1,7 +1,6 @@
 # Cacheflow Repo Policy
 
-Global policy authority: `/srv/storage/AGENTS.md`.
-If any rule conflicts, global policy wins.
+Global references live in `/srv/storage/AGENTS.md`. This file defines Cacheflow-specific policy.
 
 ## Canonical Path
 `/srv/storage/repo/cacheflow/`
@@ -77,24 +76,11 @@ Does NOT own:
 - If Cacheflow renders Codero gate states, non-pass states must preserve Codero reason codes and human-readable reasons.
 - When using the Codero finish loop, set `CODERO_TASK_ID` before invoking `/srv/storage/shared/agent-toolkit/bin/codero-finish.sh`.
 
-## Local Dev Commands
-```bash
-# frontend type-check
-cd web && npx tsc --noEmit
-
-# playwright tests run from web/
-cd web && npx playwright test
-```
-
 ## Testing Notes
 - Playwright tests live in `web/e2e` and run from `web/`.
 - Type-check frontend changes before commit with `cd web && npx tsc --noEmit`.
 - If behavior changes, update affected tests in the same PR.
+- Common local verification: `cd web && npx tsc --noEmit` and `cd web && npx playwright test`.
 
 ## Definition Of Done
-A Cacheflow task is done only when all are true:
-1. Changes are in canonical path `/srv/storage/repo/cacheflow`.
-2. Required tests and gates pass.
-3. Changes are committed on a task branch.
-4. PR is opened with required context.
-5. The change is deployed from a clean git worktree when the task requires live completion.
+A Cacheflow task is done when required tests and gates pass, the change is committed on a task branch, the PR is opened with required context, and live-complete work is deployed from a clean git worktree.
