@@ -1,108 +1,100 @@
-# CacheFlow — Agent Quick Sheet
+# Cacheflow Repo Policy
 
-Project: multi‑cloud file manager (Next.js frontend, Node API, Postgres + Redis). Prod host: cacheflow.goels.in.
+Global policy authority: `/srv/storage/AGENTS.md`.
+If any rule conflicts, global policy wins.
 
-Layout: web/ (Next.js), api/ (Express), worker/ (BullMQ), lib/ (shared adapters), docs/contracts/ (API contracts), docs/orchestration/ (sprint state).
+## Canonical Path
+`/srv/storage/repo/cacheflow/`
 
-Auth: HttpOnly cookies only; token vault in lib/vault/tokenVault.ts; never expose tokens or write them to client storage.
+## Service Ownership
+Cacheflow owns the file-manager product runtime:
+- `web/` Next.js frontend
+- `api/` Express API
+- `worker/` BullMQ workers
+- `lib/` shared auth and provider adapters
 
-Providers: Google Drive, OneDrive, Box, Dropbox, Filen, WebDAV, VPS/SFTP; adapters live in lib/providers/; never return stored credentials.
+Does NOT own:
+- Codero control-plane implementation
+- Mathkit runtime behavior
+- Cross-repo direct code imports
 
-Sprints & contracts: see logs/orchestrator-state.json and docs/orchestration/task-manifest.json. Every cross-agent output needs docs/contracts/{task-id}.md. Type-check before commit: cd web && npx tsc --noEmit.
+## Product Constraints
+- Auth uses HttpOnly cookies only.
+- The token vault lives in `lib/vault/tokenVault.ts`; never expose provider tokens or persist them in client storage.
+- Provider adapters live in `lib/providers/`; never return stored credentials in API responses.
+- Contract-changing work must update `docs/contracts/{task-id}.md`.
+- Do not create new `LIN-*` branches; use the `CAC` issue prefix for new work.
 
-Tests: Playwright in web/e2e (run from web/). Gate command: SPRINT_LIMIT=N npx ts-node scripts/orchestrate.ts --gate-only --sprint N.
+## Repo Layout
+- `web/`: Next.js app and Playwright E2E
+- `api/`: Express API
+- `worker/`: BullMQ jobs
+- `lib/`: shared auth and provider adapters
+- `docs/contracts/`: API and task contracts
+- `docs/orchestration/`: orchestration and task state docs
 
-Commits: pre-commit hook must pass before commit; `git commit --no-verify` is prohibited, no exceptions. If the gate is blocking incorrectly, fix the gate issue — do not bypass it. Do not commit .next/, node_modules/, coverage/, monitoring/*.yaml.
+## Directory Guidance
+- `api/`: keep handlers short and non-blocking, validate inputs, use structured errors, sanitize responses, and keep secrets or vault data out of API payloads.
+- `lib/`: keep TypeScript strict, avoid circular dependencies, keep credentials encrypted via the vault, and use atomic Redis counter operations where needed.
+- `lib/providers/`: keep provider-specific logic inside adapters, enforce rate limiting and backoff, normalize errors, and preserve the shared adapter contracts and registry.
+- `lib/transfers/`: keep transfers chunked and resumable, emit progress, validate before committing parts, and clean up interrupted state.
+- `web/`: App Router only, proxy backend API calls to `http://127.0.0.1:8100`, keep auth cookie-based, avoid client token storage, and prefer Tailwind plus existing UI primitives.
+- `web/app/`: default to server components, use client components only for interactivity, and keep sensitive data off the client.
+- `web/components/`: keep accessibility intact, avoid unnecessary prop drilling, and keep render work light.
+- `worker/`: require graceful shutdown, idempotent jobs, strong logging, provider-aware rate limiting, and timeouts around network or file operations.
+- `scripts/`: keep automation idempotent, log clearly, and check process or port state before destructive actions.
 
-Definition of done: no change is considered done until it is tested, committed, and deployed from a clean git worktree in `/srv/storage/repo/cacheflow`. Do not treat uncommitted local changes or dirty-tree builds as done for live.
-Worktree rule: each active agent must run in its own dedicated git worktree path.
+## Ownership And Gatekeepers
+| Path | Owns | Gatekeeper |
+|---|---|---|
+| `web/*` | frontend UI/runtime | self |
+| `api/*` | backend/API logic | self |
+| `worker/*` | background jobs | self |
+| `lib/*` | shared runtime adapters | self |
+| `docs/*` | contracts/runbooks/orchestration docs | self |
+| `scripts/*` | automation and shipped runtime scripts | flag before editing |
+| `monitoring/*` | review and ops state wiring | flag before editing |
 
-## Branch Naming
-All feature branches must follow: `feat/CAC-{issue-id}-{short-description}`
-Example: `feat/CAC-42-oauth-token-fix`
-This enables issue auto-tracking of commits against issues.
-Effective immediately for the next batch onward: use `CAC` as the issue prefix and do not create new `LIN-*` branches.
+## Repo-Specific Do-Not-Edit
+- `**/generated/**` (generated artifacts)
+- `**/*.lock` manual edits (tool-managed only)
+- `.next/`
+- `node_modules/`
+- `coverage/`
+- `monitoring/*.yaml`
 
-## Pull Requests
-
-## PR Policy
-- All work must be on a branch following `feat/CAC-{id}-{description}`.
-- A PR must be opened before any task is marked complete.
-- Every PR branch must follow `feat/CAC-{issue-id}-{short-description}` so the issue tracker can associate commits with the issue.
+## Branch And PR Policy
+- Branch naming: `feat/CAC-{issue-id}-{short-description}`.
 - PR title should include the issue key when applicable.
-- PR description must include:
-  - linked issue
-  - summary of scope
-  - tests run
-  - deploy impact
-- On PR open, request CodeRabbit explicitly with:
-  - `@coderabbitai review`
-  - `@coderabbitai summary`
-- CodeRabbit review must complete before the branch is eligible for merge.
-- Codex must not merge a branch with unresolved CodeRabbit blocking comments.
-- After requesting CodeRabbit review, lock all other follow-up work on that change until review is complete and findings are resolved or triaged.
+- PR must include: linked issue, scope summary, tests run, and deploy impact.
+- Request `@coderabbitai review` and `@coderabbitai summary` on PR open.
+- CodeRabbit review must complete before merge.
+- One agent = one branch = one dedicated worktree path.
+
+## Codero Integration
+- Codero is the control-plane authority for finish, review, and merge orchestration.
+- Cacheflow must consume Codero gate outputs and must not re-implement a parallel gate engine locally.
+- If Cacheflow renders Codero gate states, non-pass states must preserve Codero reason codes and human-readable reasons.
+- When using the Codero finish loop, set `CODERO_TASK_ID` before invoking `/srv/storage/shared/agent-toolkit/bin/codero-finish.sh`.
+
+## Local Dev Commands
+```bash
+# frontend type-check
+cd web && npx tsc --noEmit
+
+# playwright tests run from web/
+cd web && npx playwright test
+```
+
+## Testing Notes
+- Playwright tests live in `web/e2e` and run from `web/`.
+- Type-check frontend changes before commit with `cd web && npx tsc --noEmit`.
 - If behavior changes, update affected tests in the same PR.
-- Do not treat a branch as done at PR open time; it is only done after tests pass, the change is committed, and it is deployed from a clean git worktree in `/srv/storage/repo/cacheflow`.
 
-Agent scope: OpenCode → api/, lib/, worker/; ClaudeCode → web/; Gemini → tests/e2e/scripts; Sisyphus → orchestration only.
-
-## Gate Surface Parity (Mandatory)
-
-- Cacheflow does not implement its own gate engine/status-model stack.
-- Authoritative staged gate implementation lives in Codero and is consumed by Cacheflow.
-- For Cacheflow changes, integrate and display Codero gate outputs; do not fork/duplicate gate-engine logic locally.
-- If Cacheflow UI/API renders Codero gate state, non-pass states (`DISABLED`, `SKIP`, `INFRA_BYPASS`) must preserve Codero reason codes and human-readable reasons.
-
-## Orchestration Automation Compliance
-
-- Canonical repo for live orchestration: `/srv/storage/repo/cacheflow` (do not run from stale copies).
-- Start/stop/status commands:
-  - `npm run orch:start`
-  - `npm run orch:stop`
-  - `npm run orch:status`
-- `scripts/start-orchestration.sh` must run only on OCI primary. It exits when `DATACENTER=india`.
-- Full enforced task sequence in `scripts/orchestrate.ts`:
-  - dispatch task
-  - agent completes and commits
-  - run pre-push gate (`bash scripts/pre-push-review.sh`)
-  - if clear: push + open PR
-  - poll CodeRabbit webhook state (`monitoring/coderabbit-<pr>.yaml`)
-  - blocked: requeue (max 3), do not advance
-  - clear: mark done and advance to next task
-- Linear lifecycle is best-effort and non-blocking:
-  - `markTaskStarted`, `markTaskBlocked`, `markTaskDone`
-  - regression issues can be created when blocked tasks have no `linearIssueId`
-- Required env for automation (see `.env.example`):
-  - `DATACENTER`
-  - `GITHUB_WEBHOOK_SECRET`
-  - `LINEAR_TEAM_KEY`
-  - `GH_TOKEN`
-
-## Codero Integration (Mandatory)
-
-Codero is the orchestration control plane for this repo. It handles commit → review → merge.
-`scripts/orchestrate.ts` is superseded by `codero-finish.sh` for the finish loop.
-
-**Required env vars** (set in shell or `.env` before running):
-```bash
-CODERO_GITHUB_TOKEN=        # same as GH_TOKEN — GitHub PAT with repo + checks:write
-CODERO_GITHUB_REPO=messagesgoel-blip/cacheflow
-CODERO_LITELLM_URL=http://localhost:4000/v1/chat/completions
-CODERO_LITELLM_MASTER_KEY=  # from LiteLLM config
-CODERO_TASK_ID=             # set to current task ID before calling agent-finish-task
-```
-
-**Submit flow:**
-```bash
-# At the end of any agent task — replaces agent-finish-task manual commit flow
-CODERO_TASK_ID=CAC-123 \
-  /srv/storage/shared/agent-toolkit/bin/codero-finish.sh "feat(CAC-123): short description"
-```
-
-Exit codes: 0=merged, 1=CodeRabbit feedback (read .codero/finish-feedback.md), 2=CI fail, 3=gate blocked.
-
-**Hook status:** Pre-commit hook requires `install-hooks` to replace the local `scripts/review/two-pass-review.sh`
-wrapper (INT-002 — see codero task board). Until then, run `install-hooks` before your first commit:
-```bash
-/srv/storage/shared/agent-toolkit/bin/install-hooks
-```
+## Definition Of Done
+A Cacheflow task is done only when all are true:
+1. Changes are in canonical path `/srv/storage/repo/cacheflow`.
+2. Required tests and gates pass.
+3. Changes are committed on a task branch.
+4. PR is opened with required context.
+5. The change is deployed from a clean git worktree when the task requires live completion.
